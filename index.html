@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.0 (Version 2.0) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.2 (Version 2.2) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -11,7 +11,7 @@
 /* ===== بخش ۱ | SECTION 1: استایل‌ها | Styles ===== */
 
 /* متغیرهای رنگ | Color Variables: رنگ‌های اصلی تیره تلگرام (dark theme colors) */
-:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22}
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22;--chatbg:#0a0a0c;--dotc:rgba(255,255,255,.09);--dotc2:rgba(255,255,255,.04);--dotc3:rgba(255,255,255,.05);--menu:rgba(40,40,42,.96);--pin:#0e0e10;--sec:#0b0b0c;--chip:#3a3a3c;--dsep:rgba(40,40,42,.85);--smalltx:rgba(255,255,255,.6)}
 
 /* ریست پایه | Base Reset: حذف حاشیه‌ها و هایلایت لمس (no margin, no tap highlight) */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -64,7 +64,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .tab{flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s;overflow:hidden}
 .tab .svg{flex:none}
 .tab.on{background:var(--card2)}
-.tab b{background:#3a3a3c;border-radius:9px;padding:1px 6px;font-size:11px;margin-left:3px}
+.tab b{background:var(--chip);border-radius:9px;padding:1px 6px;font-size:11px;margin-left:3px}
 
 /* لیست | List: ناحیه اسکرول با فضای خالی برای کپسول پایین (scroll area, bottom space for tab bar) */
 .list{flex:1;overflow-y:auto;padding-bottom:110px}
@@ -87,7 +87,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* رنگ‌ها | Text Colors: پیش‌نمایش کمی خاکستری، نام فرستنده در گروه روشن‌تر (preview slightly grey, group sender lighter) */
 #clist .m,#ctlist .m{color:#a3a3a8}
 #clist .m.snd{color:#e5e5e7}
-.row.pin{background:#0e0e10}
+.row.pin{background:var(--pin)}
 .row .mid{flex:1;min-width:0;border-bottom:.5px solid var(--line);padding-bottom:8px;margin-bottom:-8px}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .m{color:var(--sub);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
@@ -101,7 +101,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#fff;flex:none;position:relative}
 .av.s{width:40px;height:40px;font-size:16px}
 .av.xl{width:96px;height:96px;font-size:40px}
-.dot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid #000}
+.dot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
 
 /* تیک | Tick: وضعیت ارسال (✓ ارسال، ✓✓ خوانده شده) */
 .tick{color:var(--blue);display:inline-flex;vertical-align:middle;margin-right:4px}
@@ -122,7 +122,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #editbar .pill{background:var(--card2);min-width:90px}
 
 /* منوی بلند‌فشار | Long-press Menu: منوی شناور تیره (floating dark menu) */
-#menu{position:absolute;right:16px;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px;width:200px;display:none;z-index:50;overflow:hidden;animation:pop .15s}
+#menu{position:absolute;right:16px;background:var(--menu);backdrop-filter:blur(20px);border-radius:16px;width:200px;display:none;z-index:50;overflow:hidden;animation:pop .15s}
 #menu div{padding:13px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:.5px solid var(--line)}
 #menu div:last-child{border:0;color:var(--red)}
 #shade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:40}
@@ -133,16 +133,17 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .sheet.on{transform:none}
 .blueRow{display:flex;gap:14px;align-items:center;padding:13px 18px;color:var(--blue);border-bottom:.5px solid var(--line)}
 .alpha{position:absolute;right:4px;top:230px;display:flex;flex-direction:column;font-size:10px;color:var(--blue);gap:3px}
-.sec{padding:4px 18px;color:var(--sub);font-size:13px;background:#0b0b0c}
+.sec{padding:4px 18px;color:var(--sub);font-size:13px;background:var(--sec)}
 
 /* صفحه چت | Chat Page: سربرگ، پیام‌ها و نوار ورودی (header, messages, input) */
-.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#0a0a0c}
+.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--chatbg)}
 .b{max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
 .b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
 .b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.b.ot small{color:var(--smalltx)}
 /* جداکننده تاریخ | Date Separator: کپسول وسط بالای هر روز گفتگو (centered date capsule, sticky at top) */
-.dsep{align-self:center;position:sticky;top:4px;z-index:2;background:rgba(40,40,42,.85);border-radius:12px;padding:3px 12px;font-size:13px;color:#fff;margin:4px 0}
+.dsep{align-self:center;position:sticky;top:4px;z-index:2;background:var(--dsep);border-radius:12px;padding:3px 12px;font-size:13px;color:var(--txt);margin:4px 0}
 .pinbar{margin:4px 12px;background:var(--card);border-radius:14px;padding:7px 12px;font-size:13px;display:flex;justify-content:space-between}
 .pinbar span{color:var(--blue);font-weight:600}
 #chat.kb .inbar{padding-bottom:10px}
@@ -237,7 +238,7 @@ html.light #login .pf{color:#000}
 .bgs.on{border-color:var(--blue)}
 /* منوی پوشه‌ها | Folder Menu: کادر دوم سمت چپ منوی گفتگو، با لیست همه‌ی پوشه‌ها */
 /* تب فرعی چسبیده | Attached Sub-tab: زیرمنو دقیقاً چسبیده به سمت چپ منوی اصلی و هم‌تراز ردیف مربوطه (flush against the main menu, aligned with its row) */
-#menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px;display:none;z-index:50;animation:fade .15s}
+#menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:var(--menu);backdrop-filter:blur(20px);border-radius:16px;display:none;z-index:50;animation:fade .15s}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 /* لبه‌های یکپارچه | Seamless Edges: گوشه‌های محل اتصال منو و تب فرعی صاف می‌شوند تا شکاف نماند (joined corners squared so no notch) */
 #menu2.up{border-radius:16px 0 16px 16px}
@@ -248,13 +249,13 @@ html.light #login .pf{color:#000}
 #menu2 div:last-child{border:0}
 #menu2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* پیش‌نمایش گفتگو | Chat Peek: با نگه داشتن روی گفتگو، پنجره‌ی قابل اسکرول بدون خوانده شدن پیام‌ها */
-#peek{position:absolute;left:0;right:0;margin:0 auto;width:calc((100% - 28px)*.845);top:calc(env(safe-area-inset-top) + 56px);z-index:48;border-radius:22px;overflow:hidden;display:none;flex-direction:column;background:#0a0a0c;animation:pop .15s}
-#peek .pkh{background:rgba(40,40,42,.96);text-align:center;padding:8px 0;flex:none}
+#peek{position:absolute;left:0;right:0;margin:0 auto;width:calc((100% - 28px)*.845);top:calc(env(safe-area-inset-top) + 56px);z-index:48;border-radius:22px;overflow:hidden;display:none;flex-direction:column;background:var(--chatbg);animation:pop .15s}
+#peek .pkh{background:var(--menu);text-align:center;padding:8px 0;flex:none}
 #peek .pkh b{display:block;font-size:16px}
 #peek .pkh small{color:var(--sub);font-size:12px}
 #peekMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* تم روشن | Light Theme */
-html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#e9e9eb}
+html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);color-scheme:light}
 html.light #login input,html.light .inbar input{color:#000}
 html.light #tabbar{background:rgba(255,255,255,.92)}
 html.light .sec{background:#e9e9ee}
@@ -645,7 +646,7 @@ let ED={};S.subs=[];
 function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
 /* مسدودسازی پنجره‌های مرورگر | Native Dialog Block: هیچ پیغام تأیید، هشدار یا اعلان مرورگر باز نمی‌شود؛ alert به پیام داخلی برنامه تبدیل می‌شود (no browser popups anywhere; alert becomes the in-app toast) */
 window.alert=m=>toast(String(m));window.confirm=()=>true;window.prompt=()=>null;window.onbeforeunload=null;
-function applyTheme(){document.documentElement.classList.toggle("light",CFG.theme==="light");document.documentElement.style.setProperty("--blue",CFG.accent)}
+function applyTheme(){$("meta[name=theme-color]").content=CFG.theme==="light"?"#f2f2f7":"#000000";document.documentElement.classList.toggle("light",CFG.theme==="light");document.documentElement.style.setProperty("--blue",CFG.accent)}
 /* ناوبری | Sub-page Navigation: باز و بسته شدن صفحه‌ها (open/close with a stack) */
 function openSub(id){S.subs.push(id);$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));$("#tabbar").style.display="none"}
 function closeSub(){S.subs.pop();const id=S.subs[S.subs.length-1];$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));if(!id)$("#tabbar").style.display="flex"}
@@ -770,8 +771,8 @@ function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove(
  m2.style.display="block";m2.style.maxHeight="none";const dr=$("#menu [data-i='4']"),bt=$("#menu").offsetTop+dr.offsetTop+dr.offsetHeight;m2.style.top=Math.max(70,bt-m2.offsetHeight)+"px";
  $$("#menu2 div").forEach(d=>d.onclick=()=>{CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
 /* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
-const BGS=[["none","#0a0a0c"],["dots","radial-gradient(rgba(255,255,255,.09) 1.3px,transparent 1.4px) 0 0/18px 18px #0a0a0c"],["lines","repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px) #0a0a0c"],["grid","linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px #0a0a0c"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
-function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat #0a0a0c";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:BGS[0][1]}
+const BGS=[["none","var(--chatbg)"],["dots","radial-gradient(var(--dotc) 1.3px,transparent 1.4px) 0 0/18px 18px var(--chatbg)"],["lines","repeating-linear-gradient(45deg,var(--dotc2) 0 2px,transparent 2px 14px) var(--chatbg)"],["grid","linear-gradient(var(--dotc3) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--dotc3) 1px,transparent 1px) 0 0/22px 22px var(--chatbg)"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
+function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat var(--chatbg)";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:BGS[0][1]}
 function applyBg(){$("#msgs").style.background=bgCss()}
 function renderBgs(){const ph=CFG.bg.t==="photo"&&CFG.bg.photo;
  $("#bgRow").innerHTML=(ph?`<div class="bgs on" data-bg="photo" style="background:url(${CFG.bg.photo}) center/cover"></div>`:"")+BGS.map(p=>`<div class="bgs${!ph&&(CFG.bg.id||"none")===p[0]?" on":""}" data-bg="${p[0]}" style="background:${p[1]}"></div>`).join("");
@@ -837,9 +838,9 @@ function plainField(el){const d=document.createElement("div");
 $$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend();
 
 /* ---- چشم پسورد | Password Eye Toggle ---- */
-/* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان)؛ با زدن چشم نقطه‌ای/پنهان می‌شود و دوباره با زدن آشکار می‌شود (default visible without dots; tap eye to mask with dots, tap again to reveal) */
+/* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان، چشم ساده)؛ با زدن، پسورد پنهان می‌شود و چشم خط‌دار می‌شود؛ دوباره زدن آشکار می‌کند (default visible without dots; tap eye to mask with dots, tap again to reveal) */
 let pwHide=false;
-function setPw(){$("#pw").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEye").innerHTML=ic(pwHide?"eye":"eyeoff",22)}
+function setPw(){$("#pw").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEye").innerHTML=ic(pwHide?"eyeoff":"eye",22)}
 $("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
