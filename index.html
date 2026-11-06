@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 1.9 (Version 1.9) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.0 (Version 2.0) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -157,6 +157,12 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .item:last-child{border:0}
 .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .item .r{margin-left:auto;color:var(--sub)}
+/* دکمه‌های تنظیمات ۷٪ بزرگ‌تر | Settings Buttons +7%: ردیف، فونت، آیکون و آواتار کوچک ۷ درصد بزرگ‌تر (rows, font, icon tiles, mini avatar scaled 1.07) */
+#settings .item{padding:12px 15px;gap:13px;font-size:16px}
+#settings .ic{width:32px;height:32px;border-radius:9px}
+#settings .ic svg{width:19px;height:19px}
+#settings .item>i svg{width:23.5px;height:23.5px}
+#settings .item .av.s{width:28px;height:28px;font-size:13px}
 
 /* ورود | Login Page: فرم ایمیل و رمز (email + password form) */
 /* چیدمان بالا | Top Layout: محتوا از بالا شروع می‌شود تا زیر کیبورد پنهان نشود (content starts near the top so the keyboard never covers it) */
@@ -231,8 +237,13 @@ html.light #login .pf{color:#000}
 .bgs.on{border-color:var(--blue)}
 /* منوی پوشه‌ها | Folder Menu: کادر دوم سمت چپ منوی گفتگو، با لیست همه‌ی پوشه‌ها */
 /* تب فرعی چسبیده | Attached Sub-tab: زیرمنو دقیقاً چسبیده به سمت چپ منوی اصلی و هم‌تراز ردیف مربوطه (flush against the main menu, aligned with its row) */
-#menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px 0 0 16px;border-right:.5px solid var(--line);display:none;z-index:50;animation:fade .15s}
+#menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px;display:none;z-index:50;animation:fade .15s}
 @keyframes fade{from{opacity:0}to{opacity:1}}
+/* لبه‌های یکپارچه | Seamless Edges: گوشه‌های محل اتصال منو و تب فرعی صاف می‌شوند تا شکاف نماند (joined corners squared so no notch) */
+#menu2.up{border-radius:16px 0 16px 16px}
+#menu2.dn{border-radius:16px 16px 0 16px}
+#menu.al-top{border-top-left-radius:0}
+#menu.al-bot{border-bottom-left-radius:0}
 #menu2 div{padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:6px;border-bottom:.5px solid var(--line)}
 #menu2 div:last-child{border:0}
 #menu2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -536,13 +547,13 @@ function bindRow(r){const id=+r.dataset.id;let tm,long=false;
 
 /* ---- ۳.۶ منوی بلند‌فشار | 3.6 Long-press Menu ---- */
 /* باز کردن منو | Open Menu: گزینه‌ها بر اساس وضعیت چت (items depend on chat state) */
-function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");
+function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");m.classList.remove("al-top","al-bot");
  const it=[["Add to Folder","folder",()=>{showFolderMenu(c);return "keep"}],[c.un?"Mark as Read":"Mark as Unread","check",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","pin",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute",c.mute?"bell":"mute",()=>{c.mute=c.mute?0:1}],["Delete","trash",()=>{showDeleteMenu(c);return "keep"}]];
  m.innerHTML=it.map((x,i)=>`<div data-i="${i}">${x[0]}${ic(x[1],20)}</div>`).join("");
  m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>{if(it[+d.dataset.i][2]()==="keep")return;closeMenu();renderChats()})}
 /* بستن منو | Close Menu */
-function closeMenu(){$("#menu2").style.display="none";$("#menu").style.display="none";$("#shade").style.display="none";$("#peek").style.display="none"}
+function closeMenu(){$("#menu").classList.remove("al-top","al-bot");$("#menu2").style.display="none";$("#menu").style.display="none";$("#shade").style.display="none";$("#peek").style.display="none"}
 $("#shade").onclick=closeMenu;
 
 /* ---- ۳.۷ حالت ویرایش | 3.7 Edit Mode ---- */
@@ -746,7 +757,7 @@ function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
  m2.innerHTML=rows.map(([k,l,on])=>`<div data-k="${k}"><span>${l}</span>${on?ic("check",20):""}</div>`).join("")+`<div data-new="1" style="color:var(--blue)"><span>${tr("Create New Folder")}</span>${ic("plus",20)}</div>`;
  /* هم‌ترازی دقیق | Exact Alignment: بالای زیرمنو دقیقاً هم‌تراز بالای ردیف «Add to Folder» (بدون انیمیشن مقیاس تا فاصله نیفتد) (sub-tab top = Add to Folder row top, measured by layout not transform) */
- m2.style.display="block";const rt=$("#menu").offsetTop+$("#menu [data-i='0']").offsetTop;m2.style.maxHeight=Math.max(120,innerHeight-rt-30)+"px";m2.style.top=rt+"px";
+ m.classList.remove("al-bot");m.classList.add("al-top");m2.className="up";m2.style.display="block";const rt=$("#menu").offsetTop+$("#menu [data-i='0']").offsetTop;m2.style.maxHeight=Math.max(120,innerHeight-rt-30)+"px";m2.style.top=rt+"px";
  $$("#menu2 div").forEach(d=>d.onclick=()=>{
   if(d.dataset.new){closeMenu();openFolder("new");FE.chats.add(c.id);renderFeChats();return}
   const k=d.dataset.k;
@@ -754,7 +765,7 @@ function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
   else{if(c.ty===k)return;const a=CFG.extra[k]=CFG.extra[k]||[];CFG.extra[k]=a.includes(c.id)?a.filter(x=>x!==c.id):[...a,c.id]}
   saveCfg();closeMenu();renderChats()})}
 /* حذف گفتگو | Delete Menu: زیرمنوی چسبیده به «Delete» با دو گزینه، حذف برای خودم یا برای هر دو (sub-tab attached to Delete: for me / for both) */
-function showDeleteMenu(c){const m2=$("#menu2");
+function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove("al-top");m.classList.add("al-bot");m2.className="dn";
  m2.innerHTML=`<div data-d="me"><span>${tr("Delete for me")}</span></div><div data-d="both" style="color:var(--red)"><span>${tr("Delete for both")}</span></div>`;
  m2.style.display="block";m2.style.maxHeight="none";const dr=$("#menu [data-i='4']"),bt=$("#menu").offsetTop+dr.offsetTop+dr.offsetHeight;m2.style.top=Math.max(70,bt-m2.offsetHeight)+"px";
  $$("#menu2 div").forEach(d=>d.onclick=()=>{CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
