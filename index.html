@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 0.4 (Version 0.4) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 0.6 (Version 0.6) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -69,10 +69,19 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* ردیف چت | Chat Row: آواتار + نام + پیام + ساعت (avatar, name, message, time) */
 .row{display:flex;align-items:center;gap:12px;padding:8px 14px;position:relative;transition:background .15s,transform .2s}
 .row:active{background:var(--card)}
-/* ردیف چت‌ها | Chat List Row: ارتفاع ۳ پیکسل بیشتر و آواتار ۲ پیکسل بزرگ‌تر (row +3px, avatar 56px = +2px) */
-#clist .row{padding:8.5px 14px}
-#clist .row .mid{padding-bottom:8.5px;margin-bottom:-8.5px}
-#clist .av{width:56px;height:56px}
+/* ردیف هماهنگ | Unified Row: ردیف چت‌ها و مخاطبین هم‌اندازه؛ ارتفاع ۷۳، آواتار ۵۶ دقیقاً وسط (same size for chats & contacts: height 73px, 56px avatar, vertically centered) */
+#clist .row,#ctlist .row:not(.blueRow){height:73px;padding:0 14px}
+#clist .av,#ctlist .av{width:56px;height:56px}
+/* متن ردیف | Row Text: نام و پیش‌نمایش زیر هم، چپ‌چین و وسط‌چین عمودی (name above preview, left aligned, vertically centered) */
+#clist .mid,#ctlist .mid{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:0;margin:0;direction:ltr;text-align:left}
+#clist .meta{align-self:stretch;justify-content:center}
+/* سه خط ردیف | Three Text Lines: خط ۱ نام، خط ۲ (پیش‌نمایش یا نام فرستنده در گروه)، خط ۳ پیش‌نمایش گروه؛ هر خط ۲۰ پیکسل پس ارتفاع ردیف تغییر نمی‌کند (line1 name, line2 preview or group sender, line3 group preview; 20px each, row height unchanged) */
+#clist .n,#ctlist .n,#clist .m,#ctlist .m{display:block;width:100%;height:20px;line-height:20px;text-align:left;direction:ltr;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* آیکون میوت | Mute Icon: کنار نام، خاکستری (grey, right after the name) */
+#clist .n .svg{display:inline-block;vertical-align:middle;margin-left:5px;color:var(--sub)}
+/* رنگ‌ها | Text Colors: پیش‌نمایش کمی خاکستری، نام فرستنده در گروه روشن‌تر (preview slightly grey, group sender lighter) */
+#clist .m,#ctlist .m{color:#a3a3a8}
+#clist .m.snd{color:#e5e5e7}
 .row.pin{background:#0e0e10}
 .row .mid{flex:1;min-width:0;border-bottom:.5px solid var(--line);padding-bottom:8px;margin-bottom:-8px}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -271,8 +280,8 @@ let CHATS=[
  {id:5,n:"Saman",m:"🎤 Voice Message",tm:"Tue",ty:"pv",pin:0,t:0,un:0,mute:0,on:1,col:"#9b6"},
  {id:6,n:"Artin",m:"پس بشیم",tm:"Sat",ty:"pv",pin:0,t:2,un:0,mute:0,on:0,col:"#68a"},
  {id:7,n:"Fifi",m:"😊 Sticker",tm:"10/27",ty:"pv",pin:0,t:2,un:0,mute:0,on:0,col:"#3a9bff"},
- {id:8,n:"Class Group",m:"Ms. Sara: فردا امتحان داریم",tm:"23:15",ty:"gp",pin:0,t:0,un:2,mute:0,on:0,col:"#e8743b"},
- {id:9,n:"Family",m:"Mom: شام چی داریم؟",tm:"22:40",ty:"gp",pin:0,t:0,un:0,mute:1,on:0,col:"#9a5de0"},
+ {id:8,n:"Class Group",s:"Ms. Sara",m:"فردا امتحان داریم",tm:"23:15",ty:"gp",pin:0,t:0,un:2,mute:0,on:0,col:"#e8743b"},
+ {id:9,n:"Family",s:"Mom",m:"شام چی داریم؟",tm:"22:40",ty:"gp",pin:0,t:0,un:0,mute:1,on:0,col:"#9a5de0"},
  {id:10,n:"Link News",m:"New version 0.1 released",tm:"23:16",ty:"ch",pin:0,t:0,un:118,mute:0,on:0,col:"#222"},
  {id:11,n:"Tech Channel",m:"New phone leaked today",tm:"23:13",ty:"ch",pin:0,t:0,un:2,mute:1,on:0,col:"#111"}
 ];
@@ -319,7 +328,7 @@ function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
  $("#clist").className="list"+(S.edit?" editing":"");
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on)}
-  <div class="mid"><div class="n">${c.n}${c.mute?" "+ic("mute",13):""}</div><div class="m">${c.m}</div></div>
+  <div class="mid"><div class="n">${c.n}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
   <div class="meta"><span>${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</span>
   ${c.un?`<span class="badge ${c.mute?"":"b"}">${c.un}</span>`:c.pin?ic("pin",15):"<span></span>"}</div></div>`).join("");
  $$(".row").forEach(bindRow);padLists()}
@@ -354,7 +363,7 @@ $("#delSel").onclick=()=>{if(!S.sel.size)return;CHATS=CHATS.filter(c=>!S.sel.has
 /* ---- ۳.۸ مخاطبین | 3.8 Contacts ---- */
 /* رندر مخاطبین | Render Contacts: لیست با وضعیت آنلاین/آخرین بازدید (list with last seen) */
 function renderContacts(){$("#ctlist").innerHTML=blueRows()+
- PEOPLE.map(p=>`<div class="row" data-n="${p[0]}">${av(p[0],colOf(p[0]),0,"s")}<div class="mid"><div class="n">${p[0]}</div><div class="m" style="${p[1]==="online"?"color:var(--blue)":""}">${p[1]}</div></div></div>`).join("");
+ PEOPLE.map(p=>`<div class="row" data-n="${p[0]}">${av(p[0],colOf(p[0]),0)}<div class="mid"><div class="n">${p[0]}</div><div class="m" style="${p[1]==="online"?"color:var(--blue)":""}">${p[1]}</div><div class="m"></div></div></div>`).join("");
  $$("#ctlist .row").forEach(r=>r.onclick=()=>openByName(r.dataset.n))}
 /* باز کردن با نام | Open By Name: چت موجود یا ساخت چت جدید (existing chat or create new) */
 function openByName(n){let c=CHATS.find(x=>x.n===n);if(!c){c={id:Date.now(),n,m:"",tm:"now",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(n)};CHATS.push(c)}
@@ -379,7 +388,7 @@ function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
 function addMsg(w,t,tm){const d=document.createElement("div");d.className="b "+w;d.innerHTML=`${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
 function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";
- const c=CHATS.find(x=>x.id===S.openId);c.m=v;c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
+ const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
  setTimeout(()=>addMsg("ot","👍",now),900)}
 $("#send").onclick=send;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
