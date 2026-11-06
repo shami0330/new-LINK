@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 0.6 (Version 0.6) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 0.8 (Version 0.8) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -56,7 +56,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .search input{background:none;border:0;outline:0;color:var(--txt);font-size:16px;width:60%;text-align:center;-webkit-user-select:text;user-select:text}
 
 /* تب‌های پوشه | Folder Tabs: همه / شخصی / گروه / کانال (All/PV/Gap/Channel) */
-.tabs{display:flex;gap:4px;margin:4px 12px;background:var(--card);border-radius:20px;padding:3px}
+.tabs{display:flex;gap:4px;margin:4px 12px;background:none;border-radius:20px;padding:3px}
 /* تب پوشه | Folder Tab: ارتفاع ثابت ۳۴ پیکسل (۵ بیشتر از قبل)، حتی با آیکون (fixed 34px height, 5px taller) */
 .tab{flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s;overflow:hidden}
 .tab .svg{flex:none}
@@ -69,12 +69,14 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* ردیف چت | Chat Row: آواتار + نام + پیام + ساعت (avatar, name, message, time) */
 .row{display:flex;align-items:center;gap:12px;padding:8px 14px;position:relative;transition:background .15s,transform .2s}
 .row:active{background:var(--card)}
-/* ردیف هماهنگ | Unified Row: ردیف چت‌ها و مخاطبین هم‌اندازه؛ ارتفاع ۷۳، آواتار ۵۶ دقیقاً وسط (same size for chats & contacts: height 73px, 56px avatar, vertically centered) */
+/* ردیف هماهنگ | Unified Row: ردیف چت‌ها و مخاطبین هم‌اندازه؛ ارتفاع ۷۳، آواتار ۶۰ دقیقاً وسط (same size for chats & contacts: height 73px, 60px avatar, vertically centered) */
 #clist .row,#ctlist .row:not(.blueRow){height:73px;padding:0 14px}
-#clist .av,#ctlist .av{width:56px;height:56px}
+#clist .av,#ctlist .av{width:60px;height:60px;font-size:24px}
 /* متن ردیف | Row Text: نام و پیش‌نمایش زیر هم، چپ‌چین و وسط‌چین عمودی (name above preview, left aligned, vertically centered) */
 #clist .mid,#ctlist .mid{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:0;margin:0;direction:ltr;text-align:left}
-#clist .meta{align-self:stretch;justify-content:center}
+/* ستون ساعت | Meta Column: سه خط ۲۰ پیکسلی هم‌راستا با متن؛ ساعت هم‌تراز نام، نشان خوانده‌نشده هم‌تراز خط وسط (3 lines of 20px aligned with text: time on the name line, badge on the middle line) */
+#clist .meta{align-self:stretch;justify-content:center;gap:0}
+#clist .ml{height:20px;display:flex;align-items:center;justify-content:flex-end;line-height:20px}
 /* سه خط ردیف | Three Text Lines: خط ۱ نام، خط ۲ (پیش‌نمایش یا نام فرستنده در گروه)، خط ۳ پیش‌نمایش گروه؛ هر خط ۲۰ پیکسل پس ارتفاع ردیف تغییر نمی‌کند (line1 name, line2 preview or group sender, line3 group preview; 20px each, row height unchanged) */
 #clist .n,#ctlist .n,#clist .m,#ctlist .m{display:block;width:100%;height:20px;line-height:20px;text-align:left;direction:ltr;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* آیکون میوت | Mute Icon: کنار نام، خاکستری (grey, right after the name) */
@@ -87,8 +89,10 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .m{color:var(--sub);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .row .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;color:var(--sub);min-width:46px}
-.badge{background:#3a3a3c;color:#fff;border-radius:11px;padding:1px 7px;font-size:12px;font-weight:600}
-.badge.b{background:var(--blue)}
+/* نشان خوانده‌نشده | Unread Badge: تک‌رقمی دایره (۱۴×۱۴)، چندرقمی کشیده؛ عدد دقیقاً وسط؛ میوت‌شده خاکستری (1 digit = circle 14px, more digits = stretched pill, number centered, muted = grey) */
+.badge{display:inline-flex;align-items:center;justify-content:center;height:14px;min-width:14px;padding:0;border-radius:7px;background:#6c6c70;color:#fff;font-size:11px;font-weight:600;line-height:14px}
+.badge.w{padding:0 5px}
+.badge.bl{background:var(--blue)}
 
 /* آواتار | Avatar: دایره رنگی با حرف اول (colored circle with initial) */
 .av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#fff;flex:none;position:relative}
@@ -329,8 +333,8 @@ function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on)}
   <div class="mid"><div class="n">${c.n}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
-  <div class="meta"><span>${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</span>
-  ${c.un?`<span class="badge ${c.mute?"":"b"}">${c.un}</span>`:c.pin?ic("pin",15):"<span></span>"}</div></div>`).join("");
+  <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
+  <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
  $$(".row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
 function bindRow(r){const id=+r.dataset.id;let tm,long=false;
