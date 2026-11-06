@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.2 (Version 2.2) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.3 (Version 2.3) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -11,7 +11,7 @@
 /* ===== بخش ۱ | SECTION 1: استایل‌ها | Styles ===== */
 
 /* متغیرهای رنگ | Color Variables: رنگ‌های اصلی تیره تلگرام (dark theme colors) */
-:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22;--chatbg:#0a0a0c;--dotc:rgba(255,255,255,.09);--dotc2:rgba(255,255,255,.04);--dotc3:rgba(255,255,255,.05);--menu:rgba(40,40,42,.96);--pin:#0e0e10;--sec:#0b0b0c;--chip:#3a3a3c;--dsep:rgba(40,40,42,.85);--smalltx:rgba(255,255,255,.6)}
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22;--chatbg:#0a0a0c;--dotc:rgba(255,255,255,.09);--dotc2:rgba(255,255,255,.04);--dotc3:rgba(255,255,255,.05);--menu:rgba(40,40,42,.96);--pin:#0e0e10;--sec:#0b0b0c;--chip:#3a3a3c;--dsep:rgba(40,40,42,.85);--smalltx:rgba(255,255,255,.6);--prev:#a3a3a8;--snd:#e5e5e7}
 
 /* ریست پایه | Base Reset: حذف حاشیه‌ها و هایلایت لمس (no margin, no tap highlight) */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -85,8 +85,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* آیکون میوت | Mute Icon: کنار نام، خاکستری (grey, right after the name) */
 #clist .n .svg{display:inline-block;vertical-align:middle;margin-left:5px;color:var(--sub)}
 /* رنگ‌ها | Text Colors: پیش‌نمایش کمی خاکستری، نام فرستنده در گروه روشن‌تر (preview slightly grey, group sender lighter) */
-#clist .m,#ctlist .m{color:#a3a3a8}
-#clist .m.snd{color:#e5e5e7}
+#clist .m,#ctlist .m{color:var(--prev)}
+#clist .m.snd{color:var(--snd)}
 .row.pin{background:var(--pin)}
 .row .mid{flex:1;min-width:0;border-bottom:.5px solid var(--line);padding-bottom:8px;margin-bottom:-8px}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -255,7 +255,9 @@ html.light #login .pf{color:#000}
 #peek .pkh small{color:var(--sub);font-size:12px}
 #peekMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* تم روشن | Light Theme */
-html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);color-scheme:light}
+html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);--prev:#929297;--snd:#1c1c1e;color-scheme:light}
+/* آیکون عکس پروفایل در روز | Profile Photo Icon (Day): کاشی آبی روشن به‌جای سرمه‌ای تیره (light blue tile instead of dark navy) */
+html.light #chPhoto .ic{background:#d5e6ff!important}
 html.light #login input,html.light .inbar input{color:#000}
 html.light #tabbar{background:rgba(255,255,255,.92)}
 html.light .sec{background:#e9e9ee}
