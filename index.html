@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#000000">
+<meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
 <title>Link Messenger</title>
 <style>
 /* ===== بخش ۱ | SECTION 1: استایل‌ها | Styles ===== */
@@ -197,10 +198,14 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .opt svg{color:var(--blue)}
 #toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--card2);padding:10px 16px;border-radius:20px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s;font-size:14px;white-space:nowrap}
 #toast.on{opacity:1}
+/* توضیح پوشه‌ی آماده | Default Folder Note: ۲ پیکسل پایین‌تر از لبه‌ی کادر */
+#fe_info .cap{margin-top:-2px}
+/* پیام کوتاه | Toast Wrap: متن‌های بلند چند خطی می‌شوند */
+#toast{max-width:80%;white-space:normal;text-align:center}
 /* جهت نوشتن جستجو | Search Direction: خالی = وسط؛ فارسی از راست، انگلیسی از چپ شروع می‌شود */
 .search input:placeholder-shown{text-align:center}
-/* نشان خوانده‌نشده | Unread Badge: دایره‌ی ۲۵ پیکسلی (۶ بیشتر از قبل) با عدد خوانا */
-#clist .badge{height:25px;min-width:25px;border-radius:12.5px;line-height:25px;font-size:15px;top:2px}
+/* نشان خوانده‌نشده | Unread Badge: دایره‌ی ۲۱ پیکسلی با عدد خوانا */
+#clist .badge{height:21px;min-width:21px;border-radius:10.5px;line-height:21px;font-size:14px;top:4px}
 /* آواتار تب پایین | Tab Avatar: عکس پروفایل جای آیکون تنظیمات در نوار پایین */
 .tbav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;background:#8e8e93;background-size:cover}
 .tb.on .tbav{box-shadow:0 0 0 2px var(--blue)}
@@ -477,7 +482,7 @@ function show(id){S.subs=[];$$(".screen").forEach(s=>s.classList.toggle("on",s.i
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
 /* ورود | Login Action: فقط بخش قبل @ کافی است؛ بدون @ خودکار gmail.com اضافه می‌شود (prefix only, auto @gmail.com) */
-$("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;const nm=$("#nm").value.trim();if(!e||p.length<8||(S.signup&&!nm)){alert(S.signup?"Name, email and password (min 8 chars) required":"Email and password (min 8 chars) required");return}
+$("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;const nm=$("#nm").value.trim();if(!e||p.length<8||(S.signup&&!nm)){toast(S.signup?"Name, email and password (min 8 chars) required":"Email and password (min 8 chars) required");return}
  if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:S.signup?nm:e.split("@")[0]};
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
@@ -606,7 +611,7 @@ const saveCfg=()=>{try{localStorage.setItem("lk_cfg",JSON.stringify(CFG))}catch(
 const LANGS=[["en","English"],["fa","فارسی"]],ACC=["#2f8fff","#34c759","#ff9f0a","#af52de","#ff2d55","#30b0c7"];
 /* ترجمه | Persian Strings: فقط بخش تنظیمات (settings area only) */
 const FA={"Edit":"ویرایش","Change Profile Photo":"تغییر عکس پروفایل","Add Account":"افزودن حساب","My Profile":"پروفایل من","Proxy":"پروکسی","Disabled":"غیرفعال","Saved Messages":"پیام‌های ذخیره‌شده","Recent Calls":"تماس‌های اخیر","Devices":"دستگاه‌ها","Chat Folders":"پوشه‌های چت","Privacy and Security":"حریم خصوصی و امنیت","Data and Storage":"داده و حافظه","Appearance":"ظاهر","Language":"زبان","Log Out":"خروج","online":"آنلاین","Email":"ایمیل","Username":"نام کاربری","Birthday":"تاریخ تولد","Bio":"بیوگرافی","First Name":"نام","Last Name":"نام خانوادگی","Change Photo":"تغییر عکس","Edit Profile":"ویرایش پروفایل","Enter your name and add an optional profile photo.":"نام خود را وارد کنید و در صورت تمایل عکس پروفایل اضافه کنید.","Only your contacts can see your bio.":"فقط مخاطبین شما بیوگرافی را می‌بینند.","Only your contacts can see your birthday.":"فقط مخاطبین شما تاریخ تولد را می‌بینند.","Your email is used to log in and can't be changed here.":"ایمیل شما برای ورود استفاده می‌شود و از اینجا قابل تغییر نیست.","You can use a-z, 0-9 and underscores. Minimum length is 5 characters.":"می‌توانید از a-z، 0-9 و زیرخط استفاده کنید. حداقل ۵ کاراکتر.","All Chats":"همه چت‌ها","Personal":"شخصی","Groups":"گروه‌ها","Channels":"کانال‌ها","Tap a folder to open it in your chat list.":"روی یک پوشه بزنید تا در لیست چت‌ها باز شود.","Privacy":"حریم خصوصی","Control who can see your information.":"مشخص کنید چه کسی اطلاعات شما را ببیند.","Last Seen & Online":"آخرین بازدید و آنلاین","Profile Photo":"عکس پروفایل","Groups & Channels":"گروه‌ها و کانال‌ها","Everybody":"همه","My Contacts":"مخاطبین من","Nobody":"هیچ‌کس","Automatic Media Download":"دانلود خودکار رسانه","Photos":"عکس‌ها","Videos":"ویدیوها","Files":"فایل‌ها","Use Less Data for Calls":"مصرف داده کمتر در تماس","Clear Cache":"پاک کردن حافظه موقت","Cache cleared":"حافظه موقت پاک شد","Theme":"تم","Dark":"تیره","Light":"روشن","Accent Color":"رنگ تأکید","Name can't be empty":"نام نمی‌تواند خالی باشد","Username: at least 5 characters, only a-z, 0-9 and _":"نام کاربری: حداقل ۵ کاراکتر و فقط a-z، 0-9 و _"};
-Object.assign(FA,{"No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 8 characters":"رمز جدید باید حداقل ۸ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند."});
+Object.assign(FA,{"Cancel":"لغو","No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 8 characters":"رمز جدید باید حداقل ۸ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند."});
 const tr=t=>CFG.lang==="fa"&&FA[t]?FA[t]:t;
 let ED={};S.subs=[];
 function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
@@ -635,12 +640,16 @@ $("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
 $("#edPhoto").onclick=$("#ed_av").onclick=()=>pickPhoto(d=>{ED.photo=d;paintAv($("#ed_av"),{name:$("#ed_first").value||S.user.name,photo:d})});
 $("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
 $("#edOk").onclick=()=>{const u=S.user,nm=$("#ed_first").value.trim(),un=$("#ed_user").value.trim().replace(/^@/,"");
- if(!nm){alert(tr("Name can't be empty"));return}
- if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){alert(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}
+ if(!nm){toast(tr("Name can't be empty"));return}
+ if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){toast(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}
  Object.assign(u,{name:nm,last:$("#ed_last").value.trim(),bio:$("#ed_bio").value.trim(),bday:$("#ed_bday").value,username:un,photo:ED.photo||""});fillMe();closeSub()};
 $("#edLogout").onclick=()=>$("#logout").click();
 /* ردیف‌های منو | Menu Rows: هر ردیف صفحه خودش را باز می‌کند (each row opens its page) */
 $$("[data-go]").forEach(e=>e.onclick=()=>{const g=e.dataset.go;if(g==="saved"){S.fromSet=true;openChat(2);return}if(g==="pfile"){openEdit();return}if(g==="cpass")["#cp_old","#cp_new","#cp_rep"].forEach(q=>$(q).value="");renderVals();openSub(g)});
+/* تأیید و هشدار | Confirm & Alert: پنجره‌های خود مرورگر (confirm/alert) در برنامه‌ی نصب‌شده کار نمی‌کنند؛ جایگزین داخلی */
+function askConfirm(msg,okText,cb){const el=$("#pick");el.innerHTML=`<div class="phd">${tr(msg)}</div><div class="opt" data-ok="1" style="color:var(--red);justify-content:center">${tr(okText)}</div><div class="opt" style="justify-content:center">${tr("Cancel")}</div>`;
+ el.setAttribute("dir","ltr");el.classList.add("on");$("#pshade").style.display="block";
+ $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();if(o.dataset.ok)cb()})}
 /* پوشه‌ها | Folders: ساخت، حذف و پر کردن پوشه‌ها؛ پوشه‌های آماده (شخصی، گروه، کانال) هم قابل حذف و برگشت‌اند */
 const DEF_TABS=[["pv","P V","person"],["gp","Gap","group"],["ch","Channel","channel"]],DEF_NAME={pv:"Personal",gp:"Groups",ch:"Channels"};
 const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
@@ -656,8 +665,8 @@ function renderFolders(){
  $("#fldRec").innerHTML=DEF_TABS.filter(t=>CFG.hidden.includes(t[0])).map(t=>`<div class="item" data-fr="${t[0]}"><div class="ic" style="background:#2f8fff">${ic(t[2],18)}</div><span>${tr(DEF_NAME[t[0]])}</span><span class="rr" style="color:var(--blue)">${tr("Add")}</span></div>`).join("");
  $("#fldRecW").style.display=CFG.hidden.length?"":"none";
  $$("[data-fk]").forEach(e=>e.onclick=()=>openFolder(e.dataset.fk));
- $$("[data-fd]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const k=e.dataset.fd;if(!confirm(tr("Delete this folder?")))return;
-  if(k.startsWith("f_"))CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);saveCfg();renderFolders();renderChats()});
+ $$("[data-fd]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const k=e.dataset.fd;askConfirm("Delete this folder?","Delete Folder",()=>{
+  if(k.startsWith("f_"))CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);saveCfg();renderFolders();renderChats()})});
  $$("[data-fr]").forEach(e=>e.onclick=()=>{CFG.hidden=CFG.hidden.filter(x=>x!==e.dataset.fr);saveCfg();renderFolders();renderChats()})}
 /* باز کردن پوشه | Open Folder: صفحه‌ی ساخت یا ویرایش پوشه */
 function openFolder(k){const isNew=k==="new",def=!isNew&&!k.startsWith("f_"),f=isNew?null:CFG.folders.find(x=>"f_"+x.id===k);
@@ -671,13 +680,13 @@ function renderFeChats(){$("#feChats").innerHTML=CHATS.map(c=>`<div class="item"
 $("#fNew").onclick=()=>openFolder("new");$("#feX").onclick=closeSub;
 $$("[data-qa]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.qa).forEach(x=>FE.chats.add(x.id));renderFeChats()});
 /* ذخیره پوشه | Save Folder */
-$("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){alert(tr("Folder name can't be empty"));return}
+$("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){toast(tr("Folder name can't be empty"));return}
  const f=CFG.folders.find(x=>x.id===FE.id);if(f){f.name=name;f.chats=[...FE.chats]}else CFG.folders.push({id:Date.now().toString(36),name,chats:[...FE.chats]});
  saveCfg();renderFolders();renderChats();closeSub()};
 /* حذف پوشه | Delete Folder: پوشه‌ی ساخته‌شده پاک می‌شود، پوشه‌ی آماده مخفی می‌شود (و در پیشنهادی‌ها می‌ماند) */
-$("#feDel").onclick=()=>{if(!confirm(tr("Delete this folder?")))return;
+$("#feDel").onclick=()=>askConfirm("Delete this folder?","Delete Folder",()=>{
  if(FE.def)CFG.hidden.push(FE.k);else CFG.folders=CFG.folders.filter(x=>x.id!==FE.id);
- saveCfg();renderFolders();renderChats();closeSub()};
+ saveCfg();renderFolders();renderChats();closeSub()});
 /* حافظه‌ی گفتگوها | Chat Cache: حجم داده‌ی هر گفتگو روی دستگاه (تخمین از پیام‌های ذخیره‌شده) */
 /* رسانه‌ی کش‌شده | Media Cache: فقط عکس، ویدیو، پیام صوتی و فایل؛ پیام‌های متنی هرگز جزو کش نیستند و با پاک کردن کش حذف نمی‌شوند */
 const fmtSize=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB";
@@ -717,7 +726,7 @@ function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
  m2.innerHTML=rows.map(([k,l,on])=>`<div data-k="${k}"><span>${l}</span>${on?ic("check",20):""}</div>`).join("")+`<div data-new="1" style="color:var(--blue)"><span>${tr("Create New Folder")}</span>${ic("plus",20)}</div>`;
- m2.style.display="block";const mt=parseFloat(m.style.top)||0;m2.style.top=Math.max(70,mt+m.offsetHeight-m2.offsetHeight)+"px";
+ m2.style.display="block";const rt=$("#menu [data-i='0']").getBoundingClientRect().top;m2.style.top=Math.max(70,Math.min(rt,innerHeight-m2.offsetHeight-20))+"px";
  $$("#menu2 div").forEach(d=>d.onclick=()=>{
   if(d.dataset.new){closeMenu();openFolder("new");FE.chats.add(c.id);renderFeChats();return}
   const k=d.dataset.k;
@@ -734,9 +743,9 @@ function renderBgs(){const ph=CFG.bg.t==="photo"&&CFG.bg.photo;
 $("#bgPick").onclick=()=>pickPhoto(d=>{CFG.bg={t:"photo",photo:d};saveCfg();applyBg();renderBgs()},true);
 /* تغییر رمز | Change Password: رمز فعلی را چک می‌کند و رمز جدید را (فقط داخل برنامه) جایگزین می‌کند */
 $("#cpOk").onclick=()=>{const u=S.user;if(!u)return;const o=$("#cp_old").value,n=$("#cp_new").value,r=$("#cp_rep").value;
- if(o!==u.pass){alert(tr("Current password is wrong"));return}
- if(n.length<8){alert(tr("New password must be at least 8 characters"));return}
- if(n!==r){alert(tr("Passwords don't match"));return}
+ if(o!==u.pass){toast(tr("Current password is wrong"));return}
+ if(n.length<8){toast(tr("New password must be at least 8 characters"));return}
+ if(n!==r){toast(tr("Passwords don't match"));return}
  u.pass=n;toast("Password changed");closeSub()};
 /* انتخاب | Choice Sheet */
 function pick(title,cur,cb){const el=$("#pick");el.innerHTML=`<div class="phd">${tr(title)}</div>`+["Everybody","My Contacts","Nobody"].map(v=>`<div class="opt" data-v="${v}"><span>${tr(v)}</span>${v===cur?ic("check",20):""}</div>`).join("");
