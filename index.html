@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 0.8 (Version 0.8) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 1.3 (Version 1.3) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -50,13 +50,15 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 .wrap .list{position:absolute;inset:0;padding-top:100px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 /* سربرگ شناور | Floating Header: با مقدار اسکرول بالا می‌رود (moves up 1:1 with scroll, no layout change = no jumps) */
 .hdr{position:absolute;top:0;left:0;right:0;z-index:5;background:var(--bg);padding-bottom:4px;will-change:transform}
+/* سربرگ چت‌ها شفاف | Transparent Chats Header: پس‌زمینه نوار جستجو و پوشه‌ها شفاف است (search + folder bar background transparent) */
+#hdrChats{background:transparent}
 /* آیکون | Icon: اندازه و رنگ آیکون‌های SVG (SVG icon sizing, inherits text color) */
 i[data-ic]{display:inline-flex;font-style:normal}
 .svg{display:block}
 .search input{background:none;border:0;outline:0;color:var(--txt);font-size:16px;width:60%;text-align:center;-webkit-user-select:text;user-select:text}
 
 /* تب‌های پوشه | Folder Tabs: همه / شخصی / گروه / کانال (All/PV/Gap/Channel) */
-.tabs{display:flex;gap:4px;margin:4px 12px;background:none;border-radius:20px;padding:3px}
+.tabs{display:flex;gap:4px;margin:4px 12px;background:var(--card);border-radius:20px;padding:3px}
 /* تب پوشه | Folder Tab: ارتفاع ثابت ۳۴ پیکسل (۵ بیشتر از قبل)، حتی با آیکون (fixed 34px height, 5px taller) */
 .tab{flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s;overflow:hidden}
 .tab .svg{flex:none}
@@ -89,8 +91,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .m{color:var(--sub);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .row .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;color:var(--sub);min-width:46px}
-/* نشان خوانده‌نشده | Unread Badge: تک‌رقمی دایره (۱۴×۱۴)، چندرقمی کشیده؛ عدد دقیقاً وسط؛ میوت‌شده خاکستری (1 digit = circle 14px, more digits = stretched pill, number centered, muted = grey) */
-.badge{display:inline-flex;align-items:center;justify-content:center;height:14px;min-width:14px;padding:0;border-radius:7px;background:#6c6c70;color:#fff;font-size:11px;font-weight:600;line-height:14px}
+/* نشان خوانده‌نشده | Unread Badge: تک‌رقمی دایره (۱۹×۱۹، ۵ پیکسل پایین‌تر)، چندرقمی کشیده؛ عدد دقیقاً وسط؛ میوت‌شده خاکستری (1 digit = circle 19px, shifted 5px down, more digits = stretched pill, number centered, muted = grey) */
+.badge{display:inline-flex;align-items:center;justify-content:center;height:19px;min-width:19px;padding:0;border-radius:9.5px;background:#6c6c70;color:#fff;font-size:13px;font-weight:600;line-height:19px;position:relative;top:5px}
 .badge.w{padding:0 5px}
 .badge.bl{background:var(--blue)}
 
@@ -138,6 +140,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
 .b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+/* جداکننده تاریخ | Date Separator: کپسول وسط بالای هر روز گفتگو (centered date capsule, sticky at top) */
+.dsep{align-self:center;position:sticky;top:4px;z-index:2;background:rgba(40,40,42,.85);border-radius:12px;padding:3px 12px;font-size:13px;color:#fff;margin:4px 0}
 .pinbar{margin:4px 12px;background:var(--card);border-radius:14px;padding:7px 12px;font-size:13px;display:flex;justify-content:space-between}
 .pinbar span{color:var(--blue);font-weight:600}
 #chat.kb .inbar{padding-bottom:10px}
@@ -154,11 +158,11 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .item .r{margin-left:auto;color:var(--sub)}
 
 /* ورود | Login Page: فرم ایمیل و رمز (email + password form) */
-#login{justify-content:center;align-items:center;gap:12px;padding:30px}
+/* چیدمان بالا | Top Layout: محتوا از بالا شروع می‌شود تا زیر کیبورد پنهان نشود (content starts near the top so the keyboard never covers it) */
+#login{justify-content:flex-start;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 7vh) 30px 30px}
 #login input{width:100%;max-width:340px;background:var(--card);border:0;outline:0;border-radius:12px;height:46px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
 #login button{width:100%;max-width:340px;height:46px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-size:16px;font-weight:600}
 #login a{color:var(--blue);font-size:14px}
-#login p{color:var(--sub);font-size:13px;max-width:340px;text-align:center}
 </style>
 </head>
 <body>
@@ -170,8 +174,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 <div class="screen on" id="login">
   <div class="av xl" style="background:linear-gradient(#4aa8ff,#1a6bff)"><i data-ic="link" data-s="46"></i></div>
   <h2 id="ltitle">Link Messenger</h2>
-  <p>Enter only the part before @ (e.g. shami). The app assumes @gmail.com.</p>
-  <input id="em" name="lm-e" placeholder="Email (before @ is enough)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email">
+  <input id="nm" name="lm-n" placeholder="Name" autocomplete="off" autocorrect="off" spellcheck="false">
+  <input id="em" name="lm-e" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email">
   <input id="pw" name="lm-p" type="password" placeholder="Password" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
   <button id="lbtn">Sign Up</button>
   <a id="lsw">Already have an account? Log in</a>
@@ -268,7 +272,7 @@ camera:"M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 100-8 4 4 0 000 8z",bookmark:"M6 3h
 phone:"M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z",devices:"M4 6h12v9H4zM2 18h16M19 9h3v10h-3z",
 folder:"M3 6h6l2 2h10v11H3z",check:"M5 12l5 5 9-10",trash:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",grid:"M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2z",
 plus:"M12 5v14M5 12h14",globe:"M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
-t1:"M5 12.5l4.5 4.5L19 7",t2:"M1 12.5l4.5 4.5L15 7M9 15.5l2 1.5L21 7"};
+mic:"M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",t1:"M5 12.5l4.5 4.5L19 7",t2:"M1 12.5l4.5 4.5L15 7M9 15.5l2 1.5L21 7"};
 /* ساخت آیکون | Icon Builder: ic(نام، اندازه) یک SVG برمی‌گرداند (returns inline SVG, color = current text color) */
 const ic=(n,z=20)=>`<svg class="svg" viewBox="0 0 24 24" width="${z}" height="${z}" fill="${n==="send"?"currentColor":"none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
 /* ردیف آبی | Blue Rows: New Group / New Channel / New Contact بالای لیست (top action rows, same order as video) */
@@ -292,7 +296,7 @@ let CHATS=[
 /* مخاطبین | Contacts Data: نام و وضعیت آنلاین (name and last-seen text) */
 let PEOPLE=[["Adrina","last seen recently"],["Ailin","last seen recently"],["Amir Alinezhad","last seen recently"],["Artin","last seen 05/26/25"],["Asal","last seen recently"],["Bazdar","last seen recently"],["Melika","online"],["Saman","online"],["Roj","last seen 5 minutes ago"],["Salma","last seen 15 minutes ago"]].sort((a,b)=>a[0].localeCompare(b[0]));
 /* پیام‌های نمونه | Sample Messages: گفتگوی نمایشی (demo conversation) */
-const SAMPLE=[["ot","بلو نفسمم دیل وقتهه 😍","23:11"],["me","شبت بخیرررررر 💗","23:11"],["ot","چشم مامانی من 💋 🤍🤍","23:11"],["me","بمیرم برات 😭 شب توام ✨❤️","23:11"]];
+const SAMPLE=[["ot","بلو نفسمم دیل وقتهه 😍","23:11",2],["me","شبت بخیرررررر 💗","23:11",2],["ot","چشم مامانی من 💋 🤍🤍","23:11",0],["me","بمیرم برات 😭 شب توام ✨❤️","23:11",0]];
 
 /* ---- ۳.۲ وضعیت برنامه | 3.2 App State ---- */
 /* وضعیت | State: تب فعلی، حالت ویرایش، انتخاب‌ها، حالت ثبت‌نام (current folder, edit mode, selected ids, signup mode) */
@@ -310,13 +314,13 @@ function show(id){$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(i
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
 /* ورود | Login Action: فقط بخش قبل @ کافی است؛ بدون @ خودکار gmail.com اضافه می‌شود (prefix only, auto @gmail.com) */
-$("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;if(!e||p.length<4){alert("Email and password (min 4 chars) required");return}
- if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:e.split("@")[0]};
+$("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;const nm=$("#nm").value.trim();if(!e||p.length<4||(S.signup&&!nm)){alert(S.signup?"Name, email and password (min 4 chars) required":"Email and password (min 4 chars) required");return}
+ if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:S.signup?nm:e.split("@")[0]};
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
  renderChats();renderContacts();show("chats")};
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
-$("#lsw").onclick=()=>{S.signup=!S.signup;$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
+$("#lsw").onclick=()=>{S.signup=!S.signup;$("#nm").style.display=S.signup?"block":"none";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
 $("#logout").onclick=()=>{S.user=null;show("login")};
 
@@ -362,7 +366,9 @@ $("#editBtn").onclick=()=>{S.edit=!S.edit;S.sel.clear();$("#editBtn").textConten
 /* بروزرسانی دکمه‌ها | Update Edit Buttons: Read All ↔ Read، Delete (label depends on selection) */
 function updEdit(){$("#readAll").textContent=S.sel.size?"Read":"Read All";$("#delSel").textContent=S.sel.size?`Delete (${S.sel.size})`:"Delete"}
 $("#readAll").onclick=()=>{CHATS.forEach(c=>{if(!S.sel.size||S.sel.has(c.id))c.un=0});renderChats()};
-$("#delSel").onclick=()=>{if(!S.sel.size)return;CHATS=CHATS.filter(c=>!S.sel.has(c.id));S.sel.clear();renderChats();updEdit()};
+/* حذف و خروج | Delete & Exit: بعد از حذف، حالت انتخاب بسته می‌شود (leave edit mode after deleting) */
+function exitEdit(){S.edit=false;S.sel.clear();$("#editBtn").textContent="Edit";$("#editbar").style.display="none";$("#tabbar").style.display="flex";renderChats();updEdit()}
+$("#delSel").onclick=()=>{if(!S.sel.size)return;CHATS=CHATS.filter(c=>!S.sel.has(c.id));exitEdit()};
 
 /* ---- ۳.۸ مخاطبین | 3.8 Contacts ---- */
 /* رندر مخاطبین | Render Contacts: لیست با وضعیت آنلاین/آخرین بازدید (list with last seen) */
@@ -386,15 +392,21 @@ $("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
 function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
  $("#cname").textContent=c.n;$("#cstat").textContent=c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
- $("#msgs").innerHTML="";(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).forEach(s=>addMsg(s[0],s[1],s[2]));
+ S.lastD=null;$("#msgs").innerHTML="";(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
  $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none"}
 /* افزودن حباب | Add Bubble: راست=من، چپ=طرف مقابل (right=me, left=other) */
-function addMsg(w,t,tm){const d=document.createElement("div");d.className="b "+w;d.innerHTML=`${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
+/* برچسب روز | Day Label: «امروز» برای امروز؛ برای قدیمی‌تر ماه و روز شمسی (Today, or Jalali month + day) */
+function dayLabel(n){if(n===0)return "امروز";const f=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",day:"numeric"}).formatToParts(new Date(Date.now()-n*864e5));
+ return f.find(x=>x.type==="month").value+" "+f.find(x=>x.type==="day").value}
+function addMsg(w,t,tm,n=0){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w;d.innerHTML=`${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
-function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";
+function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
  setTimeout(()=>addMsg("ot","👍",now),900)}
-$("#send").onclick=send;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
+/* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
+function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim();$("#send").classList.toggle("send",has);$("#send").innerHTML=ic(has?"send":S.rec==="voice"?"mic":"video",20)}
+$("#send").onclick=()=>{if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
+$("#mi").oninput=updSend;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
 $("#back").onclick=()=>{$("#chat").classList.remove("on");show("chats");renderChats()};
 
@@ -421,7 +433,7 @@ window.addEventListener("scroll",()=>window.scrollTo(0,0));
 
 /* ---- ۳.۱۳ راه‌اندازی آیکون‌ها | 3.13 Icon Init ---- */
 /* جایگذاری آیکون | Fill Icons: همه عنصرهای data-ic با SVG پر می‌شوند (fills static icon slots) */
-$$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));
+$$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend();
 </script>
 </body>
 </html>
