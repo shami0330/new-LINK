@@ -179,7 +179,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .fi{padding:10px 14px;border-bottom:.5px solid var(--line)}
 .fi small{display:block;color:var(--sub);font-size:13px;margin-bottom:2px}
 .fi div{overflow-wrap:anywhere}
-.bl{color:var(--blue)}
+.pbl{color:var(--blue)}
 .fld{width:100%;background:none;border:0;outline:0;color:var(--txt);font-size:16px;padding:13px 14px;-webkit-user-select:text;user-select:text}
 .fld::placeholder{color:var(--sub)}
 .dt{background:none;border:0;outline:0;color:var(--txt);font-size:16px;margin-inline-start:auto;color-scheme:dark}
@@ -199,8 +199,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #toast.on{opacity:1}
 /* جهت نوشتن جستجو | Search Direction: خالی = وسط؛ فارسی از راست، انگلیسی از چپ شروع می‌شود */
 .search input:placeholder-shown{text-align:center}
-/* نشان خوانده‌نشده | Unread Dot: نقطه‌ی ساده بدون عدد */
-#clist .badge{height:12px;min-width:12px;border-radius:50%;top:7px}
+/* نشان خوانده‌نشده | Unread Badge: دایره‌ی ۲۵ پیکسلی (۶ بیشتر از قبل) با عدد خوانا */
+#clist .badge{height:25px;min-width:25px;border-radius:12.5px;line-height:25px;font-size:15px;top:2px}
 /* آواتار تب پایین | Tab Avatar: عکس پروفایل جای آیکون تنظیمات در نوار پایین */
 .tbav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;background:#8e8e93;background-size:cover}
 .tb.on .tbav{box-shadow:0 0 0 2px var(--blue)}
@@ -299,8 +299,8 @@ html.light .dt{color-scheme:light}
   <div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="pill" id="pfEdit" data-t="Edit">Edit</div></div>
   <div class="body"><div class="ph"><div class="av xl" id="pf_av" style="margin:auto"></div><h2 id="pf_name" dir="auto" style="margin-top:10px"></h2><div style="color:var(--sub);font-size:14px;margin-top:2px" data-t="online">online</div></div>
     <div class="card" style="margin-top:18px">
-      <div class="fi"><small data-t="Email">Email</small><div class="bl" id="pf_email" dir="ltr"></div></div>
-      <div class="fi"><small data-t="Username">Username</small><div class="bl" id="pf_user" dir="ltr"></div></div>
+      <div class="fi"><small data-t="Email">Email</small><div class="pbl" id="pf_email" dir="ltr"></div></div>
+      <div class="fi"><small data-t="Username">Username</small><div class="pbl" id="pf_user" dir="ltr"></div></div>
       <div class="fi" id="pf_bday_w"><small data-t="Birthday">Birthday</small><div id="pf_bday"></div></div>
       <div class="fi" id="pf_bio_w"><small data-t="Bio">Bio</small><div id="pf_bio" dir="auto"></div></div>
     </div></div>
@@ -502,7 +502,7 @@ function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on)}
   <div class="mid"><div class="n">${c.n}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
   <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
-  <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"}"></span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
+  <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
  $$(".row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
 function bindRow(r){const id=+r.dataset.id;let tm,long=false;
