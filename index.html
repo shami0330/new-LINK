@@ -202,6 +202,12 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #fe_info .cap{margin-top:-2px}
 /* پیام کوتاه | Toast Wrap: متن‌های بلند چند خطی می‌شوند */
 #toast{max-width:80%;white-space:normal;text-align:center}
+/* فیلد بدون پیشنهاد | Plain Field: به‌جای input از کادر ساده‌ی نوشتنی استفاده می‌شود تا مرورگر هیچ پیشنهاد (رمز، ایمیل، اسم) نشان ندهد */
+.pf,.fld[contenteditable]{-webkit-user-select:text;user-select:text;white-space:nowrap;overflow:hidden;outline:0;cursor:text}
+#login .pf{width:100%;max-width:340px;background:var(--card);border-radius:12px;height:46px;line-height:46px;padding:0 14px;color:#fff;font-size:16px;text-align:start;flex:none}
+html.light #login .pf{color:#000}
+.pf:empty::before,.fld[contenteditable]:empty::before{content:attr(data-ph);color:var(--sub);pointer-events:none}
+.fld[contenteditable]{line-height:1.3}
 /* جهت نوشتن جستجو | Search Direction: خالی = وسط؛ فارسی از راست، انگلیسی از چپ شروع می‌شود */
 .search input:placeholder-shown{text-align:center}
 /* نشان خوانده‌نشده | Unread Badge: دایره‌ی ۲۱ پیکسلی با عدد خوانا */
@@ -593,7 +599,7 @@ function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(
 
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
-["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{if(!(ev.target.tagName==="INPUT"&&e==="selectstart"))ev.preventDefault()},{passive:false}));
+["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{const t=ev.target.nodeType===1?ev.target:ev.target.parentElement;if(!(e==="selectstart"&&t&&(t.tagName==="INPUT"||t.closest("[contenteditable]"))))ev.preventDefault()},{passive:false}));
 /* هماهنگی با کیبورد | Keyboard Sync: پس‌زمینه ثابت می‌ماند؛ فقط صفحه چت (نوار پیام و پیام‌ها) همراه کیبورد بالا می‌آید (background never moves; only chat page resizes with keyboard) */
 const vv=window.visualViewport;
 function fit(){window.scrollTo(0,0);const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);const c=$("#chat");c.style.bottom=kb>0?(kb+5)+"px":"0";c.classList.toggle("kb",kb>0);$("#msgs").scrollTop=1e9}
@@ -781,6 +787,20 @@ applyTheme();applyBg();applyLang();
 /* بدون پیشنهاد | No Suggestions: همه‌ی کادرهای نوشتن (حتی کادرهای تازه) پیشنهاد جیمیل، اسم، پر کردن خودکار و اصلاح خودکار ندارند (turns off autofill, autocorrect and suggestions on every input) */
 function noSuggest(root){(root.querySelectorAll?root.querySelectorAll("input,textarea"):[]).forEach(i=>{i.setAttribute("autocomplete","off");i.setAttribute("autocorrect","off");i.setAttribute("autocapitalize","off");i.setAttribute("spellcheck","false");i.setAttribute("data-lpignore","true");i.setAttribute("data-form-type","other")})}
 noSuggest(document);new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches&&n.matches("input,textarea"))noSuggest({querySelectorAll:()=>[n]});noSuggest(n)}}))).observe(document.body,{childList:true,subtree:true});
+
+/* کادر ساده‌ی نوشتن | Plain Field: ورود، پروفایل، رمز و نام پوشه کادر نوشتنی ساده‌اند (نه input)؛ با ویژگی value مثل قبل خوانده و نوشته می‌شوند */
+function plainField(el){const d=document.createElement("div");
+ ["id","class","dir","style","data-p"].forEach(a=>{if(el.hasAttribute(a))d.setAttribute(a,el.getAttribute(a))});
+ d.setAttribute("contenteditable","true");d.setAttribute("role","textbox");d.setAttribute("spellcheck","false");d.setAttribute("autocorrect","off");d.setAttribute("autocapitalize","off");d.setAttribute("enterkeyhint","done");
+ if(d.id.startsWith("em")||d.id==="nm"||d.id==="pw")d.classList.add("pf");
+ d.dataset.ph=el.placeholder||"";const max=+el.getAttribute("maxlength")||0;
+ Object.defineProperty(d,"value",{get(){return d.textContent},set(v){d.textContent=v}});
+ Object.defineProperty(d,"placeholder",{get(){return d.dataset.ph},set(v){d.dataset.ph=v}});
+ d.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();d.blur()}});
+ d.addEventListener("paste",e=>{e.preventDefault();document.execCommand("insertText",false,(e.clipboardData.getData("text")||"").replace(/\s+/g," "))});
+ d.addEventListener("input",()=>{if(max&&d.textContent.length>max){d.textContent=d.textContent.slice(0,max);const r=document.createRange();r.selectNodeContents(d);r.collapse(false);const g=getSelection();g.removeAllRanges();g.addRange(r)}if(!d.textContent)d.innerHTML=""});
+ el.replaceWith(d)}
+["nm","em","pw","ed_first","ed_last","ed_bio","ed_user","cp_old","cp_new","cp_rep","fe_name"].forEach(i=>plainField($("#"+i)));
 
 /* ---- ۳.۱۳ راه‌اندازی آیکون‌ها | 3.13 Icon Init ---- */
 /* جایگذاری آیکون | Fill Icons: همه عنصرهای data-ic با SVG پر می‌شوند (fills static icon slots) */
