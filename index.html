@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 0.3 (Version 0.3) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 0.4 (Version 0.4) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -14,6 +14,10 @@
 
 /* ریست پایه | Base Reset: حذف حاشیه‌ها و هایلایت لمس (no margin, no tap highlight) */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* بدون نوار اسکرول | No Scrollbar: نوار اسکرول همه‌جا حذف شده (scrollbar hidden everywhere) */
+*{scrollbar-width:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
 
 /* بدنه | Body: پس‌زمینه سیاه، فونت سیستم، چینش همیشه چپ‌به‌راست (black bg, system font, always LTR) */
 html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
@@ -39,9 +43,13 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 .title{display:flex;align-items:center;gap:6px;font-weight:700;font-size:17px;background:var(--card);border-radius:20px;padding:0 14px;height:38px}
 
 /* جستجو | Search Box: نوار جستجوی خاکستری (grey search bar) */
-.search{margin:6px 12px;background:var(--card);border-radius:12px;height:38px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--sub);overflow:hidden;transition:height .25s,margin .25s,opacity .25s}
+.search{margin:6px 12px;background:var(--card);border-radius:12px;height:38px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--sub);overflow:hidden}
 /* پنهان شدن جستجو | Search Hide: با اسکرول به بالا کوچک و محو می‌شود (collapses and fades on scroll) */
-.search.hide{height:0;margin-top:0;margin-bottom:0;opacity:0}
+/* ناحیه لیست | List Wrap: لیست کل ناحیه را می‌گیرد و سربرگ (جستجو + پوشه‌ها) روی آن شناور است (list fills area, header floats above it) */
+.wrap{position:relative;flex:1;overflow:hidden}
+.wrap .list{position:absolute;inset:0;padding-top:100px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* سربرگ شناور | Floating Header: با مقدار اسکرول بالا می‌رود (moves up 1:1 with scroll, no layout change = no jumps) */
+.hdr{position:absolute;top:0;left:0;right:0;z-index:5;background:var(--bg);padding-bottom:4px;will-change:transform}
 /* آیکون | Icon: اندازه و رنگ آیکون‌های SVG (SVG icon sizing, inherits text color) */
 i[data-ic]{display:inline-flex;font-style:normal}
 .svg{display:block}
@@ -49,8 +57,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 
 /* تب‌های پوشه | Folder Tabs: همه / شخصی / گروه / کانال (All/PV/Gap/Channel) */
 .tabs{display:flex;gap:4px;margin:4px 12px;background:var(--card);border-radius:20px;padding:3px}
-/* تب پوشه | Folder Tab: ارتفاع ثابت ۲۹ پیکسل، حتی با آیکون (fixed 29px height even with icons) */
-.tab{flex:1;height:29px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s;overflow:hidden}
+/* تب پوشه | Folder Tab: ارتفاع ثابت ۳۴ پیکسل (۵ بیشتر از قبل)، حتی با آیکون (fixed 34px height, 5px taller) */
+.tab{flex:1;height:34px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s;overflow:hidden}
 .tab .svg{flex:none}
 .tab.on{background:var(--card2)}
 .tab b{background:#3a3a3c;border-radius:9px;padding:1px 6px;font-size:11px;margin-left:3px}
@@ -61,6 +69,10 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* ردیف چت | Chat Row: آواتار + نام + پیام + ساعت (avatar, name, message, time) */
 .row{display:flex;align-items:center;gap:12px;padding:8px 14px;position:relative;transition:background .15s,transform .2s}
 .row:active{background:var(--card)}
+/* ردیف چت‌ها | Chat List Row: ارتفاع ۳ پیکسل بیشتر و آواتار ۲ پیکسل بزرگ‌تر (row +3px, avatar 56px = +2px) */
+#clist .row{padding:8.5px 14px}
+#clist .row .mid{padding-bottom:8.5px;margin-bottom:-8.5px}
+#clist .av{width:56px;height:56px}
 .row.pin{background:#0e0e10}
 .row .mid{flex:1;min-width:0;border-bottom:.5px solid var(--line);padding-bottom:8px;margin-bottom:-8px}
 .row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -159,16 +171,22 @@ i[data-ic]{display:inline-flex;font-style:normal}
     <div class="title"><i data-ic="link" data-s="18"></i>Chats</div>
     <div class="pill" id="compose" style="background:var(--blue)"><i data-ic="compose" data-s="20"></i></div>
   </div>
-  <div class="search" id="sbChats"><input id="q" placeholder="Search" autocomplete="off" autocorrect="off" spellcheck="false" oninput="renderChats()"></div>
-  <div class="tabs" id="tabs"></div>
-  <div class="list" id="clist"></div>
+  <div class="wrap">
+    <div class="hdr" id="hdrChats">
+      <div class="search" id="sbChats"><input id="q" placeholder="Search" autocomplete="off" autocorrect="off" spellcheck="false" oninput="renderChats()"></div>
+      <div class="tabs" id="tabs"></div>
+    </div>
+    <div class="list" id="clist"></div>
+  </div>
 </div>
 
 <!-- مخاطبین | Contacts Screen -->
 <div class="screen" id="contacts">
   <div class="top"><div class="pill">Sort</div><div class="title" style="background:none">Contacts</div><div class="pill"><i data-ic="plus" data-s="20"></i></div></div>
-  <div class="search" id="sbContacts">Search</div>
-  <div class="list" id="ctlist"></div>
+  <div class="wrap">
+    <div class="hdr" id="hdrContacts"><div class="search" id="sbContacts">Search</div></div>
+    <div class="list" id="ctlist"></div>
+  </div>
 </div>
 
 <!-- تنظیمات | Settings Screen -->
@@ -204,7 +222,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 </div>
 
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
-<div id="tabbar">
+<div id="tabbar" style="display:none">
   <div class="tb" data-s="contacts"><i data-ic="person" data-s="24"></i>Contacts</div>
   <div class="tb on" data-s="chats"><i data-ic="chat" data-s="24"></i>Chats</div>
   <div class="tb" data-s="settings"><i data-ic="gear" data-s="24"></i>Settings</div>
@@ -275,7 +293,7 @@ const av=(n,c,on,cls="")=>`<div class="av ${cls}" style="background:${c}">${n.tr
 const colOf=n=>`hsl(${[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 55% 50%)`;
 /* صفحه | Show Screen: فقط یک صفحه نمایش داده می‌شود و تب فعال عوض می‌شود (show one screen, update active tab) */
 function show(id){$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
- $("#tabbar").style.display=(id==="chat"||id==="login")?"none":"flex";}
+ $("#tabbar").style.display=(id==="chat"||id==="login")?"none":"flex";if(typeof padLists==="function")padLists();}
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
 /* ورود | Login Action: فقط بخش قبل @ کافی است؛ بدون @ خودکار gmail.com اضافه می‌شود (prefix only, auto @gmail.com) */
@@ -304,7 +322,7 @@ function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
   <div class="mid"><div class="n">${c.n}${c.mute?" "+ic("mute",13):""}</div><div class="m">${c.m}</div></div>
   <div class="meta"><span>${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</span>
   ${c.un?`<span class="badge ${c.mute?"":"b"}">${c.un}</span>`:c.pin?ic("pin",15):"<span></span>"}</div></div>`).join("");
- $$(".row").forEach(bindRow)}
+ $$(".row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
 function bindRow(r){const id=+r.dataset.id;let tm,long=false;
  const start=()=>{long=false;tm=setTimeout(()=>{long=true;if(!S.edit)openMenu(id,r)},450)};
@@ -371,15 +389,17 @@ $("#back").onclick=()=>{$("#chat").classList.remove("on");show("chats");renderCh
 /* تب‌های پایین | Bottom Tabs: جابجایی بین مخاطبین/چت‌ها/تنظیمات (switch screens) */
 $$(".tb").forEach(t=>t.onclick=()=>show(t.dataset.s));
 
-/* ---- ۳.۱۲ جستجوی جمع‌شونده | 3.12 Collapsing Search ---- */
-/* جمع شدن جستجو | Collapse On Scroll: با اسکرول به پایین محو و بالا می‌رود؛ با رسیدن به ابتدای لیست دوباره باز می‌شود (hides while scrolling down, shows again at list top) */
-function collapse(list,bar){let last=0;list.addEventListener("scroll",()=>{const y=list.scrollTop;if(y>last&&y>30)bar.classList.add("hide");else if(y<=0)bar.classList.remove("hide");last=y},{passive:true})}
-collapse($("#clist"),$("#sbChats"));collapse($("#ctlist"),$("#sbContacts"));
+/* ---- ۳.۱۲ سربرگ شناور | 3.12 Floating Header ---- */
+/* اتصال به اسکرول | Link To Scroll: جستجو هم‌زمان با انگشت بالا می‌رود و محو می‌شود، پوشه‌ها بالا می‌چسبند؛ با رسیدن به ابتدای لیست دوباره کامل دیده می‌شود (search moves up with the finger and fades, folders stick on top, full again at list top) */
+const SH=50;
+function linkHdr(list,hdr,bar){list.addEventListener("scroll",()=>{const y=Math.max(0,Math.min(list.scrollTop,SH));hdr.style.transform=`translate3d(0,${-y}px,0)`;bar.style.opacity=1-y/SH},{passive:true})}
+linkHdr($("#clist"),$("#hdrChats"),$("#sbChats"));linkHdr($("#ctlist"),$("#hdrContacts"),$("#sbContacts"));
+/* فاصله بالای لیست | List Top Padding: برابر ارتفاع سربرگ تا لیست زیر آن شروع شود (list starts right below header) */
+function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{$(l).style.paddingTop=$(h).offsetHeight+"px"})}
 
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
 ["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{if(!(ev.target.tagName==="INPUT"&&e==="selectstart"))ev.preventDefault()},{passive:false}));
-let lt=0;document.addEventListener("touchend",e=>{const n=Date.now();if(n-lt<300&&e.target.tagName!=="INPUT")e.preventDefault();lt=n},{passive:false});
 /* هماهنگی با کیبورد | Keyboard Sync: پس‌زمینه ثابت می‌ماند؛ فقط صفحه چت (نوار پیام و پیام‌ها) همراه کیبورد بالا می‌آید (background never moves; only chat page resizes with keyboard) */
 const vv=window.visualViewport;
 function fit(){window.scrollTo(0,0);const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);const c=$("#chat");c.style.bottom=kb>0?(kb+5)+"px":"0";c.classList.toggle("kb",kb>0);$("#msgs").scrollTop=1e9}
