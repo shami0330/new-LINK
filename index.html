@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 1.3 (Version 1.3) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 1.9 (Version 1.9) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -162,6 +162,10 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* چیدمان بالا | Top Layout: محتوا از بالا شروع می‌شود تا زیر کیبورد پنهان نشود (content starts near the top so the keyboard never covers it) */
 #login{justify-content:flex-start;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 7vh) 30px 30px}
 #login input{width:100%;max-width:340px;background:var(--card);border:0;outline:0;border-radius:12px;height:46px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
+/* پسورد و چشم | Password Eye: آیکون چشم داخل فیلد، سمت راست (eye icon inside the field, right side) */
+.pwrap{position:relative;width:100%;max-width:340px}
+.pwrap input{padding-right:48px}
+#pwEye{position:absolute;right:0;top:0;height:46px;width:48px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
 #login button{width:100%;max-width:340px;height:46px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-size:16px;font-weight:600}
 #login a{color:var(--blue);font-size:14px}
 
@@ -193,6 +197,9 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #pshade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:45}
 #pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 14px);transform:translateY(110%);transition:transform .25s}
 #pick.on{transform:none}
+/* پنجره تأیید کپسولی | Confirm Capsule: پیام تأیید وسط صفحه به شکل کپسول (confirm dialog centered as a capsule) */
+#pick.dlg{left:50%;right:auto;top:50%;bottom:auto;width:min(300px,82%);border-radius:30px;padding:14px 0 6px;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;overflow:hidden}
+#pick.dlg.on{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
 .phd{text-align:center;color:var(--sub);padding:8px 0 10px;font-size:13px}
 .opt{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:.5px solid var(--line)}
 .opt svg{color:var(--blue)}
@@ -211,7 +218,7 @@ html.light #login .pf{color:#000}
 /* جهت نوشتن جستجو | Search Direction: خالی = وسط؛ فارسی از راست، انگلیسی از چپ شروع می‌شود */
 .search input:placeholder-shown{text-align:center}
 /* نشان خوانده‌نشده | Unread Badge: دایره‌ی ۲۱ پیکسلی با عدد خوانا */
-#clist .badge{height:21px;min-width:21px;border-radius:10.5px;line-height:21px;font-size:14px;top:4px}
+#clist .badge{height:18px;min-width:18px;border-radius:9px;line-height:18px;font-size:13px;top:7px}
 /* آواتار تب پایین | Tab Avatar: عکس پروفایل جای آیکون تنظیمات در نوار پایین */
 .tbav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;background:#8e8e93;background-size:cover}
 .tb.on .tbav{box-shadow:0 0 0 2px var(--blue)}
@@ -223,7 +230,9 @@ html.light #login .pf{color:#000}
 .bgs{width:62px;height:90px;border-radius:12px;border:2px solid transparent;background-clip:padding-box;flex:none}
 .bgs.on{border-color:var(--blue)}
 /* منوی پوشه‌ها | Folder Menu: کادر دوم سمت چپ منوی گفتگو، با لیست همه‌ی پوشه‌ها */
-#menu2{position:absolute;right:224px;left:14px;max-width:230px;max-height:55vh;overflow-y:auto;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px;display:none;z-index:50;animation:pop .15s}
+/* تب فرعی چسبیده | Attached Sub-tab: زیرمنو دقیقاً چسبیده به سمت چپ منوی اصلی و هم‌تراز ردیف مربوطه (flush against the main menu, aligned with its row) */
+#menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px 0 0 16px;border-right:.5px solid var(--line);display:none;z-index:50;animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 #menu2 div{padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:6px;border-bottom:.5px solid var(--line)}
 #menu2 div:last-child{border:0}
 #menu2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -252,7 +261,7 @@ html.light .dt{color-scheme:light}
   <h2 id="ltitle">Link Messenger</h2>
   <input id="nm" name="lm-n" placeholder="Name" autocomplete="off" autocorrect="off" spellcheck="false">
   <input id="em" name="lm-e" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
-  <input id="pw" name="lm-p" type="text" style="-webkit-text-security:disc" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <div class="pwrap"><input id="pw" name="lm-p" type="text" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><span id="pwEye"></span></div>
   <button id="lbtn">Sign Up</button>
   <a id="lsw">Already have an account? Log in</a>
 </div>
@@ -434,7 +443,7 @@ html.light .dt{color-scheme:light}
 
 /* ---- ۳.۰ آیکون‌ها | 3.0 Icons ---- */
 /* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه تلگرام، بدون ایموجی (Telegram-like line icons, no emoji) */
-const P={link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
+const P={eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
 person:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6",chat:"M21 12a8 8 0 01-11.5 7.2L4 20l1.2-4.3A8 8 0 1121 12z",
 gear:"M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
 compose:"M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4",back:"M15 5l-7 7 7 7",pin:"M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z",
@@ -501,6 +510,8 @@ $("#logout").onclick=()=>{S.user=null;show("login")};
 /* ---- ۳.۵ لیست چت‌ها | 3.5 Chat List ---- */
 /* تب‌ها | Render Tabs: همه/PV/Gap/Channel با شمارنده (folders with unread counters) */
 function renderTabs(){const T=allTabs();if(!T.some(x=>x[0]===S.folder))S.folder="all";
+ /* مخفی شدن نوار | Hide Bar: اگر هیچ پوشه‌ای نماند، تب «All» و کل نوار پوشه‌ها حذف می‌شود (no folders left = whole folder bar incl. All is hidden) */
+ $("#tabs").style.display=T.length<2?"none":"";
  $("#tabs").classList.toggle("many",T.length>4);
  $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>inFolder(x,k)&&x.un).length;
   return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
@@ -526,7 +537,7 @@ function bindRow(r){const id=+r.dataset.id;let tm,long=false;
 /* ---- ۳.۶ منوی بلند‌فشار | 3.6 Long-press Menu ---- */
 /* باز کردن منو | Open Menu: گزینه‌ها بر اساس وضعیت چت (items depend on chat state) */
 function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");
- const it=[["Add to Folder","folder",()=>{showFolderMenu(c);return "keep"}],[c.un?"Mark as Read":"Mark as Unread","check",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","pin",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute",c.mute?"bell":"mute",()=>{c.mute=c.mute?0:1}],["Delete","trash",()=>{CHATS=CHATS.filter(x=>x.id!==id)}]];
+ const it=[["Add to Folder","folder",()=>{showFolderMenu(c);return "keep"}],[c.un?"Mark as Read":"Mark as Unread","check",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","pin",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute",c.mute?"bell":"mute",()=>{c.mute=c.mute?0:1}],["Delete","trash",()=>{showDeleteMenu(c);return "keep"}]];
  m.innerHTML=it.map((x,i)=>`<div data-i="${i}">${x[0]}${ic(x[1],20)}</div>`).join("");
  m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>{if(it[+d.dataset.i][2]()==="keep")return;closeMenu();renderChats()})}
@@ -617,10 +628,12 @@ const saveCfg=()=>{try{localStorage.setItem("lk_cfg",JSON.stringify(CFG))}catch(
 const LANGS=[["en","English"],["fa","فارسی"]],ACC=["#2f8fff","#34c759","#ff9f0a","#af52de","#ff2d55","#30b0c7"];
 /* ترجمه | Persian Strings: فقط بخش تنظیمات (settings area only) */
 const FA={"Edit":"ویرایش","Change Profile Photo":"تغییر عکس پروفایل","Add Account":"افزودن حساب","My Profile":"پروفایل من","Proxy":"پروکسی","Disabled":"غیرفعال","Saved Messages":"پیام‌های ذخیره‌شده","Recent Calls":"تماس‌های اخیر","Devices":"دستگاه‌ها","Chat Folders":"پوشه‌های چت","Privacy and Security":"حریم خصوصی و امنیت","Data and Storage":"داده و حافظه","Appearance":"ظاهر","Language":"زبان","Log Out":"خروج","online":"آنلاین","Email":"ایمیل","Username":"نام کاربری","Birthday":"تاریخ تولد","Bio":"بیوگرافی","First Name":"نام","Last Name":"نام خانوادگی","Change Photo":"تغییر عکس","Edit Profile":"ویرایش پروفایل","Enter your name and add an optional profile photo.":"نام خود را وارد کنید و در صورت تمایل عکس پروفایل اضافه کنید.","Only your contacts can see your bio.":"فقط مخاطبین شما بیوگرافی را می‌بینند.","Only your contacts can see your birthday.":"فقط مخاطبین شما تاریخ تولد را می‌بینند.","Your email is used to log in and can't be changed here.":"ایمیل شما برای ورود استفاده می‌شود و از اینجا قابل تغییر نیست.","You can use a-z, 0-9 and underscores. Minimum length is 5 characters.":"می‌توانید از a-z، 0-9 و زیرخط استفاده کنید. حداقل ۵ کاراکتر.","All Chats":"همه چت‌ها","Personal":"شخصی","Groups":"گروه‌ها","Channels":"کانال‌ها","Tap a folder to open it in your chat list.":"روی یک پوشه بزنید تا در لیست چت‌ها باز شود.","Privacy":"حریم خصوصی","Control who can see your information.":"مشخص کنید چه کسی اطلاعات شما را ببیند.","Last Seen & Online":"آخرین بازدید و آنلاین","Profile Photo":"عکس پروفایل","Groups & Channels":"گروه‌ها و کانال‌ها","Everybody":"همه","My Contacts":"مخاطبین من","Nobody":"هیچ‌کس","Automatic Media Download":"دانلود خودکار رسانه","Photos":"عکس‌ها","Videos":"ویدیوها","Files":"فایل‌ها","Use Less Data for Calls":"مصرف داده کمتر در تماس","Clear Cache":"پاک کردن حافظه موقت","Cache cleared":"حافظه موقت پاک شد","Theme":"تم","Dark":"تیره","Light":"روشن","Accent Color":"رنگ تأکید","Name can't be empty":"نام نمی‌تواند خالی باشد","Username: at least 5 characters, only a-z, 0-9 and _":"نام کاربری: حداقل ۵ کاراکتر و فقط a-z، 0-9 و _"};
-Object.assign(FA,{"Cancel":"لغو","No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 8 characters":"رمز جدید باید حداقل ۸ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند."});
+Object.assign(FA,{"Cancel":"لغو","No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 8 characters":"رمز جدید باید حداقل ۸ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند.","Delete for me":"حذف برای من","Delete for both":"حذف برای هر دو"});
 const tr=t=>CFG.lang==="fa"&&FA[t]?FA[t]:t;
 let ED={};S.subs=[];
 function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
+/* مسدودسازی پنجره‌های مرورگر | Native Dialog Block: هیچ پیغام تأیید، هشدار یا اعلان مرورگر باز نمی‌شود؛ alert به پیام داخلی برنامه تبدیل می‌شود (no browser popups anywhere; alert becomes the in-app toast) */
+window.alert=m=>toast(String(m));window.confirm=()=>true;window.prompt=()=>null;window.onbeforeunload=null;
 function applyTheme(){document.documentElement.classList.toggle("light",CFG.theme==="light");document.documentElement.style.setProperty("--blue",CFG.accent)}
 /* ناوبری | Sub-page Navigation: باز و بسته شدن صفحه‌ها (open/close with a stack) */
 function openSub(id){S.subs.push(id);$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));$("#tabbar").style.display="none"}
@@ -654,7 +667,7 @@ $("#edLogout").onclick=()=>$("#logout").click();
 $$("[data-go]").forEach(e=>e.onclick=()=>{const g=e.dataset.go;if(g==="saved"){S.fromSet=true;openChat(2);return}if(g==="pfile"){openEdit();return}if(g==="cpass")["#cp_old","#cp_new","#cp_rep"].forEach(q=>$(q).value="");renderVals();openSub(g)});
 /* تأیید و هشدار | Confirm & Alert: پنجره‌های خود مرورگر (confirm/alert) در برنامه‌ی نصب‌شده کار نمی‌کنند؛ جایگزین داخلی */
 function askConfirm(msg,okText,cb){const el=$("#pick");el.innerHTML=`<div class="phd">${tr(msg)}</div><div class="opt" data-ok="1" style="color:var(--red);justify-content:center">${tr(okText)}</div><div class="opt" style="justify-content:center">${tr("Cancel")}</div>`;
- el.setAttribute("dir","ltr");el.classList.add("on");$("#pshade").style.display="block";
+ el.setAttribute("dir","ltr");el.classList.add("dlg");el.classList.add("on");$("#pshade").style.display="block";
  $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();if(o.dataset.ok)cb()})}
 /* پوشه‌ها | Folders: ساخت، حذف و پر کردن پوشه‌ها؛ پوشه‌های آماده (شخصی، گروه، کانال) هم قابل حذف و برگشت‌اند */
 const DEF_TABS=[["pv","P V","person"],["gp","Gap","group"],["ch","Channel","channel"]],DEF_NAME={pv:"Personal",gp:"Groups",ch:"Channels"};
@@ -732,13 +745,19 @@ function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
  m2.innerHTML=rows.map(([k,l,on])=>`<div data-k="${k}"><span>${l}</span>${on?ic("check",20):""}</div>`).join("")+`<div data-new="1" style="color:var(--blue)"><span>${tr("Create New Folder")}</span>${ic("plus",20)}</div>`;
- m2.style.display="block";const rt=$("#menu [data-i='0']").getBoundingClientRect().top;m2.style.top=Math.max(70,Math.min(rt,innerHeight-m2.offsetHeight-20))+"px";
+ /* هم‌ترازی دقیق | Exact Alignment: بالای زیرمنو دقیقاً هم‌تراز بالای ردیف «Add to Folder» (بدون انیمیشن مقیاس تا فاصله نیفتد) (sub-tab top = Add to Folder row top, measured by layout not transform) */
+ m2.style.display="block";const rt=$("#menu").offsetTop+$("#menu [data-i='0']").offsetTop;m2.style.maxHeight=Math.max(120,innerHeight-rt-30)+"px";m2.style.top=rt+"px";
  $$("#menu2 div").forEach(d=>d.onclick=()=>{
   if(d.dataset.new){closeMenu();openFolder("new");FE.chats.add(c.id);renderFeChats();return}
   const k=d.dataset.k;
   if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);f.chats=f.chats.includes(c.id)?f.chats.filter(x=>x!==c.id):[...f.chats,c.id]}
   else{if(c.ty===k)return;const a=CFG.extra[k]=CFG.extra[k]||[];CFG.extra[k]=a.includes(c.id)?a.filter(x=>x!==c.id):[...a,c.id]}
   saveCfg();closeMenu();renderChats()})}
+/* حذف گفتگو | Delete Menu: زیرمنوی چسبیده به «Delete» با دو گزینه، حذف برای خودم یا برای هر دو (sub-tab attached to Delete: for me / for both) */
+function showDeleteMenu(c){const m2=$("#menu2");
+ m2.innerHTML=`<div data-d="me"><span>${tr("Delete for me")}</span></div><div data-d="both" style="color:var(--red)"><span>${tr("Delete for both")}</span></div>`;
+ m2.style.display="block";m2.style.maxHeight="none";const dr=$("#menu [data-i='4']"),bt=$("#menu").offsetTop+dr.offsetTop+dr.offsetHeight;m2.style.top=Math.max(70,bt-m2.offsetHeight)+"px";
+ $$("#menu2 div").forEach(d=>d.onclick=()=>{CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
 /* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
 const BGS=[["none","#0a0a0c"],["dots","radial-gradient(rgba(255,255,255,.09) 1.3px,transparent 1.4px) 0 0/18px 18px #0a0a0c"],["lines","repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px) #0a0a0c"],["grid","linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px #0a0a0c"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
 function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat #0a0a0c";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:BGS[0][1]}
@@ -755,9 +774,9 @@ $("#cpOk").onclick=()=>{const u=S.user;if(!u)return;const o=$("#cp_old").value,n
  u.pass=n;toast("Password changed");closeSub()};
 /* انتخاب | Choice Sheet */
 function pick(title,cur,cb){const el=$("#pick");el.innerHTML=`<div class="phd">${tr(title)}</div>`+["Everybody","My Contacts","Nobody"].map(v=>`<div class="opt" data-v="${v}"><span>${tr(v)}</span>${v===cur?ic("check",20):""}</div>`).join("");
- el.setAttribute("dir","ltr");el.classList.add("on");$("#pshade").style.display="block";
+ el.setAttribute("dir","ltr");el.classList.remove("dlg");el.classList.add("on");$("#pshade").style.display="block";
  $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();cb(o.dataset.v)})}
-function closePick(){$("#pick").classList.remove("on");$("#pshade").style.display="none"}
+function closePick(){$("#pick").classList.remove("on");$("#pshade").style.display="none";setTimeout(()=>{if(!$("#pick").classList.contains("on"))$("#pick").classList.remove("dlg")},260)}
 $("#pshade").onclick=closePick;
 $$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals()})});
 $$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
@@ -805,6 +824,14 @@ function plainField(el){const d=document.createElement("div");
 /* ---- ۳.۱۳ راه‌اندازی آیکون‌ها | 3.13 Icon Init ---- */
 /* جایگذاری آیکون | Fill Icons: همه عنصرهای data-ic با SVG پر می‌شوند (fills static icon slots) */
 $$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend();
+
+/* ---- چشم پسورد | Password Eye Toggle ---- */
+/* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان)؛ با زدن چشم نقطه‌ای/پنهان می‌شود و دوباره با زدن آشکار می‌شود (default visible without dots; tap eye to mask with dots, tap again to reveal) */
+let pwHide=false;
+function setPw(){$("#pw").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEye").innerHTML=ic(pwHide?"eye":"eyeoff",22)}
+$("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
+$("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
+setPw();
 </script>
 </body>
 </html>
