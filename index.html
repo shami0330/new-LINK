@@ -55,7 +55,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 /* آیکون | Icon: اندازه و رنگ آیکون‌های SVG (SVG icon sizing, inherits text color) */
 i[data-ic]{display:inline-flex;font-style:normal}
 .svg{display:block}
-.search input{background:none;border:0;outline:0;color:var(--txt);font-size:16px;width:60%;text-align:center;-webkit-user-select:text;user-select:text}
+.search input{background:none;border:0;outline:0;color:var(--txt);font-size:16px;width:100%;padding:0 14px;text-align:start;-webkit-user-select:text;user-select:text}
 
 /* تب‌های پوشه | Folder Tabs: همه / شخصی / گروه / کانال (All/PV/Gap/Channel) */
 .tabs{display:flex;gap:4px;margin:4px 12px;background:var(--card);border-radius:20px;padding:3px}
@@ -163,6 +163,66 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #login input{width:100%;max-width:340px;background:var(--card);border:0;outline:0;border-radius:12px;height:46px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
 #login button{width:100%;max-width:340px;height:46px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-size:16px;font-weight:600}
 #login a{color:var(--blue);font-size:14px}
+
+/* صفحه‌های تنظیمات | Settings Sub-pages: پروفایل، ویرایش، پوشه‌ها، حریم خصوصی، داده، ظاهر، زبان */
+.sub{z-index:35}
+.sub .top .title{background:none;flex:1;justify-content:center}
+.sub .body{flex:1;overflow-y:auto;padding-bottom:40px;-webkit-overflow-scrolling:touch}
+.rr{margin-inline-start:auto;color:var(--sub);display:flex;align-items:center;gap:6px}
+.rr .v{font-weight:400}
+.chev::after{content:"›";font-style:normal;font-size:20px;line-height:1}
+[dir=rtl] .chev::after{content:"‹"}
+[dir=rtl] [data-back] svg{transform:scaleX(-1)}
+.ph{text-align:center;padding-top:6px}
+.cap{padding:0 28px;color:var(--sub);font-size:13px;margin:-4px 0 12px}
+.hd{padding:14px 28px 6px;color:var(--sub);font-size:13px;text-transform:uppercase}
+.fi{padding:10px 14px;border-bottom:.5px solid var(--line)}
+.fi small{display:block;color:var(--sub);font-size:13px;margin-bottom:2px}
+.fi div{overflow-wrap:anywhere}
+.bl{color:var(--blue)}
+.fld{width:100%;background:none;border:0;outline:0;color:var(--txt);font-size:16px;padding:13px 14px;-webkit-user-select:text;user-select:text}
+.fld::placeholder{color:var(--sub)}
+.dt{background:none;border:0;outline:0;color:var(--txt);font-size:16px;margin-inline-start:auto;color-scheme:dark}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--card2);position:relative;flex:none;margin-inline-start:auto;transition:background .2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw.on{background:var(--green)}
+.sw.on::after{transform:translateX(20px)}
+.swt{width:34px;height:34px;border-radius:50%;display:inline-block;border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 0 transparent}
+.swt.on{box-shadow:0 0 0 2px var(--txt)}
+#pshade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:45}
+#pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 14px);transform:translateY(110%);transition:transform .25s}
+#pick.on{transform:none}
+.phd{text-align:center;color:var(--sub);padding:8px 0 10px;font-size:13px}
+.opt{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:.5px solid var(--line)}
+.opt svg{color:var(--blue)}
+#toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--card2);padding:10px 16px;border-radius:20px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s;font-size:14px;white-space:nowrap}
+#toast.on{opacity:1}
+/* جهت نوشتن جستجو | Search Direction: خالی = وسط؛ فارسی از راست، انگلیسی از چپ شروع می‌شود */
+.search input:placeholder-shown{text-align:center}
+/* نشان خوانده‌نشده | Unread Dot: نقطه‌ی ساده بدون عدد */
+#clist .badge{height:12px;min-width:12px;border-radius:50%;top:7px}
+/* آواتار تب پایین | Tab Avatar: عکس پروفایل جای آیکون تنظیمات در نوار پایین */
+.tbav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;background:#8e8e93;background-size:cover}
+.tb.on .tbav{box-shadow:0 0 0 2px var(--blue)}
+/* تب‌های زیاد | Many Tabs: وقتی پوشه‌ها زیاد شد نوار تب‌ها اسکرول می‌خورد */
+.tabs{overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs.many .tab{flex:1 0 auto;padding:0 12px}
+/* نمونه پس‌زمینه | Background Swatch: مربع کوچک انتخاب پس‌زمینه‌ی گفتگو */
+.bgs{width:62px;height:90px;border-radius:12px;border:2px solid transparent;background-clip:padding-box;flex:none}
+.bgs.on{border-color:var(--blue)}
+/* پیش‌نمایش گفتگو | Chat Peek: با نگه داشتن روی گفتگو، پنجره‌ی قابل اسکرول بدون خوانده شدن پیام‌ها */
+#peek{position:absolute;left:0;right:0;margin:0 auto;width:calc((100% - 28px)*.65);top:calc(env(safe-area-inset-top) + 56px);z-index:48;border-radius:22px;overflow:hidden;display:none;flex-direction:column;background:#0a0a0c;animation:pop .15s}
+#peek .pkh{background:rgba(40,40,42,.96);text-align:center;padding:8px 0;flex:none}
+#peek .pkh b{display:block;font-size:16px}
+#peek .pkh small{color:var(--sub);font-size:12px}
+#peekMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* تم روشن | Light Theme */
+html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#e9e9eb}
+html.light #login input,html.light .inbar input{color:#000}
+html.light #tabbar{background:rgba(255,255,255,.92)}
+html.light .sec{background:#e9e9ee}
+html.light .dt{color-scheme:light}
 </style>
 </head>
 <body>
@@ -175,8 +235,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
   <div class="av xl" style="background:linear-gradient(#4aa8ff,#1a6bff)"><i data-ic="link" data-s="46"></i></div>
   <h2 id="ltitle">Link Messenger</h2>
   <input id="nm" name="lm-n" placeholder="Name" autocomplete="off" autocorrect="off" spellcheck="false">
-  <input id="em" name="lm-e" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="email">
-  <input id="pw" name="lm-p" type="password" placeholder="Password" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <input id="em" name="lm-e" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+  <input id="pw" name="lm-p" type="text" style="-webkit-text-security:disc" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <button id="lbtn">Sign Up</button>
   <a id="lsw">Already have an account? Log in</a>
 </div>
@@ -190,7 +250,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
   </div>
   <div class="wrap">
     <div class="hdr" id="hdrChats">
-      <div class="search" id="sbChats"><input id="q" placeholder="Search" autocomplete="off" autocorrect="off" spellcheck="false" oninput="renderChats()"></div>
+      <div class="search" id="sbChats"><input id="q" dir="auto" placeholder="Search" autocomplete="off" autocorrect="off" spellcheck="false" oninput="renderChats()"></div>
       <div class="tabs" id="tabs"></div>
     </div>
     <div class="list" id="clist"></div>
@@ -208,22 +268,116 @@ i[data-ic]{display:inline-flex;font-style:normal}
 
 <!-- تنظیمات | Settings Screen -->
 <div class="screen" id="settings">
-  <div class="top"><div class="pill"><i data-ic="grid" data-s="20"></i></div><div class="pill">Edit</div></div>
+  <div class="top"><div></div><div class="pill" id="seEdit" data-t="Edit">Edit</div></div>
   <div class="list">
-    <div style="text-align:center;margin-top:6px"><div class="av xl" id="myav" style="margin:auto;background:#f7a;"></div>
-      <h2 id="myname" style="margin-top:8px"></h2><div style="color:var(--sub)" id="myinfo"></div></div>
-    <div class="card"><div class="item" style="color:var(--blue)"><div class="ic" style="background:#12375e"><i data-ic="camera" data-s="18"></i></div>Change Profile Photo</div></div>
-    <div class="card"><div class="item"><div class="av s" style="width:26px;height:26px;font-size:12px;background:#2ecc71" id="myav2"></div><span id="myname2"></span></div><div class="item" style="color:var(--blue)"><i data-ic="plus" data-s="22"></i>Add Account</div></div>
-    <div class="card"><div class="item"><div class="ic" style="background:#e5484d"><i data-ic="person" data-s="18"></i></div>My Profile<span class="r">›</span></div></div>
-    <div class="card"><div class="item"><div class="ic" style="background:#30a46c"><i data-ic="globe" data-s="18"></i></div>Proxy<span class="r">Disabled</span></div></div>
+    <div class="ph"><div class="av xl" id="myav" style="margin:auto;background:#f7a;"></div>
+      <h2 id="myname" dir="auto" style="margin-top:4px"></h2><div id="myinfo" dir="ltr" style="color:var(--sub);font-size:14px;padding:0 20px;overflow-wrap:anywhere"></div></div>
+    <div class="card"><div class="item" id="chPhoto" style="color:var(--blue)"><div class="ic" style="background:#12375e"><i data-ic="camera" data-s="18"></i></div><span data-t="Change Profile Photo">Change Profile Photo</span></div></div>
+    <div class="card"><div class="item"><div class="av s" style="width:26px;height:26px;font-size:12px;background:#2ecc71" id="myav2"></div><span id="myname2" dir="auto"></span></div><div class="item" style="color:var(--blue)"><i data-ic="plus" data-s="22"></i><span data-t="Add Account">Add Account</span></div></div>
+    <div class="card"><div class="item" data-go="pfile"><div class="ic" style="background:#e5484d"><i data-ic="person" data-s="18"></i></div><span data-t="My Profile">My Profile</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div></div>
     <div class="card">
-      <div class="item"><div class="ic" style="background:#2f8fff"><i data-ic="bookmark" data-s="18"></i></div>Saved Messages<span class="r">›</span></div>
-      <div class="item"><div class="ic" style="background:#30a46c"><i data-ic="phone" data-s="18"></i></div>Recent Calls<span class="r">›</span></div>
-      <div class="item"><div class="ic" style="background:#f5a524"><i data-ic="devices" data-s="18"></i></div>Devices<span class="r">7 ›</span></div>
-      <div class="item"><div class="ic" style="background:#2f8fff"><i data-ic="folder" data-s="18"></i></div>Chat Folders<span class="r">›</span></div>
+      <div class="item" data-go="saved"><div class="ic" style="background:#2f8fff"><i data-ic="bookmark" data-s="18"></i></div><span data-t="Saved Messages">Saved Messages</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+      <div class="item" data-go="folders"><div class="ic" style="background:#2f8fff"><i data-ic="folder" data-s="18"></i></div><span data-t="Chat Folders">Chat Folders</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
     </div>
-    <div class="card"><div class="item" style="color:var(--red)" id="logout">Log Out</div></div>
+    <div class="card">
+      <div class="item" data-go="privacy"><div class="ic" style="background:#8e8e93"><i data-ic="lock" data-s="18"></i></div><span data-t="Privacy and Security">Privacy and Security</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+      <div class="item" data-go="datas"><div class="ic" style="background:#30a46c"><i data-ic="db" data-s="18"></i></div><span data-t="Data and Storage">Data and Storage</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+      <div class="item" data-go="appear"><div class="ic" style="background:#2f8fff"><i data-ic="half" data-s="18"></i></div><span data-t="Appearance">Appearance</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+      <div class="item" data-go="lang"><div class="ic" style="background:#af52de"><i data-ic="globe" data-s="18"></i></div><span data-t="Language">Language</span><span class="rr"><span class="v" id="v_lang"></span><i class="chev"></i></span></div>
+    </div>
+    <div class="card"><div class="item" style="color:var(--red)" id="logout" data-t="Log Out">Log Out</div></div>
   </div>
+</div>
+
+<!-- پروفایل من | My Profile -->
+<div class="screen sub" id="pfile">
+  <div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="pill" id="pfEdit" data-t="Edit">Edit</div></div>
+  <div class="body"><div class="ph"><div class="av xl" id="pf_av" style="margin:auto"></div><h2 id="pf_name" dir="auto" style="margin-top:10px"></h2><div style="color:var(--sub);font-size:14px;margin-top:2px" data-t="online">online</div></div>
+    <div class="card" style="margin-top:18px">
+      <div class="fi"><small data-t="Email">Email</small><div class="bl" id="pf_email" dir="ltr"></div></div>
+      <div class="fi"><small data-t="Username">Username</small><div class="bl" id="pf_user" dir="ltr"></div></div>
+      <div class="fi" id="pf_bday_w"><small data-t="Birthday">Birthday</small><div id="pf_bday"></div></div>
+      <div class="fi" id="pf_bio_w"><small data-t="Bio">Bio</small><div id="pf_bio" dir="auto"></div></div>
+    </div></div>
+</div>
+
+<!-- ویرایش پروفایل | Edit Profile -->
+<div class="screen sub" id="pedit">
+  <div class="top"><div class="pill" id="edX"><i data-ic="close" data-s="20"></i></div><div class="title" data-t="Edit Profile">Edit Profile</div><div class="pill" id="edOk" style="background:var(--blue)"><i data-ic="check" data-s="22"></i></div></div>
+  <div class="body"><div class="ph"><div class="av xl" id="ed_av" style="margin:auto"></div><div id="edPhoto" style="color:var(--blue);margin-top:10px" data-t="Change Photo">Change Photo</div></div>
+    <div class="card" style="margin-top:16px"><input class="fld" id="ed_first" dir="auto" data-p="First Name" placeholder="First Name" autocomplete="off" autocorrect="off" spellcheck="false" ><div style="border-top:.5px solid var(--line)"></div><input class="fld" id="ed_last" dir="auto" data-p="Last Name" placeholder="Last Name" autocomplete="off" autocorrect="off" spellcheck="false" ></div>
+    <div class="cap" data-t="Enter your name and add an optional profile photo.">Enter your name and add an optional profile photo.</div>
+    <div class="card"><input class="fld" id="ed_bio" dir="auto" data-p="Bio" placeholder="Bio" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="70"></div>
+    <div class="cap" data-t="Only your contacts can see your bio.">Only your contacts can see your bio.</div>
+    <div class="card"><div class="item"><div class="ic" style="background:#ff9f0a"><i data-ic="cake" data-s="18"></i></div><span data-t="Birthday">Birthday</span><input type="date" id="ed_bday" class="dt"></div></div>
+    <div class="cap" data-t="Only your contacts can see your birthday.">Only your contacts can see your birthday.</div>
+    <div class="card">
+      <div class="item"><div class="ic" style="background:#30a46c"><i data-ic="mail" data-s="18"></i></div><span data-t="Email">Email</span><span class="rr" id="ed_email" dir="ltr" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></div>
+      <div class="item"><div class="ic" style="background:#5e5ce6"><i data-ic="at" data-s="18"></i></div><span data-t="Username">Username</span><span class="rr" dir="ltr" style="flex:1;min-width:0;justify-content:flex-end;color:var(--txt)">@<input class="fld" id="ed_user" dir="ltr" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0;width:100%;padding:0 0 0 2px;text-align:left"></span></div>
+    </div>
+    <div class="cap" data-t="Your email is used to log in and can't be changed here.">Your email is used to log in and can't be changed here.</div><div class="cap" data-t="You can use a-z, 0-9 and underscores. Minimum length is 5 characters.">You can use a-z, 0-9 and underscores. Minimum length is 5 characters.</div>
+    <div class="card"><div class="item" id="edLogout" style="color:var(--red);justify-content:center" data-t="Log Out">Log Out</div></div>
+  </div>
+</div>
+
+<!-- پوشه‌های چت | Chat Folders: ساخت، حذف و پر کردن پوشه‌ها -->
+<div class="screen sub" id="folders"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Chat Folders">Chat Folders</div><div style="width:38px"></div></div>
+  <div class="body"><div class="card" style="margin-top:14px"><div class="item" id="fNew" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Create New Folder">Create New Folder</span></div></div>
+    <div class="hd" data-t="Your Folders">Your Folders</div><div class="card" id="fldList"></div>
+    <div id="fldRecW"><div class="hd" data-t="Recommended Folders">Recommended Folders</div><div class="card" id="fldRec"></div></div>
+    <div class="cap" data-t="Create folders and choose which chats go inside.">Create folders and choose which chats go inside.</div></div>
+</div>
+
+<!-- ویرایش پوشه | Edit Folder: نام، افزودن سریع گروه/کانال و انتخاب گفتگوها -->
+<div class="screen sub" id="fedit">
+  <div class="top"><div class="pill" id="feX"><i data-ic="close" data-s="20"></i></div><div class="title" id="fe_title" data-t="New Folder">New Folder</div><div class="pill" id="feOk" style="background:var(--blue)"><i data-ic="check" data-s="22"></i></div></div>
+  <div class="body">
+    <div id="fe_custom"><div class="card" style="margin-top:14px"><input class="fld" id="fe_name" dir="auto" data-p="Folder Name" placeholder="Folder Name" autocomplete="off" autocorrect="off" spellcheck="false" ></div>
+      <div class="hd" data-t="Quick Add">Quick Add</div><div class="card"><div class="item" data-qa="gp" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Groups">Add All Groups</span></div><div class="item" data-qa="ch" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Channels">Add All Channels</span></div><div class="item" data-qa="pv" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Personal Chats">Add All Personal Chats</span></div></div>
+      <div class="hd" data-t="Chats">Chats</div><div class="card" id="feChats"></div></div>
+    <div id="fe_info" style="display:none"><div class="cap" data-t="This folder fills automatically with its chat type.">This folder fills automatically with its chat type.</div></div>
+    <div class="card" style="margin-top:20px"><div class="item" id="feDel" style="color:var(--red);justify-content:center" data-t="Delete Folder">Delete Folder</div></div>
+  </div>
+</div>
+
+<!-- حریم خصوصی و امنیت | Privacy and Security -->
+<div class="screen sub" id="privacy"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Privacy and Security">Privacy and Security</div><div style="width:38px"></div></div>
+  <div class="body"><div class="hd" data-t="Privacy">Privacy</div><div class="card">
+    <div class="item" data-pk="email"><span data-t="Email">Email</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="seen"><span data-t="Last Seen & Online">Last Seen & Online</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="photo"><span data-t="Profile Photo">Profile Photo</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="bio"><span data-t="Bio">Bio</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="groups"><span data-t="Groups & Channels">Groups & Channels</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+  </div><div class="cap" data-t="Control who can see your information.">Control who can see your information.</div><div class="hd" data-t="Security">Security</div><div class="card"><div class="item" data-go="cpass"><div class="ic" style="background:#8e8e93"><i data-ic="lock" data-s="18"></i></div><span data-t="Change Password">Change Password</span><span class="rr"><i class="chev"></i></span></div></div></div>
+</div>
+
+<!-- داده و حافظه | Data and Storage -->
+<div class="screen sub" id="datas"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Data and Storage">Data and Storage</div><div style="width:38px"></div></div>
+  <div class="body"><div class="hd" data-t="Automatic Media Download">Automatic Media Download</div><div class="card"><div class="item" data-sw="photo"><span data-t="Photos">Photos</span><span class="sw"></span></div><div class="item" data-sw="video"><span data-t="Videos">Videos</span><span class="sw"></span></div><div class="item" data-sw="file"><span data-t="Files">Files</span><span class="sw"></span></div></div>
+    <div class="hd" data-t="Storage Used by Chats">Storage Used by Chats</div><div class="card" id="cacheList"></div><div class="cap" data-t="Tap a chat to see and delete its photos, videos, voice messages and files.">Tap a chat to see and delete its photos, videos, voice messages and files.</div><div class="card" style="margin-top:20px"><div class="item" id="clrCache" style="color:var(--blue)" data-t="Clear Cache">Clear Cache</div></div></div>
+</div>
+
+<!-- ظاهر | Appearance -->
+<div class="screen sub" id="appear"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Appearance">Appearance</div><div style="width:38px"></div></div>
+  <div class="body"><div class="hd" data-t="Theme">Theme</div><div class="card">
+    <div class="item" data-th="dark"><span data-t="Dark">Dark</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="light"><span data-t="Light">Light</span><span class="rr" style="color:var(--blue)"></span></div></div>
+    <div class="hd" data-t="Accent Color">Accent Color</div><div class="card"><div class="item" id="accRow" style="gap:12px;justify-content:center"></div></div>
+    <div class="hd" data-t="Chat Background">Chat Background</div><div class="card"><div class="item" id="bgRow" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPick" style="color:var(--blue)"><i data-ic="camera" data-s="20"></i><span data-t="Choose from Gallery">Choose from Gallery</span></div></div></div>
+</div>
+
+<!-- زبان | Language -->
+<div class="screen sub" id="lang"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Language">Language</div><div style="width:38px"></div></div>
+  <div class="body"><div class="card" id="langList" style="margin-top:14px"></div></div>
+</div>
+
+<!-- محتوای کش گفتگو | Chat Cache Contents: لیست محتوای ذخیره‌شده‌ی یک گفتگو و گزینه‌ی پاک کردن -->
+<div class="screen sub" id="cachechat">
+  <div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" id="cc_title"></div><div style="width:38px"></div></div>
+  <div class="body"><div id="ccItems" style="margin-top:6px"></div>
+    <div class="card" style="margin-top:20px"><div class="item" id="ccDelSel" style="color:var(--red);justify-content:center" data-t="Delete Selected">Delete Selected</div><div class="item" id="ccClear" style="color:var(--red);justify-content:center" data-t="Delete All">Delete All</div></div></div>
+</div>
+
+<!-- تغییر رمز | Change Password: رمز فعلی و دو بار رمز جدید -->
+<div class="screen sub" id="cpass"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Change Password">Change Password</div><div style="width:38px"></div></div>
+  <div class="body"><div class="card" style="margin-top:14px"><input class="fld" id="cp_old" dir="auto" data-p="Current Password" placeholder="Current Password" autocomplete="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><div style="border-top:.5px solid var(--line)"></div><input class="fld" id="cp_new" dir="auto" data-p="New Password" placeholder="New Password" autocomplete="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><div style="border-top:.5px solid var(--line)"></div><input class="fld" id="cp_rep" dir="auto" data-p="Repeat New Password" placeholder="Repeat New Password" autocomplete="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"></div>
+    <div class="card" style="margin-top:20px"><div class="item" id="cpOk" style="color:var(--blue);justify-content:center" data-t="Save">Save</div></div></div>
 </div>
 
 <!-- صفحه گفتگو | Chat Page -->
@@ -235,19 +389,23 @@ i[data-ic]{display:inline-flex;font-style:normal}
   </div>
   <div class="pinbar"><div><span>Pinned Message</span><br><small style="color:var(--sub)">Photo</small></div><i data-ic="pin" data-s="18"></i></div>
   <div class="msgs" id="msgs"></div>
-  <div class="inbar"><div class="round"><i data-ic="attach" data-s="20"></i></div><input id="mi" placeholder="Message" autocomplete="off" autocorrect="off" spellcheck="false"><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
+  <div class="inbar"><div class="round" id="attachBtn"><i data-ic="attach" data-s="20"></i></div><input id="mi" placeholder="Message" autocomplete="off" autocorrect="off" spellcheck="false"><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
 </div>
 
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
 <div id="tabbar" style="display:none">
   <div class="tb" data-s="contacts"><i data-ic="person" data-s="24"></i>Contacts</div>
   <div class="tb on" data-s="chats"><i data-ic="chat" data-s="24"></i>Chats</div>
-  <div class="tb" data-s="settings"><i data-ic="gear" data-s="24"></i>Settings</div>
+  <div class="tb" data-s="settings"><span class="tbav" id="tbav"></span>Settings</div>
 </div>
 <div id="editbar"><div class="pill" id="readAll">Read All</div><div class="pill" id="delSel" style="color:var(--red)">Delete</div></div>
 
 <!-- منو و شیت | Menu & Sheet -->
 <div id="shade"></div><div id="menu"></div>
+<div id="peek"><div class="pkh"><b id="pk_n"></b><small id="pk_s"></small></div><div id="peekMsgs"></div></div>
+<div id="pshade"></div><div id="pick"></div><div id="toast"></div>
+<input type="file" id="photoIn" accept="image/*" style="display:none">
+<input type="file" id="mediaIn" multiple style="display:none">
 <div class="sheet" id="newmsg">
   <div class="top"><div class="pill" id="closeNew" style="border-radius:50%;width:38px"><i data-ic="close" data-s="18"></i></div><div class="title" style="background:none">New Message</div><div style="width:38px"></div></div>
   <div class="search">Search</div>
@@ -272,7 +430,7 @@ camera:"M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 100-8 4 4 0 000 8z",bookmark:"M6 3h
 phone:"M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z",devices:"M4 6h12v9H4zM2 18h16M19 9h3v10h-3z",
 folder:"M3 6h6l2 2h10v11H3z",check:"M5 12l5 5 9-10",trash:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",grid:"M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2z",
 plus:"M12 5v14M5 12h14",globe:"M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
-mic:"M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",t1:"M5 12.5l4.5 4.5L19 7",t2:"M1 12.5l4.5 4.5L15 7M9 15.5l2 1.5L21 7"};
+mic:"M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",t1:"M5 12.5l4.5 4.5L19 7",t2:"M1 12.5l4.5 4.5L15 7M9 15.5l2 1.5L21 7",lock:"M6 11h12v9H6zM8 11V8a4 4 0 018 0v3",db:"M4 6c0-1.5 3.6-2.5 8-2.5s8 1 8 2.5-3.6 2.5-8 2.5-8-1-8-2.5zM4 6v6c0 1.5 3.6 2.5 8 2.5s8-1 8-2.5V6M4 12v6c0 1.5 3.6 2.5 8 2.5s8-1 8-2.5v-6",half:"M12 21a9 9 0 100-18 9 9 0 000 18zM12 3v18",at:"M16 12a4 4 0 11-8 0 4 4 0 018 0zM16 12v1.5a2.5 2.5 0 005 0V12a9 9 0 10-3.5 7.1",mail:"M3 6h18v12H3zM3 7l9 7 9-7",cake:"M4 20h16v-6H4zM4 14c2 2 3 2 4 0 1 2 3 2 4 0 1 2 3 2 4 0 1 2 2 2 4 0M12 10V6"};
 /* ساخت آیکون | Icon Builder: ic(نام، اندازه) یک SVG برمی‌گرداند (returns inline SVG, color = current text color) */
 const ic=(n,z=20)=>`<svg class="svg" viewBox="0 0 24 24" width="${z}" height="${z}" fill="${n==="send"?"currentColor":"none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
 /* ردیف آبی | Blue Rows: New Group / New Channel / New Contact بالای لیست (top action rows, same order as video) */
@@ -309,7 +467,7 @@ const av=(n,c,on,cls="")=>`<div class="av ${cls}" style="background:${c}">${n.tr
 /* رنگ از نام | Color From Name: رنگ ثابت برای هر نام (stable color per name) */
 const colOf=n=>`hsl(${[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 55% 50%)`;
 /* صفحه | Show Screen: فقط یک صفحه نمایش داده می‌شود و تب فعال عوض می‌شود (show one screen, update active tab) */
-function show(id){$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
+function show(id){S.subs=[];$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
  $("#tabbar").style.display=(id==="chat"||id==="login")?"none":"flex";if(typeof padLists==="function")padLists();}
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
@@ -318,7 +476,7 @@ $("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;const nm=$(
  if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:S.signup?nm:e.split("@")[0]};
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
- renderChats();renderContacts();show("chats")};
+ initUser();renderChats();renderContacts();show("chats")};
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
 $("#lsw").onclick=()=>{S.signup=!S.signup;$("#nm").style.display=S.signup?"block":"none";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
@@ -326,19 +484,20 @@ $("#logout").onclick=()=>{S.user=null;show("login")};
 
 /* ---- ۳.۵ لیست چت‌ها | 3.5 Chat List ---- */
 /* تب‌ها | Render Tabs: همه/PV/Gap/Channel با شمارنده (folders with unread counters) */
-function renderTabs(){const T=[["all","All",""],["pv","P V","person"],["gp","Gap","group"],["ch","Channel","channel"]];
- $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>(k==="all"||x.ty===k)&&x.un).length;
-  return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${l}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
+function renderTabs(){const T=allTabs();if(!T.some(x=>x[0]===S.folder))S.folder="all";
+ $("#tabs").classList.toggle("many",T.length>4);
+ $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>inFolder(x,k)&&x.un).length;
+  return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
  $$(".tab").forEach(t=>t.onclick=()=>{S.folder=t.dataset.k;renderChats()})}
 /* رندر چت‌ها | Render Chats: سنجاق‌شده‌ها بالا، بقیه به ترتیب (pinned first, then order) */
 function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
- const L=CHATS.filter(c=>(S.folder==="all"||c.ty===S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
+ const L=CHATS.filter(c=>inFolder(c,S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
  $("#clist").className="list"+(S.edit?" editing":"");
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on)}
   <div class="mid"><div class="n">${c.n}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
   <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
-  <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
+  <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"}"></span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
  $$(".row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
 function bindRow(r){const id=+r.dataset.id;let tm,long=false;
@@ -351,12 +510,12 @@ function bindRow(r){const id=+r.dataset.id;let tm,long=false;
 /* ---- ۳.۶ منوی بلند‌فشار | 3.6 Long-press Menu ---- */
 /* باز کردن منو | Open Menu: گزینه‌ها بر اساس وضعیت چت (items depend on chat state) */
 function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");
- const it=[["Add to Folder","folder",()=>{c.ty=c.ty==="pv"?"gp":"pv"}],[c.un?"Mark as Read":"Mark as Unread","check",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","pin",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute",c.mute?"bell":"mute",()=>{c.mute=c.mute?0:1}],["Delete","trash",()=>{CHATS=CHATS.filter(x=>x.id!==id)}]];
+ const it=[["Add to Folder","folder",()=>setTimeout(()=>pickFolder(c),0)],[c.un?"Mark as Read":"Mark as Unread","check",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","pin",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute",c.mute?"bell":"mute",()=>{c.mute=c.mute?0:1}],["Delete","trash",()=>{CHATS=CHATS.filter(x=>x.id!==id)}]];
  m.innerHTML=it.map((x,i)=>`<div data-i="${i}">${x[0]}${ic(x[1],20)}</div>`).join("");
- const y=Math.min(r.getBoundingClientRect().bottom+6,innerHeight-290);m.style.top=y+"px";m.style.display="block";$("#shade").style.display="block";
+ m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>{it[+d.dataset.i][2]();closeMenu();renderChats()})}
 /* بستن منو | Close Menu */
-function closeMenu(){$("#menu").style.display="none";$("#shade").style.display="none"}
+function closeMenu(){$("#menu").style.display="none";$("#shade").style.display="none";$("#peek").style.display="none"}
 $("#shade").onclick=closeMenu;
 
 /* ---- ۳.۷ حالت ویرایش | 3.7 Edit Mode ---- */
@@ -390,9 +549,9 @@ $("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
 /* ---- ۳.۱۰ صفحه گفتگو | 3.10 Chat Page ---- */
 /* باز کردن گفتگو | Open Chat: نام، وضعیت، پیام‌های نمونه و خوانده شدن (header, status, messages, mark read) */
 function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
- $("#cname").textContent=c.n;$("#cstat").textContent=c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
+ $("#cname").textContent=c.n;$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
- S.lastD=null;$("#msgs").innerHTML="";(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
+ S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
  $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none"}
 /* افزودن حباب | Add Bubble: راست=من، چپ=طرف مقابل (right=me, left=other) */
 /* برچسب روز | Day Label: «امروز» برای امروز؛ برای قدیمی‌تر ماه و روز شمسی (Today, or Jalali month + day) */
@@ -402,13 +561,13 @@ function addMsg(w,t,tm,n=0){if(S.lastD!==n){const h=document.createElement("div"
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
 function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
- setTimeout(()=>addMsg("ot","👍",now),900)}
+ if(c.id===2){CFG.saved.push(["me",v,now,0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0]);saveCfg();setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);saveCfg()},900)}}
 /* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
 function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim();$("#send").classList.toggle("send",has);$("#send").innerHTML=ic(has?"send":S.rec==="voice"?"mic":"video",20)}
 $("#send").onclick=()=>{if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
 $("#mi").oninput=updSend;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
-$("#back").onclick=()=>{$("#chat").classList.remove("on");show("chats");renderChats()};
+$("#back").onclick=()=>{$("#chat").classList.remove("on");if(S.fromSet){S.fromSet=false;show("settings");return}show("chats");renderChats()};
 
 /* ---- ۳.۱۱ ناوبری | 3.11 Tab Navigation ---- */
 /* تب‌های پایین | Bottom Tabs: جابجایی بین مخاطبین/چت‌ها/تنظیمات (switch screens) */
@@ -430,6 +589,176 @@ const vv=window.visualViewport;
 function fit(){window.scrollTo(0,0);const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);const c=$("#chat");c.style.bottom=kb>0?(kb+5)+"px":"0";c.classList.toggle("kb",kb>0);$("#msgs").scrollTop=1e9}
 if(vv){vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit)}
 window.addEventListener("scroll",()=>window.scrollTo(0,0));
+
+/* ---- ۳.۱۲ب تنظیمات و پروفایل | 3.12b Settings & Profile ---- */
+/* تنظیمات ذخیره‌شده | Saved Config: تم، رنگ، زبان، حریم خصوصی، داده (theme, accent, language, privacy, data) */
+const CFG=(()=>{try{return JSON.parse(localStorage.getItem("lk_cfg"))||{}}catch(e){return{}}})();
+CFG.theme=CFG.theme||"dark";CFG.accent=CFG.accent||"#2f8fff";CFG.lang=CFG.lang||"en";
+CFG.priv=Object.assign({email:"Nobody",seen:"Everybody",photo:"Everybody",bio:"Everybody",bday:"My Contacts",groups:"Everybody"},CFG.priv||{});
+CFG.data=Object.assign({photo:true,video:false,file:false,lowcalls:false},CFG.data||{});
+CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.bg=CFG.bg||{t:"none"};
+const saveCfg=()=>{try{localStorage.setItem("lk_cfg",JSON.stringify(CFG))}catch(e){}};
+const LANGS=[["en","English"],["fa","فارسی"]],ACC=["#2f8fff","#34c759","#ff9f0a","#af52de","#ff2d55","#30b0c7"];
+/* ترجمه | Persian Strings: فقط بخش تنظیمات (settings area only) */
+const FA={"Edit":"ویرایش","Change Profile Photo":"تغییر عکس پروفایل","Add Account":"افزودن حساب","My Profile":"پروفایل من","Proxy":"پروکسی","Disabled":"غیرفعال","Saved Messages":"پیام‌های ذخیره‌شده","Recent Calls":"تماس‌های اخیر","Devices":"دستگاه‌ها","Chat Folders":"پوشه‌های چت","Privacy and Security":"حریم خصوصی و امنیت","Data and Storage":"داده و حافظه","Appearance":"ظاهر","Language":"زبان","Log Out":"خروج","online":"آنلاین","Email":"ایمیل","Username":"نام کاربری","Birthday":"تاریخ تولد","Bio":"بیوگرافی","First Name":"نام","Last Name":"نام خانوادگی","Change Photo":"تغییر عکس","Edit Profile":"ویرایش پروفایل","Enter your name and add an optional profile photo.":"نام خود را وارد کنید و در صورت تمایل عکس پروفایل اضافه کنید.","Only your contacts can see your bio.":"فقط مخاطبین شما بیوگرافی را می‌بینند.","Only your contacts can see your birthday.":"فقط مخاطبین شما تاریخ تولد را می‌بینند.","Your email is used to log in and can't be changed here.":"ایمیل شما برای ورود استفاده می‌شود و از اینجا قابل تغییر نیست.","You can use a-z, 0-9 and underscores. Minimum length is 5 characters.":"می‌توانید از a-z، 0-9 و زیرخط استفاده کنید. حداقل ۵ کاراکتر.","All Chats":"همه چت‌ها","Personal":"شخصی","Groups":"گروه‌ها","Channels":"کانال‌ها","Tap a folder to open it in your chat list.":"روی یک پوشه بزنید تا در لیست چت‌ها باز شود.","Privacy":"حریم خصوصی","Control who can see your information.":"مشخص کنید چه کسی اطلاعات شما را ببیند.","Last Seen & Online":"آخرین بازدید و آنلاین","Profile Photo":"عکس پروفایل","Groups & Channels":"گروه‌ها و کانال‌ها","Everybody":"همه","My Contacts":"مخاطبین من","Nobody":"هیچ‌کس","Automatic Media Download":"دانلود خودکار رسانه","Photos":"عکس‌ها","Videos":"ویدیوها","Files":"فایل‌ها","Use Less Data for Calls":"مصرف داده کمتر در تماس","Clear Cache":"پاک کردن حافظه موقت","Cache cleared":"حافظه موقت پاک شد","Theme":"تم","Dark":"تیره","Light":"روشن","Accent Color":"رنگ تأکید","Name can't be empty":"نام نمی‌تواند خالی باشد","Username: at least 5 characters, only a-z, 0-9 and _":"نام کاربری: حداقل ۵ کاراکتر و فقط a-z، 0-9 و _"};
+Object.assign(FA,{"No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 4 characters":"رمز جدید باید حداقل ۴ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند."});
+const tr=t=>CFG.lang==="fa"&&FA[t]?FA[t]:t;
+let ED={};S.subs=[];
+function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
+function applyTheme(){document.documentElement.classList.toggle("light",CFG.theme==="light");document.documentElement.style.setProperty("--blue",CFG.accent)}
+/* ناوبری | Sub-page Navigation: باز و بسته شدن صفحه‌ها (open/close with a stack) */
+function openSub(id){S.subs.push(id);$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));$("#tabbar").style.display="none"}
+function closeSub(){S.subs.pop();const id=S.subs[S.subs.length-1];$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));if(!id)$("#tabbar").style.display="flex"}
+/* کاربر | User Data: نام، نام خانوادگی، ایمیل، آیدی، بیو، تولد، عکس (name, last name, email, id, bio, birthday, photo) */
+const fullName=u=>(u.name+" "+(u.last||"")).trim();
+const fmtDate=d=>new Date(d+"T00:00").toLocaleDateString(CFG.lang==="fa"?"fa-IR-u-ca-persian":"en-GB",{day:"numeric",month:"short",year:"numeric"});
+function paintAv(el,u){const n=u.name||"?";if(u.photo){el.style.backgroundImage="url("+u.photo+")";el.style.backgroundSize="cover";el.style.backgroundPosition="center";el.textContent=""}else{el.style.backgroundImage="none";el.style.backgroundColor=colOf(n);el.style.background=colOf(n);el.textContent=n.trim()[0].toUpperCase()}}
+function initUser(){const u=S.user;u.pass=$("#pw").value;u.last="";u.bio="";u.bday="";u.photo="";u.username=(u.email.split("@")[0].toLowerCase().match(/^[a-z0-9_]*[a-z0-9][a-z0-9_]*$/)||[""])[0];fillMe()}
+function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
+ $("#myname").textContent=f;$("#myname2").textContent=f;$("#pf_name").textContent=f;
+ $("#myinfo").textContent=u.email+(u.username?" • @"+u.username:"");
+ $("#pf_email").textContent=u.email;$("#pf_user").textContent=u.username?"@"+u.username:"";$("#pf_user").parentNode.style.display=u.username?"":"none";
+ $("#pf_bio").textContent=u.bio||"";$("#pf_bio_w").style.display=u.bio?"":"none";
+ $("#pf_bday").textContent=u.bday?fmtDate(u.bday):"";$("#pf_bday_w").style.display=u.bday?"":"none";
+ ["#myav","#myav2","#pf_av","#tbav"].forEach(q=>paintAv($(q),u))}
+function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=320;c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,320,320);cb(c.toDataURL("image/jpeg",.85))};im.src=r.result};r.readAsDataURL(file)};f.click()}
+function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
+ $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
+ paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
+$("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(S.user)openSub("pfile")};
+$("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
+$("#edPhoto").onclick=$("#ed_av").onclick=()=>pickPhoto(d=>{ED.photo=d;paintAv($("#ed_av"),{name:$("#ed_first").value||S.user.name,photo:d})});
+$("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
+$("#edOk").onclick=()=>{const u=S.user,nm=$("#ed_first").value.trim(),un=$("#ed_user").value.trim().replace(/^@/,"");
+ if(!nm){alert(tr("Name can't be empty"));return}
+ if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){alert(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}
+ Object.assign(u,{name:nm,last:$("#ed_last").value.trim(),bio:$("#ed_bio").value.trim(),bday:$("#ed_bday").value,username:un,photo:ED.photo||""});fillMe();closeSub()};
+$("#edLogout").onclick=()=>$("#logout").click();
+/* ردیف‌های منو | Menu Rows: هر ردیف صفحه خودش را باز می‌کند (each row opens its page) */
+$$("[data-go]").forEach(e=>e.onclick=()=>{const g=e.dataset.go;if(g==="saved"){S.fromSet=true;openChat(2);return}if(g==="pfile"){openEdit();return}if(g==="cpass")["#cp_old","#cp_new","#cp_rep"].forEach(q=>$(q).value="");renderVals();openSub(g)});
+/* پوشه‌ها | Folders: ساخت، حذف و پر کردن پوشه‌ها؛ پوشه‌های آماده (شخصی، گروه، کانال) هم قابل حذف و برگشت‌اند */
+const DEF_TABS=[["pv","P V","person"],["gp","Gap","group"],["ch","Channel","channel"]],DEF_NAME={pv:"Personal",gp:"Groups",ch:"Channels"};
+const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+let FE=null;
+/* تب‌ها | All Tabs: «همه» + پوشه‌های آماده‌ی نمایش‌داده‌شده + پوشه‌های ساخته‌شده توسط کاربر */
+function allTabs(){return [["all","All",""],...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,"folder"])]}
+/* عضویت در پوشه | In Folder: آیا این گفتگو داخل این پوشه است؟ */
+function inFolder(c,k){if(k==="all")return true;if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);return !!f&&f.chats.includes(c.id)}return c.ty===k}
+/* لیست پوشه‌ها | Folder List: پوشه‌های شما و پوشه‌های پیشنهادی (حذف‌شده‌ها) */
+function renderFolders(){
+ const own=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),t[2],CHATS.filter(x=>x.ty===t[0]).length]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),"folder",CHATS.filter(x=>f.chats.includes(x.id)).length])];
+ $("#fldList").innerHTML=own.map(([k,l,i,n])=>`<div class="item" data-fk="${k}"><div class="ic" style="background:#2f8fff">${ic(i,18)}</div><span>${l}</span><span class="rr"><span class="v">${n}</span><i class="chev"></i></span></div>`).join("")||`<div class="item" style="color:var(--sub)">${tr("No folders")}</div>`;
+ $("#fldRec").innerHTML=DEF_TABS.filter(t=>CFG.hidden.includes(t[0])).map(t=>`<div class="item" data-fr="${t[0]}"><div class="ic" style="background:#2f8fff">${ic(t[2],18)}</div><span>${tr(DEF_NAME[t[0]])}</span><span class="rr" style="color:var(--blue)">${tr("Add")}</span></div>`).join("");
+ $("#fldRecW").style.display=CFG.hidden.length?"":"none";
+ $$("[data-fk]").forEach(e=>e.onclick=()=>openFolder(e.dataset.fk));
+ $$("[data-fr]").forEach(e=>e.onclick=()=>{CFG.hidden=CFG.hidden.filter(x=>x!==e.dataset.fr);saveCfg();renderFolders();renderChats()})}
+/* باز کردن پوشه | Open Folder: صفحه‌ی ساخت یا ویرایش پوشه */
+function openFolder(k){const isNew=k==="new",def=!isNew&&!k.startsWith("f_"),f=isNew?null:CFG.folders.find(x=>"f_"+x.id===k);
+ FE={id:f?f.id:null,k,def,chats:new Set(f?f.chats:[])};
+ const t=isNew?"New Folder":"Edit Folder";$("#fe_title").dataset.t=t;$("#fe_title").textContent=tr(t);
+ $("#fe_custom").style.display=def?"none":"";$("#fe_info").style.display=def?"":"none";$("#feOk").style.visibility=def?"hidden":"visible";
+ $("#feDel").parentNode.style.display=isNew?"none":"";$("#fe_name").value=f?f.name:"";renderFeChats();openSub("fedit")}
+/* گفتگوهای پوشه | Folder Chats: همه‌ی گفتگوها با سوییچ برای قرار دادن داخل پوشه */
+function renderFeChats(){$("#feChats").innerHTML=CHATS.map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${FE.chats.has(c.id)?" on":""}"></span></div>`).join("");
+ $$("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc;FE.chats.has(id)?FE.chats.delete(id):FE.chats.add(id);e.querySelector(".sw").classList.toggle("on",FE.chats.has(id))})}
+$("#fNew").onclick=()=>openFolder("new");$("#feX").onclick=closeSub;
+$$("[data-qa]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.qa).forEach(x=>FE.chats.add(x.id));renderFeChats()});
+/* ذخیره پوشه | Save Folder */
+$("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){alert(tr("Folder name can't be empty"));return}
+ const f=CFG.folders.find(x=>x.id===FE.id);if(f){f.name=name;f.chats=[...FE.chats]}else CFG.folders.push({id:Date.now().toString(36),name,chats:[...FE.chats]});
+ saveCfg();renderFolders();renderChats();closeSub()};
+/* حذف پوشه | Delete Folder: پوشه‌ی ساخته‌شده پاک می‌شود، پوشه‌ی آماده مخفی می‌شود (و در پیشنهادی‌ها می‌ماند) */
+$("#feDel").onclick=()=>{if(!confirm(tr("Delete this folder?")))return;
+ if(FE.def)CFG.hidden.push(FE.k);else CFG.folders=CFG.folders.filter(x=>x.id!==FE.id);
+ saveCfg();renderFolders();renderChats();closeSub()};
+/* حافظه‌ی گفتگوها | Chat Cache: حجم داده‌ی هر گفتگو روی دستگاه (تخمین از پیام‌های ذخیره‌شده) */
+/* رسانه‌ی کش‌شده | Media Cache: فقط عکس، ویدیو، پیام صوتی و فایل؛ پیام‌های متنی هرگز جزو کش نیستند و با پاک کردن کش حذف نمی‌شوند */
+const fmtSize=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB";
+const MEDIA_TYPES=[["photo","Photos"],["video","Videos"],["voice","Voice Messages"],["file","Files"]];
+const mediaOf=id=>CFG.media[id]||[];
+const chatBytes=c=>mediaOf(c.id).reduce((a,x)=>a+x.size,0);
+const mediaType=f=>{const t=f.type||"";return t.startsWith("image/")?"photo":t.startsWith("video/")?"video":t.startsWith("audio/")?"voice":"file"};
+/* محتوای گفتگو | Chat Messages: پیام‌های هر گفتگو؛ «Saved Messages» فقط پیام‌های خود کاربر را دارد و جواب نمی‌گیرد */
+function chatMsgs(c){return c.id===2?CFG.saved:(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).concat(CFG.sent[c.id]||[])}
+/* ارسال فایل | Send Media: دکمه‌ی گیره فایل را انتخاب می‌کند، در گفتگو می‌فرستد و در کش ثبت می‌کند */
+$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.onchange=()=>[...f.files].forEach(addMedia);f.click()};
+function addMedia(file){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;const t=mediaType(file),now=new Date().toTimeString().slice(0,5);
+ const txt={photo:"🖼",video:"🎬",voice:"🎤",file:"📎"}[t]+" "+esc(file.name)+" · "+fmtSize(file.size);
+ (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:t,name:file.name,size:file.size});
+ (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",txt,now,0]);c.m=txt;c.tm=now;saveCfg();addMsg("me",txt,now)}
+/* لیست کش | Cache List: فقط گفتگوهایی که رسانه‌ی کش‌شده دارند */
+function renderCache(){const L=CHATS.filter(c=>chatBytes(c)>0),tot=L.reduce((a,c)=>a+chatBytes(c),0);
+ $("#cacheList").innerHTML=L.map(c=>`<div class="item" data-cc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="rr"><span class="v">${fmtSize(chatBytes(c))}</span><i class="chev"></i></span></div>`).join("")+(L.length?`<div class="item"><span>${tr("Total")}</span><span class="rr"><span class="v">${fmtSize(tot)}</span></span></div>`:`<div class="item" style="color:var(--sub);justify-content:center">${tr("No cached media")}</div>`);
+ $$("[data-cc]").forEach(e=>e.onclick=()=>openCache(+e.dataset.cc))}
+/* صفحه‌ی کش گفتگو | Chat Cache Page: رسانه‌ها به تفکیک عکس/ویدیو/صوت/فایل؛ انتخاب و حذف تکی، دسته‌ای یا همه */
+let CC=null;const CSEL=new Set();
+function renderCC(){const c=CHATS.find(x=>x.id===CC),it=mediaOf(CC);$("#cc_title").textContent=c.n;
+ $("#ccItems").innerHTML=MEDIA_TYPES.map(([k,l])=>{const L=it.filter(x=>x.type===k);if(!L.length)return"";const all=L.every(x=>CSEL.has(x.id));
+  return `<div class="hd" style="display:flex;justify-content:space-between"><span>${tr(l)} · ${L.length} · ${fmtSize(L.reduce((a,x)=>a+x.size,0))}</span><span data-sa="${k}" style="color:var(--blue);text-transform:none">${tr(all?"Deselect All":"Select All")}</span></div><div class="card">`+L.map(x=>`<div class="item" data-mi="${x.id}"><span dir="auto" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.name)}</span><span class="rr"><span class="v">${fmtSize(x.size)}</span>${CSEL.has(x.id)?`<span style="color:var(--blue);display:flex">${ic("check",20)}</span>`:""}</span></div>`).join("")+`</div>`}).join("")||`<div class="card"><div class="item" style="color:var(--sub);justify-content:center">${tr("No cached media")}</div></div>`;
+ $$("[data-mi]").forEach(e=>e.onclick=()=>{const id=e.dataset.mi;CSEL.has(id)?CSEL.delete(id):CSEL.add(id);renderCC()});
+ $$("[data-sa]").forEach(e=>e.onclick=()=>{const L=it.filter(x=>x.type===e.dataset.sa),all=L.every(x=>CSEL.has(x.id));L.forEach(x=>all?CSEL.delete(x.id):CSEL.add(x.id));renderCC()});
+ const sel=it.filter(x=>CSEL.has(x.id)).length,d=$("#ccDelSel");d.style.display=sel?"":"none";d.textContent=tr("Delete Selected")+" ("+sel+")";$("#ccClear").style.display=it.length?"":"none"}
+function openCache(id){CC=id;CSEL.clear();renderCC();openSub("cachechat")}
+$("#ccDelSel").onclick=()=>{CFG.media[CC]=mediaOf(CC).filter(x=>!CSEL.has(x.id));CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
+$("#ccClear").onclick=()=>{CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
+$("#clrCache").onclick=()=>{CFG.media={};saveCfg();renderCache();toast("Cache cleared")};
+/* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
+function peekHtml(c){let last=null;return chatMsgs(c).map(([w,t,tm,n])=>{const sep=last!==n?`<div class="dsep">${dayLabel(n)}</div>`:"";last=n;return sep+`<div class="b ${w}">${esc(t)}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small></div>`}).join("")}
+function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
+ const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";m.scrollTop=1e9}
+/* افزودن به پوشه | Add To Folder: انتخاب پوشه‌هایی که این گفتگو داخلشان باشد */
+function pickFolder(c){const el=$("#pick");if(!CFG.folders.length){toast("No folders");return}
+ el.innerHTML=`<div class="phd">${tr("Add to Folder")}</div>`+CFG.folders.map(f=>`<div class="opt" data-f="${f.id}"><span>${esc(f.name)}</span>${f.chats.includes(c.id)?ic("check",20):""}</div>`).join("");
+ el.setAttribute("dir","ltr");el.classList.add("on");$("#pshade").style.display="block";
+ $$("#pick .opt").forEach(o=>o.onclick=()=>{const f=CFG.folders.find(x=>x.id===o.dataset.f);f.chats=f.chats.includes(c.id)?f.chats.filter(x=>x!==c.id):[...f.chats,c.id];saveCfg();closePick();renderChats()})}
+/* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
+const BGS=[["none","#0a0a0c"],["dots","radial-gradient(rgba(255,255,255,.09) 1.3px,transparent 1.4px) 0 0/18px 18px #0a0a0c"],["lines","repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 14px) #0a0a0c"],["grid","linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/22px 22px #0a0a0c"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
+function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat #0a0a0c";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:BGS[0][1]}
+function applyBg(){$("#msgs").style.background=bgCss()}
+function renderBgs(){const ph=CFG.bg.t==="photo"&&CFG.bg.photo;
+ $("#bgRow").innerHTML=(ph?`<div class="bgs on" data-bg="photo" style="background:url(${CFG.bg.photo}) center/cover"></div>`:"")+BGS.map(p=>`<div class="bgs${!ph&&(CFG.bg.id||"none")===p[0]?" on":""}" data-bg="${p[0]}" style="background:${p[1]}"></div>`).join("");
+ $$("[data-bg]").forEach(e=>e.onclick=()=>{if(e.dataset.bg==="photo")return;CFG.bg={t:"preset",id:e.dataset.bg};saveCfg();applyBg();renderBgs()})}
+$("#bgPick").onclick=()=>pickPhoto(d=>{CFG.bg={t:"photo",photo:d};saveCfg();applyBg();renderBgs()},true);
+/* تغییر رمز | Change Password: رمز فعلی را چک می‌کند و رمز جدید را (فقط داخل برنامه) جایگزین می‌کند */
+$("#cpOk").onclick=()=>{const u=S.user;if(!u)return;const o=$("#cp_old").value,n=$("#cp_new").value,r=$("#cp_rep").value;
+ if(o!==u.pass){alert(tr("Current password is wrong"));return}
+ if(n.length<4){alert(tr("New password must be at least 4 characters"));return}
+ if(n!==r){alert(tr("Passwords don't match"));return}
+ u.pass=n;toast("Password changed");closeSub()};
+/* انتخاب | Choice Sheet */
+function pick(title,cur,cb){const el=$("#pick");el.innerHTML=`<div class="phd">${tr(title)}</div>`+["Everybody","My Contacts","Nobody"].map(v=>`<div class="opt" data-v="${v}"><span>${tr(v)}</span>${v===cur?ic("check",20):""}</div>`).join("");
+ el.setAttribute("dir","ltr");el.classList.add("on");$("#pshade").style.display="block";
+ $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();cb(o.dataset.v)})}
+function closePick(){$("#pick").classList.remove("on");$("#pshade").style.display="none"}
+$("#pshade").onclick=closePick;
+$$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals()})});
+$$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
+$$("[data-th]").forEach(e=>e.onclick=()=>{CFG.theme=e.dataset.th;saveCfg();applyTheme();renderVals()});
+/* مقدارها | Refresh Values */
+function renderVals(){
+ $("#v_lang").textContent=LANGS.find(l=>l[0]===CFG.lang)[1];
+ $$("[data-pk]").forEach(e=>e.querySelector(".v").textContent=tr(CFG.priv[e.dataset.pk]));
+ $$("[data-sw]").forEach(e=>e.querySelector(".sw").classList.toggle("on",!!CFG.data[e.dataset.sw]));
+ $$("[data-th]").forEach(e=>e.querySelector(".rr").innerHTML=CFG.theme===e.dataset.th?ic("check",20):"");
+ $("#accRow").innerHTML=ACC.map(c=>`<span class="swt${c===CFG.accent?" on":""}" data-c="${c}" style="background:${c}"></span>`).join("");
+ $$(".swt").forEach(e=>e.onclick=()=>{CFG.accent=e.dataset.c;saveCfg();applyTheme();renderVals()});
+ $("#langList").innerHTML=LANGS.map(l=>`<div class="item" data-lg="${l[0]}"><span>${l[1]}</span><span class="rr" style="color:var(--blue)">${CFG.lang===l[0]?ic("check",20):""}</span></div>`).join("");
+ $$("[data-lg]").forEach(e=>e.onclick=()=>{CFG.lang=e.dataset.lg;saveCfg();applyLang()});
+ renderFolders();renderCache();renderBgs()}
+/* زبان | Apply Language: متن، جهت صفحه‌ها (text + RTL for settings pages) */
+function applyLang(){const fa=CFG.lang==="fa";
+ $$("[data-t]").forEach(e=>e.textContent=tr(e.dataset.t));
+ $$("[data-p]").forEach(e=>e.placeholder=tr(e.dataset.p));
+ $$("#settings,.sub").forEach(x=>x.setAttribute("dir","ltr"));
+ fillMe();renderVals()}
+/* کیبورد | Keyboard: صفحه‌های تنظیمات همراه کیبورد بالا می‌آیند (sub-pages lift with keyboard) */
+if(window.visualViewport){const vw=window.visualViewport,kf=()=>{const kb=Math.max(0,innerHeight-vw.height-vw.offsetTop);$$(".sub").forEach(x=>x.style.bottom=kb>0?kb+"px":"0")};vw.addEventListener("resize",kf);vw.addEventListener("scroll",kf)}
+document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest(".sub"))setTimeout(()=>e.target.scrollIntoView({block:"center"}),300)});
+applyTheme();applyBg();applyLang();
+
+/* بدون پیشنهاد | No Suggestions: همه‌ی کادرهای نوشتن (حتی کادرهای تازه) پیشنهاد جیمیل، اسم، پر کردن خودکار و اصلاح خودکار ندارند (turns off autofill, autocorrect and suggestions on every input) */
+function noSuggest(root){(root.querySelectorAll?root.querySelectorAll("input,textarea"):[]).forEach(i=>{i.setAttribute("autocomplete","off");i.setAttribute("autocorrect","off");i.setAttribute("autocapitalize","off");i.setAttribute("spellcheck","false");i.setAttribute("data-lpignore","true");i.setAttribute("data-form-type","other")})}
+noSuggest(document);new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches&&n.matches("input,textarea"))noSuggest({querySelectorAll:()=>[n]});noSuggest(n)}}))).observe(document.body,{childList:true,subtree:true});
 
 /* ---- ۳.۱۳ راه‌اندازی آیکون‌ها | 3.13 Icon Init ---- */
 /* جایگذاری آیکون | Fill Icons: همه عنصرهای data-ic با SVG پر می‌شوند (fills static icon slots) */
