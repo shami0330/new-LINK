@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<!-- لینک مسیجر | Link Messenger — نسخه 0.1 (Version 0.1) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Link Messenger</title>
+<style>
+/* ===== بخش ۱ | SECTION 1: استایل‌ها | Styles ===== */
+
+/* متغیرهای رنگ | Color Variables: رنگ‌های اصلی تیره تلگرام (dark theme colors) */
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22}
+
+/* ریست پایه | Base Reset: حذف حاشیه‌ها و هایلایت لمس (no margin, no tap highlight) */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+
+/* بدنه | Body: پس‌زمینه سیاه، فونت سیستم، چینش همیشه چپ‌به‌راست (black bg, system font, always LTR) */
+html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden}
+
+/* قاب برنامه | App Frame: تمام صفحه، ۵ پیکسل پایین‌تر از ناحیه امن (full screen, extends 5px below safe area) */
+#app{position:fixed;inset:0 0 -5px 0;overflow:hidden}
+
+/* صفحه | Screen: هر صفحه کل قاب را می‌گیرد و با جابجایی انیمیشن می‌شود (full-frame page, slide animation) */
+.screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column}
+.screen.on{display:flex}
+
+/* سربرگ | Top Bar: ارتفاع ۵۶، زیر نوار وضعیت (height 56, below status bar) */
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px;gap:8px}
+
+/* کپسول دکمه | Pill Button: دکمه گرد تیره (dark rounded button) */
+.pill{background:var(--card);border-radius:20px;height:38px;padding:0 14px;display:flex;align-items:center;justify-content:center;font-weight:600;min-width:38px;cursor:pointer;transition:transform .12s}
+.pill:active{transform:scale(.92)}
+
+/* دکمه آبی | Blue Square Button: دکمه نوشتن پیام جدید (compose button, blue rounded square) */
+.blue{background:var(--blue);border-radius:12px}
+
+/* عنوان وسط | Center Title: عنوان وسط سربرگ (header title) */
+.title{display:flex;align-items:center;gap:6px;font-weight:700;font-size:17px;background:var(--card);border-radius:20px;padding:0 14px;height:38px}
+
+/* جستجو | Search Box: نوار جستجوی خاکستری (grey search bar) */
+.search{margin:6px 12px;background:var(--card);border-radius:12px;height:38px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--sub)}
+.search input{background:none;border:0;outline:0;color:var(--txt);font-size:15px;width:60%;text-align:center;user-select:text}
+
+/* تب‌های پوشه | Folder Tabs: همه / شخصی / گروه / کانال (All/PV/Gap/Channel) */
+.tabs{display:flex;gap:4px;margin:4px 12px;background:var(--card);border-radius:20px;padding:3px}
+.tab{flex:1;text-align:center;padding:6px 2px;border-radius:16px;font-size:14px;color:var(--txt);white-space:nowrap;transition:background .2s}
+.tab.on{background:var(--card2)}
+.tab b{background:#3a3a3c;border-radius:9px;padding:1px 6px;font-size:11px;margin-left:3px}
+
+/* لیست | List: ناحیه اسکرول با فضای خالی برای کپسول پایین (scroll area, bottom space for tab bar) */
+.list{flex:1;overflow-y:auto;padding-bottom:110px}
+
+/* ردیف چت | Chat Row: آواتار + نام + پیام + ساعت (avatar, name, message, time) */
+.row{display:flex;align-items:center;gap:12px;padding:8px 14px;position:relative;transition:background .15s,transform .2s}
+.row:active{background:var(--card)}
+.row.pin{background:#0e0e10}
+.row .mid{flex:1;min-width:0;border-bottom:.5px solid var(--line);padding-bottom:8px;margin-bottom:-8px}
+.row .n{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m{color:var(--sub);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.row .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;color:var(--sub);min-width:46px}
+.badge{background:#3a3a3c;color:#fff;border-radius:11px;padding:1px 7px;font-size:12px;font-weight:600}
+.badge.b{background:var(--blue)}
+
+/* آواتار | Avatar: دایره رنگی با حرف اول (colored circle with initial) */
+.av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#fff;flex:none;position:relative}
+.av.s{width:40px;height:40px;font-size:16px}
+.av.xl{width:96px;height:96px;font-size:40px}
+.dot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid #000}
+
+/* تیک | Tick: وضعیت ارسال (✓ ارسال، ✓✓ خوانده شده) */
+.tick{color:var(--blue);font-weight:700;letter-spacing:-5px;margin-right:5px}
+
+/* چک‌باکس ویرایش | Edit Checkbox: دایره انتخاب در حالت Edit (selection circle in Edit mode) */
+.chk{width:0;height:24px;border-radius:50%;border:2px solid #555;flex:none;overflow:hidden;opacity:0;transition:width .2s,opacity .2s,margin .2s;margin-right:-12px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.editing .chk{width:24px;opacity:1;margin-right:0}
+.chk.on{background:var(--blue);border-color:var(--blue)}
+
+/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات (Contacts/Chats/Settings) */
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 12px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
+.tb i{font-style:normal;font-size:20px}
+.tb.on{background:var(--card2);color:var(--blue)}
+
+/* نوار پایین ویرایش | Edit Bottom Bar: Read All / Delete (bottom actions in Edit mode) */
+#editbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 12px);display:none;justify-content:space-between;z-index:21}
+#editbar .pill{background:var(--card2);min-width:90px}
+
+/* منوی بلند‌فشار | Long-press Menu: منوی شناور تیره (floating dark menu) */
+#menu{position:absolute;right:16px;background:rgba(40,40,42,.96);backdrop-filter:blur(20px);border-radius:16px;width:230px;display:none;z-index:50;overflow:hidden;animation:pop .15s}
+#menu div{padding:13px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:.5px solid var(--line)}
+#menu div:last-child{border:0;color:var(--red)}
+#shade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:40}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+
+/* شیت پیام جدید | New Message Sheet: برگه‌ای که از پایین بالا می‌آید (bottom sheet) */
+.sheet{position:absolute;inset:0;background:var(--bg);transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:60;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.sheet.on{transform:none}
+.blueRow{display:flex;gap:14px;align-items:center;padding:13px 18px;color:var(--blue);border-bottom:.5px solid var(--line)}
+.alpha{position:absolute;right:4px;top:230px;display:flex;flex-direction:column;font-size:10px;color:var(--blue);gap:3px}
+.sec{padding:4px 18px;color:var(--sub);font-size:13px;background:#0b0b0c}
+
+/* صفحه چت | Chat Page: سربرگ، پیام‌ها و نوار ورودی (header, messages, input) */
+.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#0a0a0c}
+.b{max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
+.b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
+.b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
+.b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.pinbar{margin:4px 12px;background:var(--card);border-radius:14px;padding:7px 12px;font-size:13px;display:flex;justify-content:space-between}
+.pinbar span{color:var(--blue);font-weight:600}
+.inbar{display:flex;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 10px);align-items:center}
+.inbar input{flex:1;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:15px;user-select:text}
+.round{width:40px;height:40px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.round.send{background:var(--blue)}
+
+/* تنظیمات | Settings: کارت‌های گروه‌بندی‌شده (grouped cards) */
+.card{background:var(--card);border-radius:14px;margin:10px 14px;overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:.5px solid var(--line)}
+.item:last-child{border:0}
+.ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.item .r{margin-left:auto;color:var(--sub)}
+
+/* ورود | Login Page: فرم ایمیل و رمز (email + password form) */
+#login{justify-content:center;align-items:center;gap:12px;padding:30px}
+#login input{width:100%;max-width:340px;background:var(--card);border:0;outline:0;border-radius:12px;height:46px;padding:0 14px;color:#fff;font-size:16px;user-select:text}
+#login button{width:100%;max-width:340px;height:46px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-size:16px;font-weight:600}
+#login a{color:var(--blue);font-size:14px}
+#login p{color:var(--sub);font-size:13px;max-width:340px;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== بخش ۲ | SECTION 2: ساختار صفحه | HTML Structure ===== -->
+
+<!-- ورود | Login Screen: ثبت‌نام/ورود با ایمیل و رمز -->
+<div class="screen on" id="login">
+  <div class="av xl" style="background:linear-gradient(#4aa8ff,#1a6bff)">🔗</div>
+  <h2 id="ltitle">Link Messenger</h2>
+  <p>Enter only the part before @ (e.g. shami). The app assumes @gmail.com.</p>
+  <input id="em" placeholder="Email (before @ is enough)" autocapitalize="off">
+  <input id="pw" type="password" placeholder="Password">
+  <button id="lbtn">Sign Up</button>
+  <a id="lsw">Already have an account? Log in</a>
+</div>
+
+<!-- چت‌ها | Chats Screen: لیست گفتگوها -->
+<div class="screen" id="chats">
+  <div class="top">
+    <div class="pill" id="editBtn">Edit</div>
+    <div class="title">🔗 Chats</div>
+    <div style="display:flex;gap:8px"><div class="pill">🛡</div><div class="pill" id="compose" style="background:var(--blue)">✎</div></div>
+  </div>
+  <div class="search">🔍 <input id="q" placeholder="Search" oninput="renderChats()"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="list" id="clist"></div>
+</div>
+
+<!-- مخاطبین | Contacts Screen -->
+<div class="screen" id="contacts">
+  <div class="top"><div class="pill">Sort</div><div class="title" style="background:none">Contacts</div><div class="pill">＋</div></div>
+  <div class="search">🔍 Search</div>
+  <div class="list" id="ctlist"></div>
+</div>
+
+<!-- تنظیمات | Settings Screen -->
+<div class="screen" id="settings">
+  <div class="top"><div class="pill">▦</div><div style="display:flex;gap:8px"><div class="pill">🔍</div><div class="pill">Edit</div></div></div>
+  <div class="list">
+    <div style="text-align:center;margin-top:6px"><div class="av xl" id="myav" style="margin:auto;background:#f7a;"></div>
+      <h2 id="myname" style="margin-top:8px"></h2><div style="color:var(--sub)" id="myinfo"></div></div>
+    <div class="card"><div class="item" style="color:var(--blue)"><div class="ic" style="background:#12375e">📷</div>Change Profile Photo</div></div>
+    <div class="card"><div class="item"><div class="av s" style="width:26px;height:26px;font-size:12px;background:#2ecc71" id="myav2"></div><span id="myname2"></span></div><div class="item" style="color:var(--blue)">＋ Add Account</div></div>
+    <div class="card"><div class="item"><div class="ic" style="background:#e5484d">👤</div>My Profile<span class="r">›</span></div></div>
+    <div class="card"><div class="item"><div class="ic" style="background:#30a46c">🛡</div>Proxy<span class="r">Disabled</span></div></div>
+    <div class="card">
+      <div class="item"><div class="ic" style="background:#2f8fff">🔖</div>Saved Messages<span class="r">›</span></div>
+      <div class="item"><div class="ic" style="background:#30a46c">📞</div>Recent Calls<span class="r">›</span></div>
+      <div class="item"><div class="ic" style="background:#f5a524">📱</div>Devices<span class="r">7 ›</span></div>
+      <div class="item"><div class="ic" style="background:#2f8fff">🗂</div>Chat Folders<span class="r">›</span></div>
+    </div>
+    <div class="card"><div class="item" style="color:var(--red)" id="logout">Log Out</div></div>
+  </div>
+</div>
+
+<!-- صفحه گفتگو | Chat Page -->
+<div class="screen" id="chat" style="z-index:30">
+  <div class="top">
+    <div class="pill" id="back">‹</div>
+    <div class="title" style="flex-direction:column;gap:0;height:44px;justify-content:center"><span id="cname"></span><small id="cstat" style="color:var(--sub);font-weight:400;font-size:12px"></small></div>
+    <div class="av s" id="cav"></div>
+  </div>
+  <div class="pinbar"><div><span>Pinned Message</span><br><small style="color:var(--sub)">Photo</small></div>📌</div>
+  <div class="msgs" id="msgs"></div>
+  <div class="inbar"><div class="round">📎</div><input id="mi" placeholder="Message"><div class="round send" id="send">➤</div></div>
+</div>
+
+<!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
+<div id="tabbar">
+  <div class="tb" data-s="contacts"><i>👤</i>Contacts</div>
+  <div class="tb on" data-s="chats"><i>💬</i>Chats</div>
+  <div class="tb" data-s="settings"><i>⚙️</i>Settings</div>
+</div>
+<div id="editbar"><div class="pill" id="readAll">Read All</div><div class="pill" id="delSel" style="color:var(--red)">Delete</div></div>
+
+<!-- منو و شیت | Menu & Sheet -->
+<div id="shade"></div><div id="menu"></div>
+<div class="sheet" id="newmsg">
+  <div class="top"><div class="pill" id="closeNew" style="border-radius:50%;width:38px">✕</div><div class="title" style="background:none">New Message</div><div style="width:38px"></div></div>
+  <div class="search">🔍 Search</div>
+  <div class="list" id="nmlist" style="padding-bottom:30px"></div>
+</div>
+
+</div>
+<script>
+/* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
+
+/* ---- ۳.۱ داده‌های نمایشی | 3.1 Demo Data ---- */
+/* چت‌ها | Chats Data: type pv=شخصی gp=گروه ch=کانال; pin=سنجاق; t=وضعیت تیک 0 ساعت 1 تک 2 جفت; un=خوانده‌نشده */
+let CHATS=[
+ {id:1,n:"Roj",m:"بمیرم برات 😭 شب توام ✨❤️",tm:"23:11",ty:"pv",pin:1,t:2,un:0,mute:0,on:0,col:"#d98"},
+ {id:2,n:"Saved Messages",m:"roji · Photo",tm:"15:48",ty:"pv",pin:1,t:0,un:0,mute:0,on:0,col:"#3a9bff"},
+ {id:3,n:"Telegram ✔",m:"New login. Dear Shami, we detected a login into your account…",tm:"Thu",ty:"pv",pin:0,t:0,un:1,mute:0,on:0,col:"#2a9fe0"},
+ {id:4,n:"Melika",m:"GIF",tm:"Wed",ty:"pv",pin:0,t:0,un:0,mute:0,on:1,col:"#777"},
+ {id:5,n:"Saman",m:"🎤 Voice Message",tm:"Tue",ty:"pv",pin:0,t:0,un:0,mute:0,on:1,col:"#9b6"},
+ {id:6,n:"Artin",m:"پس بشیم",tm:"Sat",ty:"pv",pin:0,t:2,un:0,mute:0,on:0,col:"#68a"},
+ {id:7,n:"Fifi",m:"😊 Sticker",tm:"10/27",ty:"pv",pin:0,t:2,un:0,mute:0,on:0,col:"#3a9bff"},
+ {id:8,n:"Class Group",m:"Ms. Sara: فردا امتحان داریم",tm:"23:15",ty:"gp",pin:0,t:0,un:2,mute:0,on:0,col:"#e8743b"},
+ {id:9,n:"Family",m:"Mom: شام چی داریم؟",tm:"22:40",ty:"gp",pin:0,t:0,un:0,mute:1,on:0,col:"#9a5de0"},
+ {id:10,n:"Link News",m:"New version 0.1 released",tm:"23:16",ty:"ch",pin:0,t:0,un:118,mute:0,on:0,col:"#222"},
+ {id:11,n:"Tech Channel",m:"New phone leaked today",tm:"23:13",ty:"ch",pin:0,t:0,un:2,mute:1,on:0,col:"#111"}
+];
+/* مخاطبین | Contacts Data: نام و وضعیت آنلاین (name and last-seen text) */
+let PEOPLE=[["Adrina","last seen recently"],["Ailin","last seen recently"],["Amir Alinezhad","last seen recently"],["Artin","last seen 05/26/25"],["Asal","last seen recently"],["Bazdar","last seen recently"],["Melika","online"],["Saman","online"],["Roj","last seen 5 minutes ago"],["Salma","last seen 15 minutes ago"]].sort((a,b)=>a[0].localeCompare(b[0]));
+/* پیام‌های نمونه | Sample Messages: گفتگوی نمایشی (demo conversation) */
+const SAMPLE=[["ot","بلو نفسمم دیل وقتهه 😍","23:11"],["me","شبت بخیرررررر 💗","23:11"],["ot","چشم مامانی من 💋 🤍🤍","23:11"],["me","بمیرم برات 😭 شب توام ✨❤️","23:11"]];
+
+/* ---- ۳.۲ وضعیت برنامه | 3.2 App State ---- */
+/* وضعیت | State: تب فعلی، حالت ویرایش، انتخاب‌ها، حالت ثبت‌نام (current folder, edit mode, selected ids, signup mode) */
+const S={folder:"all",edit:false,sel:new Set(),signup:true,user:null,openId:null};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ---- ۳.۳ ابزارها | 3.3 Helpers ---- */
+/* آواتار | Avatar Builder: دایره رنگی با حرف اول و نقطه آنلاین (colored circle, initial, online dot) */
+const av=(n,c,on,cls="")=>`<div class="av ${cls}" style="background:${c}">${n.trim()[0].toUpperCase()}${on?'<span class="dot"></span>':''}</div>`;
+/* رنگ از نام | Color From Name: رنگ ثابت برای هر نام (stable color per name) */
+const colOf=n=>`hsl(${[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 55% 50%)`;
+/* صفحه | Show Screen: فقط یک صفحه نمایش داده می‌شود و تب فعال عوض می‌شود (show one screen, update active tab) */
+function show(id){$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
+ $("#tabbar").style.display=(id==="chat"||id==="login")?"none":"flex";}
+
+/* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
+/* ورود | Login Action: فقط بخش قبل @ کافی است؛ بدون @ خودکار gmail.com اضافه می‌شود (prefix only, auto @gmail.com) */
+$("#lbtn").onclick=()=>{let e=$("#em").value.trim(),p=$("#pw").value;if(!e||p.length<4){alert("Email and password (min 4 chars) required");return}
+ if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:e.split("@")[0]};
+ $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
+ $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
+ renderChats();renderContacts();show("chats")};
+/* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
+$("#lsw").onclick=()=>{S.signup=!S.signup;$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
+/* خروج | Logout: برگشت به صفحه ورود (back to login) */
+$("#logout").onclick=()=>{S.user=null;show("login")};
+
+/* ---- ۳.۵ لیست چت‌ها | 3.5 Chat List ---- */
+/* تب‌ها | Render Tabs: همه/PV/Gap/Channel با شمارنده (folders with unread counters) */
+function renderTabs(){const T=[["all","All"],["pv","P V👤"],["gp","Gap👥"],["ch","Channel📢"]];
+ $("#tabs").innerHTML=T.map(([k,l])=>{const c=CHATS.filter(x=>(k==="all"||x.ty===k)&&x.un).length;
+  return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${l}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" ✕":""}</div>`}).join("");
+ $$(".tab").forEach(t=>t.onclick=()=>{S.folder=t.dataset.k;renderChats()})}
+/* رندر چت‌ها | Render Chats: سنجاق‌شده‌ها بالا، بقیه به ترتیب (pinned first, then order) */
+function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
+ const L=CHATS.filter(c=>(S.folder==="all"||c.ty===S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
+ $("#clist").className="list"+(S.edit?" editing":"");
+ $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
+  <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?"✓":""}</div>${av(c.n,c.col,c.on)}
+  <div class="mid"><div class="n">${c.n}${c.mute?" 🔇":""}</div><div class="m">${c.m}</div></div>
+  <div class="meta"><span>${c.t?`<span class="tick">${c.t===2?"✓✓":"✓"}</span>`:""}${c.tm}</span>
+  ${c.un?`<span class="badge ${c.mute?"":"b"}">${c.un}</span>`:c.pin?"📌":"<span></span>"}</div></div>`).join("");
+ $$(".row").forEach(bindRow)}
+/* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
+function bindRow(r){const id=+r.dataset.id;let tm,long=false;
+ const start=()=>{long=false;tm=setTimeout(()=>{long=true;if(!S.edit)openMenu(id,r)},450)};
+ const end=()=>clearTimeout(tm);
+ r.addEventListener("touchstart",start,{passive:true});r.addEventListener("mousedown",start);
+ ["touchend","touchmove","mouseup","mouseleave"].forEach(e=>r.addEventListener(e,end));
+ r.onclick=()=>{if(long)return;if(S.edit){S.sel.has(id)?S.sel.delete(id):S.sel.add(id);renderChats();updEdit()}else openChat(id)}}
+
+/* ---- ۳.۶ منوی بلند‌فشار | 3.6 Long-press Menu ---- */
+/* باز کردن منو | Open Menu: گزینه‌ها بر اساس وضعیت چت (items depend on chat state) */
+function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");
+ const it=[["Add to Folder","🗂",()=>{c.ty=c.ty==="pv"?"gp":"pv"}],[c.un?"Mark as Read":"Mark as Unread","✓",()=>{c.un=c.un?0:1}],[c.pin?"Unpin":"Pin","📌",()=>{c.pin=c.pin?0:1}],[c.mute?"Unmute":"Mute","🔔",()=>{c.mute=c.mute?0:1}],["Delete","🗑",()=>{CHATS=CHATS.filter(x=>x.id!==id)}]];
+ m.innerHTML=it.map((x,i)=>`<div data-i="${i}">${x[0]}<span>${x[1]}</span></div>`).join("");
+ const y=Math.min(r.getBoundingClientRect().bottom+6,innerHeight-290);m.style.top=y+"px";m.style.display="block";$("#shade").style.display="block";
+ $$("#menu div").forEach(d=>d.onclick=()=>{it[+d.dataset.i][2]();closeMenu();renderChats()})}
+/* بستن منو | Close Menu */
+function closeMenu(){$("#menu").style.display="none";$("#shade").style.display="none"}
+$("#shade").onclick=closeMenu;
+
+/* ---- ۳.۷ حالت ویرایش | 3.7 Edit Mode ---- */
+/* ویرایش | Toggle Edit: Edit/Done، چک‌باکس‌ها و نوار پایین (checkboxes + bottom bar) */
+$("#editBtn").onclick=()=>{S.edit=!S.edit;S.sel.clear();$("#editBtn").textContent=S.edit?"Done":"Edit";
+ $("#editbar").style.display=S.edit?"flex":"none";$("#tabbar").style.display=S.edit?"none":"flex";renderChats();updEdit()};
+/* بروزرسانی دکمه‌ها | Update Edit Buttons: Read All ↔ Read، Delete (label depends on selection) */
+function updEdit(){$("#readAll").textContent=S.sel.size?"Read":"Read All";$("#delSel").textContent=S.sel.size?`Delete (${S.sel.size})`:"Delete"}
+$("#readAll").onclick=()=>{CHATS.forEach(c=>{if(!S.sel.size||S.sel.has(c.id))c.un=0});renderChats()};
+$("#delSel").onclick=()=>{if(!S.sel.size)return;CHATS=CHATS.filter(c=>!S.sel.has(c.id));S.sel.clear();renderChats();updEdit()};
+
+/* ---- ۳.۸ مخاطبین | 3.8 Contacts ---- */
+/* رندر مخاطبین | Render Contacts: لیست با وضعیت آنلاین/آخرین بازدید (list with last seen) */
+function renderContacts(){$("#ctlist").innerHTML=`<div class="blueRow" style="border:0">👥 Invite Friends</div>`+
+ PEOPLE.map(p=>`<div class="row" data-n="${p[0]}">${av(p[0],colOf(p[0]),0,"s")}<div class="mid"><div class="n">${p[0]}</div><div class="m" style="${p[1]==="online"?"color:var(--blue)":""}">${p[1]}</div></div></div>`).join("");
+ $$("#ctlist .row").forEach(r=>r.onclick=()=>openByName(r.dataset.n))}
+/* باز کردن با نام | Open By Name: چت موجود یا ساخت چت جدید (existing chat or create new) */
+function openByName(n){let c=CHATS.find(x=>x.n===n);if(!c){c={id:Date.now(),n,m:"",tm:"now",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(n)};CHATS.push(c)}
+ $("#newmsg").classList.remove("on");openChat(c.id)}
+
+/* ---- ۳.۹ پیام جدید | 3.9 New Message Sheet ---- */
+/* شیت پیام جدید | Open New Message: گروه/مخاطب/کانال + لیست الفبایی (New Group/Contact/Channel + A-Z list) */
+$("#compose").onclick=()=>{let h=`<div class="blueRow">👥 New Group</div><div class="blueRow">👤 New Contact</div><div class="blueRow" style="border:0">📢 New Channel</div>`,last="";
+ PEOPLE.forEach(p=>{const L=p[0][0].toUpperCase();if(L!==last){h+=`<div class="sec">${L}</div>`;last=L}
+  h+=`<div class="row" data-n="${p[0]}">${av(p[0],colOf(p[0]),0,"s")}<div class="mid"><div class="n">${p[0]}</div><div class="m">${p[1]}</div></div></div>`});
+ $("#nmlist").innerHTML=h;$$("#nmlist .row").forEach(r=>r.onclick=()=>openByName(r.dataset.n));$("#newmsg").classList.add("on")};
+$("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
+
+/* ---- ۳.۱۰ صفحه گفتگو | 3.10 Chat Page ---- */
+/* باز کردن گفتگو | Open Chat: نام، وضعیت، پیام‌های نمونه و خوانده شدن (header, status, messages, mark read) */
+function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
+ $("#cname").textContent=c.n;$("#cstat").textContent=c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
+ $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
+ $("#msgs").innerHTML="";(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).forEach(s=>addMsg(s[0],s[1],s[2]));
+ $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none"}
+/* افزودن حباب | Add Bubble: راست=من، چپ=طرف مقابل (right=me, left=other) */
+function addMsg(w,t,tm){const d=document.createElement("div");d.className="b "+w;d.innerHTML=`${t}<small>${tm}${w==="me"?' <span class="tick" style="color:#fff">✓✓</span>':""}</small>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
+/* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
+function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";
+ const c=CHATS.find(x=>x.id===S.openId);c.m=v;c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
+ setTimeout(()=>addMsg("ot","👍",now),900)}
+$("#send").onclick=send;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
+/* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
+$("#back").onclick=()=>{$("#chat").classList.remove("on");show("chats");renderChats()};
+
+/* ---- ۳.۱۱ ناوبری | 3.11 Tab Navigation ---- */
+/* تب‌های پایین | Bottom Tabs: جابجایی بین مخاطبین/چت‌ها/تنظیمات (switch screens) */
+$$(".tb").forEach(t=>t.onclick=()=>show(t.dataset.s));
+</script>
+</body>
+</html>
