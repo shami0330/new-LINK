@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.7 (Version 2.7) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.9 (Version 2.9) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -137,7 +137,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 
 /* صفحه چت | Chat Page: سربرگ، پیام‌ها و نوار ورودی (header, messages, input) */
 .msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--chatbg)}
-.b{max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
+.b{position:relative;touch-action:pan-y;max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
 .b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
 .b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
@@ -148,10 +148,12 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .pinbar span{color:var(--blue);font-weight:600}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
-#chat .msgs{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
-#chat.kb .msgs{padding-bottom:58px}
+#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(58px + env(safe-area-inset-bottom)))}
+#chat.kb .msgs{padding-bottom:var(--ibh,58px)}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
-#chat .top .title{padding:0 36.5px}
+#chat .top .title{width:170px;padding:0;border-radius:22px;justify-content:center;overflow:hidden}
+/* عرض ثابت | Fixed Width: همه گفتگوها عرض کپسول یکسان (۱۷۰) دارند؛ نام یا وضعیت بلند با «...» کوتاه می‌شود (same 170px capsule for every chat; long text gets ellipsis) */
+#chat .top .title #cname,#chat .top .title #cstat{max-width:100%;padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* پس‌زمینه یکپارچه گفتگو | Unified Chat Background: پس‌زمینه‌ی انتخابی روی کل صفحه‌ی گفتگو است و هدر، پین و نوار پیام شفاف روی آن شناورند؛ فقط کپسول‌ها رنگ دارند (chat background covers the whole page; header, pin row and bar are transparent, only capsules have color) */
 #chat{background:var(--chatbg)}
 #chat .msgs{background:transparent}
@@ -223,16 +225,33 @@ html.light .b.me{color:#0b0b0c}
 html.light .b.me small{color:rgba(0,0,0,.5)}
 html.light .b.me .tick{color:var(--blue)!important}
 /* پروفایل دو مرحله‌ای | Two-stage Profile: مرحله ۱ آواتار بزرگ با کشیدن به پایین، مرحله ۲ تمام‌صفحه با لمس (stage 1 big avatar on pull-down, stage 2 full screen on tap) */
-#myav{transition:width .25s,height .25s,font-size .25s;background-size:cover}
-.ph.big #myav{width:220px;height:220px;font-size:90px}
+#myav{transition:width .25s,height .25s,font-size .25s,border-radius .25s;background-size:cover;background-position:center}
+/* مرحله ۱ مربعی | Stage 1 Square: آواتار تمام‌عرض و مربع (full-width square, no rounding) */
+.ph.big #myav{width:100%;height:min(100vw,50vh);border-radius:0;font-size:120px}
 .ph.pull #myav{transition:none}
 #pfFull{position:absolute;inset:0;background:#000;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .2s;color:#fff}
 #pfFull.on{opacity:1;pointer-events:auto}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-.inbar{display:flex;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 10px);align-items:center}
-.inbar input{flex:1;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
+.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 10px);align-items:flex-end}
+/* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
+.inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
+/* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
+#rbar{flex:0 0 100%;order:-1;display:none;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:6px 8px 6px 10px}
+#rbar.on{display:flex}
+.rbq{flex:1;min-width:0;border-left:3px solid var(--blue);padding-left:8px}
+.rbq b{display:block;color:var(--blue);font-size:13px}
+.rbq span{display:block;color:var(--sub);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rx{width:28px;height:28px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;flex:none}
+/* نقل‌قول در حباب | Quote In Bubble: بلوک پاسخ بالای متن حباب (reply block above the text) */
+.q{border-left:3px solid rgba(255,255,255,.7);padding-left:7px;margin-bottom:4px;font-size:13px}
+.q b{display:block}.q span{display:block;opacity:.75;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.light .b.me .q{border-color:var(--blue)}
+html.light .b.ot .q{border-color:var(--blue)}
+/* آیکون پاسخ | Reply Icon: با کشیدن حباب به چپ از لبه ظاهر می‌شود (appears at the edge while dragging) */
+.ri{position:absolute;right:-38px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:50%;background:rgba(120,120,128,.45);color:var(--txt);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.5)}
+.inbar input,.inbar textarea{flex:1;min-width:0;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
 .round{width:40px;height:40px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
 .round.send{background:var(--blue)}
 
@@ -253,7 +272,8 @@ html.light .b.me .tick{color:var(--blue)!important}
 
 /* ورود | Login Page: فرم ایمیل و رمز (email + password form) */
 /* چیدمان بالا | Top Layout: محتوا از بالا شروع می‌شود تا زیر کیبورد پنهان نشود (content starts near the top so the keyboard never covers it) */
-#login{justify-content:flex-start;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 7vh) 30px 30px}
+#login{justify-content:flex-start;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 7vh) 30px 30px;overflow:hidden;touch-action:none;overscroll-behavior:none}
+#login input,#login button{touch-action:manipulation}
 #login input{width:100%;max-width:340px;background:var(--card);border:0;outline:0;border-radius:12px;height:46px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
 /* پسورد و چشم | Password Eye: آیکون چشم داخل فیلد، سمت راست (eye icon inside the field, right side) */
 .pwrap{position:relative;width:100%;max-width:340px}
@@ -344,7 +364,7 @@ html.light #login .pf{color:#000}
 html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--bubOut:#b9d2ff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);--prev:#929297;--snd:#1c1c1e;color-scheme:light}
 /* آیکون عکس پروفایل در روز | Profile Photo Icon (Day): کاشی آبی روشن به‌جای سرمه‌ای تیره (light blue tile instead of dark navy) */
 html.light #chPhoto .ic{background:#d5e6ff!important}
-html.light #login input,html.light .inbar input{color:#000}
+html.light #login input,html.light .inbar input,html.light .inbar textarea{color:#000}
 html.light #tabbar{background:rgba(255,255,255,.92)}
 html.light .sec{background:#e9e9ee}
 html.light .dt{color-scheme:light}
@@ -514,7 +534,7 @@ html.light .dt{color-scheme:light}
   </div>
   <div class="pinbar"><div><span>Pinned Message</span><br><small style="color:var(--sub)">Photo</small></div><i data-ic="pin" data-s="18"></i></div>
   <div class="msgs" id="msgs"></div>
-  <div class="inbar"><div class="round" id="attachBtn"><i data-ic="attach" data-s="20"></i></div><input id="mi" placeholder="Message" autocomplete="off" autocorrect="off" spellcheck="false"><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
+  <div class="inbar"><div id="rbar"><div class="rbq"><b id="rbar_n"></b><span id="rbar_t"></span></div><div class="rx" id="rbarX"><i data-ic="close" data-s="16"></i></div></div><div class="round" id="attachBtn"><i data-ic="attach" data-s="20"></i></div><textarea id="mi" rows="1" dir="auto" placeholder="Message" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"></textarea><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
 </div>
 
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
@@ -563,7 +583,7 @@ html.light .dt{color-scheme:light}
 
 /* ---- ۳.۰ آیکون‌ها | 3.0 Icons ---- */
 /* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه تلگرام، بدون ایموجی (Telegram-like line icons, no emoji) */
-const P={more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M7 4h4v16H7zM13 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
+const P={reply:"M9 14L4 9l5-5M4 9h10a6 6 0 016 6v3",more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M7 4h4v16H7zM13 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
 person:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6",chat:"M21 12a8 8 0 01-11.5 7.2L4 20l1.2-4.3A8 8 0 1121 12z",
 gear:"M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
 compose:"M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4",back:"M15 5l-7 7 7 7",pin:"M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z",
@@ -695,7 +715,7 @@ $("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
 
 /* ---- ۳.۱۰ صفحه گفتگو | 3.10 Chat Page ---- */
 /* باز کردن گفتگو | Open Chat: نام، وضعیت، پیام‌های نمونه و خوانده شدن (header, status, messages, mark read) */
-function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
+function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.reply=null;$("#rbar").classList.remove("on");fitBar();
  $("#cname").textContent=c.n;$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
  S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
@@ -704,15 +724,15 @@ function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;
 /* برچسب روز | Day Label: «امروز» برای امروز؛ برای قدیمی‌تر ماه و روز شمسی (Today, or Jalali month + day) */
 function dayLabel(n){if(n===0)return "امروز";const f=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",day:"numeric"}).formatToParts(new Date(Date.now()-n*864e5));
  return f.find(x=>x.type==="month").value+" "+f.find(x=>x.type==="day").value}
-function addMsg(w,t,tm,n=0){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w;d.innerHTML=`${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
+function addMsg(w,t,tm,n=0,rp=null){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w;d.dataset.t=t;d.dataset.w=w;d.innerHTML=`${rp?`<div class="q"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
-function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now);$("#mi").value="";updSend();
+function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now,0,S.reply);clearReply();$("#mi").value="";grow();updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
  if(c.id===2){CFG.saved.push(["me",v,now,0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0]);saveCfg();setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);saveCfg()},900)}}
 /* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
 function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim();$("#send").classList.toggle("send",has);$("#send").innerHTML=ic(has?"send":S.rec==="voice"?"mic":"video",20)}
 $("#send").onclick=()=>{if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
-$("#mi").oninput=updSend;$("#mi").onkeydown=e=>{if(e.key==="Enter")send()};
+$("#mi").oninput=updSend;
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
 $("#back").onclick=()=>{$("#chat").classList.remove("on");if(S.fromSet){S.fromSet=false;show("settings");return}show("chats");renderChats()};
 
@@ -733,7 +753,7 @@ function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(
 ["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{const t=ev.target.nodeType===1?ev.target:ev.target.parentElement;if(!(e==="selectstart"&&t&&(t.tagName==="INPUT"||t.closest("[contenteditable]"))))ev.preventDefault()},{passive:false}));
 /* هماهنگی با کیبورد | Keyboard Sync: پس‌زمینه ثابت می‌ماند؛ فقط صفحه چت (نوار پیام و پیام‌ها) همراه کیبورد بالا می‌آید (background never moves; only chat page resizes with keyboard) */
 const vv=window.visualViewport;
-function fit(){window.scrollTo(0,0);const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);const c=$("#chat");c.style.bottom=kb>0?(kb+5)+"px":"0";c.classList.toggle("kb",kb>0);$("#msgs").scrollTop=1e9}
+function fit(){window.scrollTo(0,0);const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);const c=$("#chat");c.style.bottom=kb>0?(kb+5)+"px":"0";c.classList.toggle("kb",kb>0);fitBar();$("#msgs").scrollTop=1e9}
 if(vv){vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit)}
 window.addEventListener("scroll",()=>window.scrollTo(0,0));
 
@@ -774,7 +794,7 @@ function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
  $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
  paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
-$("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(!S.user)return;if(S.pfBig)openFull();else openSub("pfile")};
+$("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(!S.user)return;if(S.pfBig)openViewer($("#myav"),im=>paintAv(im,S.user),false);else setBig(true)};
 $("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
 $("#edPhoto").onclick=$("#ed_av").onclick=()=>pickPhoto(d=>{ED.photo=d;paintAv($("#ed_av"),{name:$("#ed_first").value||S.user.name,photo:d})});
 $("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
@@ -948,11 +968,11 @@ $$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend
 /* ---- پروفایل دو مرحله‌ای | Two-stage Profile ---- */
 /* مرحله ۱ | Stage 1 – Big Avatar: کشیدن صفحه تنظیمات به پایین آواتار را همراه انگشت بزرگ می‌کند؛ با رها کردن بعد از ۶۰ پیکسل بزرگ می‌ماند و با کشیدن به بالا یا اسکرول جمع می‌شود (pull-down grows the avatar live; release past 60px keeps it big; swipe up or scroll collapses) */
 S.pfBig=false;
-function setBig(v){S.pfBig=v;$("#settings .ph").classList.toggle("big",v);const a=$("#myav");a.style.width=a.style.height=a.style.fontSize=""}
+function setBig(v){S.pfBig=v;$("#settings .ph").classList.toggle("big",v);const a=$("#myav");a.style.width=a.style.height=a.style.fontSize=a.style.borderRadius=""}
 (function(){const L=$("#settings .list"),ph=$("#settings .ph"),a=$("#myav");let y0=null,d=0;
  L.addEventListener("touchstart",e=>{y0=L.scrollTop<=0?e.touches[0].clientY:null;d=0},{passive:true});
  L.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;
-  if(!S.pfBig&&d>0&&L.scrollTop<=0){e.preventDefault();ph.classList.add("pull");const z=Math.min(96+d*.9,220);a.style.width=a.style.height=z+"px";a.style.fontSize=(z*.41)+"px"}
+  if(!S.pfBig&&d>0&&L.scrollTop<=0){e.preventDefault();ph.classList.add("pull");const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W,innerHeight*.5);a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
   else if(S.pfBig&&d<-30)setBig(false)},{passive:false});
  L.addEventListener("touchend",()=>{ph.classList.remove("pull");if(!S.pfBig&&d>60)setBig(true);else if(!S.pfBig)setBig(false);y0=null;d=0});
  L.addEventListener("scroll",()=>{if(S.pfBig&&L.scrollTop>20)setBig(false)},{passive:true})})();
@@ -975,7 +995,7 @@ function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.
  $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;
  $("#cp_ph").textContent="+98 901 720 6536";$("#cp_un").textContent="@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");
  paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();$("#cp").classList.add("on")}
-$("#chat .top .title").onclick=openCP;
+$("#chat .top .title").onclick=openCP;$("#cav").onclick=openCP;
 $("#cpBack").onclick=()=>{stopPl();$("#cp").classList.remove("on")};
 /* تب‌ها | Render Tabs: Media / Saved / Files / Music / Voice / Links */
 function cpTabs(){$("#cptabs").innerHTML=TABS.map(([k,l])=>`<div class="ct ${CP.tab===k?"on":""}" data-k="${k}">${l}</div>`).join("");
@@ -1030,6 +1050,31 @@ $("#vwBack").onclick=closeViewer;
  vw.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;d=0},{passive:true});
  vw.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;$("#vwimg").style.transform=`translateY(${d}px)`;$("#vwbg").style.opacity=Math.max(0,1-Math.abs(d)/400);$$("#vw .vwc").forEach(c=>c.style.opacity=0)},{passive:true});
  vw.addEventListener("touchend",()=>{if(y0===null)return;if(Math.abs(d)>110)closeViewer();else if(Math.abs(d)>4){const im=$("#vwimg");im.animate([{transform:`translateY(${d}px)`},{transform:"none"}],{duration:200});im.style.transform="";$("#vwbg").style.opacity=1;$$("#vw .vwc").forEach(c=>c.style.opacity=1)}y0=null;d=0})})();
+
+/* ---- پاسخ و نوار پیام | Reply & Message Bar ---- */
+/* ارتفاع نوار | Bar Height: ارتفاع واقعی نوار پایین را برای فاصله پیام‌ها ثبت می‌کند (stores real bar height so messages stay above it) */
+function fitBar(){requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",$(".inbar").offsetHeight+"px"))}
+/* رشد کادر | Auto-grow: کادر با هر خط جدید بزرگ می‌شود (grows with each new line) */
+function grow(){const m=$("#mi");m.style.height="40px";m.style.height=Math.min(Math.max(m.scrollHeight,40),120)+"px";fitBar()}
+$("#mi").addEventListener("input",grow);
+/* بسته نماندن کیبورد | Keep Keyboard: لمس دکمه‌های نوار پیام فوکوس کادر را نمی‌گیرد (tapping bar buttons never blurs the input) */
+$$(".inbar .round,#rbarX").forEach(b=>["pointerdown","mousedown"].forEach(ev=>b.addEventListener(ev,e=>e.preventDefault())));
+/* پاسخ | Reply State: نام و متن پیام انتخاب‌شده (selected message) */
+S.reply=null;
+function setReply(b){S.reply={n:b.dataset.w==="me"?"You":$("#cname").textContent,t:b.dataset.t};$("#rbar_n").textContent=S.reply.n;$("#rbar_t").textContent=S.reply.t;$("#rbar").classList.add("on");$("#mi").focus();fitBar()}
+function clearReply(){S.reply=null;$("#rbar").classList.remove("on");fitBar()}
+$("#rbarX").onclick=clearReply;
+/* کشیدن حباب به چپ | Swipe Bubble Left: بیش از ۶۰ پیکسل و رها کردن، پاسخ را فعال می‌کند؛ آیکون پاسخ همراه کشیدن ظاهر می‌شود (past 60px and release = reply; icon appears while dragging) */
+(function(){let b=null,x0=0,y0=0,dx=0,lock=0;const M=$("#msgs");
+ M.addEventListener("touchstart",e=>{b=e.target.closest(".b");if(!b)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;lock=0;b.style.transition="none"},{passive:true});
+ M.addEventListener("touchmove",e=>{if(!b)return;const x=e.touches[0].clientX-x0,y=e.touches[0].clientY-y0;
+  if(!lock){if(Math.abs(y)>8&&Math.abs(y)>Math.abs(x)){b.style.transition="";b=null;return}if(x<-8)lock=1;else return}
+  dx=Math.max(x,-80);b.style.transform=`translateX(${dx*.85}px)`;const r=b.querySelector(".ri");r.style.opacity=Math.min(1,-dx/50);r.style.transform=`scale(${Math.min(1,-dx/60)})`},{passive:true});
+ M.addEventListener("touchend",()=>{if(!b)return;const hit=dx<-60,r=b.querySelector(".ri");b.style.transition="transform .2s";b.style.transform="";r.style.opacity=0;r.style.transform="scale(.5)";if(hit)setReply(b);b=null;dx=0})})();
+
+/* ---- قفل اسکرول ورود | Login Scroll Lock ---- */
+/* بدون اسکرول | No Scroll: صفحه ورود با کیبورد باز یا بسته هیچ‌وقت اسکرول نمی‌شود (login page never scrolls, keyboard open or closed) */
+$("#login").addEventListener("touchmove",e=>{if(e.target.tagName!=="INPUT")e.preventDefault()},{passive:false});
 
 /* ---- چشم پسورد | Password Eye Toggle ---- */
 /* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان، چشم ساده)؛ با زدن، پسورد پنهان می‌شود و چشم خط‌دار می‌شود؛ دوباره زدن آشکار می‌کند (default visible without dots; tap eye to mask with dots, tap again to reveal) */
