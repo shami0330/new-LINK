@@ -1174,9 +1174,9 @@ $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{}));</script>
-<script>/* ارتفاع واقعی صفحه | Real Screen Height: مثل ترفند قبلی ۵ پیکسل از پایین کشیده می‌شود؛ فقط در حالت نصب‌شده (PWA) و حالت عمودی، اختلاف ارتفاع فیزیکی صفحه با innerHeight هم اضافه می‌شود (default 5px like before; installed portrait mode adds screen-vs-viewport gap) */
-(function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
- function fit(){let e=5;if(st()&&innerHeight>=innerWidth)e=Math.max(5,Math.round(Math.max(screen.width,screen.height)-innerHeight)+5);R.style.setProperty("--ext",e+"px")}
- fit();[200,1000].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow"].forEach(e=>addEventListener(e,()=>setTimeout(fit,100)))})();</script>
+<script>/* ارتفاع واقعی صفحه | Real Screen Height: لبهٔ بیرونی برنامه تا پایین‌ترین حد فیزیکی صفحه موبایل (outerHeight و screen.height، نه innerHeight) کشیده می‌شود و ۵ پیکسل هم پایین‌تر؛ عناصر پایین جابه‌جا نمی‌شوند (outer edge stretched to the physical screen bottom +5px, not the inner viewport) */
+(function(){const R=document.documentElement;
+ function fit(){let e=5;if(innerHeight>=innerWidth){const out=Math.max(outerHeight||0,screen.height||0,screen.width&&screen.height?Math.max(screen.width,screen.height):0);e=Math.max(5,Math.round(out-innerHeight)+5)}R.style.setProperty("--ext",e+"px")}
+ fit();[100,400,1200,2500].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow","load"].forEach(e=>addEventListener(e,()=>{fit();setTimeout(fit,120)}));if(window.visualViewport)visualViewport.addEventListener("resize",fit)})();</script>
 </body>
 </html>
