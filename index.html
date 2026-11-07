@@ -1176,10 +1176,10 @@ setPw();
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{}));</script>
 <script>/* ارتفاع واقعی صفحه | Real Screen Height: ارتفاع برنامه از بزرگ‌ترین مقدار بین ارتفاع فیزیکی صفحه موبایل، ارتفاع ۱۰۰lvh و innerHeight گرفته می‌شود و ۵ پیکسل از پایین‌ترین حد پایین‌تر می‌رود؛ بقیه عناصر جابه‌جا نمی‌شوند (app height = max(physical screen, 100lvh, innerHeight) + 5px at the bottom; other elements keep their place) */
 (function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
- const pr=document.createElement("div");pr.style.cssText="position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none";document.body.append(pr);
+ const pr=document.createElement("div");pr.style.cssText="position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none";document.body.append(pr);const sf=document.createElement("div");sf.style.cssText="position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none";document.body.append(sf);
  function fit(){const port=innerHeight>=innerWidth;if(!port){R.style.setProperty("--ext","5px");return}
   const sh=Math.max(screen.width,screen.height),gap=sh-innerHeight,lv=pr.offsetHeight||0;
-  const H=Math.max(innerHeight,lv,(st()||gap<=60)?sh:0)+5;R.style.setProperty("--ext",Math.max(5,Math.round(H-innerHeight))+"px")}
+  const H=Math.max(innerHeight,lv,(st()||gap<=60)?sh:0)+5,sb=sf.offsetHeight||0;R.style.setProperty("--ext",(st()||gap<=60?Math.max(5,Math.round(H-innerHeight),sb+5):Math.max(5,Math.round(H-innerHeight)))+"px")}
  fit();[100,400,1200,2500].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow"].forEach(e=>addEventListener(e,()=>{fit();setTimeout(fit,150)}));addEventListener("load",fit);
  if(window.visualViewport)visualViewport.addEventListener("resize",fit)})();</script>
 </body>
