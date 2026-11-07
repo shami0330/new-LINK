@@ -122,8 +122,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .editing .chk{width:24px;opacity:1;margin-right:0}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
-/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات (Contacts/Chats/Settings) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext) + 7px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
+/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات؛ لبه‌ی پایین کپسول همیشه و در هر دستگاهی دقیقاً ۱۰ پیکسل بالاتر از پایین صفحه نمایش است (Contacts/Chats/Settings; bottom edge always exactly 10px above the screen bottom, --ext cancels the frame extension below the screen) */
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(var(--ext) + 10px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
@@ -589,6 +589,8 @@ html.link{--capb:rgba(159,18,57,.24);--caps:rgba(59,10,12,.16)}
 /* بدون حاشیه | No Border Cases: عنوان‌های بدون زمینه و دکمه‌های رنگی (ارسال، نوشتن پیام جدید) حاشیه ندارند */
 .sub .top .title,.title[style*="background:none"],.pill[style*="var(--blue)"],.round.send{border-color:transparent}
 .sub .top .title,.title[style*="background:none"]{box-shadow:none}
+/* خطوط سفید دکمه‌های رنگی در حالت روز | White Icons On Blue Buttons (Day): در حالت روز (Light و Link) آیکن دکمه‌های آبی/رنگی (نوشتن پیام جدید، تیک تأیید در تنظیمات) سفید می‌شود و رنگ پس‌زمینه همان می‌ماند (icon lines white on accent buttons in day themes, background unchanged) */
+html.light .pill[style*="var(--blue)"]{color:#fff}
 /* حاشیه و سایه‌ی حباب‌ها | Bubble Border & Shadow: دور حباب پیام‌ها همان حاشیه‌ی ۰.۵ پیکسلی و سایه‌ی نیم‌پیکسلی کپسول‌ها؛ هایلایت پیام (hl) سایه را نگه می‌دارد */
 .b{border:.5px solid var(--capb);box-shadow:0 .5px .5px .5px var(--caps)}
 .b.hl{box-shadow:inset 0 0 0 999px rgba(255,255,255,.09),0 .5px .5px .5px var(--caps)}
@@ -1670,6 +1672,8 @@ function lkTabInd(){const B=$("#tabs"),old=$("#tabInd");if(old)old.remove();cons
 /* اندازه‌ی نوار | Tab Bar Resize: وقتی نوار تازه دیده می‌شود یا اندازه‌اش عوض می‌شود (مثلاً چرخش گوشی) نشانگر بدون انیمیشن سر جای درست می‌نشیند */
 if(window.ResizeObserver)new ResizeObserver(()=>{const B=$("#tabs");if(!B)return;if(!B.classList.contains("ind"))return lkTabInd();
  const i=$("#tabInd"),o=$("#tabs .tab.on");if(i&&o&&o.offsetWidth){i.style.transition="none";lkIndSet(i,o);i.getBoundingClientRect();i.style.transition=""}}).observe($("#tabs"));
+/* قفل قاب برنامه | App Frame Lock: قاب برنامه هیچ‌وقت به کنار نمی‌لغزد تا صفحه‌ی بیرون از دید (پروفایل مخاطب) دیده نشود (app frame never scrolls sideways, so the off-screen contact page never shows) */
+(function(){const A=$("#app");A.addEventListener("scroll",()=>{if(A.scrollLeft||A.scrollTop){A.scrollLeft=0;A.scrollTop=0}},{passive:true});A.scrollLeft=0})();
 /* لغزش لیست | List Slide: بعد از عوض شدن پوشه، لیست جدید از سمت پوشه‌ی بعدی (dir=1 از راست، dir=-1 از چپ) با یک لغزش خیلی کوتاه و محو شدن نرم می‌آید */
 function lkSlide(dir){const L=$("#clist");if(!L||!L.animate||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
  L.animate([{transform:"translateX("+dir*28+"px)",opacity:.25},{transform:"translateX(0)",opacity:1}],{duration:240,easing:"cubic-bezier(.2,.8,.2,1)"})}
@@ -1682,7 +1686,7 @@ function lkSlide(dir){const L=$("#clist");if(!L||!L.animate||matchMedia("(prefer
   L.style.transition="none";L.style.transform="translateX("+Math.max(-70,Math.min(70,dx*(edge?.12:.3)))+"px)"});
  const end=e=>{if(e.pointerId!==pid)return;pid=null;if(!drag)return;drag=0;moved=1;setTimeout(()=>moved=0,80);
   const t=tabs(),i=t.indexOf(S.folder),n=i+(mx<0?1:-1),go=e.type==="pointerup"&&Math.abs(mx)>=TH&&i>=0&&n>=0&&n<t.length;
-  if(go){L.style.transition="";L.style.transform="";S.folder=t[n];renderChats();lkSlide(mx<0?1:-1);const o=$("#tabs .tab.on");if(o)o.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})}
+  if(go){L.style.transition="";L.style.transform="";S.folder=t[n];renderChats();lkSlide(mx<0?1:-1);const o=$("#tabs .tab.on"),B=$("#tabs");/* وسط‌چین کردن پوشه | Center Folder: فقط خود نوار پوشه‌ها می‌لغزد، نه کل برنامه (only the folder bar scrolls, never the whole app) */if(o&&B)B.scrollTo({left:o.offsetLeft-(B.clientWidth-o.offsetWidth)/2,behavior:"smooth"})}
   else{L.style.transition="transform .2s cubic-bezier(.2,.8,.2,1)";L.style.transform="";setTimeout(()=>{L.style.transition=""},220)}};
  L.addEventListener("pointerup",end);L.addEventListener("pointercancel",end);
  L.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault()}},true)})();
