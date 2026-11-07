@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 3.0 (Version 3.0) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 3.2 (Version 3.2) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -274,6 +274,61 @@ html.light .b.ot .q{border-color:var(--blue)}
 .b.hl{box-shadow:inset 0 0 0 999px rgba(255,255,255,.09)}
 html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .q{cursor:pointer}
+/* ===== فوروارد و ارسال زمان‌بندی‌شده | Forward Header & Scheduled Send ===== */
+/* سربرگ فوروارد | Forwarded Header: «Forwarded from» با آواتار کوچک و نام فرستنده اصلی بالای حباب (header band above the bubble content) */
+.fwh{margin:-7px -11px 6px;padding:7px 11px;background:rgba(255,255,255,.14);border-radius:18px 18px 0 0}
+html.light .fwh{background:rgba(0,0,0,.06)}
+.fwt{display:block;font-size:12px;opacity:.85}
+.fwn{display:flex;align-items:center;gap:6px;font-weight:700}
+.fwh .av{width:18px;height:18px;font-size:10px}
+/* پیام در انتظار | Pending Bubble: ساعت به‌جای تیک و برچسب زمان یا «آنلاین» (clock instead of tick + a status line) */
+.b.pend{opacity:.85}
+.pnl{display:block;font-size:11px;opacity:.8;margin-bottom:2px}
+/* منوی نگه‌داشتن ارسال | Send Hold Menu: Send When Online / Schedule Message بالای دکمه ارسال (floats above the send button) */
+#smv{position:absolute;inset:0;z-index:97;display:none}
+.smc{position:absolute;background:var(--menu);backdrop-filter:blur(20px);border-radius:18px;width:240px;overflow:hidden;animation:pop .15s}
+.smc div{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:.5px solid var(--line)}
+.smc div:last-child{border:0}
+/* پنجره زمان‌بندی | Schedule Dialog: تاریخ و ساعت در کارت گرد وسط صفحه (date + time in a centered rounded card) */
+#schov{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+#schov.on{opacity:1;pointer-events:auto}
+.schc{width:min(320px,86%);background:var(--card);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.schc b{font-size:17px;text-align:center}
+.schc label{color:var(--sub);font-size:13px}
+.schc input{height:44px;border-radius:14px;border:0;background:var(--card2);color:var(--txt);padding:0 14px;font-size:16px;outline:0;-webkit-user-select:text;user-select:text;width:100%}
+.schok{height:48px;border-radius:26px;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:6px}
+.schno{text-align:center;color:var(--blue);padding:8px}
+/* ===== برگه‌ی ارسال | Share Sheet (Forward) =====
+/* برگه‌ی ارسال | Share Sheet: برگه‌ی گرد از پایین با انیمیشن، مثل تلگرام (rounded bottom sheet, slides up) */
+#shov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+#shov.on{opacity:1;pointer-events:auto}
+.shs{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 6px);height:min(86vh,760px);background:var(--card);border-radius:32px;display:flex;flex-direction:column;padding:16px 14px 14px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+#shov.on .shs{transform:none}
+/* سربرگ برگه | Sheet Header: بستن، عنوان با نام انتخاب‌شده‌ها، دکمه اشتراک (close, title + selected names, share) */
+.shh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.shx{width:44px;height:44px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;flex:none}
+.sht{text-align:center;min-width:0;flex:1}
+.sht b{display:block;font-size:17px}
+.sht small{display:block;color:var(--sub);font-size:13px;min-height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* جستجو | Sheet Search: کپسول جستجو و دکمه افزودن افراد (search capsule + add-people button) */
+.shsr{display:flex;gap:8px;margin:12px 0}
+.shsr input,.shcap input{flex:1;min-width:0;height:44px;border-radius:22px;border:0;background:var(--card2);color:var(--txt);padding:0 16px;font-size:16px;outline:0;-webkit-user-select:text;user-select:text}
+/* شبکه گفتگوها | Chat Grid: ۵ ستون؛ انتخاب‌شده حلقه آبی و تیک آبی (5 columns; selected = blue ring + check badge) */
+.shgrid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:14px 4px;align-content:start;padding:4px 0}
+.shi{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;text-align:center;min-width:0}
+.shi span{max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;transition:color .15s}
+.shav{position:relative;border-radius:50%;padding:3px;border:2.5px solid transparent;transition:border-color .15s}
+.shav .av{width:54px;height:54px;font-size:22px}
+.shi.on .shav{border-color:var(--blue)}
+.shi.on span{color:var(--blue)}
+.shk{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:var(--blue);border:2.5px solid var(--card);display:none;align-items:center;justify-content:center;color:#fff}
+.shi.on .shk{display:flex}
+/* شرح و ارسال | Caption & Send: کادر شرح با اموجی، و دکمه آبی Send با شمارنده (caption field + blue Send button with count) */
+.shcap{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:22px;padding-right:14px;margin-top:8px;color:var(--sub)}
+.shcap input{background:none}
+.shsend{margin-top:10px;height:52px;border-radius:26px;background:var(--blue);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
+.shsend.off{opacity:.4;pointer-events:none}
+.shsend b{background:#fff;color:var(--blue);border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px;padding:0 6px}
 /* منوی پیام | Message Menu: ریاکشن + Reply، Copy، Pin، Forward، Delete، Select (long-press) */
 #msgs .b{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #mmenu{position:absolute;inset:0;z-index:94;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none}
@@ -804,14 +859,18 @@ function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.repl
 /* برچسب روز | Day Label: «امروز» برای امروز؛ برای قدیمی‌تر ماه و روز شمسی (Today, or Jalali month + day) */
 function dayLabel(n){if(n===0)return "امروز";const f=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",day:"numeric"}).formatToParts(new Date(Date.now()-n*864e5));
  return f.find(x=>x.type==="month").value+" "+f.find(x=>x.type==="day").value}
-function addMsg(w,t,tm,n=0,rp=null){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w;d.dataset.t=t;d.dataset.w=w;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${t}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
+/* پیام فوروارد | Forwarded Encoding: پیام فوروارد با «↪ نام فرستنده اصلی» ذخیره می‌شود و هنگام نمایش به سربرگ تبدیل می‌شود (stored as ↪name + hidden separator + body, rendered as a header) */
+const FWR=/^\u21aa([^\u2063]*)\u2063([\s\S]*)$/;
+const fwBody=t=>{const m=FWR.exec(t);return m?m[2]:t};
+const fwHead=t=>{const m=FWR.exec(t);return m?`<div class="fwh"><span class="fwt">${tr("Forwarded from")}</span><div class="fwn">${av(m[1],colOf(m[1]),0)}<span>${esc(m[1])}</span></div></div>`:""};
+function addMsg(w,t,tm,n=0,rp=null){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w;d.dataset.t=t;d.dataset.w=w;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${fwHead(t)}${fwBody(t)}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;$("#msgs").append(d);$("#msgs").scrollTop=1e9}
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
 function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now,0,S.reply);clearReply();$("#mi").value="";grow();updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
  if(c.id===2){CFG.saved.push(["me",v,now,0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0]);saveCfg();setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);saveCfg()},900)}}
 /* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
 function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim();$("#send").classList.toggle("send",has);$("#send").innerHTML=ic(has?"send":S.rec==="voice"?"mic":"video",20)}
-$("#send").onclick=()=>{if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
+$("#send").onclick=()=>{if(S.sendHold){S.sendHold=false;return}if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
 $("#mi").oninput=updSend;
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
 $("#back").onclick=()=>{$("#chat").classList.remove("on");if(S.fromSet){S.fromSet=false;show("settings");return}show("chats");renderChats()};
@@ -1148,7 +1207,7 @@ $("#mi").addEventListener("input",grow);
 $$(".inbar .round,#rbarX").forEach(b=>["pointerdown","mousedown"].forEach(ev=>b.addEventListener(ev,e=>e.preventDefault())));
 /* پاسخ | Reply State: نام و متن پیام انتخاب‌شده (selected message) */
 S.reply=null;
-function setReply(b){S.reply={id:b.dataset.id,n:b.dataset.w==="me"?"You":$("#cname").textContent,t:b.dataset.t};$("#rbar_n").textContent=S.reply.n;$("#rbar_t").textContent=S.reply.t;$("#rbar").classList.add("on");$("#mi").focus();fitBar()}
+function setReply(b){S.reply={id:b.dataset.id,n:b.dataset.w==="me"?"You":$("#cname").textContent,t:fwBody(b.dataset.t)};$("#rbar_n").textContent=S.reply.n;$("#rbar_t").textContent=S.reply.t;$("#rbar").classList.add("on");$("#mi").focus();fitBar()}
 function clearReply(){S.reply=null;$("#rbar").classList.remove("on");fitBar()}
 $("#rbarX").onclick=clearReply;
 /* کشیدن حباب به چپ | Swipe Bubble Left: بیش از ۶۰ پیکسل و رها کردن، پاسخ را فعال می‌کند؛ آیکون پاسخ همراه کشیدن ظاهر می‌شود (past 60px and release = reply; icon appears while dragging) */
@@ -1249,20 +1308,35 @@ function drawGinfo(){const ch=GR.t==="ch",g=$("#ginfo");
 document.addEventListener("click",e=>{const b=e.target.closest(".blueRow[data-k]");if(b)openGroupFlow(b.dataset.k)});
 
 /* منوی نگه‌داشتن روی پیام | Message Long-Press Menu: ریاکشن‌ها، Reply، Copy، Pin/Unpin، Forward، Delete (با تایید)، Select */
-P.copy="M9 9h11v11H9zM5 15V4h11";P.fwd="M15 4l6 6-6 6M21 10H9a6 6 0 00-6 6v3";
-Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"برداشتن پین","Forward":"فوروارد","Copied":"کپی شد","Forwarded":"فوروارد شد","Forward to":"فوروارد به","Delete message?":"پیام حذف شود؟","Pinned Message":"پیام پین‌شده"});
+P.smile="M12 21a9 9 0 100-18 9 9 0 000 18zM8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9.5h.01";P.copy="M9 9h11v11H9zM5 15V4h11";P.fwd="M15 4l6 6-6 6M21 10H9a6 6 0 00-6 6v3";
+Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"برداشتن پین","Forward":"فوروارد","Copied":"کپی شد","Forwarded":"فوروارد شد","Forward to":"فوروارد به","Delete message?":"پیام حذف شود؟","Pinned Message":"پیام پین‌شده","Share with":"ارسال به","Add a caption...":"یک شرح بنویسید...","Forwarded from":"فوروارد از","Send When Online":"ارسال هنگام آنلاین شدن","Schedule Message":"ارسال زمان‌بندی‌شده","Scheduled for":"زمان‌بندی‌شده برای","Will be sent when online":"با آنلاین شدن ارسال می‌شود","Pick a future time":"زمانی در آینده انتخاب کنید","Delivered":"ارسال شد","Date":"تاریخ","Time":"ساعت","Schedule":"زمان‌بندی"});
 (function(){const ov=document.createElement("div");ov.id="mmenu";$("#app").append(ov);
  const E1=["❤️","🤣","😭","🤪","🥰","🔥","💔"],E2=["👍","👎","😂","😮","😢","🙏","👏","🎉","🤔","😡"];
- const txt=b=>{const c=b.cloneNode(true);c.querySelectorAll("small,.ri,.q,.rxn").forEach(x=>x.remove());return c.textContent.trim()};
+ const txt=b=>{const c=b.cloneNode(true);c.querySelectorAll("small,.ri,.q,.rxn,.fwh,.pnl").forEach(x=>x.remove());return c.textContent.trim()};
  const tmOf=b=>{const sm=b.querySelector("small");return sm&&sm.firstChild?sm.firstChild.textContent.trim():""};
  const key=b=>b.dataset.t+"|"+tmOf(b);
  const close=()=>{ov.classList.remove("on");ov.innerHTML=""};
  const oc=chatMsgs;chatMsgs=function(c){const h=CFG.hid&&CFG.hid[c.id];const l=oc(c);return h&&h.length?l.filter(m=>!h.includes(m[1]+"|"+m[2])):l};
  window.applyPin=function(){const pt=CFG.pins&&CFG.pins[S.openId],pb=$(".pinbar");if(!pb)return;const sm=pb.querySelector("small"),sp=pb.querySelector("span");if(!sm)return;if(!pb.dataset.dflt)pb.dataset.dflt=sm.textContent;
-  sm.textContent=pt?pt.replace(/<[^>]*>/g,"").slice(0,60):pb.dataset.dflt;if(sp)sp.textContent=tr("Pinned Message")};
- function fwd(b){const t=txt(b)||b.dataset.t;let h=`<div class="mn" style="width:calc(100% - 24px);max-height:60%;overflow:auto"><div style="color:var(--sub);font-size:14px">${tr("Forward to")}</div>`+CHATS.map(c=>`<div data-id="${c.id}">${c.n}</div>`).join("")+"</div>";
-  let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}o.innerHTML=h;o.classList.add("on");o.onclick=e=>{const d=e.target.closest("[data-id]");o.classList.remove("on");if(!d)return;const c=CHATS.find(x=>x.id===+d.dataset.id),now=new Date().toTimeString().slice(0,5);if(!c)return;
-   const v="↪ "+t;(c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",v,now,0]);c.m=v;c.tm=now;saveCfg();if(c.id===S.openId)addMsg("me",v,now);renderChats();toast(tr("Forwarded"))}}
+  sm.textContent=pt?fwBody(pt).replace(/<[^>]*>/g,"").slice(0,60):pb.dataset.dflt;if(sp)sp.textContent=tr("Pinned Message")};
+ /* برگه‌ی ارسال | Share Sheet (Forward): انتخاب چند گفتگو، جستجو، شرح و دکمه Send با شمارنده؛ مثل تلگرام (multi-select chats, search, caption, Send with count) */
+ function fwd(b){const raw=b.dataset.t,fm=FWR.exec(raw),inner=fm?fm[2]:raw,src=fm?fm[1]:(b.classList.contains("me")?(S.user?S.user.name:"You"):$("#cname").textContent),t=txt(b)||inner;let o=$("#shov");
+  if(!o){o=document.createElement("div");o.id="shov";o.innerHTML=`<div class="shs"><div class="shh"><div class="shx" id="shX">${ic("close",20)}</div><div class="sht"><b id="shT"></b><small id="shS"></small></div><div class="shx" id="shU">${ic("share",20)}</div></div><div class="shsr"><input id="shQ" autocomplete="off" autocorrect="off" spellcheck="false"><div class="shx">${ic("group",22)}</div></div><div class="shgrid" id="shG"></div><div class="shcap"><input id="shC" autocomplete="off" spellcheck="false">${ic("smile",24)}</div><div class="shsend off" id="shB"></div></div>`;$("#app").append(o)}
+  const sel=new Set(),q=$("#shQ"),cap=$("#shC"),G=$("#shG"),B=$("#shB");
+  $("#shT").textContent=tr("Share with");q.placeholder=tr("Search");cap.placeholder=tr("Add a caption...");q.value=cap.value="";
+  /* به‌روزرسانی | Update: نام انتخاب‌شده‌ها و شمارنده دکمه Send (selected names + Send counter) */
+  const upd=()=>{$("#shS").textContent=[...sel].map(i=>(CHATS.find(c=>c.id===i)||{}).n).join(", ");B.classList.toggle("off",!sel.size);B.innerHTML=tr("Send")+(sel.size?`<b>${sel.size}</b>`:"")};
+  /* رسم شبکه | Draw Grid: گفتگوها با فیلتر جستجو (chats filtered by search) */
+  const draw=()=>{const k=q.value.trim().toLowerCase();G.innerHTML=CHATS.filter(c=>c.n.toLowerCase().includes(k)).map(c=>`<div class="shi ${sel.has(c.id)?"on":""}" data-id="${c.id}"><div class="shav">${c.id===2?`<div class="av" style="background:#3a9bff">${ic("bookmark",24)}</div>`:av(c.n,c.col,0)}<i class="shk">${ic("check",14)}</i></div><span>${c.n}</span></div>`).join("")};
+  G.onclick=e=>{const d=e.target.closest(".shi");if(!d)return;const id=+d.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);d.classList.toggle("on",sel.has(id));upd()};
+  q.oninput=draw;const close=()=>{o.classList.remove("on");q.blur();cap.blur()};
+  o.onclick=e=>{if(e.target===o)close()};$("#shX").onclick=close;
+  $("#shU").onclick=()=>{try{navigator.clipboard.writeText(t)}catch(_){}toast(tr("Copied"))};
+  /* ارسال | Send: پیام را به همه انتخاب‌شده‌ها می‌فرستد، شرح هم جدا ارسال می‌شود (sends to all selected; caption goes as its own message) */
+  B.onclick=()=>{if(!sel.size)return;const now=new Date().toTimeString().slice(0,5),msgs=["\u21aa"+src+"\u2063"+inner];if(cap.value.trim())msgs.push(cap.value.trim());
+   sel.forEach(id=>{const c=CHATS.find(x=>x.id===id);if(!c)return;msgs.forEach(v=>{(c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",v,now,0]);c.m=FWR.test(v)?"↪ "+fwBody(v):v;c.tm=now;if(c.id===S.openId)addMsg("me",v,now)})});
+   saveCfg();close();renderChats();toast(tr("Forwarded"))};
+  draw();upd();void o.offsetWidth;o.classList.add("on")}
  function act(i,b){const id=S.openId;
   if(i===0){setReply(b)}
   else if(i===1){const t=txt(b);try{navigator.clipboard.writeText(t)}catch(e){const a=document.createElement("textarea");a.value=t;document.body.append(a);a.select();try{document.execCommand("copy")}catch(_){}a.remove()}toast(tr("Copied"))}
@@ -1289,6 +1363,41 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
  M.addEventListener("mousedown",e=>{const b=e.target.closest(".b");if(!b)return;stop();tm=setTimeout(()=>open(b),450)});
  M.addEventListener("touchmove",e=>{if(Math.abs(e.touches[0].clientX-x0)>8||Math.abs(e.touches[0].clientY-y0)>8)stop()},{passive:true});
  ["touchend","touchcancel","mouseup","mouseleave"].forEach(ev=>M.addEventListener(ev,stop,{passive:true}))})();
+/* ---- ارسال هنگام آنلاین و زمان‌بندی‌شده | Send When Online & Scheduled Send ---- */
+/* آیکون‌ها | Icons: ساعت و تقویم (clock, calendar) */
+P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4";
+CFG.sched=CFG.sched||[];
+(function(){const sb=$("#send"),hh=t=>new Date(t).toTimeString().slice(0,5),p2=n=>String(n).padStart(2,"0");
+ /* برچسب وضعیت | Status Label: زمان ارسال یا «با آنلاین شدن» (when it will go out) */
+ const lbl=r=>r.mode==="sched"?tr("Scheduled for")+" "+(new Date(r.at).toDateString()===new Date().toDateString()?"":new Date(r.at).toLocaleDateString()+" ")+hh(r.at):tr("Will be sent when online");
+ /* حباب در انتظار | Pending Bubble: با ساعت به‌جای تیک (clock tick until delivered) */
+ function showPending(r){addMsg("me",r.v,hh(r.created));const d=$("#msgs").lastElementChild;d.dataset.pid=r.id;d.classList.add("pend");const tk=d.querySelector(".tick");if(tk)tk.innerHTML=ic("clock",14);
+  const l=document.createElement("span");l.className="pnl";l.textContent=lbl(r);d.insertBefore(l,d.querySelector("small"))}
+ /* تحویل | Deliver: پیام واقعی ثبت می‌شود و حباب به دو تیک تبدیل می‌شود (stores the real message, bubble gets double tick) */
+ function deliver(r){const i=CFG.sched.indexOf(r);if(i<0)return;CFG.sched.splice(i,1);const c=CHATS.find(x=>x.id===r.cid);if(!c){saveCfg();return}const now=hh(Date.now());
+  (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",r.v,now,0]);c.m=r.v;c.tm=now;c.t=2;if(r.mode==="online")c.on=1;saveCfg();
+  const d=$('#msgs [data-pid="'+r.id+'"]');if(d&&S.openId===c.id){d.classList.remove("pend");const l=d.querySelector(".pnl");if(l)l.remove();const tk=d.querySelector(".tick");if(tk)tk.innerHTML=ic("t2",15);const sm=d.querySelector("small");if(sm&&sm.firstChild)sm.firstChild.textContent=now;delete d.dataset.pid;if(r.mode==="online")$("#cstat").textContent="online"}
+  CHATS=[c,...CHATS.filter(x=>x!==c)];renderChats();toast(tr("Delivered"))}
+ /* صف | Queue: پیام نوشته‌شده را در صف می‌گذارد (queues the typed message) */
+ function queue(mode,at){const v=$("#mi").value.trim(),c=CHATS.find(x=>x.id===S.openId);if(!v||!c)return;const r={id:"p"+Date.now().toString(36),cid:c.id,v,mode,at:at||0,created:Date.now()};
+  CFG.sched.push(r);saveCfg();showPending(r);clearReply();$("#mi").value="";grow();updSend();if(mode==="online"&&c.on)deliver(r)}
+ /* زمان‌سنج | Timer: هر ثانیه بررسی؛ زمان‌بندی‌شده در موعد، و «آنلاین» وقتی مخاطب آنلاین است یا (در نسخه نمایشی) بعد از ۶ ثانیه (checks every second; online = contact online, or after 6s in the demo) */
+ setInterval(()=>CFG.sched.slice().forEach(r=>{const c=CHATS.find(x=>x.id===r.cid);if(r.mode==="sched"?Date.now()>=r.at:(c&&c.on)||Date.now()-r.created>=6000)deliver(r)}),1000);
+ /* نمایش دوباره | Reopen Chat: حباب‌های در انتظار هنگام باز کردن گفتگو برمی‌گردند (pending bubbles reappear when the chat opens) */
+ const oc=openChat;openChat=function(id){oc(id);CFG.sched.filter(r=>r.cid===id).forEach(showPending)};
+ /* منوی نگه‌داشتن | Hold Menu: نگه‌داشتن دکمه ارسال با متن نوشته‌شده (hold send with text typed) */
+ const mv=document.createElement("div");mv.id="smv";mv.innerHTML='<div class="smc"><div data-m="online">'+ic("clock",22)+'<span></span></div><div data-m="sched">'+ic("cal",22)+'<span></span></div></div>';$("#app").append(mv);
+ function openMenu2(){const r=sb.getBoundingClientRect(),c=mv.querySelector(".smc"),sp=mv.querySelectorAll("span");sp[0].textContent=tr("Send When Online");sp[1].textContent=tr("Schedule Message");mv.style.display="block";c.style.bottom=($("#app").getBoundingClientRect().bottom-r.top+8)+"px";c.style.right="12px"}
+ mv.onclick=e=>{const d=e.target.closest("[data-m]");mv.style.display="none";if(!d)return;if(d.dataset.m==="online")queue("online");else openSched()};
+ let ht=null;const hs=()=>{if(!$("#mi").value.trim())return;ht=setTimeout(()=>{S.sendHold=true;openMenu2()},450)},he=()=>{clearTimeout(ht);setTimeout(()=>{S.sendHold=false},350)};
+ sb.addEventListener("touchstart",hs,{passive:true});sb.addEventListener("mousedown",hs);["touchend","touchmove","touchcancel","mouseup","mouseleave"].forEach(ev=>sb.addEventListener(ev,()=>clearTimeout(ht),{passive:true}));["touchend","mouseup"].forEach(ev=>sb.addEventListener(ev,he,{passive:true}));
+ /* پنجره زمان‌بندی | Schedule Dialog: انتخاب تاریخ و ساعت؛ زمان باید در آینده باشد (pick date + time; must be in the future) */
+ const sd=document.createElement("div");sd.id="schov";sd.innerHTML='<div class="schc"><b></b><label></label><input type="date" id="schD"><label></label><input type="time" id="schTm"><div class="schok" id="schOk"></div><div class="schno" id="schNo"></div></div>';$("#app").append(sd);
+ function openSched(){const d=new Date(Date.now()+120000);$("#schD").value=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());$("#schTm").value=p2(d.getHours())+":"+p2(d.getMinutes());
+  sd.querySelector("b").textContent=tr("Schedule Message");const lb=sd.querySelectorAll("label");lb[0].textContent=tr("Date");lb[1].textContent=tr("Time");$("#schOk").textContent=tr("Schedule");$("#schNo").textContent=tr("Cancel");sd.classList.add("on")}
+ $("#schOk").onclick=()=>{const at=new Date($("#schD").value+"T"+$("#schTm").value).getTime();if(!at||at<=Date.now()+5000){toast(tr("Pick a future time"));return}sd.classList.remove("on");queue("sched",at)};
+ $("#schNo").onclick=()=>sd.classList.remove("on");sd.onclick=e=>{if(e.target===sd)sd.classList.remove("on")}})();
+
 /* ---- قفل اسکرول ورود | Login Scroll Lock ---- */
 /* بدون اسکرول | No Scroll: صفحه ورود با کیبورد باز یا بسته هیچ‌وقت اسکرول نمی‌شود (login page never scrolls, keyboard open or closed) */
 $("#login").addEventListener("touchmove",e=>{if(e.target.tagName!=="INPUT")e.preventDefault()},{passive:false});
