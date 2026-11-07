@@ -1105,11 +1105,11 @@ function clearReply(){S.reply=null;$("#rbar").classList.remove("on");fitBar()}
 $("#rbarX").onclick=clearReply;
 /* کشیدن حباب به چپ | Swipe Bubble Left: بیش از ۶۰ پیکسل و رها کردن، پاسخ را فعال می‌کند؛ آیکون پاسخ همراه کشیدن ظاهر می‌شود (past 60px and release = reply; icon appears while dragging) */
 (function(){let b=null,x0=0,y0=0,dx=0,lock=0;const M=$("#msgs");
- M.addEventListener("touchstart",e=>{b=e.target.closest(".b");if(!b)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;lock=0;b.style.transition="none"},{passive:true});
+ M.addEventListener("touchstart",e=>{b=e.target.closest(".b")||[...M.querySelectorAll(".b")].find(z=>{const r=z.getBoundingClientRect();return e.touches[0].clientY>=r.top&&e.touches[0].clientY<=r.bottom});if(!b)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;lock=0;b.style.transition="none"},{passive:true});
  M.addEventListener("touchmove",e=>{if(!b)return;const x=e.touches[0].clientX-x0,y=e.touches[0].clientY-y0;
-  if(!lock){if(Math.abs(y)>8&&Math.abs(y)>Math.abs(x)){b.style.transition="";b=null;return}if(Math.abs(x)>8)lock=1;else return}
-  dx=Math.max(-80,Math.min(80,x));b.style.transform=`translateX(${dx*.85}px)`;const r=b.querySelector(".ri");r.style.right=dx>0?"auto":"";r.style.left=dx>0?"-38px":"";r.style.opacity=Math.min(1,Math.abs(dx)/50);r.style.transform=`scale(${Math.min(1,Math.abs(dx)/60)})`},{passive:true});
- M.addEventListener("touchend",()=>{if(!b)return;const hit=Math.abs(dx)>60,r=b.querySelector(".ri");b.style.transition="transform .2s";b.style.transform="";r.style.opacity=0;r.style.transform="scale(.5)";if(hit)setReply(b);b=null;dx=0})})();
+  if(!lock){if(Math.abs(y)>8&&Math.abs(y)>Math.abs(x)){b.style.transition="";b=null;return}if(x<-8)lock=1;else return}
+  dx=Math.max(-80,Math.min(0,x));b.style.transform=`translateX(${dx*.85}px)`;const r=b.querySelector(".ri");r.style.right=dx>0?"auto":"";r.style.left=dx>0?"-38px":"";r.style.opacity=Math.min(1,Math.abs(dx)/50);r.style.transform=`scale(${Math.min(1,Math.abs(dx)/60)})`},{passive:true});
+ M.addEventListener("touchend",()=>{if(!b)return;const hit=dx<-60,r=b.querySelector(".ri");b.style.transition="transform .2s";b.style.transform="";r.style.opacity=0;r.style.transform="scale(.5)";if(hit)setReply(b);b=null;dx=0})})();
 
 /* رفتن به پیام پاسخ‌داده‌شده | Jump To Replied Message: با زدن روی نقل‌قول داخل حباب، به پیام اصلی اسکرول نرم می‌شود (وسط صفحه، مثل تلگرام) و خیلی کمرنگ هایلایت می‌شود؛ با اولین لمس صفحه هایلایت برداشته می‌شود */
 function findReplied(q){const all=[...$$("#msgs .b")];let t=q.dataset.rid&&all.find(x=>x.dataset.id===q.dataset.rid);if(t)return t;
