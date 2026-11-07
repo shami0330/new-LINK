@@ -265,7 +265,8 @@ html.light .b.me .tick{color:var(--blue)!important}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + var(--ext) + 5px);align-items:flex-end}
+/* فاصله‌ی نوار پیام از پایین | Message Bar Bottom Gap: بدون کیبورد، لبه‌ی پایین نوار پیام ۱۰ پیکسل بالاتر از حاشیه‌ی امن است، هم‌تراز با نوار تب‌ها (without keyboard, bar sits 10px above the safe area, same line as the tab capsule) */
+.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + var(--ext) + 10px);align-items:flex-end}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
