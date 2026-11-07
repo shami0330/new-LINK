@@ -274,14 +274,43 @@ html.light .b.ot .q{border-color:var(--blue)}
 .b.hl{box-shadow:inset 0 0 0 999px rgba(255,255,255,.09)}
 html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .q{cursor:pointer}
+/* منوی پیام | Message Menu: ریاکشن + Reply، Copy، Pin، Forward، Delete، Select (long-press) */
+#msgs .b{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#mmenu{position:absolute;inset:0;z-index:94;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none}
+#mmenu.on{display:block}
+#mmenu .rxb{position:absolute;display:flex;align-items:center;gap:2px;padding:6px 8px;background:var(--menu);border-radius:28px;font-size:28px;max-width:calc(100% - 16px);flex-wrap:wrap}
+#mmenu .rxb span{padding:2px 5px}
+#mmenu .rxb .more{width:34px;height:34px;border-radius:50%;background:rgba(120,120,128,.5);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;margin-left:4px}
+#mmenu .mm{position:absolute;width:240px;background:var(--menu);border-radius:18px;overflow:hidden}
+#mmenu .mm div{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:17px;color:var(--txt)}
+#mmenu .mm div.rd{color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)}
+#mmenu .bb{position:absolute;margin:0!important;max-width:none!important;transform:none!important}
+.rxn{display:inline-block;background:rgba(255,255,255,.18);border-radius:12px;padding:1px 7px;margin:4px 4px 0 0;font-size:15px}
+/* ساخت گروه و کانال و تایید | Group/Channel Creation + Confirm Box */
+#cfm{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
+#cfm.on{display:flex}
+#cfm .bx{width:min(300px,84%);background:var(--menu);color:var(--txt);border-radius:18px;overflow:hidden;text-align:center;backdrop-filter:blur(20px)}
+#cfm .bx b{display:block;padding:18px 16px 4px;font-size:17px}
+#cfm .bx p{margin:0;padding:4px 16px 16px;font-size:14px;color:var(--sub)}
+#cfm .bt{display:flex;border-top:.5px solid var(--line)}
+#cfm .bt div{flex:1;padding:14px 0;font-size:17px;color:var(--blue)}
+#cfm .bt div+div{border-inline-start:.5px solid var(--line)}
+.gr{display:flex;align-items:center;gap:12px;padding:8px 14px}
+.gr .mid{flex:1;min-width:0;text-align:left;direction:ltr}.gr .mid .n{font-size:16px}.gr .mid .m{font-size:13px;color:var(--sub)}
+.gk{width:24px;height:24px;border-radius:50%;border:2px solid #555;display:flex;align-items:center;justify-content:center;flex:none}
+.gk.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#gs_chips{display:flex;gap:6px;overflow-x:auto;padding:4px 14px;scrollbar-width:none;min-height:0}
+#gs_chips span{background:var(--card);border-radius:14px;padding:5px 10px;font-size:14px;white-space:nowrap}
+.seg{display:flex;gap:4px;margin:10px 14px;background:var(--card);border-radius:12px;padding:3px}
+.seg div{flex:1;text-align:center;padding:8px 0;border-radius:10px}.seg div.on{background:var(--blue);color:#fff}
 /* نوار بلاک | Block Bar: وقتی مخاطب بلاک است نوار نوشتن به «Unblock» تبدیل می‌شود (message bar becomes an Unblock bar, Telegram style) */
 #blkbar{position:absolute;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;padding:15px 0 calc(env(safe-area-inset-bottom) + var(--ext) + 5px);background:var(--card);color:var(--blue);font-size:17px;z-index:6}
 /* منوی بیشتر پروفایل | Profile More Menu: پاک کردن تاریخچه و بلاک (clear history, block) */
-#cpmov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
-#cpmov.on{display:flex}
-#cpmov .mn{width:calc(100% - 24px);margin-bottom:calc(env(safe-area-inset-bottom) + 17px);background:var(--menu);border-radius:16px;overflow:hidden;backdrop-filter:blur(20px)}
-#cpmov .mn div{padding:15px 18px;font-size:17px;border-bottom:.5px solid var(--line);color:var(--txt)}
-#cpmov .mn div:last-child{border:0}
+#cpmov,#fwdov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
+#cpmov.on,#fwdov.on{display:flex}
+#cpmov .mn,#fwdov .mn{width:calc(100% - 24px);margin-bottom:calc(env(safe-area-inset-bottom) + 17px);background:var(--menu);border-radius:16px;overflow:hidden;backdrop-filter:blur(20px)}
+#cpmov .mn div,#fwdov .mn div{padding:15px 18px;font-size:17px;border-bottom:.5px solid var(--line);color:var(--txt)}
+#cpmov .mn div:last-child,#fwdov .mn div:last-child{border:0}
 #cpmov .mn .rd{color:var(--red)}
 /* تقویم تاریخ | Date Calendar: کادر یک‌ماهه با دکمه‌های ماه و سال (one-month card with month/year buttons) */
 .pinbar{cursor:pointer}
@@ -648,7 +677,7 @@ mic:"M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3"
 /* ساخت آیکون | Icon Builder: ic(نام، اندازه) یک SVG برمی‌گرداند (returns inline SVG, color = current text color) */
 const ic=(n,z=20)=>`<svg class="svg" viewBox="0 0 24 24" width="${z}" height="${z}" fill="${["send","play","pause"].includes(n)?"currentColor":"none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
 /* ردیف آبی | Blue Rows: New Group / New Channel / New Contact بالای لیست (top action rows, same order as video) */
-const blueRows=()=>`<div class="blueRow">${ic("group",24)}New Group</div><div class="blueRow">${ic("channel",24)}New Channel</div><div class="blueRow" style="border:0">${ic("newc",24)}New Contact</div>`;
+const blueRows=()=>`<div class="blueRow" data-k="gp">${ic("group",24)}New Group</div><div class="blueRow" data-k="ch">${ic("channel",24)}New Channel</div><div class="blueRow" style="border:0">${ic("newc",24)}New Contact</div>`;
 
 /* ---- ۳.۱ داده‌های نمایشی | 3.1 Demo Data ---- */
 /* چت‌ها | Chats Data: type pv=شخصی gp=گروه ch=کانال; pin=سنجاق; t=وضعیت تیک 0 ساعت 1 تک 2 جفت; un=خوانده‌نشده */
@@ -677,7 +706,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
 /* ---- ۳.۳ ابزارها | 3.3 Helpers ---- */
 /* آواتار | Avatar Builder: دایره رنگی با حرف اول و نقطه آنلاین (colored circle, initial, online dot) */
-const av=(n,c,on,cls="")=>`<div class="av ${cls}" style="background:${c}">${n.trim()[0].toUpperCase()}${on?'<span class="dot"></span>':''}</div>`;
+const av=(n,c,on,cls="",ph="")=>`<div class="av ${cls}" style="background:${c}${ph?`;background-image:url('${ph}');background-size:cover;background-position:center`:""}">${ph?"":n.trim()[0].toUpperCase()}${on?'<span class="dot"></span>':''}</div>`;
 /* رنگ از نام | Color From Name: رنگ ثابت برای هر نام (stable color per name) */
 const colOf=n=>`hsl(${[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 55% 50%)`;
 /* صفحه | Show Screen: فقط یک صفحه نمایش داده می‌شود و تب فعال عوض می‌شود (show one screen, update active tab) */
@@ -712,7 +741,7 @@ function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
  const L=CHATS.filter(c=>inFolder(c,S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
  $("#clist").className="list"+(S.edit?" editing":"");
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
-  <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on)}
+  <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on,"",c.photo)}
   <div class="mid"><div class="n">${c.n}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
   <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
   <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
@@ -1140,7 +1169,7 @@ $("#msgs").addEventListener("click",e=>{const q=e.target.closest(".q");if(!q)ret
  t.classList.add("hl");["touchstart","mousedown","pointerdown"].forEach(ev=>document.addEventListener(ev,clearHl,{once:true,capture:true}))});
 
 /* رفتن به پیام پین‌شده | Jump To Pinned: با زدن روی نوار پین، به پیام پین‌شده (اولین عکس، وگرنه اولین پیام) اسکرول می‌شود */
-$(".pinbar").addEventListener("click",()=>{const all=[...$$("#msgs .b")],t=all.find(x=>x.dataset.t.startsWith("🖼"))||all[0];if(!t)return;
+$(".pinbar").addEventListener("click",()=>{const all=[...$$("#msgs .b")],pt=CFG.pins&&CFG.pins[S.openId],t=(pt&&all.find(x=>x.dataset.t===pt))||all.find(x=>x.dataset.t.startsWith("🖼"))||all[0];if(!t)return;
  clearHl();const M=$("#msgs");M.scrollTo({top:M.scrollTop+t.getBoundingClientRect().top-M.getBoundingClientRect().top-(M.clientHeight-t.offsetHeight)/2,behavior:"smooth"});
  t.classList.add("hl");["touchstart","mousedown","pointerdown"].forEach(ev=>document.addEventListener(ev,clearHl,{once:true,capture:true}))});
 
@@ -1173,15 +1202,93 @@ function bindContact(r){const n=r.dataset.n;let tm,long=false;
  ["touchend","touchmove","mouseup","mouseleave"].forEach(e=>r.addEventListener(e,end));
  r.onclick=()=>{if(long)return;openByName(n)}}
 function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.n===n)||{id:-1,n,ty:"pv",on:pp&&pp[1]==="online"?1:0,col:colOf(n)},m=$("#menu");m.classList.remove("al-top","al-bot");
- const it=[["Send Message","chat",()=>{closeMenu();openByName(n)}],["Start Secret Chat","lock",()=>{closeMenu();openByName(n)}],["Call","phone",()=>{closeMenu();toast("Calling is not available")}],["Video Call","video",()=>{closeMenu();toast("Calling is not available")}],["Delete Contact","trash",()=>{closeMenu();PEOPLE=PEOPLE.filter(x=>x[0]!==n);renderContacts()}],["Select","check",()=>{closeMenu()}]];
- m.innerHTML=it.map((x,i)=>`<div data-i="${i}" style="${i===4?"color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)":i===5?"color:var(--txt)":""}">${tr(x[0])}${ic(x[1],20)}</div>`).join("");
+ const it=[["Send Message","chat",()=>{closeMenu();openByName(n)}],["Call","phone",()=>{closeMenu();confirmBox(tr("Call")+" "+n+"?",tr("Calls will be available once the call server is added."),tr("Call"),false,()=>toast("Calling is not available yet"))}],["Delete Contact","trash",()=>{closeMenu();confirmBox(tr("Delete Contact"),tr("Delete")+" "+n+"?",tr("Delete"),true,()=>{PEOPLE=PEOPLE.filter(x=>x[0]!==n);renderContacts()})}],["Select","check",()=>{closeMenu()}]];
+ m.innerHTML=it.map((x,i)=>`<div data-i="${i}" style="${i===2?"color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)":i===3?"color:var(--txt)":""}">${tr(x[0])}${ic(x[1],20)}</div>`).join("");
  m.style.width="240px";m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>it[+d.dataset.i][2]())}
 /* حالت بلاک در گفتگو | Block State In Chat: نوار پایین فقط «Unblock» نشان می‌دهد (bottom bar shows only Unblock) */
 (function(){const b=document.createElement("div");b.id="blkbar";b.textContent="Unblock";$("#chat").append(b);
  window.applyBlock=function(){const k=!!(CFG.blocked&&CFG.blocked[S.openId]);b.textContent=tr("Unblock");b.style.display=k?"flex":"none";$(".inbar").style.display=k?"none":"";fitBar()};
  b.onclick=()=>{if(CFG.blocked)delete CFG.blocked[S.openId];saveCfg();applyBlock();toast(tr("Unblocked"))};
- const oc=openChat;openChat=function(id){oc(id);applyBlock()}})();
+ const oc=openChat;openChat=function(id){oc(id);applyBlock();if(window.applyPin)applyPin()}})();
+/* پنجره تایید | Confirm Box: عنوان، متن، دکمه تایید (قرمز برای حذف) و لغو */
+function confirmBox(t,txt,ok,danger,cb){let o=$("#cfm");if(!o){o=document.createElement("div");o.id="cfm";$("#app").append(o)}
+ o.innerHTML=`<div class="bx"><b></b><p></p><div class="bt"><div data-x="0">${tr("Cancel")}</div><div data-x="1" style="${danger?"color:var(--red)":""}"></div></div></div>`;
+ o.querySelector("b").textContent=t;o.querySelector("p").textContent=txt;o.querySelector('[data-x="1"]').textContent=ok;o.classList.add("on");
+ o.onclick=e=>{const x=e.target.closest("[data-x]");if(!x&&e.target.closest(".bx"))return;o.classList.remove("on");if(x&&x.dataset.x==="1")cb()}}
+/* ساخت گروه و کانال | New Group / New Channel: انتخاب مخاطبین ← Next ← نام و عکس (و برای کانال: عمومی با آی‌دی یا خصوصی با لینک یکتا) ← Create بالا */
+Object.assign(FA,{"Next":"بعدی","Create":"ایجاد","Cancel":"لغو","Delete":"حذف","Call":"تماس","Delete Contact":"حذف مخاطب","Send Message":"ارسال پیام","Select":"انتخاب","New Group":"گروه جدید","New Channel":"کانال جدید","Group Name":"نام گروه","Channel Name":"نام کانال","Description (optional)":"توضیحات (اختیاری)","Public":"عمومی","Private":"خصوصی","Change Photo":"تغییر عکس","Members":"اعضا","Enter a name and add an optional photo.":"یک نام وارد کن و در صورت تمایل عکس بگذار.","Calls will be available once the call server is added.":"تماس بعد از افزودن سرور تماس فعال می‌شود.","Select at least one contact":"حداقل یک مخاطب انتخاب کن","Enter a name":"یک نام وارد کن","ID must be 5-32 letters, numbers or _":"آی‌دی باید ۵ تا ۳۲ حرف، عدد یا _ باشد","This ID is already taken":"این آی‌دی قبلاً گرفته شده","Anyone can find it by this ID":"هر کسی با این آی‌دی پیدا می‌کند","The server creates a unique invite link":"سرور یک لینک دعوت یکتا می‌سازد","Only people with the link can join":"فقط کسانی که لینک دارند وارد می‌شوند"});
+let GR={t:"gp",sel:new Set(),photo:"",pub:true,priv:""};
+(function(){["gsel","ginfo"].forEach(id=>{const d=document.createElement("div");d.className="screen sub";d.id=id;$("#app").append(d)})})();
+const uniq=()=>{let u;do{u="+"+Array.from({length:12},()=>"abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random()*36)]).join("")}while(CHATS.some(c=>c.handle===u));return u};
+function openGroupFlow(t){GR={t,sel:new Set(),photo:"",pub:true,priv:uniq()};$("#newmsg").classList.remove("on");drawGsel();openSub("gsel")}
+function drawGsel(){const g=$("#gsel");g.innerHTML=`<div class="top"><div class="pill" id="gsX" style="border-radius:50%;width:38px;padding:0">${ic("close",18)}</div><div class="title">${tr(GR.t==="gp"?"New Group":"New Channel")}</div><div class="pill" id="gsNext" style="color:var(--blue)">${tr("Next")}</div></div><div id="gs_chips"></div><div class="body" id="gs_list"></div>`;
+ $("#gs_list").innerHTML=PEOPLE.map(p=>`<div class="gr" data-n="${p[0]}">${av(p[0],colOf(p[0]),0,"s")}<div class="mid"><div class="n">${p[0]}</div><div class="m">${p[1]}</div></div><div class="gk"></div></div>`).join("");
+ const chips=()=>{$("#gs_chips").innerHTML=[...GR.sel].map(n=>`<span>${n}</span>`).join("")};
+ $$("#gs_list .gr").forEach(r=>r.onclick=()=>{const n=r.dataset.n,k=r.querySelector(".gk");if(GR.sel.has(n)){GR.sel.delete(n);k.classList.remove("on");k.innerHTML=""}else{GR.sel.add(n);k.classList.add("on");k.innerHTML=ic("check",14)}chips()});
+ $("#gsX").onclick=closeSub;
+ $("#gsNext").onclick=()=>{if(GR.t==="gp"&&!GR.sel.size){toast(tr("Select at least one contact"));return}drawGinfo();openSub("ginfo")}}
+function drawGinfo(){const ch=GR.t==="ch",g=$("#ginfo");
+ g.innerHTML=`<div class="top"><div class="pill" id="giX" style="border-radius:50%;width:38px;padding:0">${ic("close",18)}</div><div class="title">${tr(ch?"New Channel":"New Group")}</div><div class="pill" id="giOk" style="background:var(--blue);color:#fff">${tr("Create")}</div></div>
+ <div class="body"><div class="ph" style="text-align:center;padding-top:14px"><div class="av xl" id="gi_av" style="margin:auto"></div><div id="gi_ph" style="color:var(--blue);margin-top:10px">${tr("Change Photo")}</div></div>
+ <div class="card" style="margin-top:16px"><input class="fld" id="gi_name" dir="auto" placeholder="${tr(ch?"Channel Name":"Group Name")}" autocomplete="off" autocorrect="off" spellcheck="false">${ch?`<div style="border-top:.5px solid var(--line)"></div><input class="fld" id="gi_desc" dir="auto" placeholder="${tr("Description (optional)")}" autocomplete="off" spellcheck="false">`:""}</div>
+ <div class="cap">${tr("Enter a name and add an optional photo.")}</div>
+ ${ch?`<div class="seg" id="gi_seg"><div data-p="1" class="on">${tr("Public")}</div><div data-p="0">${tr("Private")}</div></div><div id="gi_type"></div>`:""}
+ <div class="cap" style="margin-top:14px">${tr("Members")}: ${GR.sel.size}</div>
+ <div class="card">${[...GR.sel].map(n=>`<div class="gr" style="border-bottom:.5px solid var(--line)">${av(n,colOf(n),0,"s")}<div class="mid"><div class="n">${n}</div></div></div>`).join("")}</div></div>`;
+ paintAv($("#gi_av"),{name:"?",photo:GR.photo});$("#gi_av").textContent=GR.photo?"":"+";
+ $("#gi_ph").onclick=$("#gi_av").onclick=()=>pickPhoto(d=>{GR.photo=d;paintAv($("#gi_av"),{name:$("#gi_name").value||"?",photo:d})});
+ const typ=()=>{if(!ch)return;$("#gi_type").innerHTML=GR.pub?`<div class="card"><div style="display:flex;align-items:center;padding:0 0 0 14px;direction:ltr"><span style="color:var(--sub)">link/</span><input class="fld" id="gi_id" dir="ltr" placeholder="channel_id" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="padding-left:2px"></div></div><div class="cap">${tr("Anyone can find it by this ID")}</div>`:`<div class="card"><div class="fi" dir="ltr" style="text-align:left"><small>${tr("Private")}</small><div>link/${GR.priv}</div></div></div><div class="cap">${tr("The server creates a unique invite link")}. ${tr("Only people with the link can join")}</div>`};
+ typ();if(ch)$$("#gi_seg div").forEach(d=>d.onclick=()=>{GR.pub=d.dataset.p==="1";$$("#gi_seg div").forEach(x=>x.classList.toggle("on",x===d));typ()});
+ $("#giX").onclick=closeSub;
+ $("#giOk").onclick=()=>{const nm=$("#gi_name").value.trim();if(!nm){toast(tr("Enter a name"));return}
+  let handle="";if(ch){if(GR.pub){handle=($("#gi_id").value||"").trim().toLowerCase();if(!/^[a-z0-9_]{5,32}$/.test(handle)){toast(tr("ID must be 5-32 letters, numbers or _"));return}if(CHATS.some(c=>c.handle===handle)){toast(tr("This ID is already taken"));return}}else handle=GR.priv}
+  const c={id:Date.now(),n:nm,ty:GR.t,pin:0,t:0,un:0,mute:0,on:0,col:colOf(nm),photo:GR.photo,members:[...GR.sel],handle,pub:ch?GR.pub:undefined,desc:ch?($("#gi_desc").value||"").trim():"",s:"",m:ch?"Channel created":"Group created",tm:"now"};
+  CHATS.unshift(c);CFG.cleared=CFG.cleared||{};CFG.cleared[c.id]=1;CFG.sent[c.id]=[];saveCfg();
+  closeSub();closeSub();renderChats();openChat(c.id)}}
+document.addEventListener("click",e=>{const b=e.target.closest(".blueRow[data-k]");if(b)openGroupFlow(b.dataset.k)});
+
+/* منوی نگه‌داشتن روی پیام | Message Long-Press Menu: ریاکشن‌ها، Reply، Copy، Pin/Unpin، Forward، Delete (با تایید)، Select */
+P.copy="M9 9h11v11H9zM5 15V4h11";P.fwd="M15 4l6 6-6 6M21 10H9a6 6 0 00-6 6v3";
+Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"برداشتن پین","Forward":"فوروارد","Copied":"کپی شد","Forwarded":"فوروارد شد","Forward to":"فوروارد به","Delete message?":"پیام حذف شود؟","Pinned Message":"پیام پین‌شده"});
+(function(){const ov=document.createElement("div");ov.id="mmenu";$("#app").append(ov);
+ const E1=["❤️","🤣","😭","🤪","🥰","🔥","💔"],E2=["👍","👎","😂","😮","😢","🙏","👏","🎉","🤔","😡"];
+ const txt=b=>{const c=b.cloneNode(true);c.querySelectorAll("small,.ri,.q,.rxn").forEach(x=>x.remove());return c.textContent.trim()};
+ const tmOf=b=>{const sm=b.querySelector("small");return sm&&sm.firstChild?sm.firstChild.textContent.trim():""};
+ const key=b=>b.dataset.t+"|"+tmOf(b);
+ const close=()=>{ov.classList.remove("on");ov.innerHTML=""};
+ const oc=chatMsgs;chatMsgs=function(c){const h=CFG.hid&&CFG.hid[c.id];const l=oc(c);return h&&h.length?l.filter(m=>!h.includes(m[1]+"|"+m[2])):l};
+ window.applyPin=function(){const pt=CFG.pins&&CFG.pins[S.openId],pb=$(".pinbar");if(!pb)return;const sm=pb.querySelector("small"),sp=pb.querySelector("span");if(!sm)return;if(!pb.dataset.dflt)pb.dataset.dflt=sm.textContent;
+  sm.textContent=pt?pt.replace(/<[^>]*>/g,"").slice(0,60):pb.dataset.dflt;if(sp)sp.textContent=tr("Pinned Message")};
+ function fwd(b){const t=txt(b)||b.dataset.t;let h=`<div class="mn" style="width:calc(100% - 24px);max-height:60%;overflow:auto"><div style="color:var(--sub);font-size:14px">${tr("Forward to")}</div>`+CHATS.map(c=>`<div data-id="${c.id}">${c.n}</div>`).join("")+"</div>";
+  let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}o.innerHTML=h;o.classList.add("on");o.onclick=e=>{const d=e.target.closest("[data-id]");o.classList.remove("on");if(!d)return;const c=CHATS.find(x=>x.id===+d.dataset.id),now=new Date().toTimeString().slice(0,5);if(!c)return;
+   const v="↪ "+t;(c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",v,now,0]);c.m=v;c.tm=now;saveCfg();if(c.id===S.openId)addMsg("me",v,now);renderChats();toast(tr("Forwarded"))}}
+ function act(i,b){const id=S.openId;
+  if(i===0){setReply(b)}
+  else if(i===1){const t=txt(b);try{navigator.clipboard.writeText(t)}catch(e){const a=document.createElement("textarea");a.value=t;document.body.append(a);a.select();try{document.execCommand("copy")}catch(_){}a.remove()}toast(tr("Copied"))}
+  else if(i===2){CFG.pins=CFG.pins||{};if(CFG.pins[id]===b.dataset.t)delete CFG.pins[id];else CFG.pins[id]=b.dataset.t;saveCfg();applyPin()}
+  else if(i===3){fwd(b)}
+  else if(i===4){let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}
+   o.innerHTML=`<div class="mn" style="width:calc(100% - 24px)"><div data-d="me">${tr("Delete for me")}</div><div data-d="both" style="color:var(--red)">${tr("Delete for both")}</div></div>`;o.classList.add("on");
+   o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg()}}}
+ function open(b){const r=b.getBoundingClientRect(),me=b.classList.contains("me"),pinned=CFG.pins&&CFG.pins[S.openId]===b.dataset.t;
+  const it=[["Reply","reply"],["Copy","copy"],[pinned?"Unpin":"Pin","pin"],["Forward","fwd"],["Delete","trash"],["Select","check"]];
+  ov.classList.add("on");const o=ov.getBoundingClientRect(),cl=b.cloneNode(true);cl.querySelectorAll(".ri").forEach(x=>x.remove());cl.classList.remove("hl");cl.classList.add("bb");cl.style.left=(r.left-o.left)+"px";cl.style.top=(r.top-o.top)+"px";cl.style.width=r.width+"px";
+  const bar=document.createElement("div");bar.className="rxb";const mm=document.createElement("div");mm.className="mm";
+  let ex=false;const drawBar=()=>{bar.innerHTML=(ex?E1.concat(E2):E1).map(e=>`<span>${e}</span>`).join("")+`<div class="more">${ex?"⌃":"⌄"}</div>`;bar.querySelectorAll("span").forEach(sp=>sp.onclick=ev=>{ev.stopPropagation();let c=b.querySelector(".rxn");if(c&&c.textContent===sp.textContent)c.remove();else{if(!c){c=document.createElement("span");c.className="rxn";b.append(c)}c.textContent=sp.textContent}close()});bar.querySelector(".more").onclick=ev=>{ev.stopPropagation();ex=!ex;drawBar();place()}};
+  mm.innerHTML=it.map((x,i)=>`<div data-i="${i}" class="${i===4?"rd":""}">${ic(x[1],22)}<span>${tr(x[0])}</span></div>`).join("");
+  mm.querySelectorAll("[data-i]").forEach(d=>d.onclick=ev=>{ev.stopPropagation();const i=+d.dataset.i;close();if(i<5)act(i,b)});
+  ov.append(bar,cl,mm);
+  function place(){const bw=bar.offsetWidth,bh=bar.offsetHeight,mh=mm.offsetHeight;let top=r.top-o.top,rt=top-bh-8,mt=top+r.height+8;
+   const maxB=o.height-24-(env0());if(mt+mh>maxB){const d=mt+mh-maxB;top-=d;rt-=d;mt-=d}if(rt<60){const d=60-rt;top+=d;rt+=d;mt+=d}
+   cl.style.top=top+"px";bar.style.top=rt+"px";mm.style.top=mt+"px";
+   const L=me?r.right-o.left:r.left-o.left;bar.style.left=Math.max(8,Math.min(o.width-bw-8,me?L-bw:L))+"px";mm.style.left=Math.max(8,Math.min(o.width-240-8,me?L-240:L))+"px"}
+  const env0=()=>0;drawBar();place();ov.onclick=close}
+ let tm=null,x0=0,y0=0;const stop=()=>clearTimeout(tm),M=$("#msgs");
+ M.addEventListener("touchstart",e=>{const b=e.target.closest(".b");if(!b)return;stop();x0=e.touches[0].clientX;y0=e.touches[0].clientY;tm=setTimeout(()=>{open(b)},450)},{passive:true});
+ M.addEventListener("mousedown",e=>{const b=e.target.closest(".b");if(!b)return;stop();tm=setTimeout(()=>open(b),450)});
+ M.addEventListener("touchmove",e=>{if(Math.abs(e.touches[0].clientX-x0)>8||Math.abs(e.touches[0].clientY-y0)>8)stop()},{passive:true});
+ ["touchend","touchcancel","mouseup","mouseleave"].forEach(ev=>M.addEventListener(ev,stop,{passive:true}))})();
 /* ---- قفل اسکرول ورود | Login Scroll Lock ---- */
 /* بدون اسکرول | No Scroll: صفحه ورود با کیبورد باز یا بسته هیچ‌وقت اسکرول نمی‌شود (login page never scrolls, keyboard open or closed) */
 $("#login").addEventListener("touchmove",e=>{if(e.target.tagName!=="INPUT")e.preventDefault()},{passive:false});
