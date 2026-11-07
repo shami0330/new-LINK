@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 3.2 (Version 3.2) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 3.4 (Version 3.4) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -276,11 +276,12 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .q{cursor:pointer}
 /* ===== فوروارد و ارسال زمان‌بندی‌شده | Forward Header & Scheduled Send ===== */
 /* سربرگ فوروارد | Forwarded Header: «Forwarded from» با آواتار کوچک و نام فرستنده اصلی بالای حباب (header band above the bubble content) */
-.fwh{margin:-7px -11px 6px;padding:7px 11px;background:rgba(255,255,255,.14);border-radius:18px 18px 0 0}
+.fwh{margin:-5px -11px 4px;padding:4px 11px;background:rgba(255,255,255,.14);border-radius:18px 18px 0 0}
 html.light .fwh{background:rgba(0,0,0,.06)}
-.fwt{display:block;font-size:12px;opacity:.85}
-.fwn{display:flex;align-items:center;gap:6px;font-weight:700}
-.fwh .av{width:18px;height:18px;font-size:10px}
+.fwt{display:block;font-size:11px;line-height:1.2;opacity:.85}
+.fwn{display:flex;align-items:center;gap:5px;font-weight:700;font-size:14px;line-height:1.2}
+.fwh{cursor:pointer}
+.fwh .av{width:16px;height:16px;font-size:9px}
 /* پیام در انتظار | Pending Bubble: ساعت به‌جای تیک و برچسب زمان یا «آنلاین» (clock instead of tick + a status line) */
 .b.pend{opacity:.85}
 .pnl{display:block;font-size:11px;opacity:.8;margin-bottom:2px}
@@ -377,9 +378,14 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 #calov .cb{width:34px;height:34px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 2px}
 #calov .cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
 #calov .cw{color:var(--sub);font-size:12px;padding:4px 0}
-#calov .cd{height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:15px}
-#calov .cd.has{background:var(--blue);color:#fff}
-#calov .cd.td{box-shadow:inset 0 0 0 1.5px var(--blue)}
+/* روزها دایره | Day Circles: هر روز دایره‌ی ۳۸×۳۸؛ روز انتخاب‌شده آبی، روزهای آینده خاکستری، امروز بدون رنگ و دایره (38px circles; selected = blue, future = grey numbers, today = plain) */
+#calov .cd{width:38px;height:38px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:15px}
+#calov .cd.has{background:var(--card2);font-weight:700}
+#calov .cd.sel{background:var(--blue);color:#fff}
+#calov .cd.fut{color:var(--sub);pointer-events:none}
+/* اندازه ثابت | Fixed Size: تقویم همیشه ۶ ردیف و جای دکمه را دارد، پس با تغییر ماه یا سال اندازه و مکانش تغییر نمی‌کند (always 6 week rows + reserved button slot = same size and position for every month) */
+#calov .cgo.off{visibility:hidden;pointer-events:none}
+#calov .cgo{margin-top:10px;height:44px;border-radius:22px;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
 /* آیکون پاسخ | Reply Icon: با کشیدن حباب به چپ از لبه ظاهر می‌شود (appears at the edge while dragging) */
 .ri{position:absolute;right:-38px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:50%;background:rgba(120,120,128,.45);color:var(--txt);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.5)}
 .inbar input,.inbar textarea{flex:1;min-width:0;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
@@ -1241,14 +1247,15 @@ $(".pinbar").addEventListener("click",()=>{const all=[...$$("#msgs .b")],pt=CFG.
  const f=new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn",{year:"numeric",month:"numeric",day:"numeric"}),mf=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",timeZone:"UTC"});
  const toJ=d=>{const o={};f.formatToParts(d).forEach(p=>o[p.type]=p.value);return[+o.year,+o.month,+o.day]},fa=n=>n.toLocaleString("fa-IR",{useGrouping:false}),U=g=>Date.UTC(g[0],g[1]-1,g[2]);
  const mlen=(y,m)=>Math.round((U(m===12?j2g(y+1,1,1):j2g(y,m+1,1))-U(j2g(y,m,1)))/864e5);
- const ov=document.createElement("div");ov.id="calov";$("#app").append(ov);let cy,cm,has={},td="";
- function draw(){const g=j2g(cy,cm,1),col=(new Date(U(g)).getUTCDay()+1)%7,L=mlen(cy,cm);let h=`<div class="cal"><div class="ch"><div class="cb" data-a="-12">»</div><div class="cb" data-a="-1">›</div><b>${mf.format(U(g))} ${fa(cy)}</b><div class="cb" data-a="1">‹</div><div class="cb" data-a="12">«</div></div><div class="cg">`;
+ const ov=document.createElement("div");ov.id="calov";$("#app").append(ov);let cy,cm,has={},td="",sel="";
+ function draw(){const nw=new Date(),tU=U([nw.getFullYear(),nw.getMonth()+1,nw.getDate()]);const g=j2g(cy,cm,1),col=(new Date(U(g)).getUTCDay()+1)%7,L=mlen(cy,cm);let h=`<div class="cal"><div class="ch"><div class="cb" data-a="-12">»</div><div class="cb" data-a="-1">›</div><b>${mf.format(U(g))} ${fa(cy)}</b><div class="cb" data-a="1">‹</div><div class="cb" data-a="12">«</div></div><div class="cg">`;
   W.forEach(w=>h+=`<div class="cw">${w}</div>`);for(let i=0;i<col;i++)h+="<div></div>";
-  for(let d=1;d<=L;d++){const k=cy+"-"+cm+"-"+d;h+=`<div class="cd ${has[k]?"has":""} ${k===td?"td":""}" data-k="${k}">${fa(d)}</div>`}ov.innerHTML=h+"</div></div>"}
- function open(n){td=toJ(new Date()).join("-");has={};$$("#msgs .dsep").forEach(h=>{if(h.dataset.n!=null)has[toJ(new Date(Date.now()-h.dataset.n*864e5)).join("-")]=h});[cy,cm]=toJ(new Date(Date.now()-n*864e5));draw();ov.classList.add("on")}
+  for(let d=1;d<=L;d++){const k=cy+"-"+cm+"-"+d;h+=`<div class="cd ${has[k]?"has":""} ${k===sel?"sel":""} ${U(j2g(cy,cm,d))>tU?"fut":""}" data-k="${k}">${fa(d)}</div>`}for(let i=col+L;i<42;i++)h+=`<div class="cd" style="visibility:hidden"></div>`;ov.innerHTML=h+"</div>"+`<div class="cgo ${sel?"":"off"}">رفتن به تاریخ</div>`+"</div>"}
+ function open(n){td=toJ(new Date()).join("-");has={};sel="";$$("#msgs .dsep").forEach(h=>{if(h.dataset.n!=null)has[toJ(new Date(Date.now()-h.dataset.n*864e5)).join("-")]=h});[cy,cm]=toJ(new Date(Date.now()-n*864e5));draw();ov.classList.add("on")}
  ov.addEventListener("click",e=>{const a=e.target.closest(".cb"),d=e.target.closest(".cd");
   if(a){const t=cy*12+cm-1+ +a.dataset.a;cy=Math.floor(t/12);cm=t%12+1;draw();return}
-  if(d){const [ky,km,kd]=d.dataset.k.split("-").map(Number),now=new Date(),nc=Math.round((U([now.getFullYear(),now.getMonth()+1,now.getDate()])-U(j2g(ky,km,kd)))/864e5),ds=[...$$("#msgs .dsep")],h=ds.find(z=>+z.dataset.n<=nc)||ds[ds.length-1];has[d.dataset.k]=h;const nx=h&&h.nextElementSibling,M=$("#msgs");if(nx)M.scrollTo({top:M.scrollTop+nx.getBoundingClientRect().top-M.getBoundingClientRect().top-44,behavior:"smooth"});ov.classList.remove("on");return}
+  if(d){if(d.classList.contains("fut"))return;sel=d.dataset.k;draw();return}
+  if(e.target.closest(".cgo")&&sel){const [ky,km,kd]=sel.split("-").map(Number),now=new Date(),nc=Math.round((U([now.getFullYear(),now.getMonth()+1,now.getDate()])-U(j2g(ky,km,kd)))/864e5),ds=[...$$("#msgs .dsep")],h=ds.find(z=>+z.dataset.n<=nc)||ds[ds.length-1];has[sel]=h;const nx=h&&h.nextElementSibling,M=$("#msgs");if(nx)M.scrollTo({top:M.scrollTop+nx.getBoundingClientRect().top-M.getBoundingClientRect().top-44,behavior:"smooth"});ov.classList.remove("on");return}
   if(!e.target.closest(".cal"))ov.classList.remove("on")});
  let tm=null;const stop=()=>clearTimeout(tm);
  ["touchstart","mousedown"].forEach(ev=>$("#msgs").addEventListener(ev,e=>{const h=e.target.closest(".dsep");if(!h)return;stop();tm=setTimeout(()=>open(+h.dataset.n||0),450)},{passive:true}));
@@ -1385,6 +1392,8 @@ CFG.sched=CFG.sched||[];
  setInterval(()=>CFG.sched.slice().forEach(r=>{const c=CHATS.find(x=>x.id===r.cid);if(r.mode==="sched"?Date.now()>=r.at:(c&&c.on)||Date.now()-r.created>=6000)deliver(r)}),1000);
  /* نمایش دوباره | Reopen Chat: حباب‌های در انتظار هنگام باز کردن گفتگو برمی‌گردند (pending bubbles reappear when the chat opens) */
  const oc=openChat;openChat=function(id){oc(id);CFG.sched.filter(r=>r.cid===id).forEach(showPending)};
+ /* رفتن به فرستنده | Open Original Sender: لمس سربرگ «Forwarded from» مستقیم گفتگوی فرستنده را باز می‌کند (tap the header to open the sender's chat) */
+ document.addEventListener("click",e=>{const h=e.target.closest("#msgs .fwh");if(!h)return;const n=h.querySelector(".fwn span").textContent,c=CHATS.find(x=>x.n===n)||(S.user&&n===S.user.name?CHATS.find(x=>x.id===2):null);if(c)openChat(c.id);else openByName(n)});
  /* منوی نگه‌داشتن | Hold Menu: نگه‌داشتن دکمه ارسال با متن نوشته‌شده (hold send with text typed) */
  const mv=document.createElement("div");mv.id="smv";mv.innerHTML='<div class="smc"><div data-m="online">'+ic("clock",22)+'<span></span></div><div data-m="sched">'+ic("cal",22)+'<span></span></div></div>';$("#app").append(mv);
  function openMenu2(){const r=sb.getBoundingClientRect(),c=mv.querySelector(".smc"),sp=mv.querySelectorAll("span");sp[0].textContent=tr("Send When Online");sp[1].textContent=tr("Schedule Message");mv.style.display="block";c.style.bottom=($("#app").getBoundingClientRect().bottom-r.top+8)+"px";c.style.right="12px"}
