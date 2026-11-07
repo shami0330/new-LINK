@@ -168,9 +168,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* بالا آمدن نوار و پیام‌ها با کیبورد | Keyboard Lift: صفحه چت هیچ‌وقت کوچک نمی‌شود؛ فقط نوار پیام یک‌دفعه روی کیبورد می‌نشیند و پیام‌ها همان لحظه به‌اندازه کیبورد بالا می‌روند (chat never resizes; only the bar jumps onto the keyboard and messages rise by the same amount, --kbo = keyboard height) */
 #chat.kb .inbar{bottom:calc(var(--kbo,0px) + 5px)}
 #chat.kb .msgs{padding-bottom:calc(var(--ibh,58px) + var(--kbo,0px) + 5px)}
-/* بالا آمدن نرم کادر فرضی | Phantom Rise Ease: موقع بالا آمدن نوار پیام و پیام‌ها روی کادر فرضی، حرکت ۰.۲۲ ثانیه‌ای نرم دارند؛ با رفتن کلاس kbp از روی صفحه، چسبیدن به کیبورد واقعی یک‌دفعه است (bar and messages ease 0.22s onto the phantom box; once kbp is removed the snap to the real keyboard is instant) */
-#chat.kbp .inbar{transition:bottom .22s cubic-bezier(.2,.8,.2,1)}
-#chat.kbp .msgs{transition:padding-bottom .22s cubic-bezier(.2,.8,.2,1)}
+/* کادر فرضی واقعی | Phantom Box: یک کادر واقعی ولی کاملاً شفاف که از لبه‌ی پایین خود قاب برنامه (نه لبه‌ی صفحه نمایش) شروع می‌شود؛ ارتفاعش با لمس نوار پیام یک‌دفعه ۵۰ درصد صفحه می‌شود (real but fully transparent box anchored at the app frame bottom edge, not the screen edge; height set to 50% of the screen on tap, no animation) */
+#kbBox{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(0,0,0,0);pointer-events:none;z-index:0}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
 #chat .top .title{width:170px;padding:0;border-radius:22px;justify-content:center;overflow:hidden}
 /* عرض ثابت | Fixed Width: همه گفتگوها عرض کپسول یکسان (۱۷۰) دارند؛ نام یا وضعیت بلند با «...» کوتاه می‌شود (same 170px capsule for every chat; long text gets ellipsis) */
@@ -1071,22 +1070,24 @@ function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
 ["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{const t=ev.target.nodeType===1?ev.target:ev.target.parentElement;if(!(e==="selectstart"&&t&&(t.tagName==="INPUT"||t.closest("[contenteditable]"))))ev.preventDefault()},{passive:false}));
 /* هماهنگی با کیبورد | Keyboard Sync: صفحه چت (پس‌زمینه، هدر، نوار پروفایل) اصلاً جابه‌جا یا کوچک نمی‌شود؛ فقط نوار پیام روی کیبورد کاملاً باز می‌پرد و پیام‌ها همزمان بالا می‌روند (chat page, background and header never move or resize; only the bar jumps onto the open keyboard and messages rise together) */
-const vv=window.visualViewport;let KB0=0,PH=0,PHT=0;const PHW=300;let PHH=.42;try{PHH=Math.min(.55,Math.max(.3,parseFloat(localStorage.getItem("lk_kbh"))||.42))}catch(e){}
-function fit(){window.scrollTo(0,0);if(PH){clearTimeout(PHT);PHT=setTimeout(phSettle,PHW);return}const c=$("#chat"),m=$("#msgs"),kb=Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)),d=kb-KB0,atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;KB0=kb;
-c.style.setProperty("--kbo",kb+"px");c.classList.toggle("kb",kb>0);fitBar();
+const vv=window.visualViewport;let KB0=0,PH=0,PHT=0;const PHW=255,PHH=.5,LAND=-33;
+function fit(){window.scrollTo(0,0);if(PH)return;const c=$("#chat"),m=$("#msgs"),kb=Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)),d=kb-KB0,atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;KB0=kb;
+c.style.setProperty("--kbo",(kb>0?kb+LAND:0)+"px");c.classList.toggle("kb",kb>0);if(kb===0)$("#kbBox").style.height="";fitBar();
 /* بالا رفتن پیام‌ها | Messages Rise: اگر ته گفتگو بودیم همان‌جا می‌مانیم، وگرنه پیام‌ها دقیقاً به‌اندازه‌ی کیبورد بالا یا پایین می‌روند (stay at bottom, or shift by the keyboard amount) */
 if(atB)m.scrollTop=1e9;else m.scrollTop+=d;
 if(atB)requestAnimationFrame(()=>{m.scrollTop=1e9})}
 if(vv){vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit)}
-/* کادر فرضی کیبورد | Phantom Keyboard Box: با لمس نوار پیام، یک کادر نامرئی هم‌اندازه‌ی کیبورد (بار اول ۴۲ درصد صفحه، بعد از آن اندازه‌ی واقعی دفعه‌ی قبل) زیر نوار نرم بالا می‌آید و نوار روی آن می‌نشیند؛ صفحه هیچ جابه‌جا نمی‌شود و عددهای آیفون نادیده گرفته می‌شوند تا کیبورد کاملاً باز و متوقف شود (۳۰۰ میلی‌ثانیه بی‌خبری از آیفون)؛ بلافاصله نوار به ارتفاع واقعی کیبورد می‌چسبد (invisible keyboard-sized box (42% first time, then the last real height) lifts the bar smoothly on tap; iOS values are ignored until the keyboard has stopped for 300ms, then the bar snaps to the real keyboard height; PHH = box height, PHW = wait time) */
-function phSettle(){if(!PH)return;PH=0;$("#chat").classList.remove("kbp");fit();/* یادگیری ارتفاع کیبورد | Learn Keyboard Height: ارتفاع واقعی کیبورد ذخیره می‌شود تا کادر فرضی دفعه‌ی بعد دقیقاً هم‌اندازه‌ی آن بالا بیاید (saves the real keyboard height ratio for the next phantom box) */if(KB0>100){PHH=Math.min(.55,Math.max(.3,KB0/innerHeight));try{localStorage.setItem("lk_kbh",PHH.toFixed(3))}catch(e){}}}
-function phStart(){const c=$("#chat"),m=$("#msgs");if(!vv||PH||KB0>0)return;const atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;PH=1;c.classList.add("kbp");c.style.setProperty("--kbo",Math.round(innerHeight*PHH)+"px");c.classList.add("kb");KB0=Math.round(innerHeight*PHH);
-/* نگه داشتن انتهای گفتگو | Keep Bottom: اگر ته گفتگو بودیم، حین بالا آمدن نوار پیام‌ها هم‌زمان بالا می‌روند (if at the bottom, messages rise together with the bar) */
-if(atB){const t0=performance.now();(function f(){m.scrollTop=1e9;if(performance.now()-t0<280)requestAnimationFrame(f)})()}
-clearTimeout(PHT);PHT=setTimeout(phSettle,700)}
-/* لمس و رها کردن نوار پیام | Message Bar Focus: باز شدن کادر فرضی موقع لمس، و بستن آن اگر کیبورد باز نشد یا رها شد (open the phantom box on focus, release it on blur) */
+/* کادر فرضی کیبورد | Phantom Keyboard Box: با لمس نوار پیام، کادر واقعی و شفاف ۵۰ درصد صفحه از لبه‌ی پایین قاب برنامه بلافاصله و با یک پرش بالا می‌آید و نوار روی آن می‌نشیند؛ کیبورد که می‌آید همه‌چیز سر جایش می‌ماند؛ ۲۵۵ میلی‌ثانیه بعد از لمس، نوار به بالای کیبورد واقعی می‌چسبد (on tap the real transparent 50% box jumps up from the app frame bottom and the bar sits on it; keyboard arrives, nothing moves; 255ms after the tap the bar snaps onto the real keyboard; PHH = box height, PHW = wait, LAND = final gap fix) */
+function phSettle(){if(!PH)return;PH=0;fit()}
+function phStart(){const c=$("#chat"),m=$("#msgs"),x=$("#kbBox");if(!vv||PH||KB0>0||!x)return;const h=Math.round(innerHeight*PHH),atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;PH=1;x.style.height=h+"px";c.style.setProperty("--kbo",h+"px");c.classList.add("kb");KB0=h;
+/* نگه داشتن انتهای گفتگو | Keep Bottom: اگر ته گفتگو بودیم، پیام‌ها هم‌زمان با نوار بالا می‌روند (if at the bottom, messages rise together with the bar) */
+if(atB){const t0=performance.now();(function f(){m.scrollTop=1e9;if(performance.now()-t0<PHW+40)requestAnimationFrame(f)})()}
+clearTimeout(PHT);PHT=setTimeout(phSettle,PHW)}
+/* ساخت کادر | Create Box: کادر شفاف یک‌بار داخل صفحه چت ساخته می‌شود (the transparent box is created once inside the chat page) */
+(function(){const x=document.createElement("div");x.id="kbBox";$("#chat").appendChild(x)})();
+/* لمس و رها کردن نوار پیام | Message Bar Focus: باز شدن کادر موقع لمس، و رها شدن اگر کیبورد باز نشد (open the box on focus, release it on blur) */
 document.addEventListener("focusin",e=>{if(e.target&&e.target.id==="mi")phStart()});
-document.addEventListener("focusout",e=>{if(e.target&&e.target.id==="mi"&&PH){clearTimeout(PHT);PH=0;$("#chat").classList.remove("kbp");fit()}});
+document.addEventListener("focusout",e=>{if(e.target&&e.target.id==="mi"&&PH){clearTimeout(PHT);PH=0;fit()}});
 window.addEventListener("scroll",()=>window.scrollTo(0,0));
 /* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
 function lkGap(){const A=$("#app");if(!A)return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
