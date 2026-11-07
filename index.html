@@ -541,9 +541,12 @@ html.light .dt{color-scheme:light}
 #csr .em{padding:14px;color:var(--sub);text-align:center}
 .title.srch{padding:0 10px;gap:8px}
 /* کپسول جستجو تمام‌عرض | Full-Width Search Capsule: در حالت جستجو کپسول بین دکمه‌ی بازگشت و عکس پروفایل کشیده می‌شود */
-#chat .top .title.srch{width:auto;flex:1;min-width:0;justify-content:flex-start;height:44px}
-.title.srch input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font-size:16px;font-family:inherit}
-.title.srch b{color:var(--blue);font-weight:600;font-size:15px}
+#chat .top .title.srch{width:auto;flex:1;min-width:0;justify-content:flex-start;height:44px;border-radius:22px;padding:0 14px;gap:10px}
+/* دکمه‌ی بستن گرد | Round Close Button: مثل تلگرام، دایره‌ی جدا کنار کپسول جستجو (جای عکس پروفایل) */
+#csx{width:44px;height:44px;flex:none;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt)}
+.title.srch input::placeholder{color:var(--sub)}
+.title.srch .si{color:var(--sub);flex:none;display:flex}
+.title.srch input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font-size:17px;font-family:inherit}
 
 /* استایل تیک آبی | Verified Badge Style: اندازه و تراز عکس تیک کنار نام */
 .vb{vertical-align:-3px;margin-inline-start:4px;display:inline-block;object-fit:contain}
@@ -1517,7 +1520,7 @@ setPw();
  const T=$("#chat .top .title");let tm=0,on=0,lp=0;
  const R=document.createElement("div");R.id="csr";$("#chat").append(R);
  /* بستن جستجو | Close Search: نوار به حالت اول برمی‌گردد */
- function closeS(){if(!on)return;on=0;T.classList.remove("srch");const w=$("#csw");if(w)w.remove();[...T.children].forEach(x=>x.style.display="");R.style.display="none";R.innerHTML=""}
+ function closeS(){if(!on)return;on=0;T.classList.remove("srch");const w=$("#csw");if(w)w.remove();const x=$("#csx");if(x)x.remove();[...T.children].forEach(x=>x.style.display="");$("#back").style.display="";$("#cav").style.display="";R.style.display="none";R.innerHTML=""}
  /* اجرای جستجو | Run Search: پیام‌های گفتگو را می‌گردد و نتایج را از جدید به قدیم می‌چیند */
  function run(q){q=q.trim().toLowerCase();if(!q){R.style.display="none";return}
   const L=[...$$("#msgs .b")].reverse().filter(b=>fwBody(b.dataset.t).replace(/<[^>]*>/g,"").toLowerCase().includes(q));
@@ -1525,10 +1528,14 @@ setPw();
   R.innerHTML=L.length?L.map(b=>{const t=fwBody(b.dataset.t).replace(/<[^>]*>/g,""),i=t.toLowerCase().indexOf(q),a=Math.max(0,i-25),sn=t.slice(a,i+q.length+60);
    const k=i-a,h=esc(sn.slice(0,k))+"<mark>"+esc(sn.slice(k,k+q.length))+"</mark>"+esc(sn.slice(k+q.length));
    return `<div class="it" data-id="${b.dataset.id}"><small>${b.dataset.w==="me"?tr("You"):$("#cname").textContent||""} · ${(b.querySelector("small")||{}).textContent||""}</small>${a?"…":""}${h}</div>`}).join(""):`<div class="em">${tr("No results")}</div>`}
- /* باز کردن نوار جستجو | Open Search Bar: نام و وضعیت با یک فیلد جستجو و دکمه‌ی بستن عوض می‌شود */
- function openS(){if(on)return;on=1;T.classList.add("srch");[...T.children].forEach(x=>x.style.display="none");const w=document.createElement("div");w.id="csw";w.style.cssText="display:flex;flex:1;align-items:center;gap:8px;min-width:0";w.innerHTML=`<b id="csx">${tr("Cancel")}</b><input id="csi" placeholder="${tr("Search")}" autocomplete="off" style="flex:1;min-width:0">`;T.append(w);
-  const i=$("#csi");i.oninput=()=>run(i.value);$("#csx").onclick=e=>{e.stopPropagation();closeS()};i.focus()}
- /* نگه داشتن روی نوار | Long Press: بعد از ۵۰۰ میلی‌ثانیه نگه داشتن، جستجو باز می‌شود */
+ /* باز کردن نوار جستجو | Open Search Bar: مثل تلگرام؛ کپسول با ذره‌بین و «Search this chat» + دایره‌ی ✕ جدا؛ دکمه‌ی برگشت و عکس پروفایل موقتاً پنهان می‌شوند */
+ function openS(){if(on)return;on=1;T.classList.add("srch");[...T.children].forEach(x=>x.style.display="none");$("#back").style.display="none";$("#cav").style.display="none";
+  const w=document.createElement("div");w.id="csw";w.style.cssText="display:flex;flex:1;align-items:center;gap:10px;min-width:0";
+  w.innerHTML=`<span class="si"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span><input id="csi" placeholder="${tr("Search this chat")}" autocomplete="off" enterkeyhint="search" style="flex:1;min-width:0">`;T.append(w);
+  const x=document.createElement("div");x.id="csx";x.innerHTML=ic("close",20);$("#chat .top").append(x);
+  const i=$("#csi");i.oninput=()=>run(i.value);x.onclick=e=>{e.stopPropagation();closeS()};i.focus()}
+ 
+/* نگه داشتن روی نوار | Long Press: بعد از ۵۰۰ میلی‌ثانیه نگه داشتن، جستجو باز می‌شود */
  T.addEventListener("pointerdown",e=>{if(on)return;clearTimeout(tm);tm=setTimeout(()=>{tm=0;lp=1;openS();setTimeout(()=>lp=0,700)},500)});
  /* جلوگیری از باز شدن پروفایل | Block Profile Click: کلیکِ بعد از نگه داشتن (رها کردن) نادیده گرفته می‌شود تا فقط تک‌کلیک پروفایل را باز کند */
  $("#chat .top").addEventListener("click",e=>{if(lp){lp=0;e.stopImmediatePropagation();e.preventDefault()}
@@ -1578,6 +1585,17 @@ window.applyPin=function(){const pb=$(".pinbar");if(!pb)return;const P=pinsOf(S.
  $(".pinbar").addEventListener("click",e=>{if(!e.target.closest(".pm"))return;e.stopImmediatePropagation();const P=pinsOf(S.openId);
   o.innerHTML=`<div class="pc"><div class="ph2">${tr("Pinned Messages")} (${P.length})</div>${P.map((r,i)=>`<div class="pit" data-i="${i}"><small>#${i+1}</small>${esc(fwBody(r).replace(/<[^>]*>/g,"").slice(0,120))}</div>`).join("")}</div>`;o.classList.add("on")},true)})();
 applyPin();
+
+/* تاریخ چسبان | Sticky Date Fix: فقط تاریخِ بخش فعلی بالای صفحه می‌ماند، تاریخ‌های قبلی پنهان می‌شوند و با رسیدن تاریخ بعدی، تاریخ قبلی مثل تلگرام به بالا هل داده می‌شود (دیگر روی هم نمی‌افتند) */
+(function(){const M=$("#msgs");let raf=0;
+ function fix(){raf=0;const D=[...M.querySelectorAll(".dsep")];if(!D.length)return;
+  const st=M.getBoundingClientRect().top+M.clientTop+4,stuck=[],below=[];
+  D.forEach(d=>{d.style.transform="";d.style.visibility="";(d.getBoundingClientRect().top<=st+1?stuck:below).push(d)});
+  stuck.slice(0,-1).forEach(d=>d.style.visibility="hidden");
+  const cur=stuck[stuck.length-1],nx=below[0];
+  if(cur&&nx){const h=cur.offsetHeight+8,gap=nx.getBoundingClientRect().top-st;if(gap<h)cur.style.transform="translateY("+(gap-h)+"px)"}}
+ const q=()=>{if(!raf)raf=requestAnimationFrame(fix)};
+ M.addEventListener("scroll",q,{passive:true});new MutationObserver(q).observe(M,{childList:true});window.addEventListener("resize",q)})();
 </script>
 </body>
 </html>
