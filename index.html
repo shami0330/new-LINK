@@ -122,9 +122,9 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .editing .chk{width:24px;opacity:1;margin-right:0}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
-/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات؛ لبه‌ی پایین کپسول همیشه دقیقاً ۱۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه؛ فاصله‌ی قاب تا لبه‌ی صفحه (--gap) را کد «لبه‌ی صفحه نمایش» حساب می‌کند (Contacts/Chats/Settings; bottom edge always exactly 10px above the real display edge, not the app frame edge; --gap = frame-to-display gap measured by Screen Edge Gap) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(var(--gap,var(--ext)) + 10px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
-.tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
+/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات؛ لبه‌ی پایین کپسول همیشه دقیقاً ۲۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه؛ فاصله‌ی قاب تا لبه‌ی صفحه (--gap) را کد «لبه‌ی صفحه نمایش» حساب می‌کند از چپ و راست هم ۷ پیکسل با لبه‌ی صفحه فاصله دارد و بیرون نمی‌زند، با تغییر عرض صفحه جمع و باز می‌شود (7px from left and right display edges, never overflows, shrinks and grows with screen width) (Contacts/Chats/Settings; bottom edge always exactly 20px above the real display edge, not the app frame edge; --gap = frame-to-display gap measured by Screen Edge Gap) */
+#tabbar{position:absolute;left:7px;right:7px;bottom:calc(var(--gap,var(--ext)) + 20px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
+.tb{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
 
@@ -265,8 +265,8 @@ html.light .b.me .tick{color:var(--blue)!important}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-/* فاصله‌ی نوار پیام از پایین | Message Bar Bottom Gap: بدون کیبورد، لبه‌ی پایین نوار پیام دقیقاً ۱۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه؛ هم‌تراز با نوار تب‌ها (without keyboard, bar sits exactly 10px above the real display edge, same line as the tab capsule) */
-.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(var(--gap,var(--ext)) + 10px);align-items:flex-end}
+/* فاصله‌ی نوار پیام از پایین | Message Bar Bottom Gap: بدون کیبورد، لبه‌ی پایین نوار پیام دقیقاً ۲۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه؛ هم‌تراز با نوار تب‌ها؛ از چپ و راست هم ۷ پیکسل فاصله دارد و بیرون نمی‌زند، کادر نوشتن با تغییر عرض جمع و باز می‌شود (without keyboard, bar sits exactly 20px above the real display edge, same line as the tab capsule; 7px from left and right, never overflows, text box shrinks and grows) */
+.inbar{box-sizing:border-box;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;padding:8px 7px calc(var(--gap,var(--ext)) + 20px);align-items:flex-end}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
@@ -1062,7 +1062,7 @@ if(atB)m.scrollTop=1e9;else m.scrollTop+=d;
 if(atB)requestAnimationFrame(()=>{m.scrollTop=1e9})}
 if(vv){vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit)}
 window.addEventListener("scroll",()=>window.scrollTo(0,0));
-/* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۱۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
+/* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
 function lkGap(){const A=$("#app");if(!A)return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
 lkGap();["resize","orientationchange","load","pageshow"].forEach(e=>window.addEventListener(e,lkGap));if(vv)vv.addEventListener("resize",lkGap);setTimeout(lkGap,400);
 
