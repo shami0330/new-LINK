@@ -28,7 +28,7 @@
 *::-webkit-scrollbar{display:none;width:0;height:0}
 
 /* بدنه | Body: پس‌زمینه سیاه، فونت سیستم، چینش همیشه چپ‌به‌راست (black bg, system font, always LTR) */
-html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
+html,body{height:calc(100% + var(--ext,10px));background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 /* قاب برنامه | App Frame: تمام صفحه، ۵ پیکسل پایین‌تر از ناحیه امن (full screen, extends 5px below safe area) */
 #app{position:fixed;inset:0 0 calc(-1*var(--ext,10px)) 0;overflow:hidden}
@@ -1155,7 +1155,7 @@ $(".pinbar").addEventListener("click",()=>{const all=[...$$("#msgs .b")],t=all.f
  function open(n){td=toJ(new Date()).join("-");has={};$$("#msgs .dsep").forEach(h=>{if(h.dataset.n!=null)has[toJ(new Date(Date.now()-h.dataset.n*864e5)).join("-")]=h});[cy,cm]=toJ(new Date(Date.now()-n*864e5));draw();ov.classList.add("on")}
  ov.addEventListener("click",e=>{const a=e.target.closest(".cb"),d=e.target.closest(".cd");
   if(a){const t=cy*12+cm-1+ +a.dataset.a;cy=Math.floor(t/12);cm=t%12+1;draw();return}
-  if(d&&has[d.dataset.k]){const nx=has[d.dataset.k].nextElementSibling,M=$("#msgs");if(nx)M.scrollTo({top:M.scrollTop+nx.getBoundingClientRect().top-M.getBoundingClientRect().top-44,behavior:"smooth"});ov.classList.remove("on");return}
+  if(d){const [ky,km,kd]=d.dataset.k.split("-").map(Number),now=new Date(),nc=Math.round((U([now.getFullYear(),now.getMonth()+1,now.getDate()])-U(j2g(ky,km,kd)))/864e5),ds=[...$$("#msgs .dsep")],h=ds.find(z=>+z.dataset.n<=nc)||ds[ds.length-1];has[d.dataset.k]=h;const nx=h&&h.nextElementSibling,M=$("#msgs");if(nx)M.scrollTo({top:M.scrollTop+nx.getBoundingClientRect().top-M.getBoundingClientRect().top-44,behavior:"smooth"});ov.classList.remove("on");return}
   if(!e.target.closest(".cal"))ov.classList.remove("on")});
  let tm=null;const stop=()=>clearTimeout(tm);
  ["touchstart","mousedown"].forEach(ev=>$("#msgs").addEventListener(ev,e=>{const h=e.target.closest(".dsep");if(!h)return;stop();tm=setTimeout(()=>open(+h.dataset.n||0),450)},{passive:true}));
@@ -1174,10 +1174,13 @@ $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
-<script>/* ارتفاع واقعی صفحه | Real Screen Height: در حالت نصب‌شده، ارتفاع برنامه از روی پیکسل‌های خود صفحه موبایل محاسبه می‌شود و ۵ پیکسل از پایین‌ترین حد پایین‌تر می‌رود تا حاشیه زیر برنامه نماند؛ بقیه عناصر جابه‌جا نمی‌شوند (in installed mode the app extends to the physical screen bottom +5px; other elements keep their place) */
-(function(){const st=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
- function fit(){const port=innerHeight>=innerWidth,sh=port?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
-  const ext=st()?Math.max(5,Math.round(sh-innerHeight)+5):5;document.documentElement.style.setProperty("--ext",ext+"px")}
- fit();["resize","orientationchange"].forEach(e=>addEventListener(e,()=>setTimeout(fit,60)));addEventListener("load",fit)})();</script>
+<script>/* ارتفاع واقعی صفحه | Real Screen Height: ارتفاع برنامه از بزرگ‌ترین مقدار بین ارتفاع فیزیکی صفحه موبایل، ارتفاع ۱۰۰lvh و innerHeight گرفته می‌شود و ۵ پیکسل از پایین‌ترین حد پایین‌تر می‌رود؛ بقیه عناصر جابه‌جا نمی‌شوند (app height = max(physical screen, 100lvh, innerHeight) + 5px at the bottom; other elements keep their place) */
+(function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
+ const pr=document.createElement("div");pr.style.cssText="position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none";document.body.append(pr);
+ function fit(){const port=innerHeight>=innerWidth;if(!port){R.style.setProperty("--ext","5px");return}
+  const sh=Math.max(screen.width,screen.height),gap=sh-innerHeight,lv=pr.offsetHeight||0;
+  const H=Math.max(innerHeight,lv,(st()||gap<=60)?sh:0)+5;R.style.setProperty("--ext",Math.max(5,Math.round(H-innerHeight))+"px")}
+ fit();[100,400,1200,2500].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow"].forEach(e=>addEventListener(e,()=>{fit();setTimeout(fit,150)}));addEventListener("load",fit);
+ if(window.visualViewport)visualViewport.addEventListener("resize",fit)})();</script>
 </body>
 </html>
