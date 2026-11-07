@@ -122,7 +122,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
 /* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات (Contacts/Chats/Settings) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext) + 7px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext) + 7px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
@@ -704,7 +704,7 @@ function renderTabs(){const T=allTabs();if(!T.some(x=>x[0]===S.folder))S.folder=
  $("#tabs").classList.toggle("many",T.length>4);
  $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>inFolder(x,k)&&x.un).length;
   return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
- $$(".tab").forEach(t=>t.onclick=()=>{S.folder=t.dataset.k;renderChats()})}
+ $$(".tab").forEach(t=>t.onclick=()=>{const l=$("#clist"),y=l.scrollTop;S.folder=t.dataset.k;renderChats();if(y>0){const sp=document.createElement("div");l.append(sp);sp.style.height=Math.max(0,y-(l.scrollHeight-l.clientHeight))+"px";l.scrollTop=y}})}
 /* رندر چت‌ها | Render Chats: سنجاق‌شده‌ها بالا، بقیه به ترتیب (pinned first, then order) */
 function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
  const L=CHATS.filter(c=>inFolder(c,S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
@@ -1081,10 +1081,10 @@ $("#cpScroll").addEventListener("scroll",cpScroll,{passive:true});
  P.addEventListener("touchend",()=>{$("#cp_av").style.transition="";if(!CP.big)cpBig(d>60);y0=null;d=0})})();
 $("#cp_av").onclick=()=>openViewer($("#cp_av"),im=>paintAv(im,{name:CP.name,photo:null}),!CP.big);
 /* منوی بیشتر پروفایل | Profile More: پاک کردن تاریخچه (یک‌طرفه/دوطرفه) و بلاک/آنبلاک؛ فقط داخل برنامه (clear history one-way/both, block/unblock; local only) */
-Object.assign(FA,{"Clear history for me":"پاک کردن تاریخچه (یک‌طرفه)","Clear history for both":"پاک کردن تاریخچه (دوطرفه)","Block":"بلاک کردن","Unblock":"آنبلاک کردن","History cleared":"تاریخچه پاک شد","Blocked":"بلاک شد","Unblocked":"آنبلاک شد"});
+Object.assign(FA,{"Clear history":"پاک کردن تاریخچه","Clear for me":"فقط برای من","Clear for both":"برای هر دو طرف","Block":"بلاک کردن","Unblock":"آنبلاک کردن","History cleared":"تاریخچه پاک شد","Blocked":"بلاک شد","Unblocked":"آنبلاک شد"});
 (function(){const ov=document.createElement("div");ov.id="cpmov";$("#app").append(ov);
- $("#cpMore").onclick=()=>{const id=S.openId;CFG.blocked=CFG.blocked||{};ov.innerHTML=`<div class="mn"><div data-a="me">${tr("Clear history for me")}</div><div data-a="both" class="rd">${tr("Clear history for both")}</div><div data-a="blk" class="${CFG.blocked[id]?"":"rd"}">${tr(CFG.blocked[id]?"Unblock":"Block")}</div></div>`;ov.classList.add("on")};
- ov.onclick=e=>{const a=e.target.closest("[data-a]");ov.classList.remove("on");if(!a)return;const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;CFG.blocked=CFG.blocked||{};CFG.cleared=CFG.cleared||{};
+ $("#cpMore").onclick=()=>{const id=S.openId;CFG.blocked=CFG.blocked||{};ov.innerHTML=`<div class="mn"><div data-a="del" class="rd">${tr("Clear history")}</div><div data-a="blk" class="${CFG.blocked[id]?"":"rd"}">${tr(CFG.blocked[id]?"Unblock":"Block")}</div></div>`;ov.classList.add("on")};
+ ov.onclick=e=>{const a=e.target.closest("[data-a]");if(a&&a.dataset.a==="del"){ov.innerHTML=`<div class="mn"><div data-a="me">${tr("Clear for me")}</div><div data-a="both" class="rd">${tr("Clear for both")}</div></div>`;return}ov.classList.remove("on");if(!a)return;const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;CFG.blocked=CFG.blocked||{};CFG.cleared=CFG.cleared||{};
   if(a.dataset.a==="blk"){CFG.blocked[id]=!CFG.blocked[id];if(!CFG.blocked[id])delete CFG.blocked[id];saveCfg();toast(tr(CFG.blocked[id]?"Blocked":"Unblocked"));return}
   CFG.cleared[id]=1;CFG.sent[id]=[];c.m="";saveCfg();S.lastD=null;$("#msgs").innerHTML="";toast(tr("History cleared"));renderChats()}})();
 
