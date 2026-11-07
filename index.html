@@ -54,6 +54,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 /* عنوان وسط | Center Title: عنوان وسط سربرگ (header title) */
 .title{display:flex;align-items:center;gap:6px;font-weight:700;font-size:17px;background:var(--card);border-radius:20px;padding:0 14px;height:38px}
 
+/* عنوان چت‌ها دقیقاً وسط صفحه | Chats Title Exact Center: عنوان از جریان چینش خارج می‌شود و وسط عرض صفحه می‌نشیند، پس عرض دکمه‌های چپ و راست در آن تاثیری ندارد (title leaves the flex flow and sits at exactly 50% of screen width, so the different widths of the left and right buttons no longer shift it) */
+#chats>.top{position:relative}
+#chats>.top>.title{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 6px)}
+
 /* جستجو | Search Box: نوار جستجوی خاکستری (grey search bar) */
 .search{margin:6px 12px;background:var(--card);border-radius:12px;height:38px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--sub);overflow:hidden}
 /* پنهان شدن جستجو | Search Hide: با اسکرول به بالا کوچک و محو می‌شود (collapses and fades on scroll) */
@@ -77,8 +81,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .tab.on{background:var(--card2)}
 .tab b{background:var(--chip);border-radius:9px;padding:1px 6px;font-size:11px;margin-left:3px}
 
-/* لیست | List: ناحیه اسکرول با فضای خالی برای کپسول پایین (scroll area, bottom space for tab bar) */
-.list{flex:1;overflow-y:auto;padding-bottom:110px}
+/* لیست | List: ناحیه اسکرول با فضای خالی برای کپسول پایین (scroll area, bottom space for tab bar); فضای پایین = فاصله قاب تا لبه صفحه + ۲۰ فاصله کپسول + ۶۷ ارتفاع کپسول + ۲۰ نفس، پس آخرین گفتگو کامل بالای کپسول اسکرول می‌شود (bottom space = screen gap + 20 capsule offset + 67 capsule height + 20 breathing room, so the last chat scrolls fully above the capsule) */
+.list{flex:1;overflow-y:auto;padding-bottom:calc(var(--gap,var(--ext)) + 107px)}
 
 /* ردیف چت | Chat Row: آواتار + نام + پیام + ساعت (avatar, name, message, time) */
 .row{display:flex;align-items:center;gap:12px;padding:8px 14px;position:relative;transition:background .15s,transform .2s}
@@ -265,8 +269,8 @@ html.light .b.me .tick{color:var(--blue)!important}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-/* فاصله‌ی نوار پیام از پایین | Message Bar Bottom Gap: بدون کیبورد، لبه‌ی پایین نوار پیام دقیقاً ۲۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه؛ هم‌تراز با نوار تب‌ها؛ از چپ و راست هم ۷ پیکسل فاصله دارد و بیرون نمی‌زند، کادر نوشتن با تغییر عرض جمع و باز می‌شود (without keyboard, bar sits exactly 20px above the real display edge, same line as the tab capsule; 7px from left and right, never overflows, text box shrinks and grows) */
-.inbar{box-sizing:border-box;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;padding:8px 7px calc(var(--gap,var(--ext)) + 20px);align-items:flex-end}
+/* فاصله‌ی نوار پیام از پایین | Message Bar Bottom Gap: بدون کیبورد، لبه‌ی پایین نوار پیام دقیقاً ۴۰ پیکسل بالاتر از لبه‌ی اصلی خود صفحه نمایش است، نه لبه‌ی قاب برنامه (قبلاً ۲۰ بود)؛ از چپ و راست هم ۷ پیکسل فاصله دارد و بیرون نمی‌زند، کادر نوشتن با تغییر عرض جمع و باز می‌شود (without keyboard, bar sits exactly 40px above the real display edge (was 20px); 7px from left and right, never overflows, text box shrinks and grows) */
+.inbar{box-sizing:border-box;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;padding:8px 7px calc(var(--gap,var(--ext)) + 40px);align-items:flex-end}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
@@ -823,7 +827,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   </div>
   <div class="pinbar"><div><span>Pinned Message</span><br><small style="color:var(--sub)">Photo</small></div><i data-ic="pin" data-s="18"></i></div>
   <div class="msgs" id="msgs"></div>
-  <div class="inbar"><div id="rbar"><div class="rbq"><b id="rbar_n"></b><span id="rbar_t"></span></div><div class="rx" id="rbarX"><i data-ic="close" data-s="16"></i></div></div><div class="round" id="attachBtn"><i data-ic="attach" data-s="20"></i></div><textarea id="mi" rows="1" dir="auto" placeholder="Message" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"></textarea><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
+  <div class="inbar"><div id="rbar"><div class="rbq"><b id="rbar_n"></b><span id="rbar_t"></span></div><div class="rx" id="rbarX"><i data-ic="close" data-s="16"></i></div></div><div class="round" id="attachBtn"><i data-ic="attach" data-s="20"></i></div><textarea id="mi" name="lk-msg" rows="1" dir="auto" placeholder="Message" autocomplete="nope-no-fill" aria-autocomplete="none" autocorrect="off" autocapitalize="sentences" spellcheck="false" inputmode="text" enterkeyhint="enter" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
 </div>
 
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
