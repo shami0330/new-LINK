@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.4 (Version 2.4) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.5 (Version 2.5) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -151,7 +151,21 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #chat .msgs{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
 #chat.kb .msgs{padding-bottom:58px}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
-#chat .top .title{padding:0 21.5px}
+#chat .top .title{padding:0 29px}
+/* دکمه برگشت دایره | Back Button Circle: ۳۸×۳۸ کاملاً گرد (38x38 perfect circle) */
+#chat #back{width:38px;height:38px;padding:0;border-radius:50%}
+/* حباب من در روز | My Bubble (Day): زمینه روشن با متن تیره تا خوانا باشد (light bubble with dark text for readability) */
+html.light .b.me{color:#0b0b0c}
+html.light .b.me small{color:rgba(0,0,0,.5)}
+html.light .b.me .tick{color:var(--blue)!important}
+/* پروفایل دو مرحله‌ای | Two-stage Profile: مرحله ۱ آواتار بزرگ با کشیدن به پایین، مرحله ۲ تمام‌صفحه با لمس (stage 1 big avatar on pull-down, stage 2 full screen on tap) */
+#myav{transition:width .25s,height .25s,font-size .25s;background-size:cover}
+.ph.big #myav{width:220px;height:220px;font-size:90px}
+.ph.pull #myav{transition:none}
+#pfFull{position:absolute;inset:0;background:#000;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .2s;color:#fff}
+#pfFull.on{opacity:1;pointer-events:auto}
+#pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
+#pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
 .inbar{display:flex;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 10px);align-items:center}
 .inbar input{flex:1;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
@@ -261,7 +275,7 @@ html.light #login .pf{color:#000}
 #peek .pkh small{color:var(--sub);font-size:12px}
 #peekMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* تم روشن | Light Theme */
-html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--bubOut:#4673ff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);--prev:#929297;--snd:#1c1c1e;color-scheme:light}
+html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--bubOut:#b9d2ff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);--prev:#929297;--snd:#1c1c1e;color-scheme:light}
 /* آیکون عکس پروفایل در روز | Profile Photo Icon (Day): کاشی آبی روشن به‌جای سرمه‌ای تیره (light blue tile instead of dark navy) */
 html.light #chPhoto .ic{background:#d5e6ff!important}
 html.light #login input,html.light .inbar input{color:#000}
@@ -443,6 +457,7 @@ html.light .dt{color-scheme:light}
   <div class="tb on" data-s="chats"><i data-ic="chat" data-s="24"></i>Chats</div>
   <div class="tb" data-s="settings"><span class="tbav" id="tbav"></span>Settings</div>
 </div>
+<div id="pfFull"><div class="fx" id="pfX"><i data-ic="close" data-s="20"></i></div><div class="av fa" id="pf_full"></div><h2 id="pf_fn" dir="auto"></h2></div>
 <div id="editbar"><div class="pill" id="readAll">Read All</div><div class="pill" id="delSel" style="color:var(--red)">Delete</div></div>
 
 <!-- منو و شیت | Menu & Sheet -->
@@ -512,7 +527,7 @@ const av=(n,c,on,cls="")=>`<div class="av ${cls}" style="background:${c}">${n.tr
 /* رنگ از نام | Color From Name: رنگ ثابت برای هر نام (stable color per name) */
 const colOf=n=>`hsl(${[...n].reduce((a,c)=>a+c.charCodeAt(0),0)*37%360} 55% 50%)`;
 /* صفحه | Show Screen: فقط یک صفحه نمایش داده می‌شود و تب فعال عوض می‌شود (show one screen, update active tab) */
-function show(id){S.subs=[];$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
+function show(id){if(id!=="settings"&&typeof setBig==="function")setBig(false);S.subs=[];$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id||(id==="chat"&&s.id==="chats")));$$(".tb").forEach(t=>t.classList.toggle("on",t.dataset.s===id));
  $("#tabbar").style.display=(id==="chat"||id==="login")?"none":"flex";if(typeof padLists==="function")padLists();}
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
@@ -669,12 +684,12 @@ function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  $("#pf_email").textContent=u.email;$("#pf_user").textContent=u.username?"@"+u.username:"";$("#pf_user").parentNode.style.display=u.username?"":"none";
  $("#pf_bio").textContent=u.bio||"";$("#pf_bio_w").style.display=u.bio?"":"none";
  $("#pf_bday").textContent=u.bday?fmtDate(u.bday):"";$("#pf_bday_w").style.display=u.bday?"":"none";
- ["#myav","#myav2","#pf_av","#tbav"].forEach(q=>paintAv($(q),u))}
+ ["#myav","#myav2","#pf_av","#tbav","#pf_full"].forEach(q=>paintAv($(q),u))}
 function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=320;c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,320,320);cb(c.toDataURL("image/jpeg",.85))};im.src=r.result};r.readAsDataURL(file)};f.click()}
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
  $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
  paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
-$("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(S.user)openSub("pfile")};
+$("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(!S.user)return;if(S.pfBig)openFull();else openSub("pfile")};
 $("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
 $("#edPhoto").onclick=$("#ed_av").onclick=()=>pickPhoto(d=>{ED.photo=d;paintAv($("#ed_av"),{name:$("#ed_first").value||S.user.name,photo:d})});
 $("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
@@ -844,6 +859,21 @@ function plainField(el){const d=document.createElement("div");
 /* ---- ۳.۱۳ راه‌اندازی آیکون‌ها | 3.13 Icon Init ---- */
 /* جایگذاری آیکون | Fill Icons: همه عنصرهای data-ic با SVG پر می‌شوند (fills static icon slots) */
 $$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend();
+
+/* ---- پروفایل دو مرحله‌ای | Two-stage Profile ---- */
+/* مرحله ۱ | Stage 1 – Big Avatar: کشیدن صفحه تنظیمات به پایین آواتار را همراه انگشت بزرگ می‌کند؛ با رها کردن بعد از ۶۰ پیکسل بزرگ می‌ماند و با کشیدن به بالا یا اسکرول جمع می‌شود (pull-down grows the avatar live; release past 60px keeps it big; swipe up or scroll collapses) */
+S.pfBig=false;
+function setBig(v){S.pfBig=v;$("#settings .ph").classList.toggle("big",v);const a=$("#myav");a.style.width=a.style.height=a.style.fontSize=""}
+(function(){const L=$("#settings .list"),ph=$("#settings .ph"),a=$("#myav");let y0=null,d=0;
+ L.addEventListener("touchstart",e=>{y0=L.scrollTop<=0?e.touches[0].clientY:null;d=0},{passive:true});
+ L.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;
+  if(!S.pfBig&&d>0&&L.scrollTop<=0){e.preventDefault();ph.classList.add("pull");const z=Math.min(96+d*.9,220);a.style.width=a.style.height=z+"px";a.style.fontSize=(z*.41)+"px"}
+  else if(S.pfBig&&d<-30)setBig(false)},{passive:false});
+ L.addEventListener("touchend",()=>{ph.classList.remove("pull");if(!S.pfBig&&d>60)setBig(true);else if(!S.pfBig)setBig(false);y0=null;d=0});
+ L.addEventListener("scroll",()=>{if(S.pfBig&&L.scrollTop>20)setBig(false)},{passive:true})})();
+/* مرحله ۲ | Stage 2 – Full Screen: لمس آواتار بزرگ، عکس را تمام‌صفحه نشان می‌دهد؛ لمس هرجا آن را می‌بندد (tap big avatar = full screen; tap anywhere closes) */
+function openFull(){$("#pf_fn").textContent=S.user.name;$("#pfFull").classList.add("on")}
+$("#pfFull").onclick=()=>$("#pfFull").classList.remove("on");
 
 /* ---- چشم پسورد | Password Eye Toggle ---- */
 /* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان، چشم ساده)؛ با زدن، پسورد پنهان می‌شود و چشم خط‌دار می‌شود؛ دوباره زدن آشکار می‌کند (default visible without dots; tap eye to mask with dots, tap again to reveal) */
