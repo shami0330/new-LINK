@@ -122,8 +122,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .editing .chk{width:24px;opacity:1;margin-right:0}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
-/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات؛ لبه‌ی پایین کپسول همیشه و در هر دستگاهی دقیقاً ۱۰ پیکسل بالاتر از پایین صفحه نمایش است (Contacts/Chats/Settings; bottom edge always exactly 10px above the screen bottom, --ext cancels the frame extension below the screen) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(var(--ext) + 10px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
+/* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات؛ لبه‌ی پایین کپسول همیشه دقیقاً ۱۰ پیکسل بالاتر از حاشیه‌ی امن اصلی آیفون است و با آن تغییر می‌کند (Contacts/Chats/Settings; bottom edge always exactly 10px above the real iPhone safe area, follows it) */
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext) + 10px);height:67px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:34px;display:flex;padding:5px;z-index:20}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
@@ -181,11 +181,18 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .cpmini{display:flex;flex-direction:column;align-items:center;line-height:1.2;opacity:0;font-weight:700}
 .cpmini small{color:var(--sub);font-weight:400;font-size:12px}
 .cpscroll{position:absolute;inset:0;overflow-y:auto;padding-top:calc(env(safe-area-inset-top) + 56px);overscroll-behavior:contain}
+/* فقط بالا و پایین | Vertical Only: صفحه‌ی پروفایل (حتی هنگام کشیدن به پایین) فقط بالا و پایین می‌رود و هیچ‌وقت به چپ و راست نمی‌لغزد؛ ته صفحه هم زیر لبه‌ی پایین یا حاشیه‌ی امن نمی‌ماند (profile only scrolls up/down, never sideways, also while pulling down; bottom never hidden under the screen edge) */
+#cp,.cpscroll{touch-action:pan-y}
+#cptabs{touch-action:pan-x pan-y}
+.cpscroll{overflow-x:hidden;overscroll-behavior-x:none;padding-bottom:calc(env(safe-area-inset-bottom) + var(--ext) + 24px)}
 /* هدر | Header: آواتار ۹۶، نام، آخرین بازدید؛ حالت big تمام‌عرض با نام روی عکس (96px avatar, name, last seen; big = full-width photo with name over it) */
 .cph{position:relative;text-align:center;will-change:transform}
 #cp_av{width:96px;height:96px;margin:0 auto;font-size:40px;transition:width .3s,height .3s,border-radius .3s,margin .3s,font-size .3s;background-size:cover;background-position:center}
 .cph h2{margin-top:8px;font-size:22px}
 .cps{color:var(--sub);font-size:14px;margin-top:2px}
+/* آیکن میوت کنار نام | Mute Icon Beside Name: وقتی گفتگو میوت است، آیکن زنگوله‌ی خط‌خورده روبروی نام در نوار گفتگو و پروفایل می‌آید (shown beside the name in chat header and profile when muted) */
+.mic{display:inline-block;vertical-align:middle;margin-left:5px;opacity:.65;line-height:0}
+.mic .svg{display:block}
 .cph.big #cp_av{width:100%;height:calc(min(108vw,58vh) + env(safe-area-inset-top) + 56px);border-radius:0;margin:calc(-1*(env(safe-area-inset-top) + 56px)) 0 0;font-size:120px}
 .cph.big::after,.cph.pull::after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
 /* هم‌زمان با کشیدن | While Pulling: کلاس pull از همان ابتدای کشیدن نام و دکمه‌ها را روی عکس می‌آورد و متغیر --q (۰ تا ۱) جابجایی را پیوسته می‌کند (pull class puts name + buttons over the photo from the first pixel; --q 0..1 keeps it continuous) */
@@ -377,6 +384,9 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #cpmov .mn div,#fwdov .mn div{padding:15px 18px;font-size:17px;border-bottom:.5px solid var(--line);color:var(--txt)}
 #cpmov .mn div:last-child,#fwdov .mn div:last-child{border:0}
 #cpmov .mn .rd{color:var(--red)}
+/* منوی کشویی زیر دکمه | Dropdown Under More: منوی «پاک کردن تاریخچه» و «بلاک» دقیقاً زیر دکمه‌ی more باز می‌شود؛ جایش با --mx و --my و --mw از روی خود دکمه تنظیم می‌شود (menu opens exactly under the more button) */
+#cpmov{align-items:flex-start;justify-content:flex-start}
+#cpmov .mn{position:absolute;left:var(--mx,12px);top:var(--my,100px);width:var(--mw,230px);margin:0;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 /* تقویم تاریخ | Date Calendar: کادر یک‌ماهه با دکمه‌های ماه و سال (one-month card with month/year buttons) */
 .pinbar{cursor:pointer}
 #calov{position:absolute;inset:0;z-index:95;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}
@@ -828,7 +838,6 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
     <div class="cpact">
       <div class="ab"><i data-ic="phone" data-s="20"></i>call</div><div class="ab" id="cpMute"><i data-ic="bell" data-s="20"></i>mute</div><div class="ab" id="cpMore"><i data-ic="more" data-s="20"></i>more</div>
     </div>
-    <div class="cpmusic"><i data-ic="note" data-s="13"></i><b>Wicked Game</b><span>Chris Isaak</span> ›</div>
     <div class="card">
       <div class="cpr"><div><small>mobile</small><div class="bl" id="cp_ph"></div></div></div>
       <div class="cpr"><div><small>username</small><div class="bl" id="cp_un"></div></div><i data-ic="grid" data-s="20" style="color:var(--blue)"></i></div>
@@ -943,7 +952,7 @@ const VB="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAw
 const vb=(c,z=16)=>c&&c.v?`<img class="vb" src="${VB}" width="${z}" height="${z}" alt="">`:"";
 /* بالا آوردن چت بعد از پین‌ها | Bump Chat: هر پیام ارسالی/دریافتی/فوروارد، چت را به بالای لیست (بعد از پین‌ها) می‌برد */
 function bumpChat(c){CHATS=[c,...CHATS.filter(x=>x!==c)]}
-function renderChats(){renderTabs();const q=$("#q").value.toLowerCase();
+function renderChats(){renderTabs();/* قلاب میوت | Mute Hook: بعد از هر تغییر، آیکن میوت کنار نام تازه می‌شود */lkMuteIcons();const q=$("#q").value.toLowerCase();
  const L=CHATS.filter(c=>inFolder(c,S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
  $("#clist").className="list"+(S.edit?" editing":"");
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
@@ -1002,7 +1011,7 @@ $("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
 /* ---- ۳.۱۰ صفحه گفتگو | 3.10 Chat Page ---- */
 /* باز کردن گفتگو | Open Chat: نام، وضعیت، پیام‌های نمونه و خوانده شدن (header, status, messages, mark read) */
 function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.reply=null;$("#rbar").classList.remove("on");fitBar();
- $("#cname").innerHTML=esc(c.n)+vb(c,16);$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
+ $("#cname").innerHTML=esc(c.n)+vb(c,16);/* قلاب میوت | Mute Hook */lkMuteIcons();$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
  S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
  $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none"}
@@ -1300,7 +1309,7 @@ const DM={files:[["Lesson-plan.pdf","2.4 MB","Oct 28","r"],["Report-card.xlsx","
 const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Music"],["voice","Voice"],["links","Links"]];
 /* باز کردن پروفایل | Open Profile: با لمس کپسول بالای گفتگو (tap on the chat header capsule) */
 function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.n;
- $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_n").insertAdjacentHTML("beforeend",vb(c,22));$("#cp_mn").insertAdjacentHTML("beforeend",vb(c,14));$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;
+ $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_n").insertAdjacentHTML("beforeend",vb(c,22));$("#cp_mn").insertAdjacentHTML("beforeend",vb(c,14));$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;/* قلاب میوت | Mute Hook */lkMuteIcons();
  $("#cp_ph").textContent="+98 901 720 6536";$("#cp_un").textContent="@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");
  paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();cpMuteSync();$("#cp").classList.add("on")}
 $("#chat .top .title").onclick=openCP;$("#cav").onclick=openCP;
@@ -1335,14 +1344,14 @@ $("#cpScroll").addEventListener("scroll",cpScroll,{passive:true});
 (function(){const L=$("#cpScroll"),P=$("#cp");let y0=null,d=0;
  P.addEventListener("touchstart",e=>{y0=L.scrollTop<=0?e.touches[0].clientY:null;d=0},{passive:true});
  P.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;const a=$("#cp_av");
-  if(!CP.big&&d>0&&L.scrollTop<=0){e.preventDefault();const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W*1.08,innerHeight*.58);a.style.transition="none";$("#cph").classList.add("pull");$("#cp").style.setProperty("--q",q);a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
+  if(!CP.big&&d>0&&L.scrollTop<=0){e.preventDefault();/* قفل افقی | Sideways Lock: هنگام کشیدن هیچ جابه‌جایی به چپ و راست نمی‌ماند (no sideways offset while pulling) */L.scrollLeft=0;const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W*1.08,innerHeight*.58);a.style.transition="none";$("#cph").classList.add("pull");$("#cp").style.setProperty("--q",q);a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
   else if(CP.big&&d<-30)cpBig(false)},{passive:false});
  P.addEventListener("touchend",()=>{$("#cp_av").style.transition="";if(!CP.big)cpBig(d>60);y0=null;d=0})})();
 $("#cp_av").onclick=()=>openViewer($("#cp_av"),im=>paintAv(im,{name:CP.name,photo:null}),!CP.big);
 /* منوی بیشتر پروفایل | Profile More: پاک کردن تاریخچه (یک‌طرفه/دوطرفه) و بلاک/آنبلاک؛ فقط داخل برنامه (clear history one-way/both, block/unblock; local only) */
 Object.assign(FA,{"Clear history":"پاک کردن تاریخچه","Clear for me":"فقط برای من","Clear for both":"برای هر دو طرف","Block":"بلاک کردن","Unblock":"آنبلاک کردن","History cleared":"تاریخچه پاک شد","Blocked":"بلاک شد","Unblocked":"آنبلاک شد"});
 (function(){const ov=document.createElement("div");ov.id="cpmov";$("#app").append(ov);
- $("#cpMore").onclick=()=>{const id=S.openId;CFG.blocked=CFG.blocked||{};ov.innerHTML=`<div class="mn"><div data-a="del" class="rd">${tr("Clear history")}</div><div data-a="blk" class="${CFG.blocked[id]?"":"rd"}">${tr(CFG.blocked[id]?"Unblock":"Block")}</div></div>`;ov.classList.add("on")};
+ $("#cpMore").onclick=()=>{const id=S.openId;CFG.blocked=CFG.blocked||{};ov.innerHTML=`<div class="mn"><div data-a="del" class="rd">${tr("Clear history")}</div><div data-a="blk" class="${CFG.blocked[id]?"":"rd"}">${tr(CFG.blocked[id]?"Unblock":"Block")}</div></div>`;/* جای منو | Menu Place: منو زیر دکمه‌ی more و هم‌راستا با لبه‌ی راست آن می‌نشیند (menu sits under the button, right edges aligned) */const r=$("#cpMore").getBoundingClientRect(),w=Math.min(230,innerWidth-24);ov.style.setProperty("--mw",w+"px");ov.style.setProperty("--mx",Math.max(12,Math.min(r.right-w,innerWidth-w-12))+"px");ov.style.setProperty("--my",(r.bottom+8)+"px");ov.classList.add("on")};
  ov.onclick=e=>{const a=e.target.closest("[data-a]");if(a&&a.dataset.a==="del"){ov.innerHTML=`<div class="mn"><div data-a="me">${tr("Clear for me")}</div><div data-a="both" class="rd">${tr("Clear for both")}</div></div>`;return}ov.classList.remove("on");if(!a)return;const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;CFG.blocked=CFG.blocked||{};CFG.cleared=CFG.cleared||{};
   if(a.dataset.a==="blk"){CFG.blocked[id]=!CFG.blocked[id];if(!CFG.blocked[id])delete CFG.blocked[id];saveCfg();applyBlock();toast(tr(CFG.blocked[id]?"Blocked":"Unblocked"));return}
   CFG.cleared[id]=1;CFG.sent[id]=[];c.m="";saveCfg();S.lastD=null;$("#msgs").innerHTML="";toast(tr("History cleared"));renderChats()}})();
@@ -1654,6 +1663,8 @@ setPw();
  $("#back").addEventListener("click",closeS)
 })();
 
+/* آیکن میوت کنار نام | Mute Icon Painter: آیکن میوت را کنار نام گفتگوی باز (نوار گفتگو، پروفایل، عنوان کوچک) می‌گذارد یا برمی‌دارد (adds or removes the mute icon beside the open chat name) */
+function lkMuteIcons(){const c=CHATS.find(x=>x.id===S.openId);[["#cname",15],["#cp_n",20],["#cp_mn",13]].forEach(([q,z])=>{const e=$(q);if(!e)return;const o=e.querySelector(".mic");if(o)o.remove();if(c&&c.mute)e.insertAdjacentHTML("beforeend",`<span class="mic">${ic("mute",z)}</span>`)})}
 /* دکمه‌ی میوت پروفایل | Profile Mute Button: میوت/آنمیوت گفتگوی باز؛ در حالت میوت زنگوله خط‌خورده و متن unmute نشان داده می‌شود */
 function cpMuteSync(){const c=CHATS.find(x=>x.id===S.openId),b=$("#cpMute");if(!c||!b)return;
  b.innerHTML=ic(c.mute?"mute":"bell",20)+(c.mute?"unmute":"mute")}
