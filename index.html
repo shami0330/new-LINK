@@ -31,7 +31,7 @@
 html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 /* قاب برنامه | App Frame: تمام صفحه، ۵ پیکسل پایین‌تر از ناحیه امن (full screen, extends 5px below safe area) */
-#app{position:fixed;inset:0 0 -5px 0;overflow:hidden}
+#app{position:fixed;inset:0 0 -10px 0;overflow:hidden}
 
 /* صفحه | Screen: هر صفحه کل قاب را می‌گیرد و با جابجایی انیمیشن می‌شود (full-frame page, slide animation) */
 .screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column}
@@ -119,13 +119,13 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
 /* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات (Contacts/Chats/Settings) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 12px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 17px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
 
 /* نوار پایین ویرایش | Edit Bottom Bar: Read All / Delete (bottom actions in Edit mode) */
-#editbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 12px);display:none;justify-content:space-between;z-index:21}
+#editbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 17px);display:none;justify-content:space-between;z-index:21}
 #editbar .pill{background:var(--card2);min-width:90px}
 
 /* منوی بلند‌فشار | Long-press Menu: منوی شناور تیره (floating dark menu) */
@@ -155,7 +155,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .pinbar span{color:var(--blue);font-weight:600}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
-#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(58px + env(safe-area-inset-bottom)))}
+#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(63px + env(safe-area-inset-bottom)))}
 #chat.kb .msgs{padding-bottom:var(--ibh,58px)}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
 #chat .top .title{width:170px;padding:0;border-radius:22px;justify-content:center;overflow:hidden}
@@ -235,7 +235,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #vwimg{position:absolute;left:0;top:50%;width:100%;height:100vw;margin-top:-50vw;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:130px;color:#fff;will-change:transform}
 .vwc{position:absolute;z-index:3}
 #vwBack{top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;padding:0;border-radius:50%;background:rgba(60,60,62,.8);color:#fff}
-#vwShare{bottom:calc(env(safe-area-inset-bottom) + 18px);left:16px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,62,.8);color:#fff;display:flex;align-items:center;justify-content:center}
+#vwShare{bottom:calc(env(safe-area-inset-bottom) + 23px);left:16px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,62,.8);color:#fff;display:flex;align-items:center;justify-content:center}
 /* دکمه برگشت دایره | Back Button Circle: ۳۸×۳۸ کاملاً گرد (38x38 perfect circle) */
 #chat #back{width:38px;height:38px;padding:0;border-radius:50%}
 /* حباب من در روز | My Bubble (Day): زمینه روشن با متن تیره تا خوانا باشد (light bubble with dark text for readability) */
@@ -252,7 +252,7 @@ html.light .b.me .tick{color:var(--blue)!important}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 10px);align-items:flex-end}
+.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 15px);align-items:flex-end}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
@@ -343,7 +343,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .swt{width:34px;height:34px;border-radius:50%;display:inline-block;border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 0 transparent}
 .swt.on{box-shadow:0 0 0 2px var(--txt)}
 #pshade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:45}
-#pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 14px);transform:translateY(110%);transition:transform .25s}
+#pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 19px);transform:translateY(110%);transition:transform .25s}
 #pick.on{transform:none}
 /* پنجره تأیید کپسولی | Confirm Capsule: پیام تأیید وسط صفحه به شکل کپسول (confirm dialog centered as a capsule) */
 #pick.dlg{left:50%;right:auto;top:50%;bottom:auto;width:min(300px,82%);border-radius:30px;padding:14px 0 6px;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;overflow:hidden}
@@ -390,7 +390,7 @@ html.light #login .pf{color:#000}
 #menu2 div:last-child{border:0}
 #menu2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* پیش‌نمایش گفتگو | Chat Peek: با نگه داشتن روی گفتگو، پنجره‌ی قابل اسکرول بدون خوانده شدن پیام‌ها */
-#peek{position:absolute;left:0;right:0;margin:0 auto;width:calc((100% - 28px)*.845);top:calc(env(safe-area-inset-top) + 56px);z-index:48;border-radius:22px;overflow:hidden;display:none;flex-direction:column;background:var(--chatbg);animation:pop .15s}
+#peek{position:absolute;left:0;right:0;margin:0 auto;width:calc((100% - 28px)*.972);top:calc(env(safe-area-inset-top) + 56px);z-index:48;border-radius:22px;overflow:hidden;display:none;flex-direction:column;background:var(--chatbg);animation:pop .15s}
 #peek .pkh{background:var(--menu);text-align:center;padding:8px 0;flex:none}
 #peek .pkh b{display:block;font-size:16px}
 #peek .pkh small{color:var(--sub);font-size:12px}
@@ -428,7 +428,7 @@ html.light .dt{color-scheme:light}
   <div class="top">
     <div class="pill" id="editBtn">Edit</div>
     <div class="title"><i data-ic="link" data-s="18"></i>Chats</div>
-    <div class="pill" id="compose" style="background:var(--blue)"><i data-ic="compose" data-s="20"></i></div>
+    <div class="pill" id="compose" style="background:var(--blue);border-radius:50%;width:38px;padding:0"><i data-ic="compose" data-s="20"></i></div>
   </div>
   <div class="wrap">
     <div class="hdr" id="hdrChats">
@@ -849,11 +849,11 @@ function askConfirm(msg,okText,cb){const el=$("#pick");el.innerHTML=`<div class=
  el.setAttribute("dir","ltr");el.classList.add("dlg");el.classList.add("on");$("#pshade").style.display="block";
  $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();if(o.dataset.ok)cb()})}
 /* پوشه‌ها | Folders: ساخت، حذف و پر کردن پوشه‌ها؛ پوشه‌های آماده (شخصی، گروه، کانال) هم قابل حذف و برگشت‌اند */
-const DEF_TABS=[["pv","P V","person"],["gp","Gap","group"],["ch","Channel","channel"]],DEF_NAME={pv:"Personal",gp:"Groups",ch:"Channels"};
+const DEF_TABS=[["pv","P V",""],["gp","Gap",""],["ch","Channel",""]],DEF_NAME={pv:"Personal",gp:"Groups",ch:"Channels"};
 const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 let FE=null;
 /* تب‌ها | All Tabs: «همه» + پوشه‌های آماده‌ی نمایش‌داده‌شده + پوشه‌های ساخته‌شده توسط کاربر */
-function allTabs(){return [["all","All",""],...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,"folder"])]}
+function allTabs(){return [["all","All",""],...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,""])]}
 /* عضویت در پوشه | In Folder: آیا این گفتگو داخل این پوشه است؟ */
 function inFolder(c,k){if(k==="all")return true;if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);return !!f&&f.chats.includes(c.id)}return c.ty===k||(CFG.extra[k]||[]).includes(c.id)}
 /* لیست پوشه‌ها | Folder List: پوشه‌های شما و پوشه‌های پیشنهادی (حذف‌شده‌ها) */
@@ -919,7 +919,7 @@ $("#clrCache").onclick=()=>{CFG.media={};saveCfg();renderCache();toast("Cache cl
 /* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
 function peekHtml(c){let last=null;return chatMsgs(c).map(([w,t,tm,n])=>{const sep=last!==n?`<div class="dsep">${dayLabel(n)}</div>`:"";last=n;return sep+`<div class="b ${w}">${esc(t)}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small></div>`}).join("")}
 function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
- const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";m.scrollTop=1e9}
+ const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.scrollTop=1e9}
 /* افزودن به پوشه | Add To Folder: کادر دوم سمت چپ منو با لیست همه‌ی پوشه‌ها (شخصی، گروه، کانال و پوشه‌های ساخته‌شده)؛ انتخاب = نمایش گفتگو در آن پوشه بدون حذف از پوشه‌ی فعلی؛ آخر لیست «ساخت پوشه‌ی جدید» */
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
