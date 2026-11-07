@@ -34,7 +34,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 #app{position:fixed;inset:0 0 calc(-1*var(--ext)) 0;overflow:hidden}
 /* ارتفاع کامل صفحه | Full Screen Height (ترفند نسخه سالم لینک | trick from the working LINK version): ارتفاع برنامه = ۱۰۰lvh + حاشیه امن پایین + ۵ پیکسل از بالا (app height = 100lvh + bottom safe area + 5px, anchored at top); عناصر پایین با --ext جبران می‌شوند تا جابه‌جا نشوند */
 :root{--ext:5px}
-@supports (height:100lvh){:root{--ext:calc(env(safe-area-inset-bottom,0px) + 5px)}html,body{height:100lvh}#app{top:0;bottom:auto;margin-top:0;height:calc(100lvh + env(safe-area-inset-bottom,0px) + 5px)}}
+@supports (height:100lvh){:root{--ext:calc(env(safe-area-inset-bottom,0px) + 5px)}html,body{height:100lvh;position:static;width:100%}#app{top:0;bottom:auto;margin-top:0;height:calc(100lvh + env(safe-area-inset-bottom,0px) + 5px)}}
 
 /* صفحه | Screen: هر صفحه کل قاب را می‌گیرد و با جابجایی انیمیشن می‌شود (full-frame page, slide animation) */
 .screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column}
