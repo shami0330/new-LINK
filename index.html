@@ -274,6 +274,8 @@ html.light .b.ot .q{border-color:var(--blue)}
 .b.hl{box-shadow:inset 0 0 0 999px rgba(255,255,255,.09)}
 html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .q{cursor:pointer}
+/* نوار بلاک | Block Bar: وقتی مخاطب بلاک است نوار نوشتن به «Unblock» تبدیل می‌شود (message bar becomes an Unblock bar, Telegram style) */
+#blkbar{position:absolute;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;padding:15px 0 calc(env(safe-area-inset-bottom) + var(--ext) + 5px);background:var(--card);color:var(--blue);font-size:17px;z-index:6}
 /* منوی بیشتر پروفایل | Profile More Menu: پاک کردن تاریخچه و بلاک (clear history, block) */
 #cpmov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
 #cpmov.on{display:flex}
@@ -731,7 +733,7 @@ function openMenu(id,r){const c=CHATS.find(x=>x.id===id);const m=$("#menu");m.cl
  m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>{if(it[+d.dataset.i][2]()==="keep")return;closeMenu();renderChats()})}
 /* بستن منو | Close Menu */
-function closeMenu(){$("#menu").classList.remove("al-top","al-bot");$("#menu2").style.display="none";$("#menu").style.display="none";$("#shade").style.display="none";$("#peek").style.display="none"}
+function closeMenu(){$("#menu").style.width="";$("#menu").classList.remove("al-top","al-bot");$("#menu2").style.display="none";$("#menu").style.display="none";$("#shade").style.display="none";$("#peek").style.display="none"}
 $("#shade").onclick=closeMenu;
 
 /* ---- ۳.۷ حالت ویرایش | 3.7 Edit Mode ---- */
@@ -749,7 +751,7 @@ $("#delSel").onclick=()=>{if(!S.sel.size)return;CHATS=CHATS.filter(c=>!S.sel.has
 /* رندر مخاطبین | Render Contacts: لیست با وضعیت آنلاین/آخرین بازدید (list with last seen) */
 function renderContacts(){$("#ctlist").innerHTML=blueRows()+
  PEOPLE.map(p=>`<div class="row" data-n="${p[0]}">${av(p[0],colOf(p[0]),0)}<div class="mid"><div class="n">${p[0]}</div><div class="m" style="${p[1]==="online"?"color:var(--blue)":""}">${p[1]}</div><div class="m"></div></div></div>`).join("");
- $$("#ctlist .row").forEach(r=>r.onclick=()=>openByName(r.dataset.n))}
+ $$("#ctlist .row").forEach(r=>{if(r.dataset.n&&!r.classList.contains("blueRow"))bindContact(r);else r.onclick=()=>openByName(r.dataset.n)})}
 /* باز کردن با نام | Open By Name: چت موجود یا ساخت چت جدید (existing chat or create new) */
 function openByName(n){let c=CHATS.find(x=>x.n===n);if(!c){c={id:Date.now(),n,m:"",tm:"now",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(n)};CHATS.push(c)}
  $("#newmsg").classList.remove("on");openChat(c.id)}
@@ -1085,7 +1087,7 @@ Object.assign(FA,{"Clear history":"پاک کردن تاریخچه","Clear for me
 (function(){const ov=document.createElement("div");ov.id="cpmov";$("#app").append(ov);
  $("#cpMore").onclick=()=>{const id=S.openId;CFG.blocked=CFG.blocked||{};ov.innerHTML=`<div class="mn"><div data-a="del" class="rd">${tr("Clear history")}</div><div data-a="blk" class="${CFG.blocked[id]?"":"rd"}">${tr(CFG.blocked[id]?"Unblock":"Block")}</div></div>`;ov.classList.add("on")};
  ov.onclick=e=>{const a=e.target.closest("[data-a]");if(a&&a.dataset.a==="del"){ov.innerHTML=`<div class="mn"><div data-a="me">${tr("Clear for me")}</div><div data-a="both" class="rd">${tr("Clear for both")}</div></div>`;return}ov.classList.remove("on");if(!a)return;const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;CFG.blocked=CFG.blocked||{};CFG.cleared=CFG.cleared||{};
-  if(a.dataset.a==="blk"){CFG.blocked[id]=!CFG.blocked[id];if(!CFG.blocked[id])delete CFG.blocked[id];saveCfg();toast(tr(CFG.blocked[id]?"Blocked":"Unblocked"));return}
+  if(a.dataset.a==="blk"){CFG.blocked[id]=!CFG.blocked[id];if(!CFG.blocked[id])delete CFG.blocked[id];saveCfg();applyBlock();toast(tr(CFG.blocked[id]?"Blocked":"Unblocked"));return}
   CFG.cleared[id]=1;CFG.sent[id]=[];c.m="";saveCfg();S.lastD=null;$("#msgs").innerHTML="";toast(tr("History cleared"));renderChats()}})();
 
 /* ---- نمایشگر تمام‌صفحه | Full-screen Viewer ---- */
@@ -1109,7 +1111,7 @@ $("#vwBack").onclick=closeViewer;
 
 /* ---- پاسخ و نوار پیام | Reply & Message Bar ---- */
 /* ارتفاع نوار | Bar Height: ارتفاع واقعی نوار پایین را برای فاصله پیام‌ها ثبت می‌کند (stores real bar height so messages stay above it) */
-function fitBar(){requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",$(".inbar").offsetHeight+"px"))}
+function fitBar(){requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",($(".inbar").offsetHeight||$("#blkbar").offsetHeight)+"px"))}
 /* رشد کادر | Auto-grow: کادر با هر خط جدید بزرگ می‌شود (grows with each new line) */
 function grow(){const m=$("#mi");m.style.height="40px";m.style.height=Math.min(Math.max(m.scrollHeight,40),120)+"px";fitBar()}
 $("#mi").addEventListener("input",grow);
@@ -1164,6 +1166,22 @@ $(".pinbar").addEventListener("click",()=>{const all=[...$$("#msgs .b")],t=all.f
  ["touchstart","mousedown"].forEach(ev=>$("#msgs").addEventListener(ev,e=>{const h=e.target.closest(".dsep");if(!h)return;stop();tm=setTimeout(()=>open(+h.dataset.n||0),450)},{passive:true}));
  ["touchend","touchmove","touchcancel","mouseup","mouseleave"].forEach(ev=>$("#msgs").addEventListener(ev,stop,{passive:true}))})();
 
+/* نگه‌داشتن روی مخاطب | Contact Long-Press: پیش‌نمایش گفتگو + منو (Send Message، Secret Chat، Call، Video Call، Delete Contact، Select) (chat preview + menu) */
+function bindContact(r){const n=r.dataset.n;let tm,long=false;
+ const start=()=>{long=false;tm=setTimeout(()=>{long=true;openContactMenu(n)},450)},end=()=>clearTimeout(tm);
+ r.addEventListener("touchstart",start,{passive:true});r.addEventListener("mousedown",start);
+ ["touchend","touchmove","mouseup","mouseleave"].forEach(e=>r.addEventListener(e,end));
+ r.onclick=()=>{if(long)return;openByName(n)}}
+function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.n===n)||{id:-1,n,ty:"pv",on:pp&&pp[1]==="online"?1:0,col:colOf(n)},m=$("#menu");m.classList.remove("al-top","al-bot");
+ const it=[["Send Message","chat",()=>{closeMenu();openByName(n)}],["Start Secret Chat","lock",()=>{closeMenu();openByName(n)}],["Call","phone",()=>{closeMenu();toast("Calling is not available")}],["Video Call","video",()=>{closeMenu();toast("Calling is not available")}],["Delete Contact","trash",()=>{closeMenu();PEOPLE=PEOPLE.filter(x=>x[0]!==n);renderContacts()}],["Select","check",()=>{closeMenu()}]];
+ m.innerHTML=it.map((x,i)=>`<div data-i="${i}" style="${i===4?"color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)":i===5?"color:var(--txt)":""}">${tr(x[0])}${ic(x[1],20)}</div>`).join("");
+ m.style.width="240px";m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
+ $$("#menu div").forEach(d=>d.onclick=()=>it[+d.dataset.i][2]())}
+/* حالت بلاک در گفتگو | Block State In Chat: نوار پایین فقط «Unblock» نشان می‌دهد (bottom bar shows only Unblock) */
+(function(){const b=document.createElement("div");b.id="blkbar";b.textContent="Unblock";$("#chat").append(b);
+ window.applyBlock=function(){const k=!!(CFG.blocked&&CFG.blocked[S.openId]);b.textContent=tr("Unblock");b.style.display=k?"flex":"none";$(".inbar").style.display=k?"none":"";fitBar()};
+ b.onclick=()=>{if(CFG.blocked)delete CFG.blocked[S.openId];saveCfg();applyBlock();toast(tr("Unblocked"))};
+ const oc=openChat;openChat=function(id){oc(id);applyBlock()}})();
 /* ---- قفل اسکرول ورود | Login Scroll Lock ---- */
 /* بدون اسکرول | No Scroll: صفحه ورود با کیبورد باز یا بسته هیچ‌وقت اسکرول نمی‌شود (login page never scrolls, keyboard open or closed) */
 $("#login").addEventListener("touchmove",e=>{if(e.target.tagName!=="INPUT")e.preventDefault()},{passive:false});
