@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.5 (Version 2.5) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 2.7 (Version 2.7) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -151,7 +151,71 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #chat .msgs{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
 #chat.kb .msgs{padding-bottom:58px}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
-#chat .top .title{padding:0 29px}
+#chat .top .title{padding:0 36.5px}
+/* پس‌زمینه یکپارچه گفتگو | Unified Chat Background: پس‌زمینه‌ی انتخابی روی کل صفحه‌ی گفتگو است و هدر، پین و نوار پیام شفاف روی آن شناورند؛ فقط کپسول‌ها رنگ دارند (chat background covers the whole page; header, pin row and bar are transparent, only capsules have color) */
+#chat{background:var(--chatbg)}
+#chat .msgs{background:transparent}
+/* ===== پروفایل مخاطب | Contact Profile Styles ===== */
+/* صفحه پروفایل | Profile Page: از راست وارد می‌شود (slides in from the right, 0.3s) */
+#cp{position:absolute;inset:0;background:var(--bg);z-index:70;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+#cp.on{transform:none}
+/* نوار بالا | Top Bar: برگشت، عنوان کوچک (با اسکرول ظاهر می‌شود)، Edit (back, mini title fades in on scroll, Edit) */
+.cpbar{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px;height:calc(env(safe-area-inset-top) + 56px)}
+.cpbar.s{background:var(--bg)}
+.cpbar #cpBack{width:38px;height:38px;padding:0;border-radius:50%}
+.cpmini{display:flex;flex-direction:column;align-items:center;line-height:1.2;opacity:0;font-weight:700}
+.cpmini small{color:var(--sub);font-weight:400;font-size:12px}
+.cpscroll{position:absolute;inset:0;overflow-y:auto;padding-top:calc(env(safe-area-inset-top) + 56px);overscroll-behavior:contain}
+/* هدر | Header: آواتار ۹۶، نام، آخرین بازدید؛ حالت big تمام‌عرض با نام روی عکس (96px avatar, name, last seen; big = full-width photo with name over it) */
+.cph{position:relative;text-align:center;will-change:transform}
+#cp_av{width:96px;height:96px;margin:0 auto;font-size:40px;transition:width .3s,height .3s,border-radius .3s,margin .3s,font-size .3s;background-size:cover;background-position:center}
+.cph h2{margin-top:8px;font-size:22px}
+.cps{color:var(--sub);font-size:14px;margin-top:2px}
+.cph.big #cp_av{width:100%;height:calc(min(108vw,58vh) + env(safe-area-inset-top) + 56px);border-radius:0;margin:calc(-1*(env(safe-area-inset-top) + 56px)) 0 0;font-size:120px}
+.cph.big::after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
+.cph.big h2,.cph.big .cps{position:absolute;left:16px;z-index:2;color:#fff;margin:0;text-align:left}
+.cph.big h2{bottom:84px}.cph.big .cps{bottom:62px;color:rgba(255,255,255,.85)}
+/* دکمه‌های عمل | Action Buttons: call / video / mute / search / more (کارت گرد آبی) */
+.cpact{display:flex;gap:8px;padding:0 14px;margin:14px 0 8px;position:relative;z-index:2}
+.cph.big+.cpact{margin-top:-70px}
+.ab{flex:1;background:var(--card);border-radius:14px;padding:9px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--blue);font-size:11px;transition:transform .12s}
+.ab:active{transform:scale(.94)}
+.cph.big+.cpact .ab{background:rgba(70,70,72,.55);backdrop-filter:blur(12px);color:#fff}
+.cpmusic{text-align:center;font-size:12px;color:var(--sub);margin:8px 0;display:flex;align-items:center;justify-content:center;gap:4px}
+.cpmusic b{color:var(--txt)}
+/* کارت اطلاعات | Info Card: mobile / username / birthday / bio */
+.cpr{padding:9px 16px;border-bottom:.5px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.cpr:last-child{border:0}
+.cpr small{display:block;color:var(--sub);font-size:12px}
+.cpr .bl{color:var(--blue);font-size:16px}
+/* تب‌های رسانه | Media Tabs: کپسول افقی چسبان زیر نوار بالا (sticky horizontal capsule under the top bar) */
+.cptw{position:sticky;top:calc(env(safe-area-inset-top) + 56px);z-index:5;background:var(--bg);padding:6px 14px}
+#cptabs{display:flex;gap:2px;background:var(--card);border-radius:20px;padding:3px;overflow-x:auto}
+.ct{flex:none;padding:6px 14px;border-radius:16px;font-size:14px;transition:background .2s}
+.ct.on{background:var(--card2)}
+#cpbody{padding-bottom:40px;min-height:50vh}
+#cpbody.fd{animation:fade .2s}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
+.mt{aspect-ratio:1;position:relative}
+.mt:active{opacity:.8}
+.dur{position:absolute;left:4px;bottom:4px;font-size:11px;color:#fff;background:rgba(0,0,0,.5);border-radius:8px;padding:0 5px}
+/* ردیف‌های لیست | List Rows: فایل، موزیک، ویس، لینک، ذخیره‌شده (files, music, voice, links, saved) */
+.lrow{display:flex;gap:12px;align-items:center;padding:9px 16px;border-bottom:.5px solid var(--line)}
+.lrow .lt{flex:1;min-width:0}
+.lrow b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow small{color:var(--sub);font-size:12px}
+.fic{width:44px;height:44px;border-radius:12px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.pbtn{width:44px;height:44px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.wf{display:flex;align-items:center;gap:2px;height:26px}
+.wf i{width:3px;border-radius:2px;background:var(--line);transition:background .1s}
+.wf i.on{background:var(--blue)}
+/* نمایشگر تمام‌صفحه | Full-screen Viewer: عکس از جای خودش باز می‌شود و برمی‌گردد (opens from its source, closes back to it) */
+#vw{position:absolute;inset:0;z-index:100;display:none;touch-action:none}
+#vwbg{position:absolute;inset:0;background:#000}
+#vwimg{position:absolute;left:0;top:50%;width:100%;height:100vw;margin-top:-50vw;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:130px;color:#fff;will-change:transform}
+.vwc{position:absolute;z-index:3}
+#vwBack{top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;padding:0;border-radius:50%;background:rgba(60,60,62,.8);color:#fff}
+#vwShare{bottom:calc(env(safe-area-inset-bottom) + 18px);left:16px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,62,.8);color:#fff;display:flex;align-items:center;justify-content:center}
 /* دکمه برگشت دایره | Back Button Circle: ۳۸×۳۸ کاملاً گرد (38x38 perfect circle) */
 #chat #back{width:38px;height:38px;padding:0;border-radius:50%}
 /* حباب من در روز | My Bubble (Day): زمینه روشن با متن تیره تا خوانا باشد (light bubble with dark text for readability) */
@@ -181,8 +245,10 @@ html.light .b.me .tick{color:var(--blue)!important}
 /* دکمه‌های تنظیمات ۷٪ بزرگ‌تر | Settings Buttons +7%: ردیف، فونت، آیکون و آواتار کوچک ۷ درصد بزرگ‌تر (rows, font, icon tiles, mini avatar scaled 1.07) */
 #settings .item{padding:12px 15px;gap:13px;font-size:16px}
 #settings .ic{width:32px;height:32px;border-radius:9px}
-#settings .ic svg{width:19px;height:19px}
-#settings .item>i svg{width:23.5px;height:23.5px}
+#settings .ic{color:#fff}
+#settings #chPhoto .ic{color:var(--blue)}
+#settings .ic svg{width:21px;height:21px;stroke-width:2.3}
+#settings .item>i svg{width:24px;height:24px;stroke-width:2.3}
 #settings .item .av.s{width:28px;height:28px;font-size:13px}
 
 /* ورود | Login Page: فرم ایمیل و رمز (email + password form) */
@@ -457,6 +523,25 @@ html.light .dt{color-scheme:light}
   <div class="tb on" data-s="chats"><i data-ic="chat" data-s="24"></i>Chats</div>
   <div class="tb" data-s="settings"><span class="tbav" id="tbav"></span>Settings</div>
 </div>
+<div id="cp">
+  <div class="cpbar"><div class="pill" id="cpBack"><i data-ic="back" data-s="22"></i></div><div class="cpmini"><span id="cp_mn" dir="auto"></span><small id="cp_ms"></small></div><div class="pill">Edit</div></div>
+  <div class="cpscroll" id="cpScroll">
+    <div class="cph" id="cph"><div class="av" id="cp_av"></div><h2 id="cp_n" dir="auto"></h2><div class="cps" id="cp_s"></div></div>
+    <div class="cpact">
+      <div class="ab"><i data-ic="phone" data-s="20"></i>call</div><div class="ab"><i data-ic="video" data-s="20"></i>video</div><div class="ab"><i data-ic="bell" data-s="20"></i>mute</div><div class="ab"><i data-ic="lines" data-s="20"></i>search</div><div class="ab"><i data-ic="more" data-s="20"></i>more</div>
+    </div>
+    <div class="cpmusic"><i data-ic="note" data-s="13"></i><b>Wicked Game</b><span>Chris Isaak</span> ›</div>
+    <div class="card">
+      <div class="cpr"><div><small>mobile</small><div class="bl" id="cp_ph"></div></div></div>
+      <div class="cpr"><div><small>username</small><div class="bl" id="cp_un"></div></div><i data-ic="grid" data-s="20" style="color:var(--blue)"></i></div>
+      <div class="cpr"><div><small>birthday</small><div>4 Aug</div></div></div>
+      <div class="cpr"><div><small>bio</small><div>39</div></div></div>
+    </div>
+    <div class="cptw"><div id="cptabs"></div></div>
+    <div id="cpbody"></div>
+  </div>
+</div>
+<div id="vw"><div id="vwbg"></div><div id="vwimg"></div><div class="pill vwc" id="vwBack"><i data-ic="back" data-s="22"></i></div><div class="vwc" id="vwShare"><i data-ic="share" data-s="20"></i></div></div>
 <div id="pfFull"><div class="fx" id="pfX"><i data-ic="close" data-s="20"></i></div><div class="av fa" id="pf_full"></div><h2 id="pf_fn" dir="auto"></h2></div>
 <div id="editbar"><div class="pill" id="readAll">Read All</div><div class="pill" id="delSel" style="color:var(--red)">Delete</div></div>
 
@@ -478,7 +563,7 @@ html.light .dt{color-scheme:light}
 
 /* ---- ۳.۰ آیکون‌ها | 3.0 Icons ---- */
 /* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه تلگرام، بدون ایموجی (Telegram-like line icons, no emoji) */
-const P={eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
+const P={more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M7 4h4v16H7zM13 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
 person:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6",chat:"M21 12a8 8 0 01-11.5 7.2L4 20l1.2-4.3A8 8 0 1121 12z",
 gear:"M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
 compose:"M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4",back:"M15 5l-7 7 7 7",pin:"M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z",
@@ -492,7 +577,7 @@ folder:"M3 6h6l2 2h10v11H3z",check:"M5 12l5 5 9-10",trash:"M4 7h16M9 7V4h6v3M6 7
 plus:"M12 5v14M5 12h14",globe:"M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
 mic:"M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3",video:"M3 7h12v10H3zM15 10l6-3v10l-6-3",t1:"M5 12.5l4.5 4.5L19 7",t2:"M1 12.5l4.5 4.5L15 7M9 15.5l2 1.5L21 7",lock:"M6 11h12v9H6zM8 11V8a4 4 0 018 0v3",db:"M4 6c0-1.5 3.6-2.5 8-2.5s8 1 8 2.5-3.6 2.5-8 2.5-8-1-8-2.5zM4 6v6c0 1.5 3.6 2.5 8 2.5s8-1 8-2.5V6M4 12v6c0 1.5 3.6 2.5 8 2.5s8-1 8-2.5v-6",half:"M12 21a9 9 0 100-18 9 9 0 000 18zM12 3v18",at:"M16 12a4 4 0 11-8 0 4 4 0 018 0zM16 12v1.5a2.5 2.5 0 005 0V12a9 9 0 10-3.5 7.1",mail:"M3 6h18v12H3zM3 7l9 7 9-7",cake:"M4 20h16v-6H4zM4 14c2 2 3 2 4 0 1 2 3 2 4 0 1 2 3 2 4 0 1 2 2 2 4 0M12 10V6"};
 /* ساخت آیکون | Icon Builder: ic(نام، اندازه) یک SVG برمی‌گرداند (returns inline SVG, color = current text color) */
-const ic=(n,z=20)=>`<svg class="svg" viewBox="0 0 24 24" width="${z}" height="${z}" fill="${n==="send"?"currentColor":"none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
+const ic=(n,z=20)=>`<svg class="svg" viewBox="0 0 24 24" width="${z}" height="${z}" fill="${["send","play","pause"].includes(n)?"currentColor":"none"}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[n]}"/></svg>`;
 /* ردیف آبی | Blue Rows: New Group / New Channel / New Contact بالای لیست (top action rows, same order as video) */
 const blueRows=()=>`<div class="blueRow">${ic("group",24)}New Group</div><div class="blueRow">${ic("channel",24)}New Channel</div><div class="blueRow" style="border:0">${ic("newc",24)}New Contact</div>`;
 
@@ -796,7 +881,7 @@ function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove(
 /* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
 const BGS=[["none","var(--chatbg)"],["dots","radial-gradient(var(--dotc) 1.3px,transparent 1.4px) 0 0/18px 18px var(--chatbg)"],["lines","repeating-linear-gradient(45deg,var(--dotc2) 0 2px,transparent 2px 14px) var(--chatbg)"],["grid","linear-gradient(var(--dotc3) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--dotc3) 1px,transparent 1px) 0 0/22px 22px var(--chatbg)"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
 function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat var(--chatbg)";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:BGS[0][1]}
-function applyBg(){$("#msgs").style.background=bgCss()}
+function applyBg(){$("#chat").style.background=bgCss()}
 function renderBgs(){const ph=CFG.bg.t==="photo"&&CFG.bg.photo;
  $("#bgRow").innerHTML=(ph?`<div class="bgs on" data-bg="photo" style="background:url(${CFG.bg.photo}) center/cover"></div>`:"")+BGS.map(p=>`<div class="bgs${!ph&&(CFG.bg.id||"none")===p[0]?" on":""}" data-bg="${p[0]}" style="background:${p[1]}"></div>`).join("");
  $$("[data-bg]").forEach(e=>e.onclick=()=>{if(e.dataset.bg==="photo")return;CFG.bg={t:"preset",id:e.dataset.bg};saveCfg();applyBg();renderBgs()})}
@@ -874,6 +959,77 @@ function setBig(v){S.pfBig=v;$("#settings .ph").classList.toggle("big",v);const 
 /* مرحله ۲ | Stage 2 – Full Screen: لمس آواتار بزرگ، عکس را تمام‌صفحه نشان می‌دهد؛ لمس هرجا آن را می‌بندد (tap big avatar = full screen; tap anywhere closes) */
 function openFull(){$("#pf_fn").textContent=S.user.name;$("#pfFull").classList.add("on")}
 $("#pfFull").onclick=()=>$("#pfFull").classList.remove("on");
+
+/* ---- پروفایل مخاطب | Contact Profile ---- */
+/* وضعیت | Profile State: تب فعال، حالت بزرگ، پخش‌کننده (active tab, big avatar, player) */
+const CP={tab:"media",big:false,pl:null,name:""};
+/* داده‌های نمایشی رسانه | Demo Media Data: فایل، موزیک، ویس، لینک، ذخیره‌شده (r=دریافتی received, s=ارسالی sent) */
+const DM={files:[["Lesson-plan.pdf","2.4 MB","Oct 28","r"],["Report-card.xlsx","310 KB","Oct 21","s"],["Photos.zip","18.7 MB","Oct 15","r"]],
+ music:[["Wicked Game","Chris Isaak","4:46"],["Hallelujah","Jeff Buckley","6:53"],["Fade Into You","Mazzy Star","4:55"]],
+ voice:[["0:08","Today","r"],["0:21","Today","s"],["0:05","Oct 30","r"],["0:44","Oct 27","s"]],
+ links:[["Class schedule","school.example/schedule"],["Lesson video","video.example/watch"],["Shared notes","notes.example/n/39"]],
+ saved:[["Remember to bring the books","Oct 29"],["Meeting at 5","Oct 22"]]};
+const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Music"],["voice","Voice"],["links","Links"]];
+/* باز کردن پروفایل | Open Profile: با لمس کپسول بالای گفتگو (tap on the chat header capsule) */
+function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.n;
+ $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;
+ $("#cp_ph").textContent="+98 901 720 6536";$("#cp_un").textContent="@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");
+ paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();$("#cp").classList.add("on")}
+$("#chat .top .title").onclick=openCP;
+$("#cpBack").onclick=()=>{stopPl();$("#cp").classList.remove("on")};
+/* تب‌ها | Render Tabs: Media / Saved / Files / Music / Voice / Links */
+function cpTabs(){$("#cptabs").innerHTML=TABS.map(([k,l])=>`<div class="ct ${CP.tab===k?"on":""}" data-k="${k}">${l}</div>`).join("");
+ $$("#cptabs .ct").forEach(t=>t.onclick=()=>{stopPl();CP.tab=t.dataset.k;cpTabs();cpBody()})}
+/* محتوای تب | Render Body: شبکه رسانه یا لیست‌ها با انیمیشن محو (media grid or lists, fade-in) */
+function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"Sent":"Received";
+ if(k==="media")h='<div class="mgrid">'+Array.from({length:24},(_,i)=>`<div class="mt" style="background:linear-gradient(135deg,hsl(${i*47%360} 55% 45%),hsl(${(i*47+60)%360} 60% 28%))">${i%5===2?`<span class="dur">0:${10+i}</span>`:""}</div>`).join("")+"</div>";
+ else if(k==="files")h=DM.files.map(f=>`<div class="lrow"><div class="fic">${ic("file",22)}</div><div class="lt"><b>${f[0]}</b><small>${f[1]} · ${f[2]}</small></div><small>${dir(f[3])}</small></div>`).join("");
+ else if(k==="music")h=DM.music.map(m=>`<div class="lrow vr" data-d="30"><div class="pbtn">${ic("play",18)}</div><div class="lt"><b>${m[0]}</b><small>${m[1]} · ${m[2]}</small></div></div>`).join("");
+ else if(k==="voice")h=DM.voice.map((v,n)=>{const sec=v[0].split(":").reduce((a,x)=>a*60+ +x,0);return `<div class="lrow vr" data-d="${sec}"><div class="pbtn">${ic("play",18)}</div><div class="lt"><div class="wf">${Array.from({length:30},(_,i)=>`<i style="height:${6+(i*37+n*13)%18}px"></i>`).join("")}</div><small>${v[0]} · ${v[1]}</small></div><small>${dir(v[2])}</small></div>`}).join("");
+ else if(k==="links")h=DM.links.map(l=>`<div class="lrow"><div class="fic">${ic("link",22)}</div><div class="lt"><b>${l[0]}</b><small style="color:var(--blue)">${l[1]}</small></div></div>`).join("");
+ else h=DM.saved.map(m=>`<div class="lrow"><div class="lt"><b>${m[0]}</b><small>${m[1]}</small></div></div>`).join("");
+ b.innerHTML=h;b.classList.remove("fd");void b.offsetWidth;b.classList.add("fd");
+ $$("#cpbody .mt").forEach(t=>t.onclick=()=>openViewer(t,im=>{im.style.background=t.style.background;im.textContent=""},false));
+ $$("#cpbody .vr").forEach(r=>r.querySelector(".pbtn").onclick=()=>playRow(r))}
+/* پخش ویس و موزیک | Voice/Music Player: دکمه پخش، موج رنگی می‌شود تا پایان (play button, waveform fills while playing) */
+function stopPl(){if(!CP.pl)return;clearInterval(CP.pl.t);CP.pl.r.querySelector(".pbtn").innerHTML=ic("play",18);CP.pl.r.querySelectorAll(".wf i").forEach(x=>x.classList.remove("on"));CP.pl=null}
+function playRow(r){if(CP.pl&&CP.pl.r===r){stopPl();return}stopPl();let p=0;const bars=[...r.querySelectorAll(".wf i")],dur=Math.min(+r.dataset.d,30)*10;
+ r.querySelector(".pbtn").innerHTML=ic("pause",18);CP.pl={r,t:setInterval(()=>{p++;bars.forEach((x,i)=>x.classList.toggle("on",i<p*bars.length/dur));if(p>=dur)stopPl()},100)}}
+/* بزرگ شدن آواتار | Big Avatar: مرحله ۱ پروفایل (stage 1) */
+function cpBig(v){CP.big=v;$("#cph").classList.toggle("big",v);const a=$("#cp_av");a.style.width=a.style.height=a.style.borderRadius=a.style.fontSize="";
+ const h=$("#cph");h.style.opacity=h.style.transform="";$(".cpbar").classList.remove("s")}
+/* اسکرول | Scroll Link: آواتار و نام با اسکرول محو و کوچک می‌شوند و عنوان کوچک بالا ظاهر می‌شود (avatar/name fade out, mini title fades in) */
+function cpScroll(){const L=$("#cpScroll"),st=L.scrollTop;if(CP.big){if(st>20)cpBig(false);return}
+ const p=Math.min(st/110,1),h=$("#cph");h.style.opacity=1-p;h.style.transform=`translateY(${st*.35}px) scale(${1-.2*p})`;
+ $(".cpmini").style.opacity=Math.max(0,Math.min((st-80)/40,1));$(".cpbar").classList.toggle("s",st>60)}
+$("#cpScroll").addEventListener("scroll",cpScroll,{passive:true});
+/* کشیدن به پایین | Pull Down: با کشیدن، آواتار همراه انگشت از دایره به عکس تمام‌عرض می‌شود (circle morphs into full-width photo while pulling) */
+(function(){const L=$("#cpScroll");let y0=null,d=0;
+ L.addEventListener("touchstart",e=>{y0=L.scrollTop<=0?e.touches[0].clientY:null;d=0},{passive:true});
+ L.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;const a=$("#cp_av");
+  if(!CP.big&&d>0&&L.scrollTop<=0){e.preventDefault();const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W*1.08,innerHeight*.58);a.style.transition="none";a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
+  else if(CP.big&&d<-30)cpBig(false)},{passive:false});
+ L.addEventListener("touchend",()=>{$("#cp_av").style.transition="";if(!CP.big)cpBig(d>60);y0=null;d=0})})();
+$("#cp_av").onclick=()=>openViewer($("#cp_av"),im=>paintAv(im,{name:CP.name,photo:null}),!CP.big);
+
+/* ---- نمایشگر تمام‌صفحه | Full-screen Viewer ---- */
+/* مرحله ۲ | Stage 2: عکس از جای خودش (دایره یا کاشی) بزرگ می‌شود؛ با برگشت یا کشیدن به پایین به همان جا برمی‌گردد (grows from its source; back or swipe-down returns it) */
+const VW={src:null,circle:false,busy:false};
+const vwT=src=>{const r=src.getBoundingClientRect(),W=innerWidth,H=innerHeight;return `translate(${r.left+r.width/2-W/2}px,${r.top+r.height/2-H/2}px) scale(${r.width/W},${r.height/W})`};
+function openViewer(src,fill,circle){const vw=$("#vw"),im=$("#vwimg"),bg=$("#vwbg"),cs=$$("#vw .vwc");VW.src=src;VW.circle=circle;VW.busy=false;
+ im.style.cssText="";im.textContent="";fill(im);vw.style.display="block";
+ im.animate([{transform:vwT(src),borderRadius:circle?"50%":"2px"},{transform:"none",borderRadius:"0"}],{duration:300,easing:"cubic-bezier(.2,.8,.2,1)"});
+ const f=[{opacity:0},{opacity:1}];bg.animate(f,{duration:300});cs.forEach(c=>c.animate(f,{duration:300}));bg.style.opacity=1;cs.forEach(c=>c.style.opacity=1)}
+function closeViewer(){if(VW.busy)return;VW.busy=true;const im=$("#vwimg"),bg=$("#vwbg"),cs=$$("#vw .vwc"),from=im.style.transform||"none",o=+bg.style.opacity||1;
+ im.style.transform="";const a=im.animate([{transform:from,borderRadius:"0"},{transform:vwT(VW.src),borderRadius:VW.circle?"50%":"2px"}],{duration:280,easing:"cubic-bezier(.2,.8,.2,1)",fill:"forwards"});
+ bg.animate([{opacity:o},{opacity:0}],{duration:280,fill:"forwards"});cs.forEach(c=>c.animate([{opacity:1},{opacity:0}],{duration:150,fill:"forwards"}));
+ a.finished.then(()=>{$("#vw").style.display="none";[im,bg,...cs].forEach(e=>{e.getAnimations().forEach(x=>x.cancel());e.style.opacity=""});im.style.transform="";VW.busy=false})}
+$("#vwBack").onclick=closeViewer;
+/* کشیدن برای بستن | Swipe To Close: کشیدن عکس به پایین و رها کردن بعد از ۱۱۰ پیکسل (swipe image down, release past 110px) */
+(function(){const vw=$("#vw");let y0=null,d=0;
+ vw.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;d=0},{passive:true});
+ vw.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;$("#vwimg").style.transform=`translateY(${d}px)`;$("#vwbg").style.opacity=Math.max(0,1-Math.abs(d)/400);$$("#vw .vwc").forEach(c=>c.style.opacity=0)},{passive:true});
+ vw.addEventListener("touchend",()=>{if(y0===null)return;if(Math.abs(d)>110)closeViewer();else if(Math.abs(d)>4){const im=$("#vwimg");im.animate([{transform:`translateY(${d}px)`},{transform:"none"}],{duration:200});im.style.transform="";$("#vwbg").style.opacity=1;$$("#vw .vwc").forEach(c=>c.style.opacity=1)}y0=null;d=0})})();
 
 /* ---- چشم پسورد | Password Eye Toggle ---- */
 /* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان، چشم ساده)؛ با زدن، پسورد پنهان می‌شود و چشم خط‌دار می‌شود؛ دوباره زدن آشکار می‌کند (default visible without dots; tap eye to mask with dots, tap again to reveal) */
