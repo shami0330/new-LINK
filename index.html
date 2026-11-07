@@ -1068,10 +1068,10 @@ function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
 ["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{const t=ev.target.nodeType===1?ev.target:ev.target.parentElement;if(!(e==="selectstart"&&t&&(t.tagName==="INPUT"||t.closest("[contenteditable]"))))ev.preventDefault()},{passive:false}));
 /* هماهنگی با کیبورد | Keyboard Sync: صفحه چت (پس‌زمینه، هدر، نوار پروفایل) اصلاً جابه‌جا یا کوچک نمی‌شود؛ فقط نوار پیام روی کیبورد کاملاً باز می‌پرد و پیام‌ها همزمان بالا می‌روند (chat page, background and header never move or resize; only the bar jumps onto the open keyboard and messages rise together) */
-const vv=window.visualViewport;let KB0=0;
+const vv=window.visualViewport;let KB0=0,PANT=0;
 function fit(){window.scrollTo(0,0);const c=$("#chat"),m=$("#msgs"),off=vv.offsetTop,kb=Math.max(0,Math.round(innerHeight-vv.height)),d=kb-KB0,atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;KB0=kb;
-/* جبران سُر خوردن صفحه | Pan Fix: اگر آیفون کل صفحه را بالا کشید، چت به‌اندازه‌ی همان پایین می‌آید تا سر جایش بماند (if iOS pans the page, chat is moved back by the same amount) */
-c.style.translate=off>0?"0 "+off+"px":"";
+/* جبران سُر خوردن صفحه | Pan Fix: هنگام باز شدن کیبورد، آیفون برای چند لحظه عدد کاذب بالا رفتن صفحه می‌دهد و جبران فوری باعث پایین پریدن کل صفحه می‌شد؛ حالا جبران فقط وقتی انجام می‌شود که عدد ۳۰۰ میلی‌ثانیه ثابت بماند، و با صفر شدن عدد فوراً برداشته می‌شود (iOS reports a transient fake pan offset while the keyboard animates; compensating instantly made the whole page jump down; now compensation applies only if the offset stays stable for 300ms, and is removed immediately when it returns to 0) */
+clearTimeout(PANT);if(off>0){PANT=setTimeout(()=>{const o2=vv.offsetTop;c.style.translate=o2>0?"0 "+o2+"px":""},300)}else c.style.translate="";
 c.style.setProperty("--kbo",kb+"px");c.classList.toggle("kb",kb>0);fitBar();
 /* بالا رفتن پیام‌ها | Messages Rise: اگر ته گفتگو بودیم همان‌جا می‌مانیم، وگرنه پیام‌ها دقیقاً به‌اندازه‌ی کیبورد بالا یا پایین می‌روند (stay at bottom, or shift by the keyboard amount) */
 if(atB)m.scrollTop=1e9;else m.scrollTop+=d;
