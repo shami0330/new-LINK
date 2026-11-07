@@ -1095,19 +1095,29 @@ window.addEventListener("scroll",()=>window.scrollTo(0,0));
  const dc=document.createElement("div");dc.id="kbDecoy";
  dc.setAttribute("contenteditable","true");dc.setAttribute("role","presentation");dc.setAttribute("aria-hidden","true");dc.setAttribute("tabindex","-1");dc.setAttribute("spellcheck","false");dc.setAttribute("autocorrect","off");dc.setAttribute("autocapitalize","sentences");dc.setAttribute("enterkeyhint","enter");
  document.body.appendChild(dc);
+ /* بدون نوشتن | No Typing: هر تلاش برای نوشتن در کادر نامرئی نادیده گرفته می‌شود؛ این کادر فقط کیبورد را باز می‌کند (anything typed into the hidden box is ignored; it only opens the keyboard) */
+ ["beforeinput","keydown","paste","drop"].forEach(ev=>dc.addEventListener(ev,e=>e.preventDefault()));
+ /* جای کادر | Box Place: کادر نامرئی را درست زیر نوار پروفایل می‌گذارد تا آیفون برای دیدنش صفحه را جابه‌جا نکند (puts the hidden box right under the profile bar so iOS never moves the page to reveal it) */
+ function placeDc(){const h=$("#chat .top");if(!h)return;const r=h.getBoundingClientRect();dc.style.top=Math.round(r.bottom+4)+"px";dc.style.left="12px"}
+ /* مقدار ذخیره‌شده | Saved Adjustment: اگر قبلاً برای این گوشی ارتفاع نوار سیاه تنظیم شده بود، همان را برمی‌دارد (loads the black bar height saved earlier for this phone) */
+ try{const sv=parseFloat(localStorage.getItem("lkAcc"));if(sv>=30&&sv<=120)$("#chat").style.setProperty("--acc",sv+"px")}catch(e){}
  let busy=false,tm=0,x0=0,y0=0,t0=0,moved=false;
  const kbH=()=>Math.max(0,Math.round(innerHeight-vv.height));
  /* تحویل نوشتن | Hand Over Typing: وقتی کیبورد کامل باز شد، نوشتن را به نوار پیام واقعی می‌دهد؛ اگر کسی در این فاصله چیزی نوشته بود به نوار منتقل می‌شود و گم نمی‌شود (moves typing to the real bar; anything typed meanwhile is kept) */
- function handOver(){clearTimeout(tm);if(!busy)return;busy=false;
-  const typed=dc.innerText.replace(/\n$/,"");dc.innerHTML="";
+ function handOver(){clearTimeout(tm);if(!busy)return;busy=false;dc.innerHTML="";
   mi.focus({preventScroll:true});
-  if(typed){mi.value=mi.value+typed;mi.dispatchEvent(new Event("input",{bubbles:true}))}
-  const r=document.createRange(),s=getSelection();r.selectNodeContents(mi);r.collapse(false);s.removeAllRanges();s.addRange(r)}
- /* انتظار برای کیبورد | Wait For Keyboard: هر ۳۰ میلی‌ثانیه چک می‌کند؛ بعد از حداقل ۲۶۰ میلی‌ثانیه و ثابت شدن ارتفاع کیبورد، نوشتن را تحویل می‌دهد (checks every 30ms; hands over after 260ms once the keyboard height is steady) */
- function waitKb(){const st=Date.now();let last=-1;
-  (function tick(){if(!busy)return;const el=Date.now()-st,h=kbH();
-   if((el>=260&&h>80&&h===last)||el>800){handOver();return}
-   last=h;tm=setTimeout(tick,30)})()}
+  const r=document.createRange(),s=getSelection();r.selectNodeContents(mi);r.collapse(false);s.removeAllRanges();s.addRange(r);
+  setTimeout(selfFix,450)}
+ /* تنظیم خودکار | Auto Adjust: بعد از آماده شدن نوار، اگر آیفون باز هم صفحه را بالا کشیده باشد یعنی نوار پشت نوار سیاه رفته؛ همان مقدار به ارتفاع نوار سیاه اضافه می‌شود و برای دفعه‌های بعد روی همین گوشی ذخیره می‌شود (if iOS still pans the page, the bar is partly behind the black bar; that amount is added and saved for next time) */
+ function selfFix(){const c=$("#chat"),p=Math.round(vv.offsetTop);if(p<3||p>80||!c.classList.contains("kb"))return;
+  const a=(parseFloat(getComputedStyle(c).getPropertyValue("--acc"))||55)+p;
+  c.style.setProperty("--acc",a+"px");try{localStorage.setItem("lkAcc",a)}catch(e){}fit()}
+ /* انتظار برای کیبورد | Wait For Keyboard: هر ۱۰ میلی‌ثانیه چک می‌کند؛ ۱۰ میلی‌ثانیه بعد از ثابت شدن کامل کیبورد و حداقل ۲۶۰ میلی‌ثانیه بعد از لمس، نوشتن به نوار پیام واقعی داده می‌شود (checks every 10ms; hands over 10ms after the keyboard is fully open and at least 260ms after the tap) */
+ function waitKb(){const st=Date.now();let last=-1,since=st;
+  (function tick(){if(!busy)return;const now=Date.now(),h=kbH();
+   if(h!==last){last=h;since=now}
+   if((now-st>=260&&h>80&&now-since>=10)||now-st>800){handOver();return}
+   tm=setTimeout(tick,10)})()}
  /* لغو | Cancel: اگر کیبورد در این فاصله بسته شد، کادر نامرئی خالی و رها می‌شود (if the keyboard closes meanwhile, the hidden box is cleared) */
  dc.addEventListener("blur",()=>{if(busy){busy=false;clearTimeout(tm);dc.innerHTML=""}});
  /* لمس نوار پیام | Message Bar Tap: لمس کوتاه روی نوار وقتی کیبورد بسته است، به‌جای فوکوس مستقیم، کیبورد را با کادر نامرئی باز می‌کند؛ کشیدن، نگه‌داشتن و وقتی کیبورد باز است مثل قبل کار می‌کنند (a quick tap with the keyboard closed opens it through the hidden box; drags, long-press and an already open keyboard work as before) */
@@ -1115,7 +1125,7 @@ window.addEventListener("scroll",()=>window.scrollTo(0,0));
  mi.addEventListener("touchmove",e=>{const t=e.touches[0];if(Math.abs(t.clientX-x0)>10||Math.abs(t.clientY-y0)>10)moved=true},{passive:true});
  mi.addEventListener("touchend",e=>{
   if(moved||busy||Date.now()-t0>500||kbH()>80||!e.cancelable)return;
-  e.preventDefault();busy=true;dc.focus({preventScroll:true});waitKb()},{passive:false});
+  e.preventDefault();busy=true;placeDc();dc.focus({preventScroll:true});waitKb()},{passive:false});
 })();
 /* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
 function lkGap(){const A=$("#app");if(!A)return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
