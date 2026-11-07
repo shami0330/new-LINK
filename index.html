@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- لینک مسیجر | Link Messenger — نسخه 2.9 (Version 2.9) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
+<!-- لینک مسیجر | Link Messenger — نسخه 3.0 (Version 3.0) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -174,15 +174,18 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .cph h2{margin-top:8px;font-size:22px}
 .cps{color:var(--sub);font-size:14px;margin-top:2px}
 .cph.big #cp_av{width:100%;height:calc(min(108vw,58vh) + env(safe-area-inset-top) + 56px);border-radius:0;margin:calc(-1*(env(safe-area-inset-top) + 56px)) 0 0;font-size:120px}
-.cph.big::after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
-.cph.big h2,.cph.big .cps{position:absolute;left:16px;z-index:2;color:#fff;margin:0;text-align:left}
-.cph.big h2{bottom:84px}.cph.big .cps{bottom:62px;color:rgba(255,255,255,.85)}
+.cph.big::after,.cph.pull::after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
+/* هم‌زمان با کشیدن | While Pulling: کلاس pull از همان ابتدای کشیدن نام و دکمه‌ها را روی عکس می‌آورد و متغیر --q (۰ تا ۱) جابجایی را پیوسته می‌کند (pull class puts name + buttons over the photo from the first pixel; --q 0..1 keeps it continuous) */
+.cph.big h2,.cph.big .cps,.cph.pull h2,.cph.pull .cps{position:absolute;left:16px;z-index:2;color:#fff;margin:0;text-align:left}
+.cph.big h2,.cph.pull h2{bottom:calc(26px + 58px*var(--q,1))}.cph.big .cps,.cph.pull .cps{bottom:calc(4px + 58px*var(--q,1));color:rgba(255,255,255,.85)}
 /* دکمه‌های عمل | Action Buttons: call / video / mute / search / more (کارت گرد آبی) */
 .cpact{display:flex;gap:8px;padding:0 14px;margin:14px 0 8px;position:relative;z-index:2}
 .cph.big+.cpact{margin-top:-70px}
-.ab{flex:1;background:var(--card);border-radius:14px;padding:9px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--blue);font-size:11px;transition:transform .12s}
+.cph.pull+.cpact{margin-top:calc(-70px*var(--q,1));transition:none}
+.cpact{transition:margin-top .25s}
+.ab{flex:1;background:var(--card);border-radius:14px;padding:9px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--blue);font-size:11px;transition:transform .12s,background .2s,color .2s}
 .ab:active{transform:scale(.94)}
-.cph.big+.cpact .ab{background:rgba(70,70,72,.55);backdrop-filter:blur(12px);color:#fff}
+.cph.big+.cpact .ab,.cph.pull+.cpact .ab{background:rgba(70,70,72,.55);backdrop-filter:blur(12px);color:#fff}
 .cpmusic{text-align:center;font-size:12px;color:var(--sub);margin:8px 0;display:flex;align-items:center;justify-content:center;gap:4px}
 .cpmusic b{color:var(--txt)}
 /* کارت اطلاعات | Info Card: mobile / username / birthday / bio */
@@ -1016,7 +1019,7 @@ function stopPl(){if(!CP.pl)return;clearInterval(CP.pl.t);CP.pl.r.querySelector(
 function playRow(r){if(CP.pl&&CP.pl.r===r){stopPl();return}stopPl();let p=0;const bars=[...r.querySelectorAll(".wf i")],dur=Math.min(+r.dataset.d,30)*10;
  r.querySelector(".pbtn").innerHTML=ic("pause",18);CP.pl={r,t:setInterval(()=>{p++;bars.forEach((x,i)=>x.classList.toggle("on",i<p*bars.length/dur));if(p>=dur)stopPl()},100)}}
 /* بزرگ شدن آواتار | Big Avatar: مرحله ۱ پروفایل (stage 1) */
-function cpBig(v){CP.big=v;$("#cph").classList.toggle("big",v);const a=$("#cp_av");a.style.width=a.style.height=a.style.borderRadius=a.style.fontSize="";
+function cpBig(v){CP.big=v;$("#cph").classList.toggle("big",v);$("#cph").classList.remove("pull");$("#cp").style.removeProperty("--q");const a=$("#cp_av");a.style.width=a.style.height=a.style.borderRadius=a.style.fontSize="";
  const h=$("#cph");h.style.opacity=h.style.transform="";$(".cpbar").classList.remove("s")}
 /* اسکرول | Scroll Link: آواتار و نام با اسکرول محو و کوچک می‌شوند و عنوان کوچک بالا ظاهر می‌شود (avatar/name fade out, mini title fades in) */
 function cpScroll(){const L=$("#cpScroll"),st=L.scrollTop;if(CP.big){if(st>20)cpBig(false);return}
@@ -1027,7 +1030,7 @@ $("#cpScroll").addEventListener("scroll",cpScroll,{passive:true});
 (function(){const L=$("#cpScroll");let y0=null,d=0;
  L.addEventListener("touchstart",e=>{y0=L.scrollTop<=0?e.touches[0].clientY:null;d=0},{passive:true});
  L.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;const a=$("#cp_av");
-  if(!CP.big&&d>0&&L.scrollTop<=0){e.preventDefault();const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W*1.08,innerHeight*.58);a.style.transition="none";a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
+  if(!CP.big&&d>0&&L.scrollTop<=0){e.preventDefault();const q=Math.min(d/160,1),W=L.clientWidth,H=Math.min(W*1.08,innerHeight*.58);a.style.transition="none";$("#cph").classList.add("pull");$("#cp").style.setProperty("--q",q);a.style.width=(96+(W-96)*q)+"px";a.style.height=(96+(H-96)*q)+"px";a.style.borderRadius=(48*(1-q))+"px";a.style.fontSize=(40+80*q)+"px"}
   else if(CP.big&&d<-30)cpBig(false)},{passive:false});
  L.addEventListener("touchend",()=>{$("#cp_av").style.transition="";if(!CP.big)cpBig(d>60);y0=null;d=0})})();
 $("#cp_av").onclick=()=>openViewer($("#cp_av"),im=>paintAv(im,{name:CP.name,photo:null}),!CP.big);
