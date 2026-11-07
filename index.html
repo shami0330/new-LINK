@@ -1173,7 +1173,7 @@ $("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
 </script>
-<script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+<script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{}));</script>
 <script>/* ارتفاع واقعی صفحه | Real Screen Height: ارتفاع برنامه از بزرگ‌ترین مقدار بین ارتفاع فیزیکی صفحه موبایل، ارتفاع ۱۰۰lvh و innerHeight گرفته می‌شود و ۵ پیکسل از پایین‌ترین حد پایین‌تر می‌رود؛ بقیه عناصر جابه‌جا نمی‌شوند (app height = max(physical screen, 100lvh, innerHeight) + 5px at the bottom; other elements keep their place) */
 (function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
  const pr=document.createElement("div");pr.style.cssText="position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none";document.body.append(pr);
