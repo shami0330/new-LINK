@@ -28,10 +28,10 @@
 *::-webkit-scrollbar{display:none;width:0;height:0}
 
 /* بدنه | Body: پس‌زمینه سیاه، فونت سیستم، چینش همیشه چپ‌به‌راست (black bg, system font, always LTR) */
-html,body{height:calc(100% + var(--ext,10px));background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-system,"SF Pro Text",system-ui,sans-serif;direction:ltr;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
 
 /* قاب برنامه | App Frame: تمام صفحه، ۵ پیکسل پایین‌تر از ناحیه امن (full screen, extends 5px below safe area) */
-#app{position:fixed;inset:0 0 calc(-1*var(--ext,10px)) 0;overflow:hidden}
+#app{position:fixed;inset:0 0 calc(-1*var(--ext,5px)) 0;overflow:hidden}
 
 /* صفحه | Screen: هر صفحه کل قاب را می‌گیرد و با جابجایی انیمیشن می‌شود (full-frame page, slide animation) */
 .screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column}
@@ -119,13 +119,13 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .chk.on{background:var(--blue);border-color:var(--blue)}
 
 /* کپسول پایین | Bottom Tab Capsule: سه تب مخاطبین/چت‌ها/تنظیمات (Contacts/Chats/Settings) */
-#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext,10px) + 7px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
+#tabbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext,5px) + 7px);height:62px;background:rgba(28,28,30,.92);backdrop-filter:blur(20px);border-radius:31px;display:flex;padding:5px;z-index:20}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--txt);border-radius:26px;transition:background .2s,color .2s;gap:2px}
 .tb i{font-style:normal;font-size:20px}
 .tb.on{background:var(--card2);color:var(--blue)}
 
 /* نوار پایین ویرایش | Edit Bottom Bar: Read All / Delete (bottom actions in Edit mode) */
-#editbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext,10px) + 7px);display:none;justify-content:space-between;z-index:21}
+#editbar{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + var(--ext,5px) + 7px);display:none;justify-content:space-between;z-index:21}
 #editbar .pill{background:var(--card2);min-width:90px}
 
 /* منوی بلند‌فشار | Long-press Menu: منوی شناور تیره (floating dark menu) */
@@ -155,7 +155,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .pinbar span{color:var(--blue);font-weight:600}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
-#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(var(--ext,10px) + 53px + env(safe-area-inset-bottom)))}
+#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(var(--ext,5px) + 53px + env(safe-area-inset-bottom)))}
 #chat.kb .msgs{padding-bottom:var(--ibh,58px)}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
 #chat .top .title{width:170px;padding:0;border-radius:22px;justify-content:center;overflow:hidden}
@@ -235,7 +235,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #vwimg{position:absolute;left:0;top:50%;width:100%;height:100vw;margin-top:-50vw;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:130px;color:#fff;will-change:transform}
 .vwc{position:absolute;z-index:3}
 #vwBack{top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;padding:0;border-radius:50%;background:rgba(60,60,62,.8);color:#fff}
-#vwShare{bottom:calc(env(safe-area-inset-bottom) + var(--ext,10px) + 13px);left:16px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,62,.8);color:#fff;display:flex;align-items:center;justify-content:center}
+#vwShare{bottom:calc(env(safe-area-inset-bottom) + var(--ext,5px) + 13px);left:16px;width:40px;height:40px;border-radius:50%;background:rgba(60,60,62,.8);color:#fff;display:flex;align-items:center;justify-content:center}
 /* دکمه برگشت دایره | Back Button Circle: ۳۸×۳۸ کاملاً گرد (38x38 perfect circle) */
 #chat #back{width:38px;height:38px;padding:0;border-radius:50%}
 /* حباب من در روز | My Bubble (Day): زمینه روشن با متن تیره تا خوانا باشد (light bubble with dark text for readability) */
@@ -252,7 +252,7 @@ html.light .b.me .tick{color:var(--blue)!important}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
 #pfFull .fx{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;width:38px;height:38px;border-radius:50%;background:rgba(60,60,62,.8);display:flex;align-items:center;justify-content:center}
 #chat.kb .inbar{padding-bottom:10px}
-.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + var(--ext,10px) + 5px);align-items:flex-end}
+.inbar{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + var(--ext,5px) + 5px);align-items:flex-end}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
@@ -350,7 +350,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07)}
 .swt{width:34px;height:34px;border-radius:50%;display:inline-block;border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 0 transparent}
 .swt.on{box-shadow:0 0 0 2px var(--txt)}
 #pshade{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;z-index:45}
-#pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + var(--ext,10px) + 9px);transform:translateY(110%);transition:transform .25s}
+#pick{position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + var(--ext,5px) + 9px);transform:translateY(110%);transition:transform .25s}
 #pick.on{transform:none}
 /* پنجره تأیید کپسولی | Confirm Capsule: پیام تأیید وسط صفحه به شکل کپسول (confirm dialog centered as a capsule) */
 #pick.dlg{left:50%;right:auto;top:50%;bottom:auto;width:min(300px,82%);border-radius:30px;padding:14px 0 6px;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;overflow:hidden}
@@ -1174,13 +1174,9 @@ $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{}));</script>
-<script>/* ارتفاع واقعی صفحه | Real Screen Height: ارتفاع برنامه از بزرگ‌ترین مقدار بین ارتفاع فیزیکی صفحه موبایل، ارتفاع ۱۰۰lvh و innerHeight گرفته می‌شود و ۵ پیکسل از پایین‌ترین حد پایین‌تر می‌رود؛ بقیه عناصر جابه‌جا نمی‌شوند (app height = max(physical screen, 100lvh, innerHeight) + 5px at the bottom; other elements keep their place) */
-(function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
- const pr=document.createElement("div");pr.style.cssText="position:fixed;left:0;top:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none";document.body.append(pr);const sf=document.createElement("div");sf.style.cssText="position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none";document.body.append(sf);
- function fit(){const port=innerHeight>=innerWidth;if(!port){R.style.setProperty("--ext","5px");return}
-  const sh=Math.max(screen.width,screen.height),gap=sh-innerHeight,lv=pr.offsetHeight||0;
-  const H=Math.max(innerHeight,lv,(st()||gap<=60)?sh:0)+5,sb=sf.offsetHeight||0;R.style.setProperty("--ext",(st()||gap<=60?Math.max(5,Math.round(H-innerHeight),sb+5):Math.max(5,Math.round(H-innerHeight)))+"px")}
- fit();[100,400,1200,2500].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow"].forEach(e=>addEventListener(e,()=>{fit();setTimeout(fit,150)}));addEventListener("load",fit);
- if(window.visualViewport)visualViewport.addEventListener("resize",fit)})();</script>
+<script>/* ارتفاع واقعی صفحه | Real Screen Height: مثل ترفند قبلی ۵ پیکسل از پایین کشیده می‌شود؛ فقط در حالت نصب‌شده (PWA) و حالت عمودی، اختلاف ارتفاع فیزیکی صفحه با innerHeight هم اضافه می‌شود (default 5px like before; installed portrait mode adds screen-vs-viewport gap) */
+(function(){const R=document.documentElement,st=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+ function fit(){let e=5;if(st()&&innerHeight>=innerWidth)e=Math.max(5,Math.round(Math.max(screen.width,screen.height)-innerHeight)+5);R.style.setProperty("--ext",e+"px")}
+ fit();[200,1000].forEach(t=>setTimeout(fit,t));["resize","orientationchange","pageshow"].forEach(e=>addEventListener(e,()=>setTimeout(fit,100)))})();</script>
 </body>
 </html>
