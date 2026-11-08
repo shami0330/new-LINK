@@ -1370,6 +1370,12 @@ const vv=window.visualViewport;
   ti.addEventListener("touchend",e=>{if(tp){e.preventDefault();go()}},{passive:false});
   ti.addEventListener("pointerup",e=>{if(e.pointerType==="mouse")go()});
   ti.addEventListener("click",()=>{go()})}
+ /* جلوگیری از لرزش صفحه | Anti Page Pan: وقتی کیبورد باز است و پیام‌ها کم‌اند یا به ابتدا و انتها رسیده‌اند، کشیدن انگشت نمی‌گذارد آیفون کل صفحه را بالا و پایین ببرد */
+ {let sy=0;
+  ch.addEventListener("touchstart",e=>{sy=e.touches[0].clientY},{passive:true});
+  ch.addEventListener("touchmove",e=>{if(!isOpen)return;const t=e.target;if(t.closest&&t.closest("#mi")&&ti.scrollHeight>ti.clientHeight+1)return;
+   if(t.closest&&t.closest("#msgs")&&ms.scrollHeight>ms.clientHeight+1){const dy=e.touches[0].clientY-sy;if(dy>0&&ms.scrollTop>0)return;if(dy<0&&ms.scrollTop<ms.scrollHeight-ms.clientHeight-1)return}
+   if(e.cancelable)e.preventDefault()},{passive:false})}
  /* رویدادهای کیبورد | Keyboard Events: فوکوس کادر را باز می‌کند و اندازه می‌گیرد؛ از دست رفتن فوکوس آن را می‌بندد؛ اگر آیفون صفحه را بالا کشید برمی‌گردد؛ اگر کیبورد با دکمه‌ی خودش بسته شد کادر هم بسته می‌شود (focus opens and measures, blur closes, page pan is undone, keyboard dismissed by its own button closes the box) */
  ti.addEventListener("focus",()=>{if(chOn())openKb();setTimeout(measure,400);setTimeout(measure,800);setTimeout(()=>{if(isOpen&&!mOk&&document.activeElement===ti){K=getK();gap=gp();ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";follow(350);setTimeout(fitBar,300)}},950)});
  ti.addEventListener("blur",()=>setTimeout(()=>{if(document.activeElement!==ti)closeKb()},0));
@@ -1484,7 +1490,6 @@ const mediaType=f=>{const t=f.type||"";return t.startsWith("image/")?"photo":t.s
 function chatMsgs(c){return CFG.cleared&&CFG.cleared[c.id]?(CFG.sent[c.id]||[]):c.id===2?CFG.saved:(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).concat(CFG.sent[c.id]||[])}
 /* ---- ۳.۱۷ ارسال رسانه | 3.17 Send Media ---- */
 let LKDBp=null;var LKU={},LKB={},LKM="\u2064";
-let LKDBp=null;const LKU={},LKB={},LKM="\u2064";
 function lkDB(){return LKDBp||(LKDBp=new Promise((ok,no)=>{const r=indexedDB.open("lk_media",1);r.onupgradeneeded=()=>r.result.createObjectStore("b");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
 const lkTx=(m,f)=>lkDB().then(d=>new Promise((ok,no)=>{const t=d.transaction("b",m);let r;try{r=f(t.objectStore("b"))}catch(e){no(e);return}t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)}));
 const lkPut=(id,v)=>lkTx("readwrite",s=>s.put(v,id));
