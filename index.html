@@ -1558,7 +1558,7 @@ async function lkProcess(f,x,onP){
  x.w=w;x.h=h;x.d=dur;x.n=name;x.s=blob.size;return{blob,thumb}}
 /* ساخت حباب در حال ارسال | Pending Bubble: بلافاصله حباب با چرخان انتظار نشان داده می‌شود؛ تابع برگشتی بعداً فایل‌ها را آماده، ذخیره و حباب را کامل می‌کند */
 function lkPend(c,k,files){
- const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:0}));
+ const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:f.__d||0}));
  it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i])});
  const d=addMsg("me",lkEnc({k,it,pend:1}),lkNow(),0);d.classList.add("pend");
  return async()=>{
@@ -1574,15 +1574,17 @@ function lkPend(c,k,files){
 /* ارسال | Send Media: دکمه‌ی گیره چند فایل را می‌گیرد؛ عکس و ویدیو (تا ۱۰ تا در هر آلبوم) به‌صورت آلبوم و فایل‌ها (تا ۱۰ تا در هر بسته) به‌صورت یک بسته فرستاده می‌شوند؛ کارها یکی‌یکی انجام می‌شوند */
 /* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل تلگرام از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
 /* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
-async function lkSafe(f,x){try{return await Promise.race([lkProcess(f,x,()=>{}),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),45000))])}catch(e){x.n=f.name;x.s=f.size;return{blob:f,thumb:null}}}
-async function lkDims(f){if(lkKind(f)!=="photo")return;try{let b;try{b=await createImageBitmap(f,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(f)}f.__w=b.width;f.__h=b.height;if(b.close)b.close()}catch(e){}}
+async function lkSafe(f,x){try{return await Promise.race([lkProcess(f,x,()=>{}),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),x.t==="video"?900000:45000))])}catch(e){x.n=f.name;x.s=f.size;return{blob:f,thumb:null}}}
+/* اندازه‌ی فیلم | Video Size First: عرض، ارتفاع و مدت فیلم قبل ساخت حباب خوانده می‌شود تا فیلم مثل عکس در کلاژ آلبوم با شکل درست بیاید */
+async function lkVDims(f){await new Promise(ok=>{const v=document.createElement("video"),u=URL.createObjectURL(f);let done=false;const fin=()=>{if(done)return;done=true;URL.revokeObjectURL(u);v.removeAttribute("src");ok()};v.preload="metadata";v.muted=true;v.onloadedmetadata=()=>{f.__w=v.videoWidth;f.__h=v.videoHeight;f.__d=v.duration;fin()};v.onerror=fin;v.src=u;setTimeout(fin,4000)})}
+async function lkDims(f){if(lkKind(f)==="video")return lkVDims(f);if(lkKind(f)!=="photo")return;try{let b;try{b=await createImageBitmap(f,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(f)}f.__w=b.width;f.__h=b.height;if(b.close)b.close()}catch(e){}}
 async function lkSend(files){const c=CHATS.find(x=>x.id===S.openId);if(!c||!files.length)return;await Promise.all(files.map(lkDims));
  const med=files.filter(f=>lkKind(f)!=="file"),oth=files.filter(f=>lkKind(f)==="file"),jobs=[];
  for(let i=0;i<med.length;i+=10)jobs.push(lkPend(c,"album",med.slice(i,i+10)));
  for(let i=0;i<oth.length;i+=10)jobs.push(lkPend(c,"files",oth.slice(i,i+10)));
  jobs.reduce((p,j)=>p.then(j).catch(()=>{toast("Send failed")}),Promise.resolve())}
 /* گیره، فقط عکس | Attach Photos Only: فعلاً با زدن گیره فقط عکس انتخاب می‌شود (چندتایی)؛ عکس‌ها از همان سیستم رسانه (mediaRun) رد می‌شوند، در آلبوم می‌آیند و هر عکس چرخان دایره‌ای جدا و بدون درصد دارد که با آماده‌شدن همان عکس برداشته می‌شود */
-$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.accept="image/*";f.multiple=true;f.onchange=()=>lkSend([...f.files].filter(x=>lkKind(x)==="photo"));f.click()};
+$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.accept="image/*,video/*";f.multiple=true;f.onchange=()=>lkSend([...f.files].filter(x=>lkKind(x)!=="file"));f.click()};
 /* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را تمام‌صفحه باز می‌کند؛ با کشیدن به چپ و راست یا دکمه‌ها بین آلبوم جابه‌جا می‌شود و دکمه‌ی دانلود دارد */
 const LKV={it:[],i:0,u:null};
 function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v.id="lkv";v.innerHTML='<div class="lkvt"><span id="lkvn"></span><span class="lkva"><b id="lkvd">'+lkDlI+'</b><b id="lkvx">'+ic("close",22)+'</b></span></div><div class="lkvs" id="lkvs"></div><div class="lkvb"><b id="lkvp">‹</b><span id="lkvc"></span><b id="lkvq">›</b></div>';document.body.appendChild(v);
