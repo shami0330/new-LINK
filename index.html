@@ -334,16 +334,53 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkft b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lkft span{font-size:12px;opacity:.7}
 .lkdl{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
-#lkv{position:fixed;inset:0;z-index:5000;background:#000;color:#fff;display:none;flex-direction:column}
-#lkv.on{display:flex}
-.lkvt{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;gap:10px}
-.lkvt #lkvn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;opacity:.8}
-.lkva{display:flex;gap:10px}
-.lkva b,.lkvb b{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:400;cursor:pointer}
-.lkvs{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;font-size:40px}
-.lkvs img,.lkvs video{max-width:100%;max-height:100%;object-fit:contain}
-.lkvb{display:flex;align-items:center;justify-content:center;gap:20px;padding:10px 14px calc(env(safe-area-inset-bottom) + 14px)}
-.lkvb #lkvc{font-size:13px;opacity:.8}
+/* نمایشگر رسانه | Media Viewer Style: لایه‌ی تمام‌صفحه روی همه‌چیز (z-index 5000)؛ پس‌زمینه‌ی مشکی جداست تا موقع کشیدن به پایین محو شود (full-screen layer, black bg separate so it fades on swipe-down) */
+#lkv{--lkb:rgba(44,44,46,.82);position:fixed;inset:0;z-index:5000;color:#fff;display:none;touch-action:none;-webkit-user-select:none;user-select:none;overflow:hidden}
+#lkv.on{display:block}
+#lkvbg{position:absolute;inset:0;background:#000}
+/* باز و بسته شدن | Viewer Fade: باز شدن ۰.۲ ثانیه محو + بزرگ شدن از ۰.۹۲ به ۱، بسته شدن ۰.۱۶ ثانیه محو (open 0.2s fade + scale .92 to 1, close 0.16s fade) */
+#lkv.in{animation:lkvIn .2s ease-out}
+#lkv.in #lkvs{animation:lkvZ .22s cubic-bezier(.2,.8,.2,1)}
+#lkv.out{opacity:0;transition:opacity .16s}
+@keyframes lkvIn{from{opacity:0}to{opacity:1}}
+@keyframes lkvZ{from{transform:scale(.92)}to{transform:none}}
+/* صحنه و اسلایدها | Stage & Slides: سه اسلاید کنار هم (قبلی، فعلی، بعدی) با فاصله‌ی ۱۶ پیکسل؛ عکس و ویدیو کل صفحه را می‌گیرند و با contain کامل دیده می‌شوند (3 slides side by side, 16px gap; media fills the screen, shown whole) */
+#lkvs{position:absolute;inset:0;overflow:hidden}
+#lkvtk{position:absolute;inset:0;will-change:transform}
+.lkvsl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px}
+.lkvsl img,.lkvsl video{width:100%;height:100%;object-fit:contain;transform-origin:50% 50%;pointer-events:none;-webkit-user-drag:none}
+/* دکمه‌ها و نوارها | Viewer Chrome: همه‌ی کنترل‌ها با یک لمس روی صفحه محو یا ظاهر می‌شوند (۰.۱۸ ثانیه)؛ در کشیدن به پایین هم محو می‌شوند (tap toggles all controls, 0.18s fade; they fade while dragging) */
+.lkvc{position:absolute;z-index:2;transition:opacity .18s}
+#lkv.hid .lkvc,#lkv.drag .lkvc{opacity:0;pointer-events:none}
+.lkvcb{width:40px;height:40px;border-radius:50%;background:var(--lkb);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lkvcb.big{width:44px;height:44px}
+/* سربرگ | Viewer Header: دایره‌ی برگشت چپ، کپسول نام و زمان وسط (ارتفاع ۴۰)، دایره‌ی سه‌نقطه راست؛ همه ۶ پیکسل زیر ناحیه‌ی امن بالا (back circle left, name+time capsule centre height 40, more circle right) */
+#lkvx{top:calc(env(safe-area-inset-top) + 6px);left:12px}
+#lkvm{top:calc(env(safe-area-inset-top) + 6px);right:12px}
+#lkvtt{top:calc(env(safe-area-inset-top) + 6px);left:50%;transform:translateX(-50%);min-width:130px;max-width:50%;height:40px;padding:0 16px;border-radius:20px;background:var(--lkb);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#lkvn{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;font-weight:600;line-height:19px}
+#lkvsub{font-size:11.5px;line-height:14px;opacity:.6;white-space:nowrap}
+/* شمارنده | Counter Pill: کپسول «۳ از ۱۲» زیر سربرگ، ارتفاع ۲۴ و نوشته‌ی ۱۳ (small pill under the header, height 24, font 13) */
+#lkvcnt{top:calc(env(safe-area-inset-top) + 54px);left:50%;transform:translateX(-50%);height:24px;padding:0 12px;border-radius:12px;background:var(--lkb);font-size:13px;align-items:center;white-space:nowrap}
+/* دکمه‌ی وسط ویدیو | Center Play Button: دایره‌ی تیره ۶۶ پیکسلی با آیکون سفید پخش یا ایست، فقط برای ویدیو (66px dark circle, video only) */
+#lkvpl{top:50%;left:50%;width:66px;height:66px;margin:-33px 0 0 -33px;border-radius:50%;background:rgba(18,18,20,.82);display:none;align-items:center;justify-content:center;cursor:pointer}
+#lkv.vd #lkvpl{display:flex}
+/* نوار پخش | Seek Bar: کپسول ارتفاع ۴۰ با زمان چپ، خط ۴ پیکسلی سفید و زمان کل راست؛ ۷۰ پیکسل بالای پایین صفحه (40px capsule: time, 4px bar, duration; 70px above bottom) */
+#lkvsk{left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 70px);height:40px;padding:0 16px;border-radius:20px;background:var(--lkb);display:none;align-items:center;gap:12px;font-size:13px;font-variant-numeric:tabular-nums}
+#lkv.vd #lkvsk{display:flex}
+#lkvbar{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.28);position:relative;touch-action:none}
+#lkvbar::before{content:"";position:absolute;inset:-14px 0}
+#lkvfil{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:#fff;transform-origin:0 50%;transform:scaleX(0)}
+/* دکمه‌ی صدا | Mute Button: دایره‌ی کوچک ۳۴ پیکسلی بالای نوار پخش سمت چپ (34px circle above the seek bar, left) */
+#lkvmu{width:34px;height:34px;left:12px;bottom:calc(env(safe-area-inset-bottom) + 118px);display:none}
+#lkv.vd #lkvmu{display:flex}
+/* دکمه‌های پایین | Footer Buttons: فوروارد پایین چپ و سطل زباله پایین راست، دایره‌ی ۴۴ پیکسلی، ۱۴ پیکسل بالای ناحیه‌ی امن پایین (forward bottom-left, trash bottom-right, 44px circles) */
+#lkvfw{left:12px;bottom:calc(env(safe-area-inset-bottom) + 14px)}
+#lkvdl{right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px)}
+/* منوی سه‌نقطه | More Menu: کارت تیره‌ی گرد زیر دکمه‌ی سه‌نقطه با گزینه‌ی ذخیره (dark rounded card under the more button, radius 14, width 190) */
+#lkvmn{position:absolute;z-index:3;top:calc(env(safe-area-inset-top) + 54px);right:12px;width:190px;border-radius:14px;background:rgba(44,44,46,.96);overflow:hidden;display:none}
+#lkvmn.on{display:block}
+#lkvmn div{display:flex;align-items:center;gap:12px;padding:13px 16px;font-size:16px;cursor:pointer}
 .pnl{display:block;font-size:11px;opacity:.8;margin-bottom:2px}
 /* منوی نگه‌داشتن ارسال | Send Hold Menu: Send When Online / Schedule Message بالای دکمه ارسال (floats above the send button) */
 #smv{position:absolute;inset:0;z-index:97;display:none}
@@ -1827,19 +1864,114 @@ async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
  [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
  o.classList.add("on");mpvGo(0,0)}
-/* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را تمام‌صفحه باز می‌کند؛ با کشیدن به چپ و راست یا دکمه‌ها بین آلبوم جابه‌جا می‌شود و دکمه‌ی دانلود دارد */
-const LKV={it:[],i:0,u:null};
-function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v.id="lkv";v.innerHTML='<div class="lkvt"><span id="lkvn"></span><span class="lkva"><b id="lkvd">'+lkDlI+'</b><b id="lkvx">'+ic("close",22)+'</b></span></div><div class="lkvs" id="lkvs"></div><div class="lkvb"><b id="lkvp">‹</b><span id="lkvc"></span><b id="lkvq">›</b></div>';document.body.appendChild(v);
- $("#lkvx").onclick=lkVClose;$("#lkvd").onclick=()=>{const x=LKV.it[LKV.i];if(x)lkSave(x.id,x.n)};$("#lkvp").onclick=()=>lkVShow(LKV.i-1);$("#lkvq").onclick=()=>lkVShow(LKV.i+1);
- let sx=0;const s=$("#lkvs");s.addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});s.addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>60)lkVShow(LKV.i+(dx<0?1:-1))});return v}
-async function lkVShow(i){if(i<0||i>=LKV.it.length)return;LKV.i=i;const x=LKV.it[i],s=$("#lkvs");if(LKV.u){URL.revokeObjectURL(LKV.u);LKV.u=null}s.innerHTML="";$("#lkvn").textContent=x.n;$("#lkvc").textContent=(i+1)+" / "+LKV.it.length;
- let b=LKB[x.id];if(!b){try{const r=await lkGet(x.id);b=r&&r.blob}catch(e){}}
- if(LKV.i!==i)return;if(!b){s.textContent="🗑";return}
- LKV.u=URL.createObjectURL(b);const el=document.createElement(x.t==="video"?"video":"img");el.src=LKV.u;if(x.t==="video"){el.controls=true;el.autoplay=true;el.playsInline=true}s.appendChild(el)}
-function lkVClose(){const v=$("#lkv");if(!v)return;v.classList.remove("on");$("#lkvs").innerHTML="";if(LKV.u){URL.revokeObjectURL(LKV.u);LKV.u=null}}
-function lkOpen(t,i){const o=lkDec(t);if(!o||o.k!=="album")return;lkVEl().classList.add("on");LKV.it=o.it;lkVShow(i)}
+/* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را مثل تلگرام تمام‌صفحه باز می‌کند؛ کشیدن چپ و راست = قبلی و بعدی، کشیدن به پایین = بستن، دو انگشت یا دو بار لمس = زوم (Telegram-like: swipe sideways, swipe down to close, pinch or double-tap to zoom) */
+/* داده‌ی نمایشگر | Viewer State: آلبوم، شماره‌ی فعلی، پیام مبدا، ویدیوی در حال پخش و بی‌صدا بودن (album, index, source bubble, playing video, mute flag) */
+const LKV={it:[],i:0,b:null,v:null,mu:false,busy:false,raf:0,lt:""};
+/* وضعیت زوم | Zoom State: بزرگ‌نمایی s و جابه‌جایی x و y رسانه‌ی وسط (scale and offset of the centre media) */
+const LKZ={s:1,x:0,y:0};
+/* آیکون بلندگو | Speaker Icons: بلندگوی روشن و خاموش، اندازه ۱۸ و خط ۲ (speaker on and muted, 18px, stroke 2) */
+const lkSpk='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+/* بلندگوی خاموش | Muted Speaker Icon: بلندگو با ضربدر وقتی صدا بسته است (speaker with a cross when muted) */
+const lkSpkX='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>';
+/* رسانه‌ی وسط | Centre Media: عکس یا ویدیوی اسلاید وسط (img or video of the middle slide) */
+function lkVM(){const s=$("#lkvtk").children[1];return s?s.firstElementChild:null}
+/* مدت ویدیو | Video Duration: از خود ویدیو، اگر نبود از آلبوم (from the video, else from the album data) */
+function lkVDur(){const m=LKV.v,x=LKV.it[LKV.i];return m&&isFinite(m.duration)&&m.duration>0?m.duration:(x&&x.d)||0}
+/* به‌روزرسانی نوار | Seek Update: پر شدن خط و زمان‌ها؛ نوشته فقط وقتی ثانیه عوض شود تازه می‌شود (fill and times; text only when the second changes) */
+function lkVUp(){const m=LKV.v;if(!m)return;const d=lkVDur(),t=m.currentTime||0,k=lkDur(t)+"|"+lkDur(d);$("#lkvfil").style.transform="scaleX("+(d?Math.min(1,t/d):0)+")";if(k!==LKV.lt){LKV.lt=k;$("#lkvt0").textContent=lkDur(t);$("#lkvt1").textContent=lkDur(d)}}
+/* آیکون پخش | Play Icon: دکمه‌ی وسط هنگام پخش ایست و هنگام توقف پخش نشان می‌دهد، اندازه ۳۰ (centre button shows pause while playing, play while paused, 30px) */
+function lkVPlI(){const m=LKV.v;$("#lkvpl").innerHTML=ic(m&&!m.paused&&!m.ended?"pause":"play",30)}
+/* آیکون صدا | Mute Icon: بلندگوی روشن یا خط‌خورده (speaker on or crossed) */
+function lkVMu(){$("#lkvmu").innerHTML=LKV.mu?lkSpkX:lkSpk}
+/* تیک پخش | Play Tick: تا وقتی ویدیو پخش می‌شود هر فریم نوار را نرم تازه می‌کند و بعد از توقف خودش می‌ایستد (smooth bar update per frame while playing, stops itself) */
+function lkVTick(){cancelAnimationFrame(LKV.raf);const m=LKV.v;if(!m)return;lkVUp();if(!m.paused&&!m.ended)LKV.raf=requestAnimationFrame(lkVTick)}
+/* رویدادهای ویدیو | Video Events: پخش، توقف، پایان و تغییر زمان آیکون و نوار را هماهنگ می‌کنند (play, pause, end, time change keep icon and bar in sync) */
+function lkVBind(m){m.addEventListener("play",()=>{lkVPlI();lkVTick()});m.addEventListener("pause",lkVPlI);m.addEventListener("ended",lkVPlI);m.addEventListener("loadedmetadata",lkVUp);m.addEventListener("durationchange",lkVUp);m.addEventListener("seeked",lkVUp)}
+/* نام و زمان بالا | Header Info: نام فرستنده و «امروز ساعت ۱۸:۴۸» از روی حباب پیام (sender name and day/time read from the message bubble) */
+function lkVMeta(b){if(!b)return["",""];const me=b.classList.contains("me"),nm=me?(S.user?S.user.name:"You"):($("#cname")?$("#cname").textContent:"");let p=b.previousElementSibling;while(p&&!p.classList.contains("dsep"))p=p.previousElementSibling;const sm=b.querySelector("small"),tm=sm&&sm.firstChild?sm.firstChild.textContent.trim():"",dy=p?p.textContent.trim():"";return[nm,(dy?(dy==="Today"?"today":dy)+" at ":"")+tm]}
+/* جای اسلایدها | Slide Positions: اسلاید k به اندازه‌ی (k-1)×(عرض+۱۶) از وسط فاصله می‌گیرد و ریل به جای اول برمی‌گردد (slide k sits (k-1)×(width+16) from centre, track reset) */
+function lkVPos(){const W=$("#lkvs").clientWidth,tk=$("#lkvtk");[...tk.children].forEach((s,k)=>s.style.transform="translateX("+(k-1)*(W+16)+"px)");tk.style.transition="none";tk.style.transform="none"}
+/* فایل رسانه | Media Blob: برای ویدیوی کناری فقط عکس کوچک (thumb) و برای بقیه فایل کامل از کش (side videos use only the thumb, the rest the full file from cache) */
+async function lkVBlob(x,full){if(x.t==="video"&&!full){try{const r=await lkGet(x.id);return r&&r.thumb||null}catch(e){return null}}let b=LKB[x.id];if(!b){try{const r=await lkGet(x.id);b=r&&r.blob}catch(e){}}return b||null}
+/* آزاد کردن اسلاید | Free Slide: ویدیو را می‌ایستاند و آدرس موقت را پاک می‌کند تا حافظه و باتری مصرف نشود (stops video, revokes the URL to save memory and battery) */
+function lkVFree(s){const m=s.querySelector("video");if(m){m.pause();m.removeAttribute("src");m.load();if(LKV.v===m){LKV.v=null;cancelAnimationFrame(LKV.raf)}}if(s._u){URL.revokeObjectURL(s._u);s._u=null}}
+/* پر کردن اسلاید | Fill Slide: اسلاید وسط ویدیو را کامل و خودکار پخش می‌کند، کناری‌ها فقط عکس ثابت؛ اگر محتوا همان است دوباره نمی‌سازد (centre video plays, side ones are stills; no rebuild if unchanged) */
+async function lkVFill(s,k){const x=LKV.it[k],c=k===LKV.i,sg=x?k+":"+(x.t==="video"?(c?"v":"t"):"i"):"";if(s._g===sg)return;s._g=sg;lkVFree(s);s.innerHTML="";if(!x)return;const b=await lkVBlob(x,c||x.t!=="video");if(s._g!==sg)return;if(!b){s.textContent="🗑";return}
+ const u=s._u=URL.createObjectURL(b);let el;
+ if(c&&x.t==="video"){el=document.createElement("video");el.playsInline=true;el.setAttribute("webkit-playsinline","");el.preload="auto";el.muted=LKV.mu;el.src=u;LKV.v=el;lkVBind(el);s.appendChild(el);el.play().catch(lkVPlI)}
+ else{el=document.createElement("img");el.draggable=false;el.src=u;s.appendChild(el)}}
+/* هماهنگ‌سازی بالا و پایین | Sync Chrome: شمارنده، نام، زمان، حالت ویدیو و نوار را برای رسانه‌ی فعلی تازه می‌کند (refreshes counter, name, time, video mode and bar for the current item) */
+function lkVSync(){const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
+/* رفتن به شماره | Go To Item: زوم را ریست می‌کند و سه اسلاید (قبلی، فعلی، بعدی) را پر می‌کند (resets zoom, fills prev / current / next) */
+function lkVGo(i){LKV.i=i;LKZ.s=1;LKZ.x=0;LKZ.y=0;const tk=$("#lkvtk");[...tk.children].forEach(s=>{const m=s.firstElementChild;if(m){m.style.transition="none";m.style.transform=""}});[...tk.children].forEach((s,k)=>lkVFill(s,i+k-1));lkVSync()}
+/* چرخش اسلایدها | Rotate Slides: بعد از رفتن به بعدی یا قبلی همان سه عنصر جابه‌جا می‌شوند و فقط یکی تازه ساخته می‌شود (the same 3 elements rotate, only one is rebuilt) */
+function lkVRot(d){const tk=$("#lkvtk");if(d>0)tk.append(tk.firstElementChild);else tk.prepend(tk.lastElementChild);lkVPos();lkVGo(LKV.i+d)}
+/* حرکت به کنار | Slide Move: ریل در ۰.۲۲ ثانیه به اسلاید بعدی یا قبلی می‌لغزد (track slides to next/prev in 0.22s) */
+function lkVMove(d){const n=LKV.i+d;if(LKV.busy||n<0||n>=LKV.it.length)return;const tk=$("#lkvtk");LKV.busy=true;tk.style.transition="transform .22s cubic-bezier(.2,.8,.2,1)";tk.style.transform="translateX("+(-d*($("#lkvs").clientWidth+16))+"px)";setTimeout(()=>{lkVRot(d);LKV.busy=false},230)}
+/* حد جابه‌جایی زوم | Zoom Limits: رسانه‌ی بزرگ‌شده فقط تا لبه‌ی خودش کشیده می‌شود (zoomed media can only be dragged to its own edges) */
+function lkVCl(){const m=lkVM(),s=$("#lkvs");if(!m)return;const nw=m.naturalWidth||m.videoWidth,nh=m.naturalHeight||m.videoHeight;if(!nw){LKZ.x=LKZ.y=0;return}const W=s.clientWidth,H=s.clientHeight,f=Math.min(W/nw,H/nh),bx=Math.max(0,(nw*f*LKZ.s-W)/2),by=Math.max(0,(nh*f*LKZ.s-H)/2);LKZ.x=Math.max(-bx,Math.min(bx,LKZ.x));LKZ.y=Math.max(-by,Math.min(by,LKZ.y))}
+/* اعمال زوم | Apply Zoom: زوم و جابه‌جایی را روی رسانه‌ی وسط می‌گذارد؛ an=true یعنی با انیمیشن ۰.۲۲ ثانیه (puts zoom/offset on the centre media; an=true animates 0.22s) */
+function lkVZa(an){const m=lkVM();if(!m)return;m.style.transition=an?"transform .22s cubic-bezier(.2,.8,.2,1)":"none";m.style.transform=LKZ.s===1&&!LKZ.x&&!LKZ.y?"":"translate("+LKZ.x+"px,"+LKZ.y+"px) scale("+LKZ.s+")"}
+/* زوم دور یک نقطه | Zoom At Point: نقطه‌ای که زیر انگشت است سر جایش می‌ماند (the point under the finger stays in place) */
+function lkVZoom(px,py,ns){const s=$("#lkvs"),cx=s.clientWidth/2,cy=s.clientHeight/2,c0x=(px-cx-LKZ.x)/LKZ.s,c0y=(py-cy-LKZ.y)/LKZ.s;LKZ.s=ns;LKZ.x=px-cx-ns*c0x;LKZ.y=py-cy-ns*c0y}
+/* زوم با دو بار لمس | Double-Tap Zoom: اگر زوم است برمی‌گردد، وگرنه ۲.۵ برابر دور نقطه‌ی لمس (zoomed → reset, else 2.5x at the tap point) */
+function lkVDbl(px,py){if(LKZ.s>1.02){LKZ.s=1;LKZ.x=0;LKZ.y=0}else{lkVZoom(px,py,2.5);lkVCl()}lkVZa(true)}
+/* ساخت نمایشگر | Build Viewer: فقط بار اول ساخته می‌شود؛ شامل صحنه، سربرگ، کنترل‌ها، منو و همه‌ی لمس‌ها (built once: stage, header, controls, menu and all gestures) */
+function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v.id="lkv";
+ v.innerHTML='<div id="lkvbg"></div><div id="lkvs"><div id="lkvtk"><div class="lkvsl"></div><div class="lkvsl"></div><div class="lkvsl"></div></div></div>'
+  +'<div class="lkvc lkvcb" id="lkvx">'+ic("back",22)+'</div><div class="lkvc" id="lkvtt"><b id="lkvn"></b><span id="lkvsub"></span></div><div class="lkvc lkvcb" id="lkvm">'+ic("more",22)+'</div><div class="lkvc" id="lkvcnt"></div>'
+  +'<div class="lkvc" id="lkvpl"></div><div class="lkvc lkvcb" id="lkvmu"></div><div class="lkvc" id="lkvsk"><span id="lkvt0">0:00</span><div id="lkvbar"><i id="lkvfil"></i></div><span id="lkvt1">0:00</span></div>'
+  +'<div class="lkvc lkvcb big" id="lkvfw">'+ic("fwd",22)+'</div><div class="lkvc lkvcb big" id="lkvdl">'+ic("trash",22)+'</div>'
+  +'<div id="lkvmn"><div id="lkvsv">'+lkDlI+'<span>Save</span></div></div>';
+ document.body.appendChild(v);
+ /* دکمه‌ها | Viewer Buttons: برگشت، سه‌نقطه و ذخیره، فوروارد و حذف، پخش و ایست، صدا (back, more+save, forward+delete, play/pause, mute) */
+ $("#lkvx").onclick=()=>lkVClose();
+ $("#lkvm").onclick=()=>$("#lkvmn").classList.toggle("on");
+ $("#lkvsv").onclick=()=>{$("#lkvmn").classList.remove("on");const x=LKV.it[LKV.i];if(x)lkSave(x.id,x.n)};
+ $("#lkvfw").onclick=()=>lkVAct("fwd");$("#lkvdl").onclick=()=>lkVAct("del");
+ $("#lkvpl").onclick=()=>{const m=LKV.v;if(m)m.paused||m.ended?m.play().catch(()=>{}):m.pause()};
+ $("#lkvmu").onclick=()=>{LKV.mu=!LKV.mu;if(LKV.v)LKV.v.muted=LKV.mu;lkVMu()};
+ /* کشیدن نوار پخش | Seek Drag: لمس یا کشیدن روی خط، ویدیو را همان لحظه به آن نقطه می‌برد (touch or drag on the bar seeks live) */
+ const bar=$("#lkvbar");let sk=false;
+ const seek=e=>{const m=LKV.v,d=lkVDur();if(!m||!d)return;const r=bar.getBoundingClientRect();m.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*d;lkVUp()};
+ bar.addEventListener("pointerdown",e=>{sk=true;bar.setPointerCapture(e.pointerId);seek(e)});
+ bar.addEventListener("pointermove",e=>{if(sk)seek(e)});
+ bar.addEventListener("pointerup",()=>{sk=false});bar.addEventListener("pointercancel",()=>{sk=false});
+ /* لمس صحنه | Stage Gestures: یک انگشت بدون زوم: چپ و راست = اسلاید، بالا و پایین = بستن؛ با زوم: جابه‌جایی؛ دو انگشت: زوم؛ یک لمس: پنهان یا نمایش کنترل‌ها؛ دو لمس: زوم (one finger: sideways = slide, vertical = close; zoomed = pan; two fingers = pinch; tap = toggle controls; double-tap = zoom) */
+ const st=$("#lkvs");let g=null,lt=0,lx=0,ly=0,tm=0;
+ const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY),mid=t=>[(t[0].clientX+t[1].clientX)/2,(t[0].clientY+t[1].clientY)/2];
+ st.addEventListener("touchstart",e=>{if(LKV.busy)return;const t=e.touches;$("#lkvmn").classList.remove("on");
+  if(t.length>=2){const m=mid(t);g={k:"pz",d0:dist(t),s0:LKZ.s,cx:(m[0]-st.clientWidth/2-LKZ.x)/LKZ.s,cy:(m[1]-st.clientHeight/2-LKZ.y)/LKZ.s};clearTimeout(tm)}
+  else if(!g)g={k:"?",x:t[0].clientX,y:t[0].clientY,t:Date.now(),zx:LKZ.x,zy:LKZ.y,dx:0,dy:0}},{passive:true});
+ st.addEventListener("touchmove",e=>{if(!g)return;e.preventDefault();const t=e.touches;
+  if(g.k==="pz"){if(t.length<2)return;const m=mid(t),ns=Math.max(.7,Math.min(6,g.s0*dist(t)/g.d0));LKZ.s=ns;LKZ.x=m[0]-st.clientWidth/2-ns*g.cx;LKZ.y=m[1]-st.clientHeight/2-ns*g.cy;lkVZa(false);return}
+  if(t.length!==1)return;const dx=t[0].clientX-g.x,dy=t[0].clientY-g.y;g.dx=dx;g.dy=dy;
+  if(g.k==="?"){if(Math.abs(dx)+Math.abs(dy)<8)return;g.k=LKZ.s>1.02?"pan":Math.abs(dx)>Math.abs(dy)?"sw":"cl";clearTimeout(tm);if(g.k==="cl")v.classList.add("drag")}
+  const tk=$("#lkvtk");
+  if(g.k==="pan"){LKZ.x=g.zx+dx;LKZ.y=g.zy+dy;lkVCl();lkVZa(false)}
+  else if(g.k==="sw"){const n=LKV.it.length,eg=(dx>0&&LKV.i===0)||(dx<0&&LKV.i===n-1);tk.style.transition="none";tk.style.transform="translateX("+(eg?dx/3:dx)+"px)"}
+  else if(g.k==="cl"){tk.style.transition="none";tk.style.transform="translateY("+dy+"px)";$("#lkvbg").style.opacity=Math.max(0,1-Math.abs(dy)/380)}},{passive:false});
+ st.addEventListener("touchend",e=>{if(!g)return;if(g.k==="pz"){if(e.touches.length)return;g=null;if(LKZ.s<1.02){LKZ.s=1;LKZ.x=0;LKZ.y=0}LKZ.s=Math.min(5,LKZ.s);lkVCl();lkVZa(true);return}
+  if(e.touches.length)return;const q=g,dt=Math.max(1,Date.now()-q.t),tk=$("#lkvtk");g=null;
+  if(q.k==="sw"){const d=q.dx<0?1:-1,n=LKV.i+d,W=st.clientWidth;if((Math.abs(q.dx)>W*.2||Math.abs(q.dx)/dt>.45&&Math.abs(q.dx)>30)&&n>=0&&n<LKV.it.length)lkVMove(d);else{tk.style.transition="transform .2s";tk.style.transform="translateX(0)"}}
+  else if(q.k==="cl"){const H=st.clientHeight;if(Math.abs(q.dy)>110||Math.abs(q.dy)/dt>.6&&Math.abs(q.dy)>40){LKV.busy=true;tk.style.transition="transform .2s ease-in";tk.style.transform="translateY("+(q.dy>0?H:-H)+"px)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=0;setTimeout(()=>{LKV.busy=false;lkVClose()},200)}else{tk.style.transition="transform .2s";tk.style.transform="translateY(0)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=1;v.classList.remove("drag")}}
+  else if(q.k==="?"){e.preventDefault();const now=Date.now();if(now-lt<300&&Math.hypot(q.x-lx,q.y-ly)<40){clearTimeout(tm);lt=0;lkVDbl(q.x,q.y)}else{lt=now;lx=q.x;ly=q.y;tm=setTimeout(()=>v.classList.toggle("hid"),260)}}});
+ st.addEventListener("touchcancel",()=>{g=null;lkVPos();$("#lkvbg").style.opacity=1;v.classList.remove("drag");LKZ.s=1;LKZ.x=0;LKZ.y=0;lkVZa(false)});
+ /* موس و کیبورد | Desktop Input: چرخ موس و دو کلیک = زوم، یک کلیک = کنترل‌ها، فلش‌ها = قبلی و بعدی، Esc = بستن (wheel / double-click zoom, click toggles controls, arrows, Esc) */
+ st.addEventListener("wheel",e=>{e.preventDefault();lkVZoom(e.clientX,e.clientY,Math.max(1,Math.min(5,LKZ.s*(e.deltaY<0?1.2:1/1.2))));lkVCl();lkVZa(false)},{passive:false});
+ st.addEventListener("dblclick",e=>lkVDbl(e.clientX,e.clientY));
+ st.addEventListener("click",()=>{$("#lkvmn").classList.remove("on");v.classList.toggle("hid")});
+ document.addEventListener("keydown",e=>{if(!v.classList.contains("on"))return;if(e.key==="Escape")lkVClose();else if(e.key==="ArrowRight")lkVMove(1);else if(e.key==="ArrowLeft")lkVMove(-1)});
+ addEventListener("resize",()=>{if(v.classList.contains("on"))lkVPos()});
+ return v}
+/* دکمه‌های پایین | Footer Actions: فوروارد و حذف همان عکس یا ویدیو را با روش حالت انتخاب انجام می‌دهند (forward / delete of this item through the select-mode logic) */
+function lkVAct(k){const x=LKV.it[LKV.i],b=LKV.b;if(!x||!b||!window.lkVSel)return;lkVClose();setTimeout(()=>window.lkVSel(b,x.id,k),180)}
+/* بستن | Close Viewer: ویدیو می‌ایستد، ۰.۱۶ ثانیه محو می‌شود، بعد همه‌ی اسلایدها خالی و آدرس‌ها آزاد می‌شوند (pauses, fades 0.16s, then empties slides and frees URLs) */
+function lkVClose(){const v=$("#lkv");if(!v||!v.classList.contains("on")||v.classList.contains("out"))return;if(LKV.v)LKV.v.pause();v.classList.add("out");setTimeout(()=>{v.classList.remove("on","out","hid","drag","vd");$("#lkvmn").classList.remove("on");[...$("#lkvtk").children].forEach(s=>{lkVFree(s);s.innerHTML="";s._g=""});LKV.v=null;lkVPos()},170)}
+/* باز کردن | Open Viewer: آلبوم و پیام مبدا را می‌گیرد و رسانه‌ی لمس‌شده را نشان می‌دهد (takes the album and source bubble, shows the tapped item) */
+function lkOpen(t,i,b){const o=lkDec(t);if(!o||o.k!=="album")return;const v=lkVEl();LKV.it=o.it;LKV.b=b||null;LKV.busy=false;v.classList.remove("hid","drag","out");v.classList.add("on","in");$("#lkvbg").style.cssText="";lkVPos();lkVGo(Math.max(0,Math.min(o.it.length-1,i||0)));setTimeout(()=>v.classList.remove("in"),240)}
 /* لمس در گفتگو | Chat Taps: لمس دکمه‌ی دانلود فایل را ذخیره می‌کند؛ لمس عکس یا ویدیو نمایشگر را باز می‌کند (حباب‌های در حال ارسال نه) */
-$("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkSave(dl.dataset.dl,dl.dataset.n);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i)}});
+$("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkSave(dl.dataset.dl,dl.dataset.n);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i,b)}});
 /* لیست کش | Cache List: فقط گفتگوهایی که رسانه‌ی کش‌شده دارند */
 function renderCache(){const L=CHATS.filter(c=>chatBytes(c)>0),tot=L.reduce((a,c)=>a+chatBytes(c),0);
  $("#cacheList").innerHTML=L.map(c=>`<div class="item" data-cc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="rr"><span class="v">${fmtSize(chatBytes(c))}</span><i class="chev"></i></span></div>`).join("")+(L.length?`<div class="item"><span>${tr("Total")}</span><span class="rr"><span class="v">${fmtSize(tot)}</span></span></div>`:`<div class="item" style="color:var(--sub);justify-content:center">${tr("No cached media")}</div>`);
@@ -2339,6 +2471,8 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
   bs.forEach(b=>{const raw=b.dataset.t,fm=FWR.exec(raw),inner=fm?fm[2]:raw,src=fm?fm[1]:(b.classList.contains('me')?(S.user?S.user.name:'You'):$('#cname').textContent);
    if(SEL.i.has(b)){const o=lkDec(raw),s=SEL.i.get(b);if(o){const it=o.it.filter(x=>s.has(x.id));if(it.length)many.push({src,inner:lkEnc(Object.assign({},o,{it}))})}}else many.push({src,inner})});
   if(many.length&&window.lkFwd)window.lkFwd(bs[0],many)};
+ /* حذف و فوروارد از نمایشگر | Viewer Actions: دکمه‌های پایین نمایشگر همان حذف و فوروارد حالت انتخاب را برای همان عکس یا ویدیو اجرا می‌کنند (viewer footer buttons reuse select-mode delete / forward for that one item) */
+ window.lkVSel=function(b,id,k){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);if(k==='del')ask([['me','Delete for me'],['both','Delete for both',1]],doDelete);else $('#selFw').onclick()};
 })();
 CFG.sched=CFG.sched||[];
 (function(){const sb=$("#send"),hh=t=>new Date(t).toTimeString().slice(0,5),p2=n=>String(n).padStart(2,"0");
