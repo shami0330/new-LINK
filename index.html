@@ -313,10 +313,18 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkc.lkx::after{content:"🗑";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.6}
 .lkpl{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center}
 .lkdu{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.5);color:#fff;font-size:11px;padding:1px 7px;border-radius:9px}
-.lkpg{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px}
+.lkpg{position:absolute;inset:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px}
 .lkpg em{font-style:normal}
 .lksp{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:lkspin .8s linear infinite;display:inline-block;box-sizing:border-box}
 @keyframes lkspin{to{transform:rotate(360deg)}}
+/* حلقه‌ی ارسال مثل تلگرام | Telegram Ring: وسط هر عکس یک دایره‌ی تیره‌ی بزرگ‌تر با حلقه‌ی چرخان می‌آید؛ نگار عکس تیره نمی‌شود و حباب همان موقع کاملاً روشن است */
+.lkpg .lksp{width:44px;height:44px;border-width:3px;background:rgba(0,0,0,.45)}
+.b.mm.pend{opacity:1}
+/* دایره‌ی وضعیت و تاری مثل تلگرام | Telegram Status Circle: تا وقتی عکس آماده نشده تار است و روی دایره ✕ با حلقه‌ی چرخان دارد؛ وقتی آماده شد واضح می‌شود و روی دایره ✓ می‌آید */
+.lkpg::after{content:"\2715";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+.lkc.lkd .lkpg::after{content:"\2713"}
+.lkc.lkd .lkpg .lksp{animation:none;border-color:transparent}
+.b.pend .lkc:not(.lkd) img{filter:blur(12px);transform:scale(1.2)}
 .lkf{display:flex;flex-direction:column;gap:8px;min-width:230px;padding:4px 6px 0}
 .lkfr{display:flex;align-items:center;gap:10px}
 .lkfi{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none}
@@ -1506,15 +1514,28 @@ const lkEnc=o=>LKM+JSON.stringify(o);
 function lkDec(t){const m=FWR.exec(t),x=m?m[2]:t;if(!x||x[0]!==LKM)return null;try{return JSON.parse(x.slice(1))}catch(e){return null}}
 function lkMsgPlain(t){const o=lkDec(t);if(!o)return t;const n=o.it.length,a=o.it[0];return o.k==="files"?"📎 "+(n>1?n+" files":a.n):(n>1?"🖼 "+n+" items":(a.t==="video"?"🎬 Video":"🖼 Photo"))}
 /* ظاهر پیام رسانه | Media Bubble: عکس و ویدیو به‌صورت آلبوم ردیفی مثل تلگرام (تا ۱۰ تا)، فایل‌ها به‌صورت یک بسته که هر کدام دکمه‌ی دانلود جدا دارد */
+/* چیدمان تلگرامی ۳ و ۴ عکس | Telegram Mosaic: اگر عکس اول عمودی باشد، آن بزرگ در سمت چپ می‌ایستد و بقیه زیر هم در ستون راست می‌آیند؛ در غیر این صورت چیدمان ردیفی قبلی می‌ماند */
+function lkTele(o){const it=o.it,n=it.length;if(o.k==="files"||n<3||n>4)return null;const f=it[0];if(!((f.w||1)/(f.h||1)<1))return null;
+ const cell=(x,i,st)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+i+'" style="'+st+'"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>';
+ const H=Math.round(mClamp(168/((f.w||1)/(f.h||1)),250,340));
+ let h='<div class="lkbody lka" style="flex-direction:row;height:'+H+'px">'+cell(f,0,'width:168px;flex:none')+'<div class="lkr" style="flex-direction:column;flex:1 1 0;height:100%;width:auto">';
+ for(let i=1;i<n;i++)h+=cell(it[i],i,'flex:1 1 0;width:100%');
+ return h+'</div></div>'}
+/* کلاژ خودکار تا ۱۰ عکس | Auto Collage: برای هر تعداد عکس (۱ تا ۱۰) همه‌ی روش‌های قرار دادن در ردیف بررسی می‌شود و آنی که با نسبت واقعی عکس‌ها بیشترین مناسبت را دارد (بدون برش زیاد و بدون ردیف بسیار باریک) انتخاب می‌شود */
+function lkSplit(it){const n=it.length;if(n<2)return[n];const a=it.map(x=>mClamp((x.w||1)/(x.h||1),.7,1.7));let best=null,bc=1e9;
+ for(let m=0;m<(1<<(n-1));m++){const rows=[];let c=1;for(let i=0;i<n-1;i++){if(m>>i&1){rows.push(c);c=1}else c++}rows.push(c);
+  let i=0,H=0,cost=0;for(const k of rows){let s=0;for(let j=0;j<k;j++)s+=a[i+j];i+=k;const nat=250/s,h=Math.min(nat,200);H+=h;cost+=(nat-h)*.5;if(h<70)cost+=(70-h)*3;if(k>4)cost+=50}
+  H+=2*(rows.length-1);cost+=Math.abs(H-300)+rows.length*2;if(cost<bc){bc=cost;best=rows}}
+ return best}
 const LKROWS={1:[1],2:[2],3:[1,2],4:[2,2],5:[2,3],6:[3,3],7:[2,2,3],8:[3,3,2],9:[3,3,3],10:[3,4,3]};
 const lkPlayI='<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 const lkDlI='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
 const lkDur=s=>{s=Math.round(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 function lkMsgHtml(t){const o=lkDec(t);if(!o)return fwBody(t);
  if(o.k==="files")return '<div class="lkbody lkf">'+o.it.map(x=>'<div class="lkfr"><div class="lkfi">'+esc((x.n.split(".").pop()||"file").slice(0,4).toUpperCase())+'</div><div class="lkft"><b dir="auto">'+esc(x.n)+'</b><span>'+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+(o.pend?'<i class="lksp"></i>':lkDlI)+'</div></div>').join("")+'</div>';
- const rows=LKROWS[o.it.length]||[o.it.length];let i=0,h='<div class="lkbody lka">';
+ const lkT=lkTele(o);if(lkT)return lkT;const rows=lkSplit(o.it);let i=0,h='<div class="lkbody lka">';
  rows.forEach(n=>{const r=o.it.slice(i,i+n),a=r.map(x=>mClamp((x.w||1)/(x.h||1),.7,1.7)),rh=Math.min(250/a.reduce((p,q)=>p+q,0),rows.length===1&&n===1?320:200);
-  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+a[j].toFixed(3)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i><em></em></span>':'')+'</div>').join("")+'</div>';i+=n});
+  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+a[j].toFixed(3)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
  return h+'</div>'}
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
 async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),b=r&&(r.thumb||(r.blob&&r.blob.type.startsWith("image/")?r.blob:null));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
@@ -1535,26 +1556,31 @@ async function lkProcess(f,x,onP){
  x.w=w;x.h=h;x.d=dur;x.n=name;x.s=blob.size;return{blob,thumb}}
 /* ساخت حباب در حال ارسال | Pending Bubble: بلافاصله حباب با چرخان انتظار نشان داده می‌شود؛ تابع برگشتی بعداً فایل‌ها را آماده، ذخیره و حباب را کامل می‌کند */
 function lkPend(c,k,files){
- const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:1,h:1,d:0}));
+ const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:0}));
  it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i])});
  const d=addMsg("me",lkEnc({k,it,pend:1}),lkNow(),0);d.classList.add("pend");
  return async()=>{
   const res=[];
-  try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] em');res.push(await lkProcess(files[i],x,p=>{const e=cell();if(e)e.textContent=Math.round(p*100)+"%"}))}}
+  try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] .lkpg');res.push(await lkSafe(files[i],x));const g=cell();if(g)g.parentNode.classList.add("lkd")}}
   catch(e){d.remove();toast("Send failed");return}
-  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;try{await lkPut(x.id,{blob:r.blob,thumb:r.thumb})}catch(e){}
+  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}
    if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
   const text=lkEnc({k,it}),now=lkNow();
   (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();
   if(d.isConnected){d.classList.remove("pend");d.dataset.t=text;const b=d.querySelector(".lkbody");if(b)b.outerHTML=lkMsgHtml(text);lkHydrate(d)}}}
 /* ارسال | Send Media: دکمه‌ی گیره چند فایل را می‌گیرد؛ عکس و ویدیو (تا ۱۰ تا در هر آلبوم) به‌صورت آلبوم و فایل‌ها (تا ۱۰ تا در هر بسته) به‌صورت یک بسته فرستاده می‌شوند؛ کارها یکی‌یکی انجام می‌شوند */
-function lkSend(files){const c=CHATS.find(x=>x.id===S.openId);if(!c||!files.length)return;
+/* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل تلگرام از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
+/* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
+async function lkSafe(f,x){try{return await Promise.race([lkProcess(f,x,()=>{}),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),45000))])}catch(e){x.n=f.name;x.s=f.size;return{blob:f,thumb:null}}}
+async function lkDims(f){if(lkKind(f)!=="photo")return;try{let b;try{b=await createImageBitmap(f,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(f)}f.__w=b.width;f.__h=b.height;if(b.close)b.close()}catch(e){}}
+async function lkSend(files){const c=CHATS.find(x=>x.id===S.openId);if(!c||!files.length)return;await Promise.all(files.map(lkDims));
  const med=files.filter(f=>lkKind(f)!=="file"),oth=files.filter(f=>lkKind(f)==="file"),jobs=[];
  for(let i=0;i<med.length;i+=10)jobs.push(lkPend(c,"album",med.slice(i,i+10)));
  for(let i=0;i<oth.length;i+=10)jobs.push(lkPend(c,"files",oth.slice(i,i+10)));
- jobs.reduce((p,j)=>p.then(j),Promise.resolve())}
-$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.onchange=()=>lkSend([...f.files]);f.click()};
+ jobs.reduce((p,j)=>p.then(j).catch(()=>{toast("Send failed")}),Promise.resolve())}
+/* گیره، فقط عکس | Attach Photos Only: فعلاً با زدن گیره فقط عکس انتخاب می‌شود (چندتایی)؛ عکس‌ها از همان سیستم رسانه (mediaRun) رد می‌شوند، در آلبوم می‌آیند و هر عکس چرخان دایره‌ای جدا و بدون درصد دارد که با آماده‌شدن همان عکس برداشته می‌شود */
+$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.accept="image/*";f.multiple=true;f.onchange=()=>lkSend([...f.files].filter(x=>lkKind(x)==="photo"));f.click()};
 /* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را تمام‌صفحه باز می‌کند؛ با کشیدن به چپ و راست یا دکمه‌ها بین آلبوم جابه‌جا می‌شود و دکمه‌ی دانلود دارد */
 const LKV={it:[],i:0,u:null};
 function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v.id="lkv";v.innerHTML='<div class="lkvt"><span id="lkvn"></span><span class="lkva"><b id="lkvd">'+lkDlI+'</b><b id="lkvx">'+ic("close",22)+'</b></span></div><div class="lkvs" id="lkvs"></div><div class="lkvb"><b id="lkvp">‹</b><span id="lkvc"></span><b id="lkvq">›</b></div>';document.body.appendChild(v);
