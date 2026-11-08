@@ -165,17 +165,9 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
 #chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(var(--ext) + 53px + env(safe-area-inset-bottom)))}
-/* بالا آمدن نوار و پیام‌ها با کیبورد | Keyboard Lift: صفحه چت هیچ‌وقت کوچک نمی‌شود؛ فقط نوار پیام یک‌دفعه روی کیبورد می‌نشیند و پیام‌ها همان لحظه به‌اندازه کیبورد بالا می‌روند (chat never resizes; only the bar jumps onto the keyboard and messages rise by the same amount, --kbo = keyboard height) */
-/* ارتفاع نوار سیاه کیبورد | Keyboard Accessory Bar: ارتفاع تقریبی نوار سیاه بالای کیبورد (فلش‌ها و تیک) که برنامه آن را جدا اندازه نمی‌گیرد؛ اگر فاصله کم یا زیاد بود فقط همین عدد را عوض می‌کنیم (approx height of the black bar above the keyboard; tweak only this number if the gap is off) */
-#chat{--acc:55px}
-/* نوار پیام روی نوار سیاه | Bar Above Black Bar: لبه‌ی پایین کادر نوشتن دقیقاً ۳ پیکسل بالاتر از نوار سیاه کیبورد می‌نشیند؛ فاصله‌ی همیشگی پایین نوار (۳۰ پیکسل و --gap) از این عدد کم شده تا نوار بزرگ‌تر نشود (textbox bottom edge sits exactly 3px above the black bar; the bar's normal bottom padding is subtracted so the bar height never changes) */
-#chat.kb .inbar{bottom:calc(var(--kbo,0px) + var(--acc,55px) + 3px - var(--gap,var(--ext)) - 30px)}
-#chat.kb .msgs{padding-bottom:calc(var(--ibh,calc(48px + var(--gap,var(--ext)) + 30px)) + var(--kbo,0px) + var(--acc,55px) + 3px - var(--gap,var(--ext)) - 30px)}
-/* حرکت هم‌زمان با کیبورد | Keyboard Motion: فقط هنگام باز یا بسته شدن کیبورد، نوار پیام و فضای پایین پیام‌ها با همان سرعت و شتاب کیبورد (۲۵۰ میلی‌ثانیه) بالا و پایین می‌روند (only while the keyboard opens or closes, bar and message space move with the keyboard's timing, 250ms) */
-#chat.kbAnim .inbar{transition:bottom .25s cubic-bezier(.17,.59,.4,.77)}
-#chat.kbAnim .msgs{transition:padding-bottom .25s cubic-bezier(.17,.59,.4,.77)}
-/* کادر نامرئی کیبورد | Hidden Keyboard Box: یک کادر نوشتن کوچک و نامرئی بالای صفحه است که لمس نمی‌شود؛ فقط برای این است که کیبورد بدون جابه‌جا شدن صفحه باز شود (tiny invisible box at the top, cannot be touched; only used to open the keyboard without the page jumping) */
-#kbDecoy{position:fixed;top:calc(env(safe-area-inset-top) + 6px);left:6px;width:44px;height:24px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;font-size:16px;color:transparent;caret-color:transparent;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
+/* نوار پیام با کیبورد | Message Bar With Keyboard: وقتی کیبورد باز است کل برنامه (با جاوااسکریپت) به‌اندازه‌ی کیبورد کوتاه می‌شود و نوار پیام فقط ۷ پیکسل بالاتر از لبه‌ی پایین می‌نشیند، یعنی دقیقاً روی نوار سیاه کیبورد؛ فاصله‌ی پایین نوار هم‌زمان با کوتاه شدن برنامه نرم عوض می‌شود (while the keyboard is open the app is shortened by JS and the bar sits 7px above the bottom edge, exactly on the keyboard's black bar; its bottom gap animates in step) */
+#chat .inbar{transition:padding-bottom .25s cubic-bezier(.17,.59,.4,.77)}
+#chat .inbar.kbo{padding-bottom:7px}
 /* کپسول بالای گفتگو | Chat Header Capsule: عرض ۱۵ پیکسل بیشتر (+15px width: padding 14 → 21.5 each side) */
 #chat .top .title{width:170px;padding:0;border-radius:22px;justify-content:center;overflow:hidden}
 /* عرض ثابت | Fixed Width: همه گفتگوها عرض کپسول یکسان (۱۷۰) دارند؛ نام یا وضعیت بلند با «...» کوتاه می‌شود (same 170px capsule for every chat; long text gets ellipsis) */
@@ -1074,61 +1066,65 @@ function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
 ["gesturestart","gesturechange","gestureend","dblclick","contextmenu","selectstart"].forEach(e=>document.addEventListener(e,ev=>{const t=ev.target.nodeType===1?ev.target:ev.target.parentElement;if(!(e==="selectstart"&&t&&(t.tagName==="INPUT"||t.closest("[contenteditable]"))))ev.preventDefault()},{passive:false}));
-/* هماهنگی با کیبورد | Keyboard Sync: صفحه چت (پس‌زمینه، هدر، نوار پروفایل) اصلاً جابه‌جا یا کوچک نمی‌شود؛ فقط نوار پیام روی کیبورد کاملاً باز می‌پرد و پیام‌ها همزمان بالا می‌روند (chat page, background and header never move or resize; only the bar jumps onto the open keyboard and messages rise together) */
-const vv=window.visualViewport;let KB0=0;
-function fit(){window.scrollTo(0,0);const c=$("#chat"),m=$("#msgs"),off=vv.offsetTop,kb=Math.max(0,Math.round(innerHeight-vv.height)),ACC=parseFloat(getComputedStyle(c).getPropertyValue("--acc"))||55,PD=parseFloat(getComputedStyle($(".inbar")).paddingBottom)||0,E=k=>k>0?k+ACC+3-PD:0,d=E(kb)-E(KB0),pad0=parseFloat(getComputedStyle(m).paddingBottom)||0,atB=m.scrollHeight-m.scrollTop-m.clientHeight<40;KB0=kb;
-/* جبران سُر خوردن صفحه | Pan Fix: اگر آیفون کل صفحه را بالا کشید، چت به‌اندازه‌ی همان پایین می‌آید تا سر جایش بماند (if iOS pans the page, chat is moved back by the same amount) */
-c.style.translate=off>0?"0 "+off+"px":"";
-/* روشن کردن حرکت | Motion On: اگر ارتفاع کیبورد عوض شد، حرکت نرم را برای ۳۴۰ میلی‌ثانیه روشن می‌کند (turns the smooth motion on for 340ms when the keyboard height changes) */
-if(d!==0){c.classList.add("kbAnim");clearTimeout(fit.t);fit.t=setTimeout(()=>c.classList.remove("kbAnim"),340)}
-c.style.setProperty("--kbo",kb+"px");c.classList.toggle("kb",kb>0);fitBar();
-/* بالا رفتن پیام‌ها | Messages Rise: اگر ته گفتگو بودیم همان‌جا می‌مانیم، وگرنه پیام‌ها دقیقاً به‌اندازه‌ی کیبورد بالا یا پایین می‌روند (stay at bottom, or shift by the keyboard amount) */
-/* اسکرول هم‌زمان با کیبورد | Scroll With Keyboard: پیام‌ها فریم‌به‌فریم و هم‌زمان با انیمیشن کیبورد بالا یا پایین می‌روند؛ اگر ته گفتگو بودیم همان‌جا می‌مانیم، وگرنه دقیقاً به‌اندازه‌ی حرکت نوار جابه‌جا می‌شوند (messages scroll frame by frame in step with the keyboard; pinned to the bottom if we were there) */
-if(d===0){if(atB)m.scrollTop=1e9;return}
-const tok=fit.k=(fit.k||0)+1,st=m.scrollTop,t0=performance.now();
-(function step(){if(tok!==fit.k)return;m.scrollTop=atB?m.scrollHeight:st+(parseFloat(getComputedStyle(m).paddingBottom)-pad0);if(performance.now()-t0<340)requestAnimationFrame(step)})()}
-if(vv){vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit)}
-window.addEventListener("scroll",()=>window.scrollTo(0,0));
-/* باز شدن نرم کیبورد | Smooth Keyboard Open: تا وقتی کیبورد کامل باز نشده، نوار پیام فقط یک دکمه است؛ لمس آن کیبورد را با یک کادر نامرئی بالای صفحه باز می‌کند و بعد از آماده شدن کیبورد (حدود ۲۶۰ میلی‌ثانیه)، نوشتن به نوار پیام واقعی منتقل می‌شود (until the keyboard is fully open the bar acts only as a button; a tap opens the keyboard through a hidden box at the top, then typing moves to the real bar after ~260ms) */
-(function(){const mi=$("#mi");if(!mi||!vv)return;
- /* کادر نامرئی | Hidden Box: ساخت کادر نامرئی بالای صفحه که لمس‌پذیر نیست (creates the hidden, untouchable box) */
- const dc=document.createElement("div");dc.id="kbDecoy";
- dc.setAttribute("contenteditable","true");dc.setAttribute("role","presentation");dc.setAttribute("aria-hidden","true");dc.setAttribute("tabindex","-1");dc.setAttribute("spellcheck","false");dc.setAttribute("autocorrect","off");dc.setAttribute("autocapitalize","sentences");dc.setAttribute("enterkeyhint","enter");
- document.body.appendChild(dc);
- /* بدون نوشتن | No Typing: هر تلاش برای نوشتن در کادر نامرئی نادیده گرفته می‌شود؛ این کادر فقط کیبورد را باز می‌کند (anything typed into the hidden box is ignored; it only opens the keyboard) */
- ["beforeinput","keydown","paste","drop"].forEach(ev=>dc.addEventListener(ev,e=>e.preventDefault()));
- /* جای کادر | Box Place: کادر نامرئی را درست زیر نوار پروفایل می‌گذارد تا آیفون برای دیدنش صفحه را جابه‌جا نکند (puts the hidden box right under the profile bar so iOS never moves the page to reveal it) */
- function placeDc(){const h=$("#chat .top");if(!h)return;const r=h.getBoundingClientRect();dc.style.top=Math.round(r.bottom+4)+"px";dc.style.left="12px"}
- /* مقدار ذخیره‌شده | Saved Adjustment: اگر قبلاً برای این گوشی ارتفاع نوار سیاه تنظیم شده بود، همان را برمی‌دارد (loads the black bar height saved earlier for this phone) */
- try{const sv=parseFloat(localStorage.getItem("lkAcc"));if(sv>=30&&sv<=120)$("#chat").style.setProperty("--acc",sv+"px")}catch(e){}
- let busy=false,tm=0,x0=0,y0=0,t0=0,moved=false;
- const kbH=()=>Math.max(0,Math.round(innerHeight-vv.height));
- /* تحویل نوشتن | Hand Over Typing: وقتی کیبورد کامل باز شد، نوشتن را به نوار پیام واقعی می‌دهد؛ اگر کسی در این فاصله چیزی نوشته بود به نوار منتقل می‌شود و گم نمی‌شود (moves typing to the real bar; anything typed meanwhile is kept) */
- function handOver(){clearTimeout(tm);if(!busy)return;busy=false;dc.innerHTML="";
-  mi.focus({preventScroll:true});
-  const r=document.createRange(),s=getSelection();r.selectNodeContents(mi);r.collapse(false);s.removeAllRanges();s.addRange(r);
-  setTimeout(selfFix,450)}
- /* تنظیم خودکار | Auto Adjust: بعد از آماده شدن نوار، اگر آیفون باز هم صفحه را بالا کشیده باشد یعنی نوار پشت نوار سیاه رفته؛ همان مقدار به ارتفاع نوار سیاه اضافه می‌شود و برای دفعه‌های بعد روی همین گوشی ذخیره می‌شود (if iOS still pans the page, the bar is partly behind the black bar; that amount is added and saved for next time) */
- function selfFix(){const c=$("#chat"),p=Math.round(vv.offsetTop);if(p<3||p>80||!c.classList.contains("kb"))return;
-  const a=(parseFloat(getComputedStyle(c).getPropertyValue("--acc"))||55)+p;
-  c.style.setProperty("--acc",a+"px");try{localStorage.setItem("lkAcc",a)}catch(e){}fit()}
- /* انتظار برای کیبورد | Wait For Keyboard: هر ۱۰ میلی‌ثانیه چک می‌کند؛ ۱۰ میلی‌ثانیه بعد از ثابت شدن کامل کیبورد و حداقل ۲۶۰ میلی‌ثانیه بعد از لمس، نوشتن به نوار پیام واقعی داده می‌شود (checks every 10ms; hands over 10ms after the keyboard is fully open and at least 260ms after the tap) */
- function waitKb(){const st=Date.now();let last=-1,since=st;
-  (function tick(){if(!busy)return;const now=Date.now(),h=kbH();
-   if(h!==last){last=h;since=now}
-   if((now-st>=260&&h>80&&now-since>=10)||now-st>800){handOver();return}
-   tm=setTimeout(tick,10)})()}
- /* لغو | Cancel: اگر کیبورد در این فاصله بسته شد، کادر نامرئی خالی و رها می‌شود (if the keyboard closes meanwhile, the hidden box is cleared) */
- dc.addEventListener("blur",()=>{if(busy){busy=false;clearTimeout(tm);dc.innerHTML=""}});
- /* لمس نوار پیام | Message Bar Tap: لمس کوتاه روی نوار وقتی کیبورد بسته است، به‌جای فوکوس مستقیم، کیبورد را با کادر نامرئی باز می‌کند؛ کشیدن، نگه‌داشتن و وقتی کیبورد باز است مثل قبل کار می‌کنند (a quick tap with the keyboard closed opens it through the hidden box; drags, long-press and an already open keyboard work as before) */
- mi.addEventListener("touchstart",e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY;t0=Date.now();moved=false},{passive:true});
- mi.addEventListener("touchmove",e=>{const t=e.touches[0];if(Math.abs(t.clientX-x0)>10||Math.abs(t.clientY-y0)>10)moved=true},{passive:true});
- mi.addEventListener("touchend",e=>{
-  if(moved||busy||Date.now()-t0>500||kbH()>80||!e.cancelable)return;
-  e.preventDefault();busy=true;placeDc();dc.focus({preventScroll:true});waitKb()},{passive:false});
+/* هماهنگی با کیبورد | Keyboard Sync: روش «کادر از پیش باز» مثل لینک قدیمی؛ کمی قبل از بالا آمدن کیبورد، کل برنامه به‌اندازه‌ی کیبورد کوتاه می‌شود تا نوار پیام درست روی نوار سیاه کیبورد بنشیند و آیفون صفحه را جابه‌جا نکند. بعد از باز شدن، ارتفاع واقعی کیبورد اندازه‌گیری و اصلاح می‌شود و برای دفعه‌ی بعد ذخیره می‌شود (same method as the old working LINK: the app shrinks by the keyboard height before it appears) */
+const vv=window.visualViewport;
+(function(){
+ const ap=$("#app"),ch=$("#chat"),ms=$("#msgs"),bar=$(".inbar"),ti=$("#mi");if(!ap||!ch||!ms||!bar||!ti)return;
+ /* حالت کیبورد | Keyboard State: ارتفاع کیبورد، باز یا بسته بودن، ارتفاع صفحه و زمان‌ها (keyboard height, open flag, screen height, timers) */
+ const EZ="height 250ms cubic-bezier(.17,.59,.4,.77)",KD=90,dl={t:0};
+ let K=0,isOpen=0,gap=0,raf=0,clT=0,mT=0,mW=0,mOk=0,tO=0,kSeen=0,H=innerHeight,A0=0;
+ /* ارتفاع صفحه | Screen Height: وقتی کیبورد بسته است ارتفاع واقعی صفحه را نگه می‌دارد، با چرخش هم به‌روز می‌شود (keeps the real screen height while the keyboard is closed) */
+ const setH=()=>{if(!isOpen&&document.activeElement!==ti)H=innerHeight};
+ addEventListener("resize",()=>setTimeout(setH,350));addEventListener("orientationchange",()=>setTimeout(setH,450));
+ /* ارتفاع کیبورد | Keyboard Height: ارتفاع ذخیره‌شده‌ی کیبورد این گوشی؛ اگر نبود ۳۵ درصد صفحه (saved keyboard height of this phone, else 35% of the screen) */
+ const getK=()=>{let v=0;try{v=+localStorage.getItem("lkKb")}catch(e){}return v>150&&v<H*.5?v:Math.round(H*.35)};
+ const setK=v=>{try{localStorage.setItem("lkKb",v)}catch(e){}};
+ /* کادر نامرئی زیر کیبورد | Phantom Box: کادر شفاف هم‌اندازه‌ی کیبورد که لمس را رد می‌کند؛ همراه کوتاه شدن برنامه باز و بسته می‌شود (transparent box the size of the keyboard, touches pass through) */
+ const bx=document.createElement("div");bx.id="kbBox";bx.style.cssText="position:fixed;left:0;right:0;bottom:0;height:0;background:transparent;pointer-events:none;z-index:2147483000;transition:"+EZ;document.body.appendChild(bx);
+ const chOn=()=>ch.classList.contains("on"),gp=()=>Math.max(0,ms.scrollHeight-ms.scrollTop-ms.clientHeight);
+ /* دنبال کردن پیام‌ها | Follow Messages: هنگام باز و بسته شدن کیبورد پیام‌ها فریم‌به‌فریم همان فاصله‌ی قبلی از ته گفتگو را نگه می‌دارند (messages keep their distance from the bottom while the keyboard moves) */
+ const follow=d=>{cancelAnimationFrame(raf);const t0=performance.now();ms.style.scrollBehavior="auto";const f=()=>{ms.scrollTop=ms.scrollHeight-ms.clientHeight-gap;if(performance.now()-t0<d)raf=requestAnimationFrame(f);else ms.style.scrollBehavior=""};f()};
+ /* باز کردن کادر | Open Keyboard Box: برنامه با انیمیشن ۲۵۰ میلی‌ثانیه‌ای کوتاه می‌شود و نوار پیام می‌آید روی نوار سیاه کیبورد (app shrinks by the keyboard height, bar rides up onto the black bar) */
+ const openKb=()=>{clearTimeout(clT);clearTimeout(dl.t);if(isOpen)return;isOpen=1;mOk=0;gap=gp();K=getK();tO=performance.now();kSeen=0;
+  if(!ap.style.height)A0=ap.getBoundingClientRect().height;
+  ap.style.transition="none";ap.style.minHeight=Math.round(H*.5)+"px";ap.style.top="0px";ap.style.bottom="auto";ap.style.height=A0+"px";void ap.offsetHeight;
+  ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";
+  bar.classList.add("kbo");ch.classList.add("kbo2");fitBar();follow(260);setTimeout(fitBar,300)};
+ /* بستن کادر | Close Keyboard Box: برنامه به ارتفاع اصلی برمی‌گردد و بعد از پایان حرکت همه‌ی مقدارهای موقت پاک می‌شوند (app returns to its normal height, temporary styles are cleared afterwards) */
+ const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;gap=gp();
+  ap.style.transition=EZ;ap.style.height=A0+"px";bx.style.height="0px";bar.classList.remove("kbo");ch.classList.remove("kbo2");fitBar();follow(260);setTimeout(fitBar,300);
+  clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar()}},270)};
+ /* اندازه‌گیری کیبورد | Measure Real Keyboard: در ۷۰ میلی‌ثانیه‌ی آخر حرکت، ارتفاع واقعی کیبورد (با نوار سیاه) را می‌خواند و اگر فرق داشت یک اصلاح خیلی کوچک می‌کند و ذخیره می‌کند (reads the real keyboard height near the end of the motion and corrects it slightly) */
+ const measure=()=>{if(!vv||!isOpen||document.activeElement!==ti)return;
+  const w=tO+250-70-performance.now();if(w>0){clearTimeout(mW);mW=setTimeout(measure,w);return}
+  const k=Math.round(H-vv.height-vv.offsetTop);
+  if(k>150&&k<H*.5&&Math.abs(k-K)>3){mOk=1;K=k;setK(k);gap=gp();ap.style.transition="height 70ms ease-out";ap.style.height=(H-K)+"px";bx.style.height=K+"px";follow(90);setTimeout(fitBar,100)}};
+ /* بستن با لمس بیرون | Tap Outside Closes: لمس کوتاه جایی از گفتگو بیرون از نوار پیام، کیبورد را می‌بندد؛ کشیدن و اسکرول کیبورد را نمی‌بندد (a short tap outside the bar closes the keyboard, scrolling does not) */
+ {let tx=0,ty=0,tm=0;
+  ch.addEventListener("pointerdown",e=>{tx=e.clientX;ty=e.clientY;tm=1},true);
+  ch.addEventListener("pointermove",e=>{if(tm&&Math.hypot(e.clientX-tx,e.clientY-ty)>10)tm=0},true);
+  ch.addEventListener("pointercancel",()=>{tm=0},true);
+  ch.addEventListener("pointerup",e=>{const g=tm;tm=0;if(g&&document.activeElement===ti&&!(e.target.closest&&e.target.closest(".inbar")))ti.blur()},true)}
+ /* شروع زودتر | Head Start: به‌محض لمس نوار پیام (۹۰ میلی‌ثانیه بعد) کادر شروع به باز شدن می‌کند و با برداشتن انگشت کیبورد هم‌زمان بالا می‌آید (the box starts opening right when the finger touches the bar; the keyboard follows when the finger lifts) */
+ {let tp=0,px=0,py=0;
+  const go=()=>{if(!tp)return;tp=0;if(document.activeElement!==ti)ti.focus({preventScroll:true})};
+  ti.addEventListener("pointerdown",e=>{if(document.activeElement===ti||!chOn())return;tp=1;px=e.clientX;py=e.clientY;clearTimeout(dl.t);dl.t=setTimeout(openKb,KD);setTimeout(()=>{tp=0;if(document.activeElement!==ti)closeKb()},900)});
+  ti.addEventListener("pointermove",e=>{if(tp&&Math.hypot(e.clientX-px,e.clientY-py)>10){tp=0;closeKb()}});
+  ti.addEventListener("pointercancel",()=>{if(tp){tp=0;closeKb()}});
+  /* فوکوس دستی | Manual Focus: چون نوار زیر انگشت بالا می‌رود لمس اصلی گم می‌شود؛ پس هنگام برداشتن انگشت خودمان فوکوس می‌دهیم (the bar moves under the finger so we focus it ourselves on release) */
+  ti.addEventListener("touchend",e=>{if(tp){e.preventDefault();go()}},{passive:false});
+  ti.addEventListener("pointerup",e=>{if(e.pointerType==="mouse")go()});
+  ti.addEventListener("click",()=>{go()})}
+ /* رویدادهای کیبورد | Keyboard Events: فوکوس کادر را باز می‌کند و اندازه می‌گیرد؛ از دست رفتن فوکوس آن را می‌بندد؛ اگر آیفون صفحه را بالا کشید برمی‌گردد؛ اگر کیبورد با دکمه‌ی خودش بسته شد کادر هم بسته می‌شود (focus opens and measures, blur closes, page pan is undone, keyboard dismissed by its own button closes the box) */
+ ti.addEventListener("focus",()=>{if(chOn())openKb();setTimeout(measure,400);setTimeout(measure,800);setTimeout(()=>{if(isOpen&&!mOk&&document.activeElement===ti){K=getK();gap=gp();ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";follow(350);setTimeout(fitBar,300)}},950)});
+ ti.addEventListener("blur",()=>setTimeout(()=>{if(document.activeElement!==ti)closeKb()},0));
+ if(vv){vv.addEventListener("scroll",()=>{if(isOpen&&vv.offsetTop>0)scrollTo(0,0)});addEventListener("scroll",()=>{if(isOpen&&(scrollY||pageYOffset))scrollTo(0,0)},{passive:true});
+  vv.addEventListener("resize",()=>{clearTimeout(mT);mT=setTimeout(measure,140);const kk=H-vv.height-vv.offsetTop;if(kk>150)kSeen=1;if(isOpen&&kk<80&&(document.activeElement!==ti||kSeen)){if(document.activeElement===ti)ti.blur();closeKb()}})}
+ /* وضعیت باز بودن | Keyboard Open Flag: بقیه‌ی برنامه (مثل اندازه‌گیری لبه‌ی صفحه) می‌توانند بپرسند کیبورد باز است یا نه (other code can ask whether the keyboard box is open) */
+ window._kbOn=()=>!!isOpen;
 })();
 /* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
-function lkGap(){const A=$("#app");if(!A)return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
+function lkGap(){const A=$("#app");if(!A)return;/* قلاب کیبورد | Keyboard Hook: وقتی کادر کیبورد باز است اندازه‌گیری نکن (skip while the keyboard box is open) */if(window._kbOn&&window._kbOn())return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
 lkGap();["resize","orientationchange","load","pageshow"].forEach(e=>window.addEventListener(e,lkGap));if(vv)vv.addEventListener("resize",lkGap);setTimeout(lkGap,400);
 
 /* ---- ۳.۱۲ب تنظیمات و پروفایل | 3.12b Settings & Profile ---- */
