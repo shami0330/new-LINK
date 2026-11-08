@@ -410,7 +410,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 .rxn{display:inline-block;background:rgba(255,255,255,.18);border-radius:12px;padding:1px 7px;margin:4px 4px 0 0;font-size:15px}
 /* پیش‌نمایش ارسال، چیدمان | Send Preview Layout: صفحه‌ی سیاه تمام‌صفحه با سربرگ (نام گفتگو و نشان شماره‌ی آبی) و ناحیه‌ی رسانه */
 /* هم‌اندازه با صفحه‌ی دیده‌شده | Visible Screen Fit: چون کادر اصلی برنامه از پایین صفحه بیرون می‌زند، پیش‌نمایش به‌اندازه‌ی --ext از پایین کوتاه می‌شود تا نوار ابزار دیده شود */
-#mpv{position:absolute;inset:0 0 var(--ext,0px) 0;z-index:98;background:#000;color:#fff;display:none;flex-direction:column;-webkit-user-select:none;user-select:none}
+#mpv{position:absolute;inset:0 0 var(--gap,var(--ext,0px)) 0;z-index:98;background:#000;color:#fff;display:none;flex-direction:column;-webkit-user-select:none;user-select:none}
 #mpv.on{display:flex}
 #mpv .mpt{flex:none;padding:calc(env(safe-area-inset-top) + 6px) 14px 6px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#8e8e93;min-height:32px}
 #mpv .mpbd{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center}
@@ -444,12 +444,14 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mphd.l{left:-2px}
 #mpv .mphd.r{right:-2px}
 #mpv .mphd::after{content:"";width:3px;height:14px;border-radius:2px;background:rgba(255,255,255,.85)}
+/* ناحیه‌ی لمس بزرگ‌تر | Bigger Touch Area: دستگیره‌ی برش با انگشت راحت‌تر گرفته شود */
+#mpv .mphd::before{content:"";position:absolute;top:-10px;bottom:-10px;left:-12px;right:-12px}
 #mpv .mpph{position:absolute;top:-4px;height:50px;width:3px;margin-left:-1px;border-radius:2px;background:#fff;pointer-events:none;box-shadow:0 0 3px rgba(0,0,0,.5)}
 /* شرح و نوار پایین | Caption And Bottom Bar: کادر شرح تیره روی رسانه، دکمه‌ی برگشت، کپسول ابزارها و دکمه‌ی گرد ارسال */
 #mpv .mpcap{position:absolute;left:8px;right:8px;bottom:4px}
 #mpv .mpcap input{width:100%;height:40px;box-sizing:border-box;border-radius:20px;border:0;background:rgba(28,28,30,.92);color:#fff;text-align:center;font-size:16px;outline:0;-webkit-user-select:text;user-select:text}
 #mpv .mpcap input::placeholder{color:#6e6e73}
-#mpv .mpbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 14px calc(env(safe-area-inset-bottom) + 6px)}
+#mpv .mpbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 14px 20px}
 #mpv .mpr{width:44px;height:44px;border-radius:50%;background:rgba(44,44,46,.92);display:flex;align-items:center;justify-content:center;color:#fff}
 #mpv .mpr.s{width:48px;height:48px;background:var(--blue)}
 #mpv .mptools{height:44px;border-radius:22px;background:rgba(44,44,46,.92);display:flex;align-items:center;gap:4px;padding:0 8px}
@@ -472,7 +474,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mpch b{flex:none;padding:6px 12px;border-radius:15px;background:rgba(44,44,46,.92);font-size:13px;font-weight:500}
 #mpv .mpch b.on{background:#fff;color:#000}
 /* برگه‌ی تنظیم | Adjust Sheet: برگه‌ی تیره‌ی پایین با سه لغزنده‌ی روشنایی، کنتراست و اشباع و دکمه‌های لغو، خودکار، بازنشانی و تایید */
-#mpv .mpa{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:5;background:rgba(28,28,30,.97);border-radius:22px;padding:14px 16px;display:none}
+#mpv .mpa{position:absolute;left:8px;right:8px;bottom:20px;z-index:5;background:rgba(28,28,30,.97);border-radius:22px;padding:14px 16px;display:none}
 #mpv .mpa.on{display:block}
 #mpv .mpa label{display:flex;align-items:center;gap:10px;font-size:14px;margin:8px 0}
 #mpv .mpa label span{width:84px;color:#aeaeb2}
@@ -1629,7 +1631,9 @@ async function lkPoster(f){try{const o=await mediaOpen(f),v=o.src;try{v.currentT
 async function lkProcess(f,x,onP){
  let blob=f,thumb=null,name=f.name,w=0,h=0,dur=0;
  if(x.t==="photo"){const r=await mediaRun(f,f.__rec||null,f.__q==="HD"?"photoHD":"photoSD");blob=r.blob;name=r.original?f.name:r.name;w=r.w||0;h=r.h||0;thumb=await lkThumb(blob);if(!w){const i=await mediaInfo(f).catch(()=>null);if(i){w=i.w;h=i.h}}}
- else if(x.t==="video"){const p=await lkPoster(f);thumb=p.thumb;w=p.w;h=p.h;dur=f.__rec&&f.__rec.trim?f.__rec.trim.end-f.__rec.trim.start:p.d;const r=await mediaRun(f,f.__rec||null,"videoChat",{height:f.__q||720,onProgress:onP});blob=r.blob;name=r.original?f.name:r.name}
+ else if(x.t==="video"){const p=await lkPoster(f);thumb=p.thumb;w=p.w;h=p.h;dur=f.__rec&&f.__rec.trim?f.__rec.trim.end-f.__rec.trim.start:p.d;const r=await mediaRun(f,f.__rec||null,"videoChat",{height:f.__q||720,onProgress:onP});blob=r.blob;name=r.original?f.name:r.name;
+  /* پوستر نتیجه | Result Poster: اگر ویدیو در پیش‌نمایش برش یا کوتاه شده، اندازه و تصویر بندانگشتی و مدت از خود ویدیوی نتیجه خوانده می‌شود تا حباب مثل فایل ارسالی باشد */
+  if(f.__rec&&!r.original){const q=await lkPoster(r.file||blob);if(q.thumb){thumb=q.thumb;w=q.w;h=q.h;dur=q.d||dur}}}
  x.w=w;x.h=h;x.d=dur;x.n=name;x.s=blob.size;return{blob,thumb}}
 /* ساخت حباب در حال ارسال | Pending Bubble: بلافاصله حباب با چرخان انتظار نشان داده می‌شود؛ تابع برگشتی بعداً فایل‌ها را آماده، ذخیره و حباب را کامل می‌کند */
 function lkPend(c,k,files){
@@ -1753,13 +1757,14 @@ Object.assign(FA,{"Free":"آزاد","Original":"اصلی","Square":"مربع","B
 /* منبع تصویر | Item Source: عنصر عکس یا ویدیوی صفحه‌ی i و اندازه‌ی واقعی آن را می‌دهد */
 function mpvSrc(i){const m=$("#mpTr").children[i].querySelector("img,video"),vd=m.tagName==="VIDEO";return{m,sw:vd?m.videoWidth:m.naturalWidth,sh:vd?m.videoHeight:m.naturalHeight}}
 /* رسم نتیجه | Draw Edited Preview: نتیجه‌ی برش، چرخش، آینه و رنگ را با همان mDraw سیستم رسانه روی بوم صفحه می‌کشد تا پیش‌نمایش با فایل ارسالی یکی باشد */
-function mpvDraw(i){const sl=$("#mpTr").children[i];if(!sl||!sl.classList.contains("ed"))return;const r=MPV.rec[i],{m,sw,sh}=mpvSrc(i);if(!sw||!sh)return;
+function mpvDraw(i){const sl=$("#mpTr").children[i];if(!sl)return;if(!mpvIsEd(i)){sl.classList.remove("ed");return}const r=MPV.rec[i],{m,sw,sh}=mpvSrc(i);if(!sw||!sh||(m.tagName==="VIDEO"&&m.readyState<2)){sl.classList.remove("ed");return}
  const cv=sl.querySelector(".mpc"),k=Math.min(2,devicePixelRatio||1),W=Math.round(sl.clientWidth*k),H=Math.round(sl.clientHeight*k);if(!W||!H)return;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
  const c=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2,s=ch>cw?Math.max(W/cw,H/ch):Math.min(W/cw,H/ch),dw=Math.max(1,Math.round(cw*s)),dh=Math.max(1,Math.round(ch*s));
  const oc=MPV.oc||(MPV.oc=document.createElement("canvas"));oc.width=dw;oc.height=dh;mDraw(oc.getContext("2d",{willReadFrequently:!MHASF}),m,sw,sh,mediaRecipe(r),c,dw,dh);
- const x=cv.getContext("2d");x.clearRect(0,0,W,H);x.drawImage(oc,(W-dw)/2,(H-dh)/2)}
+ const x=cv.getContext("2d");x.clearRect(0,0,W,H);x.drawImage(oc,(W-dw)/2,(H-dh)/2);sl.classList.add("ed")}
 /* علامت ویرایش | Mark Edited: اگر فایل برش، رنگ، چرخش یا آینه دارد بوم نتیجه را نشان می‌دهد، وگرنه خود فایل را */
-function mpvEdited(i){const r=MPV.rec[i],sl=$("#mpTr").children[i],ed=!mPlain(mediaRecipe({crop:r.crop,adjust:r.adjust,rotate:r.rotate,flip:r.flip}));sl.classList.toggle("ed",ed);if(ed)mpvDraw(i)}
+function mpvIsEd(i){const r=MPV.rec[i];return !mPlain(mediaRecipe({crop:r.crop,adjust:r.adjust,rotate:r.rotate,flip:r.flip}))}
+function mpvEdited(i){mpvDraw(i)}
 /* کیفیت‌ها | Quality Options: برای عکس SD و HD (پریست‌های photoSD و photoHD)، برای ویدیو ارتفاع‌های پریست videoChat تا اندازه‌ی خود ویدیو */
 function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const s=Math.min(f.__w||1080,f.__h||1080);return MP.videoChat.heights.filter(h=>h<=Math.max(240,s))}
 /* کیفیت فعلی | Current Quality: کیفیت انتخاب‌شده، یا پیش‌فرض (عکس SD و ویدیو ۷۲۰ یا بالاترین ممکن) */
@@ -1780,7 +1785,10 @@ function mpeChip(k){$$("#mpeH b").forEach((b,j)=>b.classList.toggle("on",j===k))
 /* برگشت قاب | Reset Crop: بعد از چرخش یا آینه، قاب را کامل و نسبت را آزاد می‌کند و دوباره می‌کشد */
 function mpeReset(){MPE.c={x:0,y:0,w:1,h:1};mpeChip(0);mpeDraw()}
 /* باز کردن برش | Open Crop Editor: ویرایشگر برش را برای فایل فعلی با چرخش و قاب ذخیره‌شده‌اش باز می‌کند */
-function mpvCrop(){mpvStop();const i=MPV.i,r=MPV.rec[i],s=mpvSrc(i);if(!s.sw){toast("Please wait");return}MPE.i=i;MPE.src=s;MPE.rot=r.rotate||0;MPE.flip=!!r.flip;MPE.c=r.crop?{...r.crop}:{x:0,y:0,w:1,h:1};MPE.ratio=null;$("#mpe").classList.add("on");$$("#mpeH b").forEach((b,j)=>b.classList.toggle("on",j===0));mpeDraw()}
+async function mpvCrop(){mpvStop();const i=MPV.i,r=MPV.rec[i];let s=mpvSrc(i);
+ /* آماده‌کردن فریم | Prime Frame: در گوشی گاهی فریم ویدیو تا پرش یا پخش آماده نمی‌شود؛ یک پرش کوچک می‌زنیم و منتظر فریم می‌مانیم */
+ if(s.m.tagName==="VIDEO"&&s.m.readyState<2){try{s.m.currentTime=.05}catch(e){}await new Promise(ok=>{s.m.addEventListener("loadeddata",ok,{once:true});s.m.addEventListener("seeked",ok,{once:true});setTimeout(ok,2500)});s=mpvSrc(i)}
+ if(!s.sw||(s.m.tagName==="VIDEO"&&s.m.readyState<2)){toast("Please wait");return}MPE.i=i;MPE.src=s;MPE.rot=r.rotate||0;MPE.flip=!!r.flip;MPE.c=r.crop?{...r.crop}:{x:0,y:0,w:1,h:1};MPE.ratio=null;$("#mpe").classList.add("on");$$("#mpeH b").forEach((b,j)=>b.classList.toggle("on",j===0));mpeDraw()}
 /* مقدار لغزنده‌ها | Set Sliders: لغزنده‌ها و عددهای برگه‌ی تنظیم را از یک شیء تنظیم پر می‌کند */
 function mpaSet(a){$$("#mpa input").forEach(x=>{const v=a&&a[x.dataset.k]||0;x.value=v;x.parentNode.querySelector("b").textContent=v})}
 /* باز کردن تنظیم | Open Adjust Sheet: برگه‌ی روشنایی و کنتراست و اشباع را برای فایل فعلی باز می‌کند */
@@ -1817,7 +1825,7 @@ async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id
  $("#mpTo").textContent="↑ "+tr(MPV.to);$("#mpCap").value="";$("#mpCap").placeholder=tr("Add a caption...");
  $("#mpTr").innerHTML=files.map((f,i)=>{const vd=lkKind(f)==="video",p=(f.__h||1)>(f.__w||1);return `<div class="mps${p?" pt":""}">${vd?`<video src="${MPV.u[i]}" playsinline webkit-playsinline preload="auto"></video><div class="mpp">${MPI.play}</div>`:`<img src="${MPV.u[i]}">`}<canvas class="mpc"></canvas></div>`}).join("");
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
- [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd)m.addEventListener("seeked",()=>mpvDraw(i))});
+ [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
  o.classList.add("on");mpvGo(0,0)}
 /* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را تمام‌صفحه باز می‌کند؛ با کشیدن به چپ و راست یا دکمه‌ها بین آلبوم جابه‌جا می‌شود و دکمه‌ی دانلود دارد */
 const LKV={it:[],i:0,u:null};
