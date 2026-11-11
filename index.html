@@ -1475,7 +1475,7 @@ function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim()||!!(wi
 $("#send").onclick=()=>{if(S.sendHold){S.sendHold=false;return}if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
 $("#mi").oninput=updSend;
 /* برگشت | Back Button: بازگشت به لیست چت‌ها (return to chat list) */
-$("#back").onclick=()=>{$("#chat").classList.remove("on");if(S.fromSet){S.fromSet=false;show("settings");return}show("chats");renderChats()};
+$("#back").onclick=()=>{$("#chat").classList.remove("on");if(S.fromContacts){S.fromContacts=false;show("contacts");return}if(S.fromSet){S.fromSet=false;show("settings");return}show("chats");renderChats()};
 
 /* ---- ۳.۱۱ ناوبری | 3.11 Tab Navigation ---- */
 /* تب‌های پایین | Bottom Tabs: جابجایی بین مخاطبین/چت‌ها/تنظیمات (switch screens) */
@@ -2320,9 +2320,9 @@ function bindContact(r){const n=r.dataset.n;let tm,long=false;
  const start=()=>{long=false;tm=setTimeout(()=>{long=true;openContactMenu(n)},450)},end=()=>clearTimeout(tm);
  r.addEventListener("touchstart",start,{passive:true});r.addEventListener("mousedown",start);
  ["touchend","touchmove","mouseup","mouseleave"].forEach(e=>r.addEventListener(e,end));
- r.onclick=()=>{if(long)return;openByName(n)}}
+ r.onclick=()=>{if(long)return;S.fromContacts=true;openByName(n)}}
 function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.n===n)||{id:-1,n,ty:"pv",on:pp&&pp[1]==="online"?1:0,col:colOf(n)},m=$("#menu");m.classList.remove("al-top","al-bot");
- const it=[["Send Message","chat",()=>{closeMenu();openByName(n)}],["Call","phone",()=>{closeMenu();confirmBox(tr("Call")+" "+n+"?",tr("Calls will be available once the call server is added."),tr("Call"),false,()=>toast("Calling is not available yet"))}],["Delete Contact","trash",()=>{closeMenu();confirmBox(tr("Delete Contact"),tr("Delete")+" "+n+"?",tr("Delete"),true,()=>{PEOPLE=PEOPLE.filter(x=>x[0]!==n);renderContacts()})}],["Select","check",()=>{closeMenu()}]];
+ const it=[["Send Message","chat",()=>{closeMenu();S.fromContacts=true;openByName(n)}],["Call","phone",()=>{closeMenu();confirmBox(tr("Call")+" "+n+"?",tr("Calls will be available once the call server is added."),tr("Call"),false,()=>toast("Calling is not available yet"))}],["Delete Contact","trash",()=>{closeMenu();confirmBox(tr("Delete Contact"),tr("Delete")+" "+n+"?",tr("Delete"),true,()=>{PEOPLE=PEOPLE.filter(x=>x[0]!==n);renderContacts()})}],["Select","check",()=>{closeMenu()}]];
  m.innerHTML=it.map((x,i)=>`<div data-i="${i}" style="${i===2?"color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)":i===3?"color:var(--txt)":""}">${tr(x[0])}${ic(x[1],20)}</div>`).join("");
  m.style.width="240px";m.style.display="block";$("#shade").style.display="block";const mt=innerHeight-m.offsetHeight-30;m.style.top=mt+"px";showPeek(c,mt-12);
  $$("#menu div").forEach(d=>d.onclick=()=>it[+d.dataset.i][2]())}
@@ -2331,6 +2331,34 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
  window.applyBlock=function(){const k=!!(CFG.blocked&&CFG.blocked[S.openId]);b.textContent=tr("Unblock");b.style.display=k?"flex":"none";$(".inbar").style.display=k?"none":"";fitBar()};
  b.onclick=()=>{if(CFG.blocked)delete CFG.blocked[S.openId];saveCfg();applyBlock();toast(tr("Unblocked"))};
  const oc=openChat;openChat=function(id){oc(id);applyBlock();if(window.applyPin)applyPin()}})();
+/* کانال | Channel: فقط ادمین پیام می‌دهد؛ حباب‌ها چپ؛ تعداد بازدید کنار ساعت (admins-only posting, left bubbles, view count) */
+(function(){const st=document.createElement("style");st.textContent="#chbar{position:absolute;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;padding:15px 0 calc(env(safe-area-inset-bottom) + var(--ext) + 5px);background:var(--card);color:var(--prev);font-size:15px;z-index:6}.b .chn{font-weight:600;font-size:14px;color:var(--blue);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.b small .vw{display:inline-flex;align-items:center;gap:3px;margin-right:8px;vertical-align:middle;line-height:1}.b small .vw svg{display:block}.b small:has(.vw){display:flex;align-items:center;justify-content:flex-end;line-height:1}";document.head.append(st);
+ const bar=document.createElement("div");bar.id="chbar";bar.textContent="Only admins can post";$("#chat").append(bar);
+ const isCh=()=>{const c=CHATS.find(x=>x.id===S.openId);return !!c&&c.ty==="ch"};
+ const eye='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+ const fmt=n=>n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;
+ const views=(t,tm)=>{let h=7;const s=String(t)+tm;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return 800+h%9000};
+ const am=addMsg;addMsg=function(w,t,tm,n,rp,ed){const ch=isCh();const d=am(ch?"ot":w,t,tm,n,rp,ed);if(ch){if(!d.querySelector(".chn")){const h=document.createElement("div");h.className="chn";h.textContent=CHATS.find(x=>x.id===S.openId).n;d.prepend(h)}const s=d.querySelector("small");if(s&&!s.querySelector(".vw"))s.insertAdjacentHTML("afterbegin",`<span class="vw">${eye}${fmt(views(t,tm))}</span>`)}return d};
+ const fb=fitBar;fitBar=function(){fb();if(isCh())requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",bar.offsetHeight+"px"))};
+ const fix=()=>{const ch=isCh();bar.style.display=ch?"flex":"none";if(ch){$(".inbar").style.display="none";const b=$("#blkbar");if(b)b.style.display="none"}fitBar()};
+ const oc2=openChat;openChat=function(id){oc2(id);fix()};
+ const ab=window.applyBlock;if(ab)window.applyBlock=function(){ab();fix()}})();
+/* Edit chat info: name, photo, description (chat profile Edit button) */
+(function(){const o=document.createElement("div");o.className="screen sub";o.id="cedit";o.style.zIndex="75";
+ o.innerHTML=`<div class="top"><div class="pill" id="ceX">${ic("close",20)}</div><div class="title">Edit</div><div class="pill" id="ceOk" style="background:var(--blue)">${ic("check",22)}</div></div><div class="body"><div class="ph"><div class="av xl" id="ce_av" style="margin:auto"></div><div id="cePhoto" style="color:var(--blue);margin-top:10px">Change Photo</div></div><div class="card" style="margin-top:16px"><input class="fld" id="ce_n" dir="auto" placeholder="Name" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="64"></div><div class="card"><input class="fld" id="ce_d" dir="auto" placeholder="Description" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="200"></div></div>`;
+ $("#app").append(o);let cur=null,ph="";
+ const apply=(c,e)=>{if(c.ty==="pv"){const p=PEOPLE.find(x=>x[0]===c.n);if(p)p[0]=e.n}c.n=e.n;c.desc=e.d;c.photo=e.p};
+ try{Object.entries(CFG.cedit||{}).forEach(([id,e])=>{const c=CHATS.find(x=>String(x.id)===id);if(c)apply(c,e)})}catch(x){}
+ function openCE(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;cur=c;ph=c.photo||"";$("#ce_n").value=c.n;$("#ce_d").value=c.desc||"";paintAv($("#ce_av"),{name:c.n,photo:ph});o.classList.add("on")}
+ $("#cp .cpbar .pill:last-child").onclick=openCE;
+ $("#ceX").onclick=()=>o.classList.remove("on");
+ $("#cePhoto").onclick=$("#ce_av").onclick=()=>pickPhoto(d=>{ph=d;paintAv($("#ce_av"),{name:$("#ce_n").value||cur.n,photo:d})});
+ $("#ceOk").onclick=()=>{const nm=$("#ce_n").value.trim();if(!nm){toast("Name can't be empty");return}
+  const e={n:nm,d:$("#ce_d").value.trim(),p:ph};apply(cur,e);CFG.cedit=CFG.cedit||{};CFG.cedit[cur.id]=e;saveCfg();
+  const c=cur;document.querySelectorAll("#msgs .chn").forEach(h=>h.textContent=c.n);$("#cname").innerHTML=esc(c.n)+vb(c,16);const av=$("#cav");if(c.photo){av.style.backgroundImage="url("+c.photo+")";av.style.backgroundSize="cover";av.style.backgroundPosition="center";av.textContent=""}else{av.style.backgroundImage="none";av.style.background=c.col;av.textContent=c.n[0].toUpperCase()}
+  renderChats();if(typeof renderContacts==="function")renderContacts();openCP();o.classList.remove("on")};
+ const ocp=openCP;openCP=function(){ocp();const c=CHATS.find(x=>x.id===S.openId);if(!c)return;if(c.photo)paintAv($("#cp_av"),{name:c.n,photo:c.photo});
+  const card=$("#cp .card");let r=$("#cp_dsc");if(c.desc){if(!r){r=document.createElement("div");r.className="cpr";r.id="cp_dsc";card.prepend(r)}r.innerHTML=`<div><small>description</small><div dir="auto"></div></div>`;r.querySelector("div>div").textContent=c.desc}else if(r)r.remove()}})();
 /* پنجره تایید | Confirm Box: عنوان، متن، دکمه تایید (قرمز برای حذف) و لغو */
 function confirmBox(t,txt,ok,danger,cb){let o=$("#cfm");if(!o){o=document.createElement("div");o.id="cfm";$("#app").append(o)}
  o.innerHTML=`<div class="bx"><b></b><p></p><div class="bt"><div data-x="0">${tr("Cancel")}</div><div data-x="1" style="${danger?"color:var(--red)":""}"></div></div></div>`;
