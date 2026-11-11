@@ -1399,7 +1399,7 @@ function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.repl
  $("#cname").innerHTML=esc(c.n)+vb(c,16);/* قلاب میوت | Mute Hook */lkMuteIcons();$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
  S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
- $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none"}
+ $$(".screen").forEach(s=>s.classList.remove("on"));$("#chat").classList.add("on");$("#tabbar").style.display="none";$("#editbar").style.display="none";/* قلاب پیام آخر | Last Message Hook: بعد از باز شدن گفتگو آخرین پیام را بالای نوار پیام می‌آورد (after the chat opens, brings the last message above the bar) */lkLastUp()}
 /* افزودن حباب | Add Bubble: راست=من، چپ=طرف مقابل (right=me, left=other) */
 /* برچسب روز | Day Label: «امروز» برای امروز؛ برای قدیمی‌تر ماه و روز شمسی (Today, or Jalali month + day) */
 function dayLabel(n){if(n===0)return "امروز";const f=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",day:"numeric"}).formatToParts(new Date(Date.now()-n*864e5));
@@ -1741,12 +1741,14 @@ function mpvGo(i,a){const n=MPV.f.length;i=mClamp(i,0,n-1);mpvStop();MPV.i=i;mpv
  const f=MPV.f[i],vd=lkKind(f)==="video";$("#mpv").classList.toggle("vid",vd);
  $("#mpIdx").textContent=i+1;$("#mpN").textContent=n;$("#mpN").classList.toggle("v",vd);
  $("#mpQ").textContent=mpvQv(i);
- if(vd){const t=MPV.rec[i].trim;mpvSel(i);$("#mpPh").style.left=(t?t.start/(f.__d||1)*100:0)+"%";mpvPaint(i);if(!MPV.th[i]){MPV.th[i]=[];mpvThumbs(i,MPV.tok)}mpvMuteUi(i);const v=mpvV();if(v)v.muted=!!MPV.mute[i]}}
+ if(vd){mpvDur(i);const t=MPV.rec[i].trim;mpvSel(i);$("#mpPh").style.left=(t?t.start/(f.__d||1)*100:0)+"%";mpvPaint(i);if(!MPV.th[i]){MPV.th[i]=[];mpvThumbs(i,MPV.tok)}mpvMuteUi(i);const v=mpvV();if(v)v.muted=!!MPV.mute[i]}}
 /* بستن پیش‌نمایش | Close Preview: صفحه را می‌بندد و پخش و فایل‌های موقت را پاک می‌کند */
 function mpvClose(){mpvStop();MPV.tok++;$("#mpe").classList.remove("on");$("#mpa").classList.remove("on");$("#mpv").classList.remove("on");$("#mpTr").innerHTML="";MPV.u.forEach(u=>URL.revokeObjectURL(u));MPV.u=[]}
-/* دستگیره‌ی برش | Trim Handle: کشیدن دستگیره‌ی چپ یا راست شروع یا پایان ویدیو را عوض می‌کند (حداقل یک ثانیه) */
+/* مدت درست ویدیو | Safe Video Length: اگر مدت ذخیره‌شده خالی، صفر یا بی‌نهایت بود از خود ویدیوی پیش‌نمایش می‌خواند و ذخیره می‌کند؛ اگر هنوز معلوم نبود صفر برمی‌گرداند (reads the length from the preview video when the stored one is missing/0/Infinity) */
+function mpvDur(i){const f=MPV.f[i],s=$("#mpTr").children[i],v=s&&s.querySelector("video");if(isFinite(f.__d)&&f.__d>0)return f.__d;if(v&&isFinite(v.duration)&&v.duration>0){f.__d=v.duration;return f.__d}return 0}
+/* دستگیره‌ی برش | Trim Handle: کشیدن دستگیره‌ی چپ یا راست شروع یا پایان ویدیو را عوض می‌کند (حداقل یک ثانیه)؛ اگر مدت ویدیو معلوم نباشد هیچ‌چیز را تغییر نمی‌دهد تا نوار جمع نشود (does nothing if the length is unknown, so the bar can't collapse) */
 function mpvHandle(h,side){const off=()=>{h._d=0};h.addEventListener("pointerdown",e=>{e.stopPropagation();h.setPointerCapture(e.pointerId);h._d=1});
- h.addEventListener("pointermove",e=>{if(!h._d)return;const i=MPV.i,d=MPV.f[i].__d||0,r=$("#mpTl").getBoundingClientRect(),t=mClamp((e.clientX-r.left)/r.width,0,1)*d,o=MPV.rec[i].trim||{start:0,end:d},m=Math.min(1,d/2);
+ h.addEventListener("pointermove",e=>{if(!h._d)return;const i=MPV.i,d=mpvDur(i),r=$("#mpTl").getBoundingClientRect();if(!d||!r.width)return;const t=mClamp((e.clientX-r.left)/r.width,0,1)*d,o=MPV.rec[i].trim||{start:0,end:d},m=Math.min(1,d/2);
   if(side==="l")o.start=Math.max(0,Math.min(t,o.end-m));else o.end=Math.min(d,Math.max(t,o.start+m));MPV.rec[i].trim=o;mpvSel(i);mpvStop();const v=mpvV();if(v)v.currentTime=side==="l"?o.start:o.end;$("#mpPh").style.left=((side==="l"?o.start:o.end)/(d||1)*100)+"%"});
  h.addEventListener("pointerup",off);h.addEventListener("pointercancel",off)}
 /* ساخت صفحه | Build Preview Screen: یک بار صفحه‌ی پیش‌نمایش را می‌سازد و دکمه‌ها و کشیدن بین فایل‌ها را وصل می‌کند */
@@ -1862,7 +1864,7 @@ async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id
  $("#mpTo").textContent="↑ "+tr(MPV.to);$("#mpCap").value="";$("#mpCap").placeholder=tr("Add a caption...");
  $("#mpTr").innerHTML=files.map((f,i)=>{const vd=lkKind(f)==="video",p=(f.__h||1)>(f.__w||1);return `<div class="mps${p?" pt":""}">${vd?`<video src="${MPV.u[i]}" playsinline webkit-playsinline preload="auto"></video><div class="mpp">${MPI.play}</div>`:`<img src="${MPV.u[i]}">`}<canvas class="mpc"></canvas></div>`}).join("");
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
- [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
+ [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{const had=isFinite(MPV.f[i].__d)&&MPV.f[i].__d>0;mpvDur(i);if(!had&&MPV.f[i].__d>0&&MPV.i===i){mpvSel(i);if(!(MPV.th[i]&&MPV.th[i].some(Boolean)))mpvThumbs(i,MPV.tok)}try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
  o.classList.add("on");mpvGo(0,0)}
 /* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را مثل تلگرام تمام‌صفحه باز می‌کند؛ کشیدن چپ و راست = قبلی و بعدی، کشیدن به پایین = بستن، دو انگشت یا دو بار لمس = زوم (Telegram-like: swipe sideways, swipe down to close, pinch or double-tap to zoom) */
 /* داده‌ی نمایشگر | Viewer State: آلبوم، شماره‌ی فعلی، پیام مبدا، ویدیوی در حال پخش و بی‌صدا بودن (album, index, source bubble, playing video, mute flag) */
@@ -2186,6 +2188,8 @@ $("#vwBack").onclick=closeViewer;
 /* ---- پاسخ و نوار پیام | Reply & Message Bar ---- */
 /* ارتفاع نوار | Bar Height: ارتفاع واقعی نوار پایین را برای فاصله پیام‌ها ثبت می‌کند (stores real bar height so messages stay above it) */
 function fitBar(){requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",($(".inbar").offsetHeight||$("#blkbar").offsetHeight)+"px"))}
+/* پیام آخر بالای نوار | Last Message Above Bar: وقتی گفتگو باز می‌شود، ارتفاع واقعی نوار پیام همان لحظه خوانده می‌شود و گفتگو تا ته پایین می‌رود تا آخرین پیام بالای نوار بماند و زیر آن نرود؛ چند بار تکرار می‌شود چون گفتگو تازه نمایان شده است (when a chat opens, the real bar height is read at once and the chat scrolls to the very bottom so the last message sits above the bar; repeated a few times because the chat has just become visible) */
+function lkLastUp(){const ch=$("#chat"),ms=$("#msgs");if(!ch||!ms)return;const go=()=>{if(!ch.classList.contains("on")||(window._kbOn&&window._kbOn()))return;const b=$(".inbar"),k=$("#blkbar"),h=(b&&b.offsetHeight)||(k&&k.offsetHeight)||0;if(h)ch.style.setProperty("--ibh",h+"px");ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};go();requestAnimationFrame(go);setTimeout(go,150)}
 /* جای ثابت پیام آخر | Last Message Anchor: هر بار ارتفاع نوار پیام عوض شود (کیبورد یا انیمیشن) ارتفاع فضای زیر پیام‌ها همان لحظه به‌روز می‌شود و فاصله‌ی گفتگو از پایین ثابت می‌ماند تا آخرین پیام زیر نوار نرود (bar height is re-read on every size change, scroll distance from the bottom is kept) */
 /* دکمه‌ی رفتن به آخر | Scroll Down Logic: اگر گفتگو بیشتر از ۴۰ پیکسل بالاتر از آخر باشد دکمه نشان داده می‌شود و با لمس آن به آخرین پیام می‌رویم (shows when the last message is out of view, tap scrolls to it) */
 (function(){const ch=$("#chat"),ms=$("#msgs"),bar=$(".inbar"),sd=$("#sdn");if(!ch||!ms||!bar||!sd)return;
