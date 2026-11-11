@@ -1395,7 +1395,7 @@ $("#closeNew").onclick=()=>$("#newmsg").classList.remove("on");
 
 /* ---- ۳.۱۰ صفحه گفتگو | 3.10 Chat Page ---- */
 /* باز کردن گفتگو | Open Chat: نام، وضعیت، پیام‌های نمونه و خوانده شدن (header, status, messages, mark read) */
-function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.reply=null;$("#rbar").classList.remove("on");fitBar();
+function openChat(id){const c=CHATS.find(x=>x.id===id);S.openId=id;c.un=0;S.reply=null;/* قلاب ویرایش | Edit Hook: رفتن به گفتگوی دیگر ویرایش را لغو می‌کند (opening another chat cancels editing) */if(window.lkEdCancel)window.lkEdCancel(1);$("#rbar").classList.remove("on");fitBar();
  $("#cname").innerHTML=esc(c.n)+vb(c,16);/* قلاب میوت | Mute Hook */lkMuteIcons();$("#cstat").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
  $("#cav").style.background=c.col;$("#cav").textContent=c.n[0].toUpperCase();
  S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));
@@ -1420,7 +1420,7 @@ function addMsg(w,t,tm,n=0,rp=null){if(S.lastD!==n){const h=document.createEleme
  d.addEventListener("input",()=>{if(!d.innerText.replace(/\n/g,""))d.innerHTML=""});
  el.replaceWith(d)})();
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
-function send(){const v=$("#mi").value.trim();if(!v)return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now,0,S.reply);clearReply();$("#mi").value="";grow();updSend();
+function send(){const v=$("#mi").value.trim();if(!v)return;/* قلاب ویرایش | Edit Hook: اگر در حال ویرایش پیام هستیم، متن جدید جای متن قبلی می‌نشیند و پیام تازه فرستاده نمی‌شود (while editing, the new text replaces the old one instead of sending a new message) */if(window.lkEdSend&&window.lkEdSend(v))return;const now=new Date().toTimeString().slice(0,5);addMsg("me",v,now,0,S.reply);clearReply();$("#mi").value="";grow();updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
  if(c.id===2){CFG.saved.push(["me",v,now,0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0]);saveCfg();setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();renderChats()},900)}}
 /* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
@@ -2197,8 +2197,10 @@ function lkLastUp(){const ch=$("#chat"),ms=$("#msgs");if(!ch||!ms)return;const g
  const chk=()=>sd.classList.toggle("on",gp()>40&&ch.classList.contains("on"));
  ms.addEventListener("scroll",()=>{lg=gp();chk()},{passive:true});
  new MutationObserver(()=>requestAnimationFrame(()=>{lg=gp();chk()})).observe(ms,{childList:true});
- if(window.ResizeObserver)new ResizeObserver(()=>{const h=bar.offsetHeight;if(!h){ph=0;return}ch.style.setProperty("--ibh",h+"px");if(ph)ms.scrollTop=ms.scrollHeight-ms.clientHeight-lg;ph=h;chk()}).observe(bar);
+ if(window.ResizeObserver)new ResizeObserver(()=>{const h=bar.offsetHeight;if(!h){ph=0;return}ch.style.setProperty("--ibh",h+"px");if(ph)ms.scrollTop=ms.scrollHeight-ms.clientHeight-lg;ph=h;chk()}).observe(bar,{box:"border-box"});
  sd.addEventListener("click",()=>ms.scrollTo({top:ms.scrollHeight,behavior:"smooth"}))})();
+/* پایان حرکت نوار | Bar Settle: وقتی فاصله‌ی پایین نوار پیام بعد از بسته شدن کیبورد تمام شد، ارتفاع نوار دوباره خوانده می‌شود تا آخرین پیام زیر نوار نماند (when the bar's bottom gap finishes animating after the keyboard closes, its height is read again so the last message never stays under it) */
+{const ib=$(".inbar");if(ib)ib.addEventListener("transitionend",e=>{if(e.propertyName==="padding-bottom")fitBar()})}
 /* رشد کادر | Auto-grow: کادر با هر خط جدید بزرگ می‌شود (grows with each new line) */
 function grow(){const m=$("#mi");m.style.height="40px";m.style.height=Math.min(Math.max(m.scrollHeight,40),120)+"px";fitBar()}
 $("#mi").addEventListener("input",grow);
@@ -2206,8 +2208,8 @@ $("#mi").addEventListener("input",grow);
 $$(".inbar .round,#rbarX").forEach(b=>["pointerdown","mousedown"].forEach(ev=>b.addEventListener(ev,e=>e.preventDefault())));
 /* پاسخ | Reply State: نام و متن پیام انتخاب‌شده (selected message) */
 S.reply=null;
-function setReply(b){S.reply={id:b.dataset.id,n:b.dataset.w==="me"?"You":$("#cname").textContent,t:fwBody(b.dataset.t)};$("#rbar_n").textContent=S.reply.n;$("#rbar_t").textContent=S.reply.t;$("#rbar").classList.add("on");$("#mi").focus();fitBar()}
-function clearReply(){S.reply=null;$("#rbar").classList.remove("on");fitBar()}
+function setReply(b){/* قلاب ویرایش | Edit Hook: پاسخ دادن ویرایش را لغو می‌کند (replying cancels editing) */if(window.lkEdCancel)window.lkEdCancel();S.reply={id:b.dataset.id,n:b.dataset.w==="me"?"You":$("#cname").textContent,t:fwBody(b.dataset.t)};$("#rbar_n").textContent=S.reply.n;$("#rbar_t").textContent=S.reply.t;$("#rbar").classList.add("on");$("#mi").focus();fitBar()}
+function clearReply(){/* قلاب ویرایش | Edit Hook: بستن نوار پاسخ ویرایش را هم لغو می‌کند (closing the bar also cancels editing) */if(window.lkEdCancel)window.lkEdCancel();S.reply=null;$("#rbar").classList.remove("on");fitBar()}
 $("#rbarX").onclick=clearReply;
 /* کشیدن حباب به چپ | Swipe Bubble Left: بیش از ۶۰ پیکسل و رها کردن، پاسخ را فعال می‌کند؛ آیکون پاسخ همراه کشیدن ظاهر می‌شود (past 60px and release = reply; icon appears while dragging) */
 (function(){let b=null,x0=0,y0=0,dx=0,lock=0;const M=$("#msgs");
@@ -2346,23 +2348,42 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
    o.innerHTML=`<div class="mn" style="width:calc(100% - 24px)"><div data-d="me">${tr("Delete for me")}</div><div data-d="both" style="color:var(--red)">${tr("Delete for both")}</div></div>`;o.classList.add("on");
    o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg()}}}
  function open(b){const r=b.getBoundingClientRect(),me=b.classList.contains("me"),pinned=pinsOf(S.openId).includes(b.dataset.t);
-  const it=[["Reply","reply"],["Copy","copy"],[pinned?"Unpin":"Pin","pin"],["Forward","fwd"],["Delete","trash"],["Select","check"]];
+  /* گزینه‌ی ویرایش | Edit Item: فقط برای پیام متنی خودم زیر کپی می‌آید؛ عدد سوم هر گزینه شماره‌ی کار آن است (shown under Copy only for my own text messages; the third number is the action id) */const it=[["Reply","reply",0],["Copy","copy",1]].concat(window.lkEdCan&&window.lkEdCan(b)?[["Edit","pen",9]]:[],[[pinned?"Unpin":"Pin","pin",2],["Forward","fwd",3],["Delete","trash",4],["Select","check",5]]);
   ov.classList.add("on");const o=ov.getBoundingClientRect(),cl=b.cloneNode(true);cl.querySelectorAll(".ri").forEach(x=>x.remove());cl.classList.remove("hl");cl.classList.add("bb");cl.style.left=(r.left-o.left)+"px";cl.style.top=(r.top-o.top)+"px";cl.style.width=r.width+"px";
   const bar=document.createElement("div");bar.className="rxb";const mm=document.createElement("div");mm.className="mm";
   let ex=false;const drawBar=()=>{bar.innerHTML=(ex?E1.concat(E2):E1).map(e=>`<span>${e}</span>`).join("")+`<div class="more">${ex?"⌃":"⌄"}</div>`;bar.querySelectorAll("span").forEach(sp=>sp.onclick=ev=>{ev.stopPropagation();let c=b.querySelector(".rxn");if(c&&c.textContent===sp.textContent)c.remove();else{if(!c){c=document.createElement("span");c.className="rxn";b.append(c)}c.textContent=sp.textContent}close()});bar.querySelector(".more").onclick=ev=>{ev.stopPropagation();ex=!ex;drawBar();place()}};
-  mm.innerHTML=it.map((x,i)=>`<div data-i="${i}" class="${i===4?"rd":""}">${ic(x[1],22)}<span>${tr(x[0])}</span></div>`).join("");
-  mm.querySelectorAll("[data-i]").forEach(d=>d.onclick=ev=>{ev.stopPropagation();const i=+d.dataset.i;close();if(i<5)act(i,b);else if(window.lkSelStart)window.lkSelStart(b)});
+  mm.innerHTML=it.map(x=>`<div data-i="${x[2]}" class="${x[2]===4?"rd":""}">${ic(x[1],22)}<span>${tr(x[0])}</span></div>`).join("");
+  mm.querySelectorAll("[data-i]").forEach(d=>d.onclick=ev=>{ev.stopPropagation();const i=+d.dataset.i;close();if(i===9)window.lkEdStart(b);else if(i<5)act(i,b);else if(window.lkSelStart)window.lkSelStart(b)});
   ov.append(bar);if(!b.querySelector('[data-lkm],.lkfr'))ov.append(cl);ov.append(mm);
-  function place(){const bw=bar.offsetWidth,bh=bar.offsetHeight,mh=mm.offsetHeight;let top=r.top-o.top,rt=top-bh-8,mt=top+r.height+8;
-   const maxB=o.height-24-(env0());if(mt+mh>maxB){const d=mt+mh-maxB;top-=d;rt-=d;mt-=d}if(rt<60){const d=60-rt;top+=d;rt+=d;mt+=d}
+  function place(){const bw=bar.offsetWidth,bh=bar.offsetHeight,mh=mm.offsetHeight,vh=Math.min(o.height,innerHeight-o.top),vw=Math.min(o.width,innerWidth-o.left);/* فقط بخش دیده‌شده | Visible Part Only: ارتفاع و عرض را فقط تا لبه‌ی واقعی صفحه نمایش حساب می‌کند تا منو بیرون نزند (height and width are measured only up to the real display edge) */cl.style.maxHeight="";cl.style.overflow="";let top=r.top-o.top,rt=top-bh-8,mt=top+r.height+8;
+   const maxB=vh-24-(env0());if(mt+mh>maxB){const d=mt+mh-maxB;top-=d;rt-=d;mt-=d}if(rt<60){const d=60-rt;top+=d;rt+=d;mt+=d}/* حباب بلند | Tall Bubble: اگر حباب همراه منو جا نمی‌شود، منو پایین صفحه می‌ماند و حباب کوتاه و بریده می‌شود (a bubble too tall to fit keeps the menu on screen and is clipped) */if(mt+mh>maxB){rt=60;top=rt+bh+8;mt=maxB-mh;cl.style.maxHeight=Math.max(40,mt-8-top)+"px";cl.style.overflow="hidden"}
    cl.style.top=top+"px";bar.style.top=rt+"px";mm.style.top=mt+"px";
-   const L=me?r.right-o.left:r.left-o.left;bar.style.left=Math.max(8,Math.min(o.width-bw-8,me?L-bw:L))+"px";mm.style.left=Math.max(8,Math.min(o.width-240-8,me?L-240:L))+"px"}
+   const L=me?r.right-o.left:r.left-o.left;bar.style.left=Math.max(8,Math.min(vw-bw-8,me?L-bw:L))+"px";mm.style.left=Math.max(8,Math.min(vw-240-8,me?L-240:L))+"px"}
   const env0=()=>0;drawBar();place();ov.onclick=close}
  let tm=null,x0=0,y0=0;const stop=()=>clearTimeout(tm),M=$("#msgs");
  M.addEventListener("touchstart",e=>{const b=e.target.closest(".b");if(!b)return;stop();x0=e.touches[0].clientX;y0=e.touches[0].clientY;tm=setTimeout(()=>{open(b)},450)},{passive:true});
  M.addEventListener("mousedown",e=>{const b=e.target.closest(".b");if(!b)return;stop();tm=setTimeout(()=>open(b),450)});
  M.addEventListener("touchmove",e=>{if(Math.abs(e.touches[0].clientX-x0)>8||Math.abs(e.touches[0].clientY-y0)>8)stop()},{passive:true});
  ["touchend","touchcancel","mouseup","mouseleave"].forEach(ev=>M.addEventListener(ev,stop,{passive:true}))})();
+/* ---- ویرایش پیام | Edit Message ---- */
+/* ویرایش پیام | Edit Message: با زدن Edit در منوی پیام، متن پیام خودم در کادر نوشتن می‌آید و بالای کادر نوار «ویرایش پیام» دیده می‌شود؛ با دکمه‌ی ارسال، متن جدید جای متن قبلی می‌نشیند و ذخیره می‌شود؛ بستن نوار ویرایش را لغو می‌کند (Edit puts my message text in the input with an edit bar above it; send replaces the old text and saves; closing the bar cancels) */
+(function(){
+ let ed=null;
+ Object.assign(FA,{"Edit":"ویرایش","Edit message":"ویرایش پیام"});
+ /* پیدا کردن پیام | Find Message: پیام فرستاده‌شده‌ی من را در ذخیره‌ی همین گفتگو پیدا می‌کند (finds my sent message in this chat's saved list) */
+ const tmOf=b=>{const sm=b.querySelector("small");return sm&&sm.firstChild?sm.firstChild.textContent.trim():""};
+ const find=b=>{const a=S.openId===2?CFG.saved:(CFG.sent[S.openId]||[]),t=b.dataset.t,tm=tmOf(b);return a.find(r=>r[0]==="me"&&r[1]===t&&r[2]===tm)||a.find(r=>r[0]==="me"&&r[1]===t)};
+ /* می‌شود ویرایش کرد؟ | Can Edit: فقط پیام متنی خودم، نه عکس و نه فوروارد (only my own plain text, not media or forwarded) */
+ window.lkEdCan=b=>b.classList.contains("me")&&!b.querySelector("[data-lkm],.lkfr")&&!lkDec(b.dataset.t)&&!FWR.test(b.dataset.t)&&!!find(b);
+ /* شروع ویرایش | Start Edit: متن در کادر نوشتن می‌آید و نوار ویرایش باز می‌شود (text goes into the input, edit bar opens) */
+ window.lkEdStart=b=>{const e=find(b);if(!e)return;ed={id:S.openId,e,old:e[1]};S.reply=null;$("#rbar_n").textContent=tr("Edit message");$("#rbar_t").textContent=e[1];$("#rbar").classList.add("on");const mi=$("#mi");mi.value=e[1];grow();updSend();fitBar();mi.focus()};
+ /* ثبت ویرایش | Save Edit: متن جدید ذخیره می‌شود و گفتگو با همان جای اسکرول دوباره کشیده می‌شود؛ اگر ویرایش در کار نباشد false برمی‌گرداند تا پیام عادی فرستاده شود (saves the new text and redraws the chat at the same scroll spot; returns false when not editing) */
+ window.lkEdSend=v=>{if(!ed)return false;if(ed.id!==S.openId){ed=null;return false}const d=ed;ed=null;
+  if(v!==d.old){d.e[1]=v;if(CFG.pins&&CFG.pins[d.id])CFG.pins[d.id]=CFG.pins[d.id].map(x=>x===d.old?v:x);const c=CHATS.find(x=>x.id===d.id);if(c&&c.m===d.old)c.m=v;saveCfg();
+   const ms=$("#msgs"),st=ms.scrollTop;S.lastD=null;ms.innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3]));ms.scrollTop=st;renderChats();if(window.applyPin)applyPin()}
+  $("#rbar").classList.remove("on");$("#mi").value="";grow();updSend();fitBar();return true};
+ /* لغو ویرایش | Cancel Edit: حالت ویرایش را برمی‌دارد و اگر بی‌صدا نباشد کادر نوشتن را خالی می‌کند (ends editing, clears the input unless silent) */
+ window.lkEdCancel=silent=>{if(!ed)return;ed=null;if(!silent){$("#mi").value="";grow();updSend()}}})();
 /* ---- ارسال هنگام آنلاین و زمان‌بندی‌شده | Send When Online & Scheduled Send ---- */
 /* آیکون‌ها | Icons: ساعت و تقویم (clock, calendar) */
 P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4";
