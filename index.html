@@ -279,7 +279,7 @@ html.light .b.me .tick{color:var(--blue)!important}
 /* کادر نوشتن چندخطی | Multi-line Input: Enter خط جدید می‌سازد و کادر تا ۱۲۰ پیکسل بزرگ می‌شود (Enter = new line, grows up to 120px) */
 .inbar textarea,.inbar #mi{height:40px;max-height:120px;padding:10px 14px;line-height:20px;resize:none;font-family:inherit;overflow-y:auto}
 /* نوار پاسخ | Reply Bar: بالای کادر نوشتن، نام و متن پیام و دکمه بستن (above the input: name, text, close) */
-#rbar{flex:0 0 100%;order:-1;display:none;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:6px 8px 6px 10px}
+#rbar{flex:0 0 100%;min-width:0;max-width:100%;order:-1;display:none;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:6px 8px 6px 10px}
 #rbar.on{display:flex}
 .rbq{flex:1;min-width:0;border-left:3px solid var(--blue);padding-left:8px}
 .rbq b{display:block;color:var(--blue);font-size:13px}
@@ -527,7 +527,9 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 /* دکمه‌های گرافیکی تنظیم | Adjust Icon Buttons: خودکار با حرف A و بازنشانی با دایره و فلش، بدون نوشته (Auto = letter A, Reset = circular arrow) */
 #mpv .mpa .mpch{gap:12px}
 /* دکمه‌های پررنگ برش | Bold Crop Buttons: دکمه‌های پایین ویرایشگر برش پررنگ و واضح تا جزو ابزار برش دیده شوند (bottom buttons of crop editor made bright and clear) */
-#mpv .mpe .mpbar{padding:14px 18px calc(env(safe-area-inset-bottom) + 22px);background:#000}
+#mpv .mpe .mpbar{position:relative;z-index:6;padding:14px 18px calc(env(safe-area-inset-bottom) + 22px);background:#000}
+/* دکمه‌های برش روشن | Bright Crop Buttons: سایه‌ی تیره‌ی بیرون قاب برش روی نوار دکمه‌ها و نسبت‌ها نمی‌افتد و آن‌ها کم‌رنگ نمی‌شوند (the dark shade outside the crop frame no longer covers the buttons and ratio chips) */
+#mpv .mpe .mpch{position:relative;z-index:6}
 #mpv .mpe .mpr{width:54px;height:54px;background:#fff;color:#000;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 #mpv .mpe .mpr.s{width:54px;height:54px;background:var(--blue);color:#fff}
 #mpv .mpe .mptools{height:54px;border-radius:27px;background:#3a3a3c;gap:8px;padding:0 12px}
@@ -1515,13 +1517,13 @@ const vv=window.visualViewport;
  /* دنبال کردن پیام‌ها | Follow Messages: هنگام باز و بسته شدن کیبورد پیام‌ها فریم‌به‌فریم همان فاصله‌ی قبلی از ته گفتگو را نگه می‌دارند (messages keep their distance from the bottom while the keyboard moves) */
  const follow=d=>{cancelAnimationFrame(raf);const t0=performance.now();ms.style.scrollBehavior="auto";const f=()=>{ms.scrollTop=ms.scrollHeight-ms.clientHeight-gap;if(performance.now()-t0<d)raf=requestAnimationFrame(f);else ms.style.scrollBehavior=""};f()};
  /* باز کردن کادر | Open Keyboard Box: برنامه با انیمیشن ۲۵۰ میلی‌ثانیه‌ای کوتاه می‌شود و نوار پیام می‌آید روی نوار سیاه کیبورد (app shrinks by the keyboard height, bar rides up onto the black bar) */
- const openKb=()=>{clearTimeout(clT);clearTimeout(dl.t);if(isOpen)return;isOpen=1;settle=0;mOk=0;gap=gp();K=getK();tO=performance.now();kSeen=0;
+ const openKb=()=>{clearTimeout(clT);clearTimeout(dl.t);if(isOpen)return;isOpen=1;settle=0;mOk=0;gap=gp();if(gap<=30){gap=0;if(window._lkStick)window._lkStick(1)}window._kbMu=performance.now()+450;K=getK();tO=performance.now();kSeen=0;
   if(!ap.style.height)A0=ap.getBoundingClientRect().height;
   ap.style.transition="none";ap.style.minHeight=Math.round(H*.5)+"px";ap.style.top="0px";ap.style.bottom="auto";ap.style.height=A0+"px";void ap.offsetHeight;
   ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";
   bar.classList.add("kbo");ch.classList.add("kbo2");fitBar();follow(260);setTimeout(fitBar,300)};
  /* بستن کادر | Close Keyboard Box: برنامه به ارتفاع اصلی برمی‌گردد و بعد از پایان حرکت همه‌ی مقدارهای موقت پاک می‌شوند (app returns to its normal height, temporary styles are cleared afterwards) */
- const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;settle=1;gap=gp();const atB=gap<=4,keepB=()=>{const f=()=>{ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};requestAnimationFrame(()=>{f();setTimeout(f,120);setTimeout(f,400)})};
+ const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;settle=1;gap=gp();if(gap<=30){gap=0;if(window._lkStick)window._lkStick(1)}window._kbMu=performance.now()+450;const atB=gap<=4,keepB=()=>{const f=()=>{ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};requestAnimationFrame(()=>{f();setTimeout(f,120);setTimeout(f,400)})};
   ap.style.transition=EZ;ap.style.height=A0+"px";bx.style.height="0px";bar.classList.remove("kbo");ch.classList.remove("kbo2");fitBar();follow(260);setTimeout(fitBar,300);
   clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){settle=0;ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar();if(atB)keepB()}},270)};
  /* اندازه‌گیری کیبورد | Measure Real Keyboard: در ۷۰ میلی‌ثانیه‌ی آخر حرکت، ارتفاع واقعی کیبورد (با نوار سیاه) را می‌خواند و اگر فرق داشت یک اصلاح خیلی کوچک می‌کند و ذخیره می‌کند (reads the real keyboard height near the end of the motion and corrects it slightly) */
@@ -1561,7 +1563,9 @@ const vv=window.visualViewport;
 })();
 /* چسبیدن به ته گفتگو | Stick To Bottom: اگر کاربر ته گفتگو باشد، هر بار که اندازه‌ی لیست یا نوار پایین عوض شود (کیبورد باز و بسته، انیمیشن نوار، پیام جدید) دوباره تا ته اسکرول می‌رود تا آخرین پیام همیشه بالای نوار بماند (keeps the last message above the bar whenever the list, bar or keyboard changes size while the user is at the bottom) */
 (function(){const ms=$("#msgs"),ch=$("#chat");if(!ms||!ch||!window.ResizeObserver)return;let st=1;const gp=()=>ms.scrollHeight-ms.scrollTop-ms.clientHeight;
- const user=()=>{st=gp()<=30};
+ /* حالت چسبیدن | Stick Flag Access: به کدهای دیگر اجازه می‌دهد بپرسند یا تعیین کنند که گفتگو به ته چسبیده است یا نه؛ در حرکت کیبورد اندازه‌گیری لحظه‌ای این حالت را خراب نمی‌کند */
+ const user=()=>{if(performance.now()<(window._kbMu||0))return;st=gp()<=30};
+ window._lkStick=v=>{if(v===undefined)return st;st=!!v};
  ["touchmove","touchend","wheel","pointerup","keyup"].forEach(e=>ms.addEventListener(e,()=>setTimeout(user,60),{passive:true}));
  ms.addEventListener("scroll",()=>{if(gp()<=30)st=1},{passive:true});
  const snap=()=>{if(!st||!ch.classList.contains("on"))return;ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};
@@ -1879,16 +1883,21 @@ function mpvEdited(i){mpvDraw(i)}
 const _pp0=pickPhoto;
 pickPhoto=function(cb,bg){if(bg)return _pp0(cb,bg);const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
 Object.assign(FA,{"Profile photo":"عکس پروفایل"});
-(function(){const st=document.createElement("style");st.textContent="#mpv.av .mpcap,#mpv.av #mpQ,#mpv.av #mpIdx,#mpv.av #mpMute,#mpv.av [data-mt=draw],#mpv.av #mpeH{display:none!important}#mpv.av #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3}";document.head.append(st)})();
+(function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3}";document.head.append(st)})();
+/* قاب مربعی پروفایل | Avatar Square Frame: بعد از چرخش یا آینه، قاب برش دوباره مربعی و وسط‌چین می‌شود تا دایره‌ی راهنما بیضی نشود */
+function avSquare(){const a=MPE.W/MPE.H;let w=1,h=1;if(a>1)w=1/a;else h=a;MPE.ratio=1;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
+/* بازنشانی مربعی | Square Reset Hook: فقط وقتی پیش‌نمایش پروفایل باز است، بعد از بازنشانی قاب، مربعی‌اش می‌کند */
+const _mr0=mpeReset;
+mpeReset=function(){_mr0();if($("#mpv").classList.contains("avp"))avSquare()};
 async function avPreview(file,cb){
  await mpvOpen([file]);
  const o=$("#mpv"),sb=$("#mpSend"),bb=$("#mpBack"),cr=o.querySelector('[data-mt="crop"]'),s0=sb.onclick,b0=bb.onclick,c0=cr.onclick;
- o.classList.add("av");$("#mpTo").textContent=tr("Profile photo");
+ o.classList.add("avp");$("#mpTo").textContent=tr("Profile photo");
  const w=file.__w||1,h=file.__h||1,r=MPV.rec[0];
  if(w>h){const k=h/w;r.crop={x:(1-k)/2,y:0,w:k,h:1}}else if(h>w){const k=w/h;r.crop={x:0,y:(1-k)/2,w:1,h:k}}
  mpvEdited(0);
  const sl=$("#mpTr").children[0];if(sl){const g=document.createElement("i");g.className="avg";const q=Math.min(sl.clientWidth,sl.clientHeight);g.style.width=g.style.height=q+"px";sl.append(g)}
- const end=()=>{o.classList.remove("av");sb.onclick=s0;bb.onclick=b0;cr.onclick=c0};
+ const end=()=>{o.classList.remove("avp");sb.onclick=s0;bb.onclick=b0;cr.onclick=c0};
  bb.onclick=()=>{b0();end()};
  cr.onclick=async()=>{await c0();MPE.ratio=1};
  sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=320,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
@@ -2297,7 +2306,7 @@ function lkLastUp(){const ch=$("#chat"),ms=$("#msgs");if(!ch||!ms)return;const g
  const chk=()=>sd.classList.toggle("on",gp()>40&&ch.classList.contains("on"));
  ms.addEventListener("scroll",()=>{lg=gp();chk()},{passive:true});
  new MutationObserver(()=>requestAnimationFrame(()=>{lg=gp();chk()})).observe(ms,{childList:true});
- if(window.ResizeObserver){const ro=new ResizeObserver(()=>{const cb=$("#chbar"),bk=$("#blkbar"),h=bar.offsetHeight||(cb&&cb.offsetHeight)||(bk&&bk.offsetHeight)||0;if(!h){ph=0;return}ch.style.setProperty("--ibh",h+"px");if(ph)ms.scrollTop=ms.scrollHeight-ms.clientHeight-lg;ph=h;chk()});ro.observe(bar,{box:"border-box"});window._ibRO=ro}
+ if(window.ResizeObserver){const ro=new ResizeObserver(()=>{const cb=$("#chbar"),bk=$("#blkbar"),h=bar.offsetHeight||(cb&&cb.offsetHeight)||(bk&&bk.offsetHeight)||0;if(!h){ph=0;return}ch.style.setProperty("--ibh",h+"px");if(ph)ms.scrollTop=(window._lkStick&&window._lkStick())?ms.scrollHeight:ms.scrollHeight-ms.clientHeight-lg;ph=h;chk()});ro.observe(bar,{box:"border-box"});window._ibRO=ro}
  sd.addEventListener("click",()=>ms.scrollTo({top:ms.scrollHeight,behavior:"smooth"}))})();
 /* پایان حرکت نوار | Bar Settle: وقتی فاصله‌ی پایین نوار پیام بعد از بسته شدن کیبورد تمام شد، ارتفاع نوار دوباره خوانده می‌شود تا آخرین پیام زیر نوار نماند (when the bar's bottom gap finishes animating after the keyboard closes, its height is read again so the last message never stays under it) */
 {const ib=$(".inbar");if(ib)ib.addEventListener("transitionend",e=>{if(e.propertyName==="padding-bottom")fitBar()})}
@@ -2380,7 +2389,7 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
  const fmt=n=>n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;
  const views=(t,tm)=>{let h=7;const s=String(t)+tm;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return 800+h%9000};
  const am=addMsg;addMsg=function(w,t,tm,n,rp,ed){const ch=isCh();const d=am(ch?"ot":w,t,tm,n,rp,ed);if(ch){if(!d.querySelector(".chn")){const h=document.createElement("div");h.className="chn";h.textContent=CHATS.find(x=>x.id===S.openId).n;d.prepend(h)}const s=d.querySelector("small");if(s&&!s.querySelector(".vw")){/* ترتیب زمان، امضا، ویو | Order: time, signature, views */const cc=CHATS.find(x=>x.id===S.openId),au=document.createElement("span");au.className="au";au.dir="auto";au.style.cssText="margin-inline-end:6px;opacity:.8";if(!cc.sign)au.style.display="none";au.textContent=Array.isArray(cc.members)&&S.user?S.user.name:(cc.admin||"Admin");const tn=[...s.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());if(tn)s.insertBefore(au,tn);else s.append(au);s.insertAdjacentHTML("afterbegin",`<span class="vw">${eye}${fmt(views(t,tm))}</span>`)}}return d};
- const fb=fitBar;fitBar=function(){fb();if(isCh())requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",bar.offsetHeight+"px"))};
+ const fb=fitBar;fitBar=function(){fb();if(isCh())requestAnimationFrame(()=>{const ib=$(".inbar"),h=(ib&&ib.offsetHeight)||bar.offsetHeight;if(h)$("#chat").style.setProperty("--ibh",h+"px")})};
  /* ادمین = سازندهٔ کانال (دارای members)؛ غیرادمین فقط دکمه صدا/بیصدا | Admin = channel creator (has members); non-admin gets only a Mute/Unmute button */const fix=()=>{const ch=isCh(),c=CHATS.find(x=>x.id===S.openId),adm=ch&&Array.isArray(c.members);bar.style.display=ch&&!adm?"flex":"none";if(ch){$(".inbar").style.display=adm?"":"none";const b=$("#blkbar");if(b)b.style.display="none";if(!adm){bar.innerHTML='<span></span>';bar.firstChild.textContent=tr(c.mute?"Unmute":"Mute");bar.style.color="var(--blue)";bar.style.cursor="pointer"}}fitBar()};
  bar.onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="ch"||Array.isArray(c.members))return;c.mute=c.mute?0:1;fix();renderChats();if(typeof cpMuteSync==="function")cpMuteSync()};
  const oc2=openChat;openChat=function(id){oc2(id);fix();if(typeof lkLastUp==="function")lkLastUp()};
