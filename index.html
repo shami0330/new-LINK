@@ -453,7 +453,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv{position:absolute;inset:0 0 var(--gap,var(--ext,0px)) 0;z-index:98;background:#000;color:#fff;display:none;flex-direction:column;-webkit-user-select:none;user-select:none}
 #mpv.on{display:flex}
 #mpv .mpt{flex:none;padding:calc(env(safe-area-inset-top) + 6px) 14px 6px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#8e8e93;min-height:32px}
-#mpv .mpbd{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center}
+#mpv .mpbd{cursor:pointer;width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center}
 #mpv .mpm{flex:1;position:relative;overflow:hidden;min-height:0;touch-action:none}
 #mpv .mptr{position:absolute;inset:0;display:flex;gap:16px;will-change:transform}
 #mpv .mps{flex:0 0 100%;position:relative;overflow:hidden;background:#000}
@@ -533,6 +533,11 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mpe .mptools svg{width:26px;height:26px}
 #mpv .mpe .mpch b{background:#3a3a3c;color:#fff}
 #mpv .mpe .mpch b.on{background:#fff;color:#000}
+#mpv .mpa .ab{flex:none;flex-direction:row;justify-content:space-between;align-items:center;background:none;border-radius:0;padding:0;gap:8px;margin-top:6px}
+#mpv .mpa .ab .mpch{padding:0;gap:8px;overflow:visible;align-items:center}
+#mpv .mpa .ab .mpr{width:36px;height:36px;flex:none}
+#mpv .mpa .ab .mpr.s{width:40px;height:40px}
+#mpv .mpa .ab .mpr svg{width:18px;height:18px}
 #mpv .mpa .mpA{font-size:20px;font-weight:700;line-height:1;background:none;padding:0}
 /* ساخت گروه و کانال و تایید | Group/Channel Creation + Confirm Box */
 #cfm{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
@@ -748,6 +753,23 @@ html.linkdark #tabbar{background:rgba(42,15,19,.94)}
 html.linkdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
 html.linkdark #csr .it mark{background:rgba(244,63,94,.35)}
 html.linkdark #login{background:var(--lkpat) 0 0/312px 312px var(--bg)}
+/* سه تم تازه | Three New Themes: اقیانوس، جنگل و بنفش؛ هرکدام نسخه‌ی روز و شب دارند و با حالت شب عوض می‌شوند */
+html.ocean{--bg:#e8f4fb;--card:#ffffff;--card2:#d4e9f5;--line:#bcdced;--txt:#0a2540;--sub:#4f7a96;--bubIn:#ffffff;--bubOut:#bfe3f7;--chatbg:#dbeef9;--dotc:rgba(2,132,199,.10);--dotc2:rgba(2,132,199,.06);--dotc3:rgba(2,132,199,.07);--menu:rgba(255,255,255,.97);--pin:#d4e9f5;--sec:#d4e9f5;--chip:#c3dff0;--dsep:rgba(255,255,255,.88);--smalltx:rgba(10,37,64,.5);--prev:#4f7a96;--snd:#0a2540}
+html.ocean #tabbar{background:rgba(255,255,255,.94)}html.ocean .sec{background:#d4e9f5}html.ocean .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.ocean .b.me{color:#0a2540}html.ocean .b.me small{color:rgba(10,37,64,.55)}html.ocean #login input,html.ocean #login .pf,html.ocean .inbar input,html.ocean .inbar textarea,html.ocean .inbar #mi{color:#0a2540}
+html.oceandark{--bg:#06141f;--card:#0d2433;--card2:#14344a;--line:#1c4561;--txt:#e6f4fb;--sub:#7fa6bd;--bubIn:#0f2a3b;--bubOut:#0369a1;--chatbg:#06141f;--dotc:rgba(56,189,248,.10);--dotc2:rgba(56,189,248,.06);--dotc3:rgba(56,189,248,.07);--menu:rgba(13,36,51,.97);--pin:#091c2a;--sec:#05121b;--chip:#1c4561;--dsep:rgba(13,36,51,.88);--smalltx:rgba(230,244,251,.6);--prev:#7fa6bd;--snd:#e6f4fb}
+html.oceandark #tabbar{background:rgba(13,36,51,.94)}html.oceandark .sec{background:#05121b}html.oceandark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.forest{--bg:#eaf4ea;--card:#fbfffb;--card2:#d5e8d5;--line:#bcd8bc;--txt:#12301a;--sub:#587a5e;--bubIn:#ffffff;--bubOut:#c6efc9;--chatbg:#dcecdc;--dotc:rgba(22,163,74,.10);--dotc2:rgba(22,163,74,.06);--dotc3:rgba(22,163,74,.07);--menu:rgba(251,255,251,.97);--pin:#d5e8d5;--sec:#d5e8d5;--chip:#c4dec4;--dsep:rgba(251,255,251,.88);--smalltx:rgba(18,48,26,.5);--prev:#587a5e;--snd:#12301a}
+html.forest #tabbar{background:rgba(251,255,251,.94)}html.forest .sec{background:#d5e8d5}html.forest .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.forest .b.me{color:#12301a}html.forest .b.me small{color:rgba(18,48,26,.55)}html.forest #login input,html.forest #login .pf,html.forest .inbar input,html.forest .inbar textarea,html.forest .inbar #mi{color:#12301a}
+html.forestdark{--bg:#08140c;--card:#10261a;--card2:#183823;--line:#21492f;--txt:#e8f6ea;--sub:#86ab8d;--bubIn:#12291b;--bubOut:#15803d;--chatbg:#08140c;--dotc:rgba(74,222,128,.10);--dotc2:rgba(74,222,128,.06);--dotc3:rgba(74,222,128,.07);--menu:rgba(16,38,26,.97);--pin:#0b1c11;--sec:#061009;--chip:#21492f;--dsep:rgba(16,38,26,.88);--smalltx:rgba(232,246,234,.6);--prev:#86ab8d;--snd:#e8f6ea}
+html.forestdark #tabbar{background:rgba(16,38,26,.94)}html.forestdark .sec{background:#061009}html.forestdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.violet{--bg:#f3edfb;--card:#ffffff;--card2:#e4d8f6;--line:#d3c1ee;--txt:#2a1250;--sub:#7a5fa3;--bubIn:#ffffff;--bubOut:#ddd0fa;--chatbg:#ebe2f8;--dotc:rgba(124,58,237,.10);--dotc2:rgba(124,58,237,.06);--dotc3:rgba(124,58,237,.07);--menu:rgba(255,255,255,.97);--pin:#e4d8f6;--sec:#e4d8f6;--chip:#d8c8f1;--dsep:rgba(255,255,255,.88);--smalltx:rgba(42,18,80,.5);--prev:#7a5fa3;--snd:#2a1250}
+html.violet #tabbar{background:rgba(255,255,255,.94)}html.violet .sec{background:#e4d8f6}html.violet .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.violet .b.me{color:#2a1250}html.violet .b.me small{color:rgba(42,18,80,.55)}html.violet #login input,html.violet #login .pf,html.violet .inbar input,html.violet .inbar textarea,html.violet .inbar #mi{color:#2a1250}
+html.violetdark{--bg:#0f0a1c;--card:#1b1230;--card2:#2a1d49;--line:#3a2a63;--txt:#f1eaff;--sub:#a493c7;--bubIn:#1e1436;--bubOut:#6d28d9;--chatbg:#0f0a1c;--dotc:rgba(167,139,250,.10);--dotc2:rgba(167,139,250,.06);--dotc3:rgba(167,139,250,.07);--menu:rgba(27,18,48,.97);--pin:#140d25;--sec:#0c0817;--chip:#3a2a63;--dsep:rgba(27,18,48,.88);--smalltx:rgba(241,234,255,.6);--prev:#a493c7;--snd:#f1eaff}
+html.violetdark #tabbar{background:rgba(27,18,48,.94)}html.violetdark .sec{background:#0c0817}html.violetdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+
 
 /* ===== انیمیشن اتصال لینک | Link Connection Animation Styles ===== */
 /* آیکون زنجیر | Chain Icon: دو نیمه‌ی زنجیر (a بالا‌راست، b پایین‌چپ)؛ وقتی وصل است کنار هم و ثابت‌اند و شکل همان آیکون لینک است */
@@ -963,8 +985,10 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <div class="body"><div class="hd" data-t="Theme">Theme</div><div class="card">
     <!-- تم لینک ادغام‌شده | Merged Link Theme Row: یک ردیف برای تم لینک؛ روز خودکار لینک روشن، شب خودکار لینک تیره -->
     <div class="item" data-th="link"><span data-t="Link">Link</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="dark"><span data-t="Dark">Dark</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="light"><span data-t="Light">Light</span><span class="rr" style="color:var(--blue)"></span></div></div>
+    <div class="item" data-th="ocean"><i style="width:14px;height:14px;border-radius:50%;background:#0284c7;flex:none;margin-inline-end:10px"></i><span data-t="Ocean">Ocean</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="forest"><i style="width:14px;height:14px;border-radius:50%;background:#16a34a;flex:none;margin-inline-end:10px"></i><span data-t="Forest">Forest</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="violet"><i style="width:14px;height:14px;border-radius:50%;background:#7c3aed;flex:none;margin-inline-end:10px"></i><span data-t="Violet">Violet</span><span class="rr" style="color:var(--blue)"></span></div></div>
+    <div class="hd" data-t="Night Mode">Night Mode</div><div class="card"><div class="item" id="nightRow"><span data-t="Night Mode">Night Mode</span><span class="sw" id="nightSw"></span></div></div>
     <div class="hd" data-t="Accent Color">Accent Color</div><div class="card"><div class="item" id="accRow" style="gap:12px;justify-content:center"></div></div>
     <div class="hd" data-t="Chat Background">Chat Background</div><div class="card"><div class="item" id="bgRow" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPick" style="color:var(--blue)"><i data-ic="camera" data-s="20"></i><span data-t="Choose from Gallery">Choose from Gallery</span></div></div></div>
 </div>
@@ -1367,7 +1391,7 @@ function renderChats(){renderTabs();/* قلاب میوت | Mute Hook: بعد ا�
   <div class="mid"><div class="n">${c.n}${vb(c,15)}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?c.s:c.m}</div><div class="m">${c.ty==="gp"?c.m:""}</div></div>
   <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
   <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
- $$(".row").forEach(bindRow);padLists()}
+ $$("#clist .row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
 function bindRow(r){const id=+r.dataset.id;let tm,long=false;
  const start=()=>{long=false;tm=setTimeout(()=>{long=true;if(!S.edit)openMenu(id,r)},450)};
@@ -1539,7 +1563,7 @@ lkGap();["resize","orientationchange","load","pageshow"].forEach(e=>window.addEv
 /* ---- ۳.۱۲ب تنظیمات و پروفایل | 3.12b Settings & Profile ---- */
 /* تنظیمات ذخیره‌شده | Saved Config: تم، رنگ، زبان، حریم خصوصی، داده (theme, accent, language, privacy, data) */
 const CFG=(()=>{try{return JSON.parse(localStorage.getItem("lk_cfg"))||{}}catch(e){return{}}})();
-CFG.theme=CFG.theme||"link";CFG.accent=CFG.accent||"#e11d48";CFG.lang=CFG.lang||"en";
+CFG.theme=CFG.theme||"link";if(CFG.theme==="dark"||CFG.theme==="light"){CFG.night=CFG.theme==="dark";CFG.theme="link"}if(typeof CFG.night!=="boolean")CFG.night=!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);CFG.accent=CFG.accent||"#e11d48";CFG.lang=CFG.lang||"en";
 CFG.priv=Object.assign({email:"Nobody",seen:"Everybody",photo:"Everybody",bio:"Everybody",bday:"My Contacts",groups:"Everybody"},CFG.priv||{});
 CFG.data=Object.assign({photo:true,video:false,file:false,lowcalls:false},CFG.data||{});
 CFG.saved=CFG.saved||[];CFG.extra=CFG.extra||{};CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.bg=CFG.bg||{t:"preset",id:"link"};
@@ -1556,11 +1580,12 @@ function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");
 /* مسدودسازی پنجره‌های مرورگر | Native Dialog Block: هیچ پیغام تأیید، هشدار یا اعلان مرورگر باز نمی‌شود؛ alert به پیام داخلی برنامه تبدیل می‌شود (no browser popups anywhere; alert becomes the in-app toast) */
 window.alert=m=>toast(String(m));window.confirm=()=>true;window.prompt=()=>null;window.onbeforeunload=null;
 /* تم مؤثر | Effective Theme: اگر تم لینک انتخاب شده و گوشی در حالت شب است، لینک تیره برمی‌گرداند؛ وگرنه همان تم انتخابی */
-function effTheme(){if(CFG.theme==="linkdark")CFG.theme="link";return CFG.theme==="link"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"linkdark":CFG.theme}
+const THM={"link": ["#e11d48", "#f43f5e", "#fdf1c5", "#1a0709"], "ocean": ["#0284c7", "#38bdf8", "#e8f4fb", "#06141f"], "forest": ["#16a34a", "#4ade80", "#eaf4ea", "#08140c"], "violet": ["#7c3aed", "#a78bfa", "#f3edfb", "#0f0a1c"]};
+const thAcc=()=>{const t=THM[CFG.theme];if(t)CFG.accent=CFG.night?t[1]:t[0]};
+function effTheme(){if(CFG.theme==="linkdark")CFG.theme="link";return THM[CFG.theme]&&CFG.night?CFG.theme+"dark":CFG.theme}
 /* اعمال تم | Apply Theme: کلاس‌ها و رنگ نوار بالا را بر اساس تم مؤثر (روز/شب) تنظیم می‌کند */
-function applyTheme(){const T=effTheme();$("meta[name=theme-color]").content=T==="light"?"#f2f2f7":T==="link"?"#fdf1c5":T==="linkdark"?"#1a0709":"#000000";document.documentElement.classList.toggle("light",T==="light"||T==="link");document.documentElement.classList.toggle("link",T==="link");document.documentElement.classList.toggle("linkdark",T==="linkdark");document.documentElement.style.setProperty("--blue",CFG.accent)}
+function applyTheme(){const T=effTheme(),b=T.endsWith("dark")?T.slice(0,-4):T,nt=T.endsWith("dark"),t=THM[b];$("meta[name=theme-color]").content=t?(nt?t[3]:t[2]):T==="light"?"#f2f2f7":"#000000";const c=document.documentElement.classList;Object.keys(THM).forEach(k=>{c.toggle(k,T===k);c.toggle(k+"dark",T===k+"dark")});c.toggle("light",T==="light"||(!!t&&!nt));document.documentElement.style.setProperty("--blue",CFG.accent)}
 /* گوش‌دادن به روز/شب | Day-Night Listener: وقتی حالت روز/شب گوشی عوض شد، تم لینک خودکار عوض می‌شود */
-if(window.matchMedia)matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(CFG.theme==="link"){CFG.accent=effTheme()==="linkdark"?"#f43f5e":"#e11d48";saveCfg();applyTheme();renderVals()}});
 /* ناوبری | Sub-page Navigation: باز و بسته شدن صفحه‌ها (open/close with a stack) */
 function openSub(id){S.subs.push(id);$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));$("#tabbar").style.display="none"}
 function closeSub(){S.subs.pop();const id=S.subs[S.subs.length-1];$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));if(!id)$("#tabbar").style.display="flex"}
@@ -1801,6 +1826,10 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  $("#mpQ").onclick=()=>{const i=MPV.i,a=mpvQs(i),n=a[(a.indexOf(mpvQv(i))+1)%a.length];MPV.rec[i].q=n;$("#mpQ").textContent=n};
  mpeInit();
  $("#mpBack").onclick=mpvClose;
+ /* حذف از انتخاب | Deselect: لمس نشان شماره، فایل فعلی را از انتخاب خارج می‌کند؛ اگر چیزی نماند پیش‌نمایش بسته می‌شود */
+ $("#mpIdx").onclick=()=>{const i=MPV.i,n=MPV.f.length;if(n<=1){mpvClose();return}mpvStop();MPV.tok++;URL.revokeObjectURL(MPV.u[i]);
+  [MPV.f,MPV.rec,MPV.u,MPV.mute].forEach(a=>a.splice(i,1));MPV.th.splice(i,1);MPV.th=Array.from(MPV.th,a=>a&&a.filter(Boolean).length===14?a:undefined);
+  $("#mpTr").children[i].remove();mpvGo(Math.min(i,n-2),0)};
  $("#mpMute").onclick=()=>{MPV.mute[MPV.i]=!MPV.mute[MPV.i];mpvMuteUi(MPV.i);const v=mpvV();if(v)v.muted=!!MPV.mute[MPV.i]};
  /* ارسال از پیش‌نمایش | Send From Preview: برش‌های واقعی را روی فایل می‌گذارد، صفحه را می‌بندد، آلبوم را می‌فرستد و شرح را پیام جدا بعدش می‌فرستد */
  $("#mpSend").onclick=async()=>{const F=MPV.f.slice(),cap=$("#mpCap").value.trim();
@@ -1820,7 +1849,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  return o}
 /* آیکن‌های ویرایش | Edit Icons: آیکن چرخش و آینه و ترجمه‌ی برچسب‌های ویرایشگر */
 MPI.rot=MPS('<path d="M4 12a8 8 0 108-8M4 4v5h5"/>');MPI.flp=MPS('<path d="M12 3v18M7.5 7L3 17h4.5zM16.5 7L21 17h-4.5z"/>');
-Object.assign(FA,{"Free":"آزاد","Original":"اصلی","Square":"مربع","Brightness":"روشنایی","Contrast":"کنتراست","Saturation":"اشباع","Reset":"بازنشانی","Auto":"خودکار"});
+Object.assign(FA,{"Night Mode":"حالت شب","Ocean":"اقیانوس","Forest":"جنگل","Violet":"بنفش","Free":"آزاد","Original":"اصلی","Square":"مربع","Brightness":"روشنایی","Contrast":"کنتراست","Saturation":"اشباع","Reset":"بازنشانی","Auto":"خودکار"});
 /* منبع تصویر | Item Source: عنصر عکس یا ویدیوی صفحه‌ی i و اندازه‌ی واقعی آن را می‌دهد */
 function mpvSrc(i){const m=$("#mpTr").children[i].querySelector("img,video"),vd=m.tagName==="VIDEO";return{m,sw:vd?m.videoWidth:m.naturalWidth,sh:vd?m.videoHeight:m.naturalHeight}}
 /* رسم نتیجه | Draw Edited Preview: نتیجه‌ی برش، چرخش، آینه و رنگ را با همان mDraw سیستم رسانه روی بوم صفحه می‌کشد تا پیش‌نمایش با فایل ارسالی یکی باشد */
@@ -2062,12 +2091,14 @@ function closePick(){$("#pick").classList.remove("on");$("#pshade").style.displa
 $("#pshade").onclick=closePick;
 $$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals()})});
 $$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
-$$("[data-th]").forEach(e=>e.onclick=()=>{CFG.theme=e.dataset.th;if(CFG.theme==="link")CFG.accent=effTheme()==="linkdark"?"#f43f5e":"#e11d48";saveCfg();applyTheme();renderVals()});
+$("#nightRow").onclick=()=>{CFG.night=!CFG.night;thAcc();saveCfg();applyTheme();renderVals()};
+$$("[data-th]").forEach(e=>e.onclick=()=>{CFG.theme=e.dataset.th;thAcc();saveCfg();applyTheme();renderVals()});
 /* مقدارها | Refresh Values */
 function renderVals(){
  $("#v_lang").textContent=LANGS.find(l=>l[0]===CFG.lang)[1];
  $$("[data-pk]").forEach(e=>e.querySelector(".v").textContent=tr(CFG.priv[e.dataset.pk]));
  $$("[data-sw]").forEach(e=>e.querySelector(".sw").classList.toggle("on",!!CFG.data[e.dataset.sw]));
+ $("#nightSw").classList.toggle("on",!!CFG.night);
  $$("[data-th]").forEach(e=>e.querySelector(".rr").innerHTML=CFG.theme===e.dataset.th?ic("check",20):"");
  $("#accRow").innerHTML=ACC.map(c=>`<span class="swt${c===CFG.accent?" on":""}" data-c="${c}" style="background:${c}"></span>`).join("");
  $$(".swt").forEach(e=>e.onclick=()=>{CFG.accent=e.dataset.c;saveCfg();applyTheme();renderVals()});
