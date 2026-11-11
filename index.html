@@ -164,7 +164,9 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .pinbar span{color:var(--blue);font-weight:600}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
-#chat .msgs{overflow-x:hidden;padding-bottom:var(--ibh,calc(var(--ext) + 53px + env(safe-area-inset-bottom)))}
+#chat .msgs{overflow-x:hidden;padding-bottom:10px}
+/* فاصله‌ی زیر پیام آخر | Bottom Spacer: به جای padding-bottom (که در بعضی مرورگرها در انتهای اسکرول حساب نمی‌شود) یک عنصر واقعی به اندازه‌ی نوار پایین ته لیست می‌نشیند تا آخرین پیام همیشه بالای نوار بماند */
+#chat .msgs::after{content:"";flex:0 0 var(--ibh,calc(var(--ext) + 53px + env(safe-area-inset-bottom)));min-height:0}
 /* نوار پیام با کیبورد | Message Bar With Keyboard: وقتی کیبورد باز است کل برنامه (با جاوااسکریپت) به‌اندازه‌ی کیبورد کوتاه می‌شود و نوار پیام فقط ۷ پیکسل بالاتر از لبه‌ی پایین می‌نشیند، یعنی دقیقاً روی نوار سیاه کیبورد؛ فاصله‌ی پایین نوار هم‌زمان با کوتاه شدن برنامه نرم عوض می‌شود (while the keyboard is open the app is shortened by JS and the bar sits 7px above the bottom edge, exactly on the keyboard's black bar; its bottom gap animates in step) */
 #chat .inbar{transition:padding-bottom .25s cubic-bezier(.17,.59,.4,.77)}
 #chat .inbar.kbo{padding-bottom:7px}
@@ -1102,7 +1104,8 @@ let CHATS=[
  {id:8,n:"Class Group",s:"Ms. Sara",m:"فردا امتحان داریم",tm:"23:15",ty:"gp",pin:0,t:0,un:2,mute:0,on:0,col:"#e8743b"},
  {id:9,n:"Family",s:"Mom",m:"شام چی داریم؟",tm:"22:40",ty:"gp",pin:0,t:0,un:0,mute:1,on:0,col:"#9a5de0"},
  {id:10,n:"Link News",m:"New version 0.1 released",tm:"23:16",ty:"ch",pin:0,t:0,un:118,mute:0,on:0,col:"#222"},
- {id:11,n:"Tech Channel",m:"New phone leaked today",tm:"23:13",ty:"ch",pin:0,t:0,un:2,mute:1,on:0,col:"#111"}
+ {id:11,n:"Tech Channel",m:"New phone leaked today",tm:"23:13",ty:"ch",pin:0,t:0,un:2,mute:1,on:0,col:"#111"},
+ {id:12,n:"Demo Channel",m:"نسخه جدید لینک به‌زودی منتشر می‌شود 🚀",tm:"20:30",ty:"ch",pin:0,t:0,un:0,mute:0,on:0,col:"#e11d48",members:["Ailin","Melika","Saman","Roj"],handle:"demo_channel",pub:true,desc:"کانال نمایشی؛ شما ادمین این کانال هستید"}
 ];
 /* مخاطبین | Contacts Data: نام و وضعیت آنلاین (name and last-seen text) */
 let PEOPLE=[["Adrina","last seen recently"],["Ailin","last seen recently"],["Amir Alinezhad","last seen recently"],["Artin","last seen 05/26/25"],["Asal","last seen recently"],["Bazdar","last seen recently"],["Melika","online"],["Saman","online"],["Roj","last seen 5 minutes ago"],["Salma","last seen 15 minutes ago"]].sort((a,b)=>a[0].localeCompare(b[0]));
@@ -1518,9 +1521,9 @@ const vv=window.visualViewport;
   ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";
   bar.classList.add("kbo");ch.classList.add("kbo2");fitBar();follow(260);setTimeout(fitBar,300)};
  /* بستن کادر | Close Keyboard Box: برنامه به ارتفاع اصلی برمی‌گردد و بعد از پایان حرکت همه‌ی مقدارهای موقت پاک می‌شوند (app returns to its normal height, temporary styles are cleared afterwards) */
- const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;settle=1;gap=gp();
+ const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;settle=1;gap=gp();const atB=gap<=4,keepB=()=>{const f=()=>{ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};requestAnimationFrame(()=>{f();setTimeout(f,120);setTimeout(f,400)})};
   ap.style.transition=EZ;ap.style.height=A0+"px";bx.style.height="0px";bar.classList.remove("kbo");ch.classList.remove("kbo2");fitBar();follow(260);setTimeout(fitBar,300);
-  clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){settle=0;ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar()}},270)};
+  clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){settle=0;ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar();if(atB)keepB()}},270)};
  /* اندازه‌گیری کیبورد | Measure Real Keyboard: در ۷۰ میلی‌ثانیه‌ی آخر حرکت، ارتفاع واقعی کیبورد (با نوار سیاه) را می‌خواند و اگر فرق داشت یک اصلاح خیلی کوچک می‌کند و ذخیره می‌کند (reads the real keyboard height near the end of the motion and corrects it slightly) */
  const measure=()=>{if(!vv||!isOpen||document.activeElement!==ti)return;
   const w=tO+250-70-performance.now();if(w>0){clearTimeout(mW);mW=setTimeout(measure,w);return}
@@ -1556,6 +1559,15 @@ const vv=window.visualViewport;
  /* وضعیت باز بودن | Keyboard Open Flag: بقیه‌ی برنامه (مثل اندازه‌گیری لبه‌ی صفحه) می‌توانند بپرسند کیبورد باز است یا نه (other code can ask whether the keyboard box is open) */
  window._kbOn=()=>!!(isOpen||settle);
 })();
+/* چسبیدن به ته گفتگو | Stick To Bottom: اگر کاربر ته گفتگو باشد، هر بار که اندازه‌ی لیست یا نوار پایین عوض شود (کیبورد باز و بسته، انیمیشن نوار، پیام جدید) دوباره تا ته اسکرول می‌رود تا آخرین پیام همیشه بالای نوار بماند (keeps the last message above the bar whenever the list, bar or keyboard changes size while the user is at the bottom) */
+(function(){const ms=$("#msgs"),ch=$("#chat");if(!ms||!ch||!window.ResizeObserver)return;let st=1;const gp=()=>ms.scrollHeight-ms.scrollTop-ms.clientHeight;
+ const user=()=>{st=gp()<=30};
+ ["touchmove","touchend","wheel","pointerup","keyup"].forEach(e=>ms.addEventListener(e,()=>setTimeout(user,60),{passive:true}));
+ ms.addEventListener("scroll",()=>{if(gp()<=30)st=1},{passive:true});
+ const snap=()=>{if(!st||!ch.classList.contains("on"))return;ms.style.scrollBehavior="auto";ms.scrollTop=ms.scrollHeight;ms.style.scrollBehavior=""};
+ new ResizeObserver(snap).observe(ms);
+ new MutationObserver(snap).observe(ms,{childList:true});
+ setTimeout(()=>{[$(".inbar"),$("#chbar"),$("#blkbar")].forEach(x=>{if(x)new ResizeObserver(()=>requestAnimationFrame(()=>{snap();setTimeout(snap,60)})).observe(x)})},0)})();
 /* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
 function lkGap(){const A=$("#app");if(!A)return;/* قلاب کیبورد | Keyboard Hook: وقتی کادر کیبورد باز است اندازه‌گیری نکن (skip while the keyboard box is open) */if(window._kbOn&&window._kbOn())return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
 lkGap();["resize","orientationchange","load","pageshow"].forEach(e=>window.addEventListener(e,lkGap));if(vv)vv.addEventListener("resize",lkGap);setTimeout(lkGap,400);
@@ -1666,6 +1678,8 @@ const chatBytes=c=>mediaOf(c.id).reduce((a,x)=>a+x.size,0);
 const mediaType=f=>{const t=f.type||"";return t.startsWith("image/")?"photo":t.startsWith("video/")?"video":t.startsWith("audio/")?"voice":"file"};
 /* محتوای گفتگو | Chat Messages: پیام‌های هر گفتگو؛ «Saved Messages» فقط پیام‌های خود کاربر را دارد و جواب نمی‌گیرد */
 function chatMsgs(c){return CFG.cleared&&CFG.cleared[c.id]?(CFG.sent[c.id]||[]):c.id===2?CFG.saved:(c.ty==="pv"?SAMPLE:[SAMPLE[0],SAMPLE[2]]).concat(CFG.sent[c.id]||[])}
+/* کانال نمایشی | Demo Channel: پیام‌های اولیه یک‌بار ساخته می‌شود (اگر تاریخچه پاک شود دوباره ساخته نمی‌شود) */
+(function(){if(!CHATS.some(c=>c.id===12))return;CFG.cleared=CFG.cleared||{};CFG.sent=CFG.sent||{};if(CFG.cleared[12])return;CFG.cleared[12]=1;CFG.sent[12]=[["me","به کانال نمایشی خوش آمدید 👋","20:05",0],["me","اینجا فقط ادمین پیام می‌فرستد و اعضا می‌توانند ببینند.","20:06",0],["me","نسخه جدید لینک به‌زودی منتشر می‌شود 🚀","20:30",0]];if(typeof saveCfg==="function")saveCfg()})();
 /* ---- ۳.۱۷ ارسال رسانه | 3.17 Send Media ---- */
 let LKDBp=null;var LKU={},LKB={},LKM="\u2064";
 function lkDB(){return LKDBp||(LKDBp=new Promise((ok,no)=>{const r=indexedDB.open("lk_media",1);r.onupgradeneeded=()=>r.result.createObjectStore("b");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
@@ -1701,10 +1715,10 @@ function lkMsgHtml(t){const o=lkDec(t);if(!o)return fwBody(t);return lkMsgBody(o
 /* بدنه‌ی رسانه | Media Body: فقط عکس‌ها یا فایل‌ها بدون کپشن */
 function lkMsgBody(o){
  if(o.k==="files")return '<div class="lkbody lkf">'+o.it.map(x=>'<div class="lkfr"><div class="lkfi">'+esc((x.n.split(".").pop()||"file").slice(0,4).toUpperCase())+'</div><div class="lkft"><b dir="auto">'+esc(x.n)+'</b><span>'+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+(o.pend?'<i class="lksp"></i>':lkDlI)+'</div></div>').join("")+'</div>';
- const lkT=lkTele(o);if(lkT)return lkT;const rows=lkSplit(o.it);let i=0,h='<div class="lkbody lka">';
- rows.forEach(n=>{const r=o.it.slice(i,i+n),a=r.map(x=>mClamp((x.w||1)/(x.h||1),.7,1.7)),rh=Math.min(250/a.reduce((p,q)=>p+q,0),rows.length===1&&n===1?320:200);
-  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+a[j].toFixed(3)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
- return h+'</div>'}
+ const lkT=lkTele(o);if(lkT)return lkT;const rows=lkSplit(o.it);let i=0,W=0,h='<div class="lkbody lka">';
+ rows.forEach(n=>{const sg=rows.length===1&&n===1,r=o.it.slice(i,i+n),a=r.map(x=>mClamp((x.w||1)/(x.h||1),sg?.5:.7,1.7)),rh=Math.min(250/a.reduce((p,q)=>p+q,0),sg?320:200);if(sg)W=Math.round(rh*a[0]);
+  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
+ return (W?h.replace('lkbody lka"','lkbody lka" style="width:'+W+'px"'):h)+'</div>'}
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
 async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),b=r&&(r.thumb||(r.blob&&r.blob.type.startsWith("image/")?r.blob:null));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
 /* ذخیره روی دستگاه | Download File: فایل را از انبار برمی‌دارد و دانلود می‌کند */
@@ -1722,7 +1736,7 @@ async function lkProcess(f,x,onP){
  if(x.t==="photo"){const r=await mediaRun(f,f.__rec||null,f.__q==="HD"?"photoHD":"photoSD");blob=r.blob;name=r.original?f.name:r.name;w=r.w||0;h=r.h||0;thumb=await lkThumb(blob);if(!w){const i=await mediaInfo(f).catch(()=>null);if(i){w=i.w;h=i.h}}}
  else if(x.t==="video"){const p=await lkPoster(f);thumb=p.thumb;w=p.w;h=p.h;dur=f.__rec&&f.__rec.trim?f.__rec.trim.end-f.__rec.trim.start:p.d;const r=await mediaRun(f,f.__rec||null,"videoChat",{height:f.__q||720,onProgress:onP});blob=r.blob;name=r.original?f.name:r.name;
   /* پوستر نتیجه | Result Poster: اگر ویدیو در پیش‌نمایش برش یا کوتاه شده، اندازه و تصویر بندانگشتی و مدت از خود ویدیوی نتیجه خوانده می‌شود تا حباب مثل فایل ارسالی باشد */
-  if(f.__rec&&!r.original){const q=await lkPoster(r.file||blob);if(q.thumb){thumb=q.thumb;w=q.w;h=q.h;dur=q.d||dur}}}
+  if(!r.original){const q=await lkPoster(r.file||blob);if(q.thumb){thumb=q.thumb;w=q.w;h=q.h;dur=q.d||dur}}}
  x.w=w;x.h=h;x.d=dur;x.n=name;x.s=blob.size;return{blob,thumb}}
 /* ساخت حباب در حال ارسال | Pending Bubble: بلافاصله حباب با چرخان انتظار نشان داده می‌شود؛ تابع برگشتی بعداً فایل‌ها را آماده، ذخیره و حباب را کامل می‌کند */
 /* حباب در حال ارسال | Pending Bubble (با کپشن | with caption) */
@@ -1861,6 +1875,25 @@ function mpvDraw(i){const sl=$("#mpTr").children[i];if(!sl)return;if(!mpvIsEd(i)
 /* علامت ویرایش | Mark Edited: اگر فایل برش، رنگ، چرخش یا آینه دارد بوم نتیجه را نشان می‌دهد، وگرنه خود فایل را */
 function mpvIsEd(i){const r=MPV.rec[i];return !mPlain(mediaRecipe({crop:r.crop,adjust:r.adjust,rotate:r.rotate,flip:r.flip}))}
 function mpvEdited(i){mpvDraw(i)}
+/* پیش‌نمایش عکس پروفایل | Profile Photo Preview: قبل از تایید، عکس در همان صفحه پیش‌نمایش ارسال و ویرایشگر برش می‌آید؛ برش همیشه مربعی است و دایره‌ی راهنمای کم‌رنگ نشان داده می‌شود (shows the send preview and square crop editor with a faint circle guide before a profile photo is confirmed) */
+const _pp0=pickPhoto;
+pickPhoto=function(cb,bg){if(bg)return _pp0(cb,bg);const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
+Object.assign(FA,{"Profile photo":"عکس پروفایل"});
+(function(){const st=document.createElement("style");st.textContent="#mpv.av .mpcap,#mpv.av #mpQ,#mpv.av #mpIdx,#mpv.av #mpMute,#mpv.av [data-mt=draw],#mpv.av #mpeH{display:none!important}#mpv.av #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3}";document.head.append(st)})();
+async function avPreview(file,cb){
+ await mpvOpen([file]);
+ const o=$("#mpv"),sb=$("#mpSend"),bb=$("#mpBack"),cr=o.querySelector('[data-mt="crop"]'),s0=sb.onclick,b0=bb.onclick,c0=cr.onclick;
+ o.classList.add("av");$("#mpTo").textContent=tr("Profile photo");
+ const w=file.__w||1,h=file.__h||1,r=MPV.rec[0];
+ if(w>h){const k=h/w;r.crop={x:(1-k)/2,y:0,w:k,h:1}}else if(h>w){const k=w/h;r.crop={x:0,y:(1-k)/2,w:1,h:k}}
+ mpvEdited(0);
+ const sl=$("#mpTr").children[0];if(sl){const g=document.createElement("i");g.className="avg";const q=Math.min(sl.clientWidth,sl.clientHeight);g.style.width=g.style.height=q+"px";sl.append(g)}
+ const end=()=>{o.classList.remove("av");sb.onclick=s0;bb.onclick=b0;cr.onclick=c0};
+ bb.onclick=()=>{b0();end()};
+ cr.onclick=async()=>{await c0();MPE.ratio=1};
+ sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=320,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
+  mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.85))}catch(e){toast("Couldn't use this photo");return}b0();end()}
+}
 /* کیفیت‌ها | Quality Options: برای عکس SD و HD (پریست‌های photoSD و photoHD)، برای ویدیو ارتفاع‌های پریست videoChat تا اندازه‌ی خود ویدیو */
 function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const s=Math.min(f.__w||1080,f.__h||1080);return MP.videoChat.heights.filter(h=>h<=Math.max(240,s))}
 /* کیفیت فعلی | Current Quality: کیفیت انتخاب‌شده، یا پیش‌فرض (عکس SD و ویدیو ۷۲۰ یا بالاترین ممکن) */
@@ -1916,13 +1949,21 @@ function mpeInit(){
  $("#mpaX").onclick=()=>{MPV.rec[MPA.i].adjust=MPA.s;mpvEdited(MPA.i);$("#mpa").classList.remove("on")};
  $("#mpaOk").onclick=()=>$("#mpa").classList.remove("on")}
 /* باز کردن پیش‌نمایش | Open Preview: اندازه‌ی فایل‌ها را می‌خواند، صفحه‌ها را از عکس و ویدیو می‌سازد و پیش‌نمایش را نشان می‌دهد */
-async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id===S.openId);await Promise.all(files.map(lkDims));const o=mpvEl();MPV.u.forEach(u=>URL.revokeObjectURL(u));
+Object.assign(FA,{"Preparing media...":"در حال آماده‌سازی..."});
+/* نوار بارگذاری ۰ تا ۱۰۰ بعد از انتخاب از گالری | Gallery Loading Bar: تا آماده‌شدن پیش‌نمایش عکس و ویدیو درصد پیشرفت نشان می‌دهد */
+function lkLoad(n){if(!document.getElementById("lkLoadCss")){const s=document.createElement("style");s.id="lkLoadCss";s.textContent="#lkLoad{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}#lkLoad .lc{min-width:230px;padding:16px 20px;border-radius:18px;background:var(--card);text-align:center;font-size:14px}#lkLoad .lt{height:6px;margin-top:12px;border-radius:3px;background:rgba(127,127,127,.3);overflow:hidden}#lkLoad .lf{height:100%;width:0;border-radius:3px;background:var(--blue)}";document.head.append(s)}
+ const e=document.createElement("div");e.id="lkLoad";e.innerHTML='<div class="lc"><div class="ln"></div><div class="lt"><div class="lf"></div></div></div>';document.body.append(e);
+ const lab=e.querySelector(".ln"),fl=e.querySelector(".lf");let p=0,cap=100/n*.9;
+ const show=()=>{fl.style.width=p+"%";lab.textContent=tr("Preparing media...")+" "+Math.round(p)+"%"};show();
+ const tk=setInterval(()=>{if(p<cap){p+=(cap-p)*.08;show()}},100);
+ return{set(k){cap=k>=n?100:Math.min(99,(k+.9)/n*100);p=Math.max(p,k/n*100);show()},end(){clearInterval(tk);setTimeout(()=>e.remove(),150)}}}
+async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id===S.openId);const lp=lkLoad(files.length);try{let n=0;await Promise.all(files.map(f=>lkDims(f).finally(()=>lp.set(++n))))}catch(e){lp.end();throw e}const o=mpvEl();MPV.u.forEach(u=>URL.revokeObjectURL(u));
  Object.assign(MPV,{f:files,i:0,rec:files.map(()=>({})),th:[],mute:[],tok:MPV.tok+1,to:c?c.n:""});MPV.u=files.map(f=>URL.createObjectURL(f));
  $("#mpTo").textContent="↑ "+tr(MPV.to);$("#mpCap").value="";$("#mpCap").placeholder=tr("Add a caption...");
  $("#mpTr").innerHTML=files.map((f,i)=>{const vd=lkKind(f)==="video",p=(f.__h||1)>(f.__w||1);return `<div class="mps${p?" pt":""}">${vd?`<video src="${MPV.u[i]}" playsinline webkit-playsinline preload="auto"></video><div class="mpp">${MPI.play}</div>`:`<img src="${MPV.u[i]}">`}<canvas class="mpc"></canvas></div>`}).join("");
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
  [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{const had=isFinite(MPV.f[i].__d)&&MPV.f[i].__d>0;mpvDur(i);if(!had&&MPV.f[i].__d>0&&MPV.i===i){mpvSel(i);if(!(MPV.th[i]&&MPV.th[i].some(Boolean)))mpvThumbs(i,MPV.tok)}try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
- o.classList.add("on");mpvGo(0,0)}
+ o.classList.add("on");mpvGo(0,0);lp.set(files.length);lp.end()}
 /* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را مثل تلگرام تمام‌صفحه باز می‌کند؛ کشیدن چپ و راست = قبلی و بعدی، کشیدن به پایین = بستن، دو انگشت یا دو بار لمس = زوم (Telegram-like: swipe sideways, swipe down to close, pinch or double-tap to zoom) */
 /* داده‌ی نمایشگر | Viewer State: آلبوم، شماره‌ی فعلی، پیام مبدا، ویدیوی در حال پخش و بی‌صدا بودن (album, index, source bubble, playing video, mute flag) */
 const LKV={it:[],i:0,b:null,v:null,mu:false,busy:false,raf:0,lt:""};
@@ -2332,17 +2373,17 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
  b.onclick=()=>{if(CFG.blocked)delete CFG.blocked[S.openId];saveCfg();applyBlock();toast(tr("Unblocked"))};
  const oc=openChat;openChat=function(id){oc(id);applyBlock();if(window.applyPin)applyPin()}})();
 /* کانال | Channel: فقط ادمین پیام می‌دهد؛ حباب‌ها چپ؛ تعداد بازدید کنار ساعت (admins-only posting, left bubbles, view count) */
-(function(){const st=document.createElement("style");st.textContent="#chbar{position:absolute;left:0;right:0;bottom:0;display:none;box-sizing:border-box;align-items:flex-end;justify-content:center;padding:8px 7px calc(var(--gap,var(--ext)) + 30px);background:none;pointer-events:none;color:var(--prev);font-size:15px;z-index:6}#chbar span{pointer-events:auto;display:inline-flex;align-items:center;height:40px;padding:0 24px;border-radius:20px;background:var(--card)}.b .chn{font-weight:600;font-size:14px;color:var(--blue);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.b small .vw{display:inline-flex;align-items:center;gap:3px;margin-right:8px;vertical-align:middle;line-height:1}.b small .vw svg{display:block}.b small:has(.vw){display:flex;align-items:center;justify-content:flex-end;line-height:1}";document.head.append(st);
+(function(){const st=document.createElement("style");st.textContent="#chbar{position:absolute;left:0;right:0;bottom:0;display:none;box-sizing:border-box;align-items:flex-end;justify-content:center;padding:8px 7px calc(var(--gap,var(--ext)) + 30px);background:none;pointer-events:none;color:var(--prev);font-size:15px;z-index:6}#chbar span{pointer-events:auto;display:inline-flex;align-items:center;height:40px;padding:0 24px;border-radius:20px;background:var(--card)}.b .chn{font-weight:600;font-size:14px;color:var(--blue);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.b small .vw{display:inline-flex;align-items:center;gap:3px;margin-inline-end:8px;vertical-align:middle;line-height:1}.b small .vw svg{display:block}.b small:has(.vw){display:flex;align-items:center;justify-content:flex-end;line-height:1}";document.head.append(st);
  const bar=document.createElement("div");bar.id="chbar";bar.textContent="Only admins can post";$("#chat").append(bar);if(window._ibRO)window._ibRO.observe(bar,{box:"border-box"});
  const isCh=()=>{const c=CHATS.find(x=>x.id===S.openId);return !!c&&c.ty==="ch"};
  const eye='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
  const fmt=n=>n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;
  const views=(t,tm)=>{let h=7;const s=String(t)+tm;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return 800+h%9000};
- const am=addMsg;addMsg=function(w,t,tm,n,rp,ed){const ch=isCh();const d=am(ch?"ot":w,t,tm,n,rp,ed);if(ch){if(!d.querySelector(".chn")){const h=document.createElement("div");h.className="chn";h.textContent=CHATS.find(x=>x.id===S.openId).n;d.prepend(h)}const s=d.querySelector("small");if(s&&!s.querySelector(".vw")){s.insertAdjacentHTML("afterbegin",`<span class="vw">${eye}${fmt(views(t,tm))}</span>`);/* نام ادمین فرستنده بعد از زمان | Admin name after time (Telegram style) */const cc=CHATS.find(x=>x.id===S.openId),au=document.createElement("span");au.className="au";au.dir="auto";au.style.cssText="margin-inline-start:6px;opacity:.8";if(!cc.sign)au.style.display="none";au.textContent=Array.isArray(cc.members)&&S.user?S.user.name:(cc.admin||"Admin");s.append(au)}}return d};
+ const am=addMsg;addMsg=function(w,t,tm,n,rp,ed){const ch=isCh();const d=am(ch?"ot":w,t,tm,n,rp,ed);if(ch){if(!d.querySelector(".chn")){const h=document.createElement("div");h.className="chn";h.textContent=CHATS.find(x=>x.id===S.openId).n;d.prepend(h)}const s=d.querySelector("small");if(s&&!s.querySelector(".vw")){/* ترتیب زمان، امضا، ویو | Order: time, signature, views */const cc=CHATS.find(x=>x.id===S.openId),au=document.createElement("span");au.className="au";au.dir="auto";au.style.cssText="margin-inline-end:6px;opacity:.8";if(!cc.sign)au.style.display="none";au.textContent=Array.isArray(cc.members)&&S.user?S.user.name:(cc.admin||"Admin");const tn=[...s.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());if(tn)s.insertBefore(au,tn);else s.append(au);s.insertAdjacentHTML("afterbegin",`<span class="vw">${eye}${fmt(views(t,tm))}</span>`)}}return d};
  const fb=fitBar;fitBar=function(){fb();if(isCh())requestAnimationFrame(()=>$("#chat").style.setProperty("--ibh",bar.offsetHeight+"px"))};
  /* ادمین = سازندهٔ کانال (دارای members)؛ غیرادمین فقط دکمه صدا/بیصدا | Admin = channel creator (has members); non-admin gets only a Mute/Unmute button */const fix=()=>{const ch=isCh(),c=CHATS.find(x=>x.id===S.openId),adm=ch&&Array.isArray(c.members);bar.style.display=ch&&!adm?"flex":"none";if(ch){$(".inbar").style.display=adm?"":"none";const b=$("#blkbar");if(b)b.style.display="none";if(!adm){bar.innerHTML='<span></span>';bar.firstChild.textContent=tr(c.mute?"Unmute":"Mute");bar.style.color="var(--blue)";bar.style.cursor="pointer"}}fitBar()};
  bar.onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="ch"||Array.isArray(c.members))return;c.mute=c.mute?0:1;fix();renderChats();if(typeof cpMuteSync==="function")cpMuteSync()};
- const oc2=openChat;openChat=function(id){oc2(id);fix()};
+ const oc2=openChat;openChat=function(id){oc2(id);fix();if(typeof lkLastUp==="function")lkLastUp()};
  const ab=window.applyBlock;if(ab)window.applyBlock=function(){ab();fix()}})();
 /* Edit chat info: name, photo, description (chat profile Edit button) */
 (function(){Object.assign(FA,{"Sign Messages":"امضای پیام","Show the admin name under each message":"نام ادمین زیر هر پیام نمایش داده شود"});const o=document.createElement("div");o.className="screen sub";o.id="cedit";o.style.zIndex="75";
