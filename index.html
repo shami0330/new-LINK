@@ -1474,7 +1474,8 @@ const vv=window.visualViewport;
  const ap=$("#app"),ch=$("#chat"),ms=$("#msgs"),bar=$(".inbar"),ti=$("#mi");if(!ap||!ch||!ms||!bar||!ti)return;
  /* حالت کیبورد | Keyboard State: ارتفاع کیبورد، باز یا بسته بودن، ارتفاع صفحه و زمان‌ها (keyboard height, open flag, screen height, timers) */
  const EZ="height 250ms cubic-bezier(.17,.59,.4,.77)",KD=90,dl={t:0};
- let K=0,isOpen=0,gap=0,raf=0,clT=0,mT=0,mW=0,mOk=0,tO=0,kSeen=0,H=innerHeight,A0=0;
+ /* پایان بسته شدن | Closing Settle: تا وقتی کادر کیبورد کامل بسته نشده، اندازه‌گیری لبه‌ی صفحه (lkGap) انجام نمی‌شود تا نوار پیام پایین‌تر از جای اصلی نرود (no screen-edge measuring while the box is still closing, so the bar never drops below its normal place) */
+ let K=0,isOpen=0,settle=0,gap=0,raf=0,clT=0,mT=0,mW=0,mOk=0,tO=0,kSeen=0,H=innerHeight,A0=0;
  /* ارتفاع صفحه | Screen Height: وقتی کیبورد بسته است ارتفاع واقعی صفحه را نگه می‌دارد، با چرخش هم به‌روز می‌شود (keeps the real screen height while the keyboard is closed) */
  const setH=()=>{if(!isOpen&&document.activeElement!==ti)H=innerHeight};
  addEventListener("resize",()=>setTimeout(setH,350));addEventListener("orientationchange",()=>setTimeout(setH,450));
@@ -1487,15 +1488,15 @@ const vv=window.visualViewport;
  /* دنبال کردن پیام‌ها | Follow Messages: هنگام باز و بسته شدن کیبورد پیام‌ها فریم‌به‌فریم همان فاصله‌ی قبلی از ته گفتگو را نگه می‌دارند (messages keep their distance from the bottom while the keyboard moves) */
  const follow=d=>{cancelAnimationFrame(raf);const t0=performance.now();ms.style.scrollBehavior="auto";const f=()=>{ms.scrollTop=ms.scrollHeight-ms.clientHeight-gap;if(performance.now()-t0<d)raf=requestAnimationFrame(f);else ms.style.scrollBehavior=""};f()};
  /* باز کردن کادر | Open Keyboard Box: برنامه با انیمیشن ۲۵۰ میلی‌ثانیه‌ای کوتاه می‌شود و نوار پیام می‌آید روی نوار سیاه کیبورد (app shrinks by the keyboard height, bar rides up onto the black bar) */
- const openKb=()=>{clearTimeout(clT);clearTimeout(dl.t);if(isOpen)return;isOpen=1;mOk=0;gap=gp();K=getK();tO=performance.now();kSeen=0;
+ const openKb=()=>{clearTimeout(clT);clearTimeout(dl.t);if(isOpen)return;isOpen=1;settle=0;mOk=0;gap=gp();K=getK();tO=performance.now();kSeen=0;
   if(!ap.style.height)A0=ap.getBoundingClientRect().height;
   ap.style.transition="none";ap.style.minHeight=Math.round(H*.5)+"px";ap.style.top="0px";ap.style.bottom="auto";ap.style.height=A0+"px";void ap.offsetHeight;
   ap.style.transition=EZ;ap.style.height=(H-K)+"px";bx.style.height=K+"px";
   bar.classList.add("kbo");ch.classList.add("kbo2");fitBar();follow(260);setTimeout(fitBar,300)};
  /* بستن کادر | Close Keyboard Box: برنامه به ارتفاع اصلی برمی‌گردد و بعد از پایان حرکت همه‌ی مقدارهای موقت پاک می‌شوند (app returns to its normal height, temporary styles are cleared afterwards) */
- const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;gap=gp();
+ const closeKb=()=>{clearTimeout(dl.t);clearTimeout(mW);if(!isOpen)return;isOpen=0;settle=1;gap=gp();
   ap.style.transition=EZ;ap.style.height=A0+"px";bx.style.height="0px";bar.classList.remove("kbo");ch.classList.remove("kbo2");fitBar();follow(260);setTimeout(fitBar,300);
-  clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar()}},270)};
+  clearTimeout(clT);clT=setTimeout(()=>{if(!isOpen){settle=0;ap.style.top=ap.style.bottom=ap.style.height=ap.style.minHeight="";ap.style.transition="";if(typeof lkGap==="function")lkGap();fitBar()}},270)};
  /* اندازه‌گیری کیبورد | Measure Real Keyboard: در ۷۰ میلی‌ثانیه‌ی آخر حرکت، ارتفاع واقعی کیبورد (با نوار سیاه) را می‌خواند و اگر فرق داشت یک اصلاح خیلی کوچک می‌کند و ذخیره می‌کند (reads the real keyboard height near the end of the motion and corrects it slightly) */
  const measure=()=>{if(!vv||!isOpen||document.activeElement!==ti)return;
   const w=tO+250-70-performance.now();if(w>0){clearTimeout(mW);mW=setTimeout(measure,w);return}
@@ -1529,7 +1530,7 @@ const vv=window.visualViewport;
  if(vv){vv.addEventListener("scroll",()=>{if(isOpen&&vv.offsetTop>0)scrollTo(0,0)});addEventListener("scroll",()=>{if(isOpen&&(scrollY||pageYOffset))scrollTo(0,0)},{passive:true});
   vv.addEventListener("resize",()=>{clearTimeout(mT);mT=setTimeout(measure,140);const kk=H-vv.height-vv.offsetTop;if(kk>150)kSeen=1;if(isOpen&&kk<80&&(document.activeElement!==ti||kSeen)){if(document.activeElement===ti)ti.blur();closeKb()}})}
  /* وضعیت باز بودن | Keyboard Open Flag: بقیه‌ی برنامه (مثل اندازه‌گیری لبه‌ی صفحه) می‌توانند بپرسند کیبورد باز است یا نه (other code can ask whether the keyboard box is open) */
- window._kbOn=()=>!!isOpen;
+ window._kbOn=()=>!!(isOpen||settle);
 })();
 /* لبه‌ی صفحه نمایش | Screen Edge Gap: فاصله‌ی پایین قاب برنامه تا لبه‌ی واقعی صفحه نمایش را اندازه می‌گیرد و در --gap می‌گذارد تا نوار تب‌ها و نوار پیام همیشه ۲۰ پیکسل بالاتر از خود صفحه نمایش بنشینند؛ با چرخش و تغییر اندازه دوباره حساب می‌شود (measures gap between app frame bottom and real display bottom into --gap, re-measured on resize/rotate) */
 function lkGap(){const A=$("#app");if(!A)return;/* قلاب کیبورد | Keyboard Hook: وقتی کادر کیبورد باز است اندازه‌گیری نکن (skip while the keyboard box is open) */if(window._kbOn&&window._kbOn())return;const g=Math.max(0,Math.round(A.getBoundingClientRect().bottom-innerHeight));if(document.documentElement.style.getPropertyValue("--gap")===g+"px")return;document.documentElement.style.setProperty("--gap",g+"px");if(typeof fitBar==="function")fitBar()}
