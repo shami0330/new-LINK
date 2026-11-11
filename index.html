@@ -1159,8 +1159,8 @@ function mediaCropFor(rec,w2,h2,ratio){const c=(rec&&rec.crop)||{x:0,y:0,w:1,h:1
 function mediaFilter(a){if(!a)return"";const p=[];if(a.brightness)p.push("brightness("+(1+a.brightness/100)+")");if(a.contrast)p.push("contrast("+(1+a.contrast/100)+")");if(a.saturation)p.push("saturate("+(1+a.saturation/100)+")");return p.join(" ")}
 /* آزمایش فیلتر | Filter Support Test: بررسی می‌کند مرورگر فیلتر روی بوم را بلد است یا نه */
 const MHASF=(()=>{try{const c=document.createElement("canvas");c.width=c.height=1;const x=c.getContext("2d");x.filter="brightness(0)";x.fillStyle="#fff";x.fillRect(0,0,1,1);return x.getImageData(0,0,1,1).data[0]===0}catch(e){return false}})();
-/* تنظیم نقطه‌به‌نقطه | Pixel Adjust: راه جایگزین وقتی مرورگر فیلتر بوم ندارد؛ رنگ هر نقطه را خودش تغییر می‌دهد */
-function mPixelAdjust(ctx,w,h,a){const d=ctx.getImageData(0,0,w,h),p=d.data,m=1+(a.brightness||0)/100,k=1+(a.contrast||0)/100,s=1+(a.saturation||0)/100;for(let i=0;i<p.length;i+=4){let r=(p[i]*m-128)*k+128,g=(p[i+1]*m-128)*k+128,b=(p[i+2]*m-128)*k+128;const l=.299*r+.587*g+.114*b;p[i]=l+(r-l)*s;p[i+1]=l+(g-l)*s;p[i+2]=l+(b-l)*s}ctx.putImageData(d,0,0)}
+/* تنظیم نقطه‌به‌نقطه | Pixel Adjust: راه جایگزین وقتی مرورگر فیلتر بوم ندارد؛ رنگ هر نقطه را خودش تغییر می‌دهد. حالا با یک جدول آماده کار می‌کند و چند برابر سریع‌تر است */
+function mPixelAdjust(ctx,w,h,a){const d=ctx.getImageData(0,0,w,h),p=d.data,m=1+(a.brightness||0)/100,k=1+(a.contrast||0)/100,s=1+(a.saturation||0)/100,T=new Float32Array(256);for(let i=0;i<256;i++)T[i]=(i*m-128)*k+128;for(let i=0;i<p.length;i+=4){const r=T[p[i]],g=T[p[i+1]],b=T[p[i+2]],l=.299*r+.587*g+.114*b;p[i]=l+(r-l)*s;p[i+1]=l+(g-l)*s;p[i+2]=l+(b-l)*s}ctx.putImageData(d,0,0)}
 /* کشیدن تصویر | Draw Frame: یک عکس یا یک فریم ویدیو را با چرخش، آینه، برش و تنظیم رنگ روی بوم می‌کشد و اندازه‌ی خروجی را می‌گیرد؛ هم عکس هم ویدیو از همین یک تابع استفاده می‌کنند تا نتیجه یکسان باشد */
 function mDraw(ctx,src,sw,sh,rec,c,dw,dh){
  const rot=((rec.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,kx=dw/(c.w*w2),ky=dh/(c.h*h2),f=mediaFilter(rec.adjust);
@@ -1182,15 +1182,19 @@ async function mediaOpen(file){
 async function mediaInfo(file){const o=await mediaOpen(file);try{return{kind:o.kind,w:o.w,h:o.h,duration:o.duration}}finally{o.close()}}
 
 /* ---- تبدیل عکس | Image Convert ---- */
+/* بوم سریع | Fast Canvas: اگر مرورگر بلد باشد بوم پشت‌صحنه (OffscreenCanvas) می‌سازد تا برنامه موقع کار سنگین قفل نکند؛ وگرنه همان بوم معمولی */
+function mCanvas(w,h,needFilter){let c=null;if(typeof OffscreenCanvas!=="undefined"&&typeof OffscreenCanvasRenderingContext2D!=="undefined"&&(!needFilter||!MHASF||("filter" in OffscreenCanvasRenderingContext2D.prototype))){try{c=new OffscreenCanvas(w,h)}catch(e){c=null}}if(!c){c=document.createElement("canvas");c.width=w;c.height=h}return c}
+/* فایل از بوم | Canvas To Blob: از بوم، فایل (مثلاً JPEG) می‌سازد؛ هم بوم پشت‌صحنه و هم بوم معمولی را بلد است */
+function mToBlob(c,mime,q){return c.convertToBlob?c.convertToBlob({type:mime,quality:q}):new Promise(ok=>c.toBlob(ok,mime,q))}
 /* تبدیل عکس | Image Convert: عکس را می‌برد، می‌چرخاند، رنگ می‌دهد، کوچک می‌کند و به JPEG فشرده می‌کند؛ پس‌زمینه‌ی شفاف سفید می‌شود. فقط از بوم مرورگر استفاده می‌کند و کتابخانه نمی‌خواهد */
 async function mImageRun(file,rec,P){
  const o=await mediaOpen(file);
  try{
   const sw=Math.abs(rec.rotate||0)%180,w2=sw?o.h:o.w,h2=sw?o.w:o.h,c=mediaCropFor(rec,w2,h2,P.ratio);
   const [dw,dh]=P.w?[P.w,P.h]:mFit(c.w*w2,c.h*h2,P.maxSide);
-  const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d",{willReadFrequently:!MHASF&&!!rec.adjust});
+  const cv=mCanvas(dw,dh,!!rec.adjust);const x=cv.getContext("2d",{willReadFrequently:!MHASF&&!!rec.adjust});
   x.fillStyle="#fff";x.fillRect(0,0,dw,dh);mDraw(x,o.src,o.w,o.h,rec,c,dw,dh);
-  const blob=await new Promise(ok=>cv.toBlob(ok,P.mime,P.q));
+  const blob=await mToBlob(cv,P.mime,P.q);
   return mResult(blob,mBase(file),P.mime,dw,dh,0)
  }finally{o.close()}}
 
@@ -1247,8 +1251,11 @@ async function mVideoRun(file,rec,P,opt){
 /* تبدیل صدا | Audio Convert: صدا را می‌خواند، بخش انتخاب‌شده (trim) را برمی‌دارد، تک‌کاناله و ۴۸ کیلوهرتز می‌کند و با رمزگذار Opus به فایل OGG می‌سازد؛ خیلی سریع‌تر از مدت صدا (faster than real time) */
 async function mAudioRun(file,rec,P,opt){
  const oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,48000),ab=await oc.decodeAudioData(await file.arrayBuffer());
- const tr=rec.trim||{},st=mClamp(tr.start||0,0,ab.duration),en=mClamp(tr.end!=null?tr.end:ab.duration,st,ab.duration),a=Math.floor(st*48000),b=Math.floor(en*48000),m=new Float32Array(Math.max(0,b-a));
- for(let ch=0;ch<ab.numberOfChannels;ch++){const d=ab.getChannelData(ch);for(let i=0;i<m.length;i++)m[i]+=d[a+i]/ab.numberOfChannels}
+ const tr=rec.trim||{},st=mClamp(tr.start||0,0,ab.duration),en=mClamp(tr.end!=null?tr.end:ab.duration,st,ab.duration),a=Math.floor(st*48000),b=Math.floor(en*48000);
+ /* مخلوط صدا با موتور مرورگر | Native Audio Mix: تک‌کاناله کردن و برش را خود مرورگر انجام می‌دهد (سریع و بدون قفل شدن)؛ اگر نشد، راه قدیمی با حلقه */
+ let m;
+ try{const n=Math.max(1,b-a),rc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,n,48000),sc=rc.createBufferSource();sc.buffer=ab;sc.connect(rc.destination);sc.start(0,st,Math.max(.001,en-st));m=(await rc.startRendering()).getChannelData(0).slice()}
+ catch(e){m=new Float32Array(Math.max(0,b-a));for(let ch=0;ch<ab.numberOfChannels;ch++){const d=ab.getChannelData(ch);for(let i=0;i<m.length;i++)m[i]+=d[a+i]/ab.numberOfChannels}}
  const w=new Worker(mLibBlob("encoder")),pages=[];
  try{
   let ready,done;const pr=new Promise(ok=>{ready=ok}),pd=new Promise(ok=>{done=ok});
@@ -1662,7 +1669,7 @@ const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const lkKind=f=>{const t=f.type||"";return t.startsWith("image/")?"photo":t.startsWith("video/")?"video":"file"};
 const lkNow=()=>new Date().toTimeString().slice(0,5);
 /* پیش‌نمایش کوچک | Thumbnails: از عکس ۳۲۰ پیکسلی و از ویدیو یک فریم ابتدایی می‌سازد و عرض و ارتفاع و مدت را برمی‌گرداند */
-async function lkThumb(b){try{const bm=await createImageBitmap(b),[w,h]=mFit(bm.width,bm.height,320),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(bm,0,0,w,h);bm.close();return await new Promise(ok=>c.toBlob(ok,"image/jpeg",.7))}catch(e){return null}}
+async function lkThumb(b){try{const bm=await createImageBitmap(b),[w,h]=mFit(bm.width,bm.height,320),c=mCanvas(w,h);c.getContext("2d").drawImage(bm,0,0,w,h);bm.close();return await mToBlob(c,"image/jpeg",.7)}catch(e){return null}}
 async function lkPoster(f){try{const o=await mediaOpen(f),v=o.src;try{v.currentTime=Math.min(.1,(o.duration||1)/2);await new Promise(ok=>{v.onseeked=ok;setTimeout(ok,1500)});const [w,h]=mFit(o.w,o.h,320),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(v,0,0,w,h);const th=await new Promise(ok=>c.toBlob(ok,"image/jpeg",.7));return{thumb:th,w:o.w,h:o.h,d:o.duration}}finally{o.close()}}catch(e){return{thumb:null,w:16,h:9,d:0}}}
 /* آماده‌سازی هر فایل | Prepare File: عکس با سیستم رسانه به JPEG سبک (SD) و ویدیو به MP4 با ۷۲۰ تبدیل می‌شود؛ فایل‌ها بدون تغییر می‌روند. اگر تبدیل شکست بخورد خود فایل اصلی فرستاده می‌شود */
 async function lkProcess(f,x,onP){
