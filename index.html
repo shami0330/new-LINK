@@ -522,6 +522,18 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mpa input{flex:1;min-width:0;accent-color:var(--blue)}
 #mpv .mpa .ab{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
 #mpv .mpa .mpch{padding:0}
+/* دکمه‌های گرافیکی تنظیم | Adjust Icon Buttons: خودکار با حرف A و بازنشانی با دایره و فلش، بدون نوشته (Auto = letter A, Reset = circular arrow) */
+#mpv .mpa .mpch{gap:12px}
+/* دکمه‌های پررنگ برش | Bold Crop Buttons: دکمه‌های پایین ویرایشگر برش پررنگ و واضح تا جزو ابزار برش دیده شوند (bottom buttons of crop editor made bright and clear) */
+#mpv .mpe .mpbar{padding:14px 18px calc(env(safe-area-inset-bottom) + 22px);background:#000}
+#mpv .mpe .mpr{width:54px;height:54px;background:#fff;color:#000;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+#mpv .mpe .mpr.s{width:54px;height:54px;background:var(--blue);color:#fff}
+#mpv .mpe .mptools{height:54px;border-radius:27px;background:#3a3a3c;gap:8px;padding:0 12px}
+#mpv .mpe .mptools span{width:44px;height:54px;color:#fff}
+#mpv .mpe .mptools svg{width:26px;height:26px}
+#mpv .mpe .mpch b{background:#3a3a3c;color:#fff}
+#mpv .mpe .mpch b.on{background:#fff;color:#000}
+#mpv .mpa .mpA{font-size:20px;font-weight:700;line-height:1;background:none;padding:0}
 /* ساخت گروه و کانال و تایید | Group/Channel Creation + Confirm Box */
 #cfm{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
 #cfm.on{display:flex}
@@ -1780,7 +1792,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
 <div class="mpa" id="mpa"><label><span>${tr("Brightness")}</span><input type="range" min="-100" max="100" step="1" data-k="brightness"><b>0</b></label>
 <label><span>${tr("Contrast")}</span><input type="range" min="-100" max="100" step="1" data-k="contrast"><b>0</b></label>
 <label><span>${tr("Saturation")}</span><input type="range" min="-100" max="100" step="1" data-k="saturation"><b>0</b></label>
-<div class="ab"><div class="mpr" id="mpaX">${ic("close",20)}</div><div class="mpch"><b id="mpaAuto">${tr("Auto")}</b><b id="mpaRst">${tr("Reset")}</b></div><div class="mpr s" id="mpaOk">${ic("check",22)}</div></div></div>`;
+<div class="ab"><div class="mpr" id="mpaX">${ic("close",20)}</div><div class="mpch"><div class="mpr mpbtn" id="mpaAuto" title="Auto" aria-label="Auto"><b class="mpA">A</b></div><div class="mpr mpbtn" id="mpaRst" title="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></div></div><div class="mpr s" id="mpaOk">${ic("check",22)}</div></div></div>`;
  $("#app").append(o);
  o.querySelectorAll(".mphd").forEach(h=>mpvHandle(h,h.classList.contains("l")?"l":"r"));
  /* اتصال ابزارها | Tool Buttons: برش به ویرایشگر برش، تنظیم به برگه‌ی تنظیم، کیفیت به چرخش بین کیفیت‌ها؛ نقاشی هنوز غیرفعال است */
@@ -2476,7 +2488,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  M.addEventListener('mousedown',cap,true);
  M.addEventListener('click',e=>{if(!SEL.on)return;e.stopPropagation();e.preventDefault();
   const c=e.target.closest('.selc');if(c){toggleMsg(c._b);return}
-  const b=e.target.closest('.b');if(!b||b.classList.contains('pend'))return;
+  /* لمس کنار حباب | Row Tap: لمس بیرون حباب ولی هم‌ردیف آن، همان پیام را انتخاب می‌کند (tap beside a bubble on the same row selects that message) */ let b=e.target.closest('.b');if(!b){const y=e.clientY;b=[...M.querySelectorAll('.b')].find(x=>{const r=x.getBoundingClientRect();return y>=r.top&&y<=r.bottom})}if(!b||b.classList.contains('pend'))return;
   const cell=e.target.closest('.lkc,.lkfr');
   if(cell&&isAl(b))toggleItem(b,idOf(cell));else toggleMsg(b)},true);
  /* پرسش حذف | Ask Sheet: همان برگه‌ی پایین «برای من / برای هر دو» */
