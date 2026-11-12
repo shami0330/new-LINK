@@ -20,7 +20,7 @@
 <style>
 /* ===== بخش ۱ | SECTION 1: استایل‌ها | Styles ===== */
 
-/* متغیرهای رنگ | Color Variables: رنگ‌های اصلی تیره تلگرام (dark theme colors) */
+/* متغیرهای رنگ | Color Variables: رنگ‌های اصلی تیره LINK (dark theme colors) */
 :root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--line:#38383a;--txt:#fff;--sub:#8e8e93;--blue:#2f8fff;--red:#ff453a;--green:#34c759;--bubOut:#2b5cff;--bubIn:#1f1f22;--chatbg:#0a0a0c;--dotc:rgba(255,255,255,.09);--dotc2:rgba(255,255,255,.04);--dotc3:rgba(255,255,255,.05);--menu:rgba(40,40,42,.96);--pin:#0e0e10;--sec:#0b0b0c;--chip:#3a3a3c;--dsep:rgba(40,40,42,.85);--smalltx:rgba(255,255,255,.6);--prev:#a3a3a8;--snd:#e5e5e7}
 
 /* ریست پایه | Base Reset: حذف حاشیه‌ها و هایلایت لمس (no margin, no tap highlight) */
@@ -277,7 +277,7 @@ html.light .b.me .tick{color:var(--blue)!important}
 /* مرحله ۱ مربعی | Stage 1 Square: آواتار تمام‌عرض و مربع (full-width square, no rounding) */
 .ph.big #myav{width:100%;height:min(100vw,50vh);border-radius:0;font-size:120px}
 .ph.pull #myav{transition:none}
-/* نام و آیدی روی عکس بزرگ | Big Photo Overlay: وقتی عکس پروفایل با کشیدن باز شد، نام و آیدی و ایمیل مثل تلگرام پایین چپِ خود عکس روی یک سایه تیره می‌نشینند */
+/* نام و آیدی روی عکس بزرگ | Big Photo Overlay: وقتی عکس پروفایل با کشیدن باز شد، نام و آیدی و ایمیل مثل LINK پایین چپِ خود عکس روی یک سایه تیره می‌نشینند */
 .ph{position:relative}
 .ph.big::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none;z-index:1}
 .ph.big #myname,.ph.big #myinfo{position:absolute;left:16px;right:16px;margin:0!important;padding:0!important;text-align:left;color:#fff!important;z-index:2;animation:phIn .3s ease}
@@ -318,7 +318,7 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .fwh .av{width:16px;height:16px;font-size:9px}
 /* پیام در انتظار | Pending Bubble: ساعت به‌جای تیک و برچسب زمان یا «آنلاین» (clock instead of tick + a status line) */
 .b.pend{opacity:.85}
-/* آلبوم و بسته‌ی فایل | Album & File Pack: ظاهر عکس و ویدیوی چندتایی مثل تلگرام (شبکه‌ی ردیفی)، بسته‌ی فایل با دکمه‌ی دانلود جدا برای هر فایل، چرخان انتظار و نمایشگر تمام‌صفحه */
+/* آلبوم و بسته‌ی فایل | Album & File Pack: ظاهر عکس و ویدیوی چندتایی مثل LINK (شبکه‌ی ردیفی)، بسته‌ی فایل با دکمه‌ی دانلود جدا برای هر فایل، چرخان انتظار و نمایشگر تمام‌صفحه */
 .b.mm{padding:3px;overflow:hidden}
 /* حباب بدون جمشدن | No Squeeze: هر حباب (آلبوم یا عکس تکی یا پیام) ارتفاع خودش را حفظ می‌کند و وقتی چند آلبوم پشت هم می‌آید داخل هم جم نمی‌شود و پنهان نمی‌شود ؛ صفحه به جای آن اسکرول می‌شود */
 #msgs>.b{flex-shrink:0}
@@ -326,6 +326,8 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 /* استایل کپشن | Caption Style: شرح زیر عکس و ویدیو داخل همان حباب، بدون اینکه حباب را پهن کند؛ و برچسب «ویرایش شده» کنار ساعت */
 .lkcap{width:0;min-width:100%;box-sizing:border-box;padding:6px 8px 0;font-size:15px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;text-align:start}
 .edl{margin-inline-end:4px;opacity:.85}
+.lkc img{transition:filter .3s,transform .3s}.lkc.lkrm img{filter:blur(14px);transform:scale(1.2)}.lkdw{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}.lkdw.go .lkrg{position:absolute;left:1px;top:1px;background:none}.lkdw.go::after{content:"\2715";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}.lkc.lkrm .lkdu{z-index:2}
+#lkvbuf{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:rgba(255,255,255,.55);transform-origin:0 50%;transform:scaleX(1);display:none}#lkv.str #lkvbuf{display:block}#lkv.str #lkvbar{background:rgba(255,255,255,.16)}#lkvfil{z-index:1}.lkdw.sm{left:6px;top:6px;margin:0;width:26px;height:26px}.lkdw.sm svg{width:15px;height:15px}.lkdw.sm.go .lkrg{width:24px;height:24px}.lkdw.sm.go::after{font-size:12px}.lkc.lkrm.vd .lkdu{left:38px;top:9px}
 .lka{width:250px;max-width:100%;display:flex;flex-direction:column;gap:2px;border-radius:15px;overflow:hidden}
 .lkr{display:flex;gap:2px;width:100%}
 .lkc{position:relative;overflow:hidden;background:rgba(255,255,255,.1);min-width:0;cursor:pointer}
@@ -338,10 +340,10 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkpg em{font-style:normal}
 .lksp{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:lkspin .8s linear infinite;display:inline-block;box-sizing:border-box}
 @keyframes lkspin{to{transform:rotate(360deg)}}
-/* حلقه‌ی ارسال مثل تلگرام | Telegram Ring: وسط هر عکس یک دایره‌ی تیره‌ی بزرگ‌تر با حلقه‌ی چرخان می‌آید؛ نگار عکس تیره نمی‌شود و حباب همان موقع کاملاً روشن است */
+/* حلقه‌ی ارسال مثل LINK | LINK Ring: وسط هر عکس یک دایره‌ی تیره‌ی بزرگ‌تر با حلقه‌ی چرخان می‌آید؛ نگار عکس تیره نمی‌شود و حباب همان موقع کاملاً روشن است */
 .lkpg .lksp{width:44px;height:44px;border-width:3px;background:rgba(0,0,0,.45)}
 .b.mm.pend{opacity:1}
-/* دایره‌ی وضعیت و تاری مثل تلگرام | Telegram Status Circle: تا وقتی عکس آماده نشده تار است و روی دایره ✕ با حلقه‌ی چرخان دارد؛ وقتی آماده شد واضح می‌شود و روی دایره ✓ می‌آید */
+/* دایره‌ی وضعیت و تاری مثل LINK | LINK Status Circle: تا وقتی عکس آماده نشده تار است و روی دایره ✕ با حلقه‌ی چرخان دارد؛ وقتی آماده شد واضح می‌شود و روی دایره ✓ می‌آید */
 .lkpg::after{content:"\2715";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
 .lkc.lkd .lkpg::after{content:"\2713"}
 .lkc.lkd .lkpg .lksp{animation:none;border-color:transparent}
@@ -352,7 +354,7 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkrg circle{fill:none;stroke-width:3}
 .lkrg .t{stroke:rgba(255,255,255,.3)}
 .lkrg .f{stroke:#34c759;stroke-dasharray:var(--p,0) 100}
-/* حلقهٔ آپلود سفید | White Upload Ring: بعد از فشرده‌سازی حلقه سفید می‌شود، مثل تلگرام می‌چرخد و پر می‌شود (after compression the ring turns white, spins and fills like Telegram) */
+/* حلقهٔ آپلود سفید | White Upload Ring: بعد از فشرده‌سازی حلقه سفید می‌شود، مثل LINK می‌چرخد و پر می‌شود (after compression the ring turns white, spins and fills like LINK) */
 .lkrg[data-ph="u"] .f{stroke:#fff;stroke-linecap:round}
 .lkrg[data-ph="u"] svg{animation:lkspin 1s linear infinite}
 @keyframes lkspin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
@@ -435,7 +437,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 .schno{text-align:center;color:var(--blue);padding:8px}
 #dobov{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}#dobov.on{opacity:1;pointer-events:auto}#dobov .row{display:flex;gap:8px}#dobov select{flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:16px;padding:0 6px}
 /* ===== برگه‌ی ارسال | Share Sheet (Forward) =====
-/* برگه‌ی ارسال | Share Sheet: برگه‌ی گرد از پایین با انیمیشن، مثل تلگرام (rounded bottom sheet, slides up) */
+/* برگه‌ی ارسال | Share Sheet: برگه‌ی گرد از پایین با انیمیشن، مثل LINK (rounded bottom sheet, slides up) */
 #shov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
 #shov.on{opacity:1;pointer-events:auto}
 .shs{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 6px);height:min(86vh,760px);background:var(--card);border-radius:32px;display:flex;flex-direction:column;padding:16px 14px 14px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -589,7 +591,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #gs_chips span{background:var(--card);border-radius:14px;padding:5px 10px;font-size:14px;white-space:nowrap}
 .seg{display:flex;gap:4px;margin:10px 14px;background:var(--card);border-radius:12px;padding:3px}
 .seg div{flex:1;text-align:center;padding:8px 0;border-radius:10px}.seg div.on{background:var(--blue);color:#fff}
-/* نوار بلاک | Block Bar: وقتی مخاطب بلاک است نوار نوشتن به «Unblock» تبدیل می‌شود (message bar becomes an Unblock bar, Telegram style) */
+/* نوار بلاک | Block Bar: وقتی مخاطب بلاک است نوار نوشتن به «Unblock» تبدیل می‌شود (message bar becomes an Unblock bar, LINK style) */
 /* نوار آنبلاک هم تراز نوار پیام | Unblock Bar Aligned: دقیقا مثل نوار پیام همان فاصله های بالا و پایین و کناره ها و ارتفاع ۴۰ پیکسل دارد (same paddings, side margins and 40px height as the message bar, so the Unblock pill sits exactly on the message row) */
 #blkbar{position:absolute;left:0;right:0;bottom:0;display:none;box-sizing:border-box;align-items:flex-end;padding:8px 7px calc(var(--gap,var(--ext)) + 30px);background:none;pointer-events:none;color:var(--blue);font-size:17px;z-index:6}
 #blkbar span{pointer-events:auto;flex:1;display:flex;align-items:center;justify-content:center;height:40px;border-radius:20px;background:var(--card);cursor:pointer}
@@ -758,7 +760,7 @@ html.light #login input,html.light .inbar input,html.light .inbar textarea,html.
 .sli>div{overflow-wrap:anywhere;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .sli small{display:block;text-align:right;color:rgba(255,255,255,.75);margin-top:4px;font-size:12px}
 /* منوی پیام زمان‌بندی‌شده | Scheduled Item Menu: نگه‌داشتن روی پیام (ارسال همین حالا، ویرایش، حذف) */
-/* صفحه پیام‌های زمان‌بندی‌شده | Scheduled Messages Page: مثل تلگرام، با لمس آیکون ساعت یک صفحهٔ گفتگو با همان حباب‌ها و پس‌زمینه باز می‌شود (like Telegram: tapping the clock icon opens a chat-style page with the same bubbles and background) */
+/* صفحه پیام‌های زمان‌بندی‌شده | Scheduled Messages Page: مثل LINK، با لمس آیکون ساعت یک صفحهٔ گفتگو با همان حباب‌ها و پس‌زمینه باز می‌شود (like LINK: tapping the clock icon opens a chat-style page with the same bubbles and background) */
 #schl{align-items:stretch;justify-content:stretch;background:var(--chatbg);transform:translateX(30px);transition:opacity .2s,transform .25s}
 #schl.on{transform:none}
 #schl .slc{max-height:none;height:100%;border-radius:0;padding:0;gap:0;background:var(--chatbg)}
@@ -888,7 +890,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 .title.srch{padding:0 10px;gap:8px}
 /* کپسول جستجو تمام‌عرض | Full-Width Search Capsule: در حالت جستجو کپسول بین دکمه‌ی بازگشت و عکس پروفایل کشیده می‌شود */
 #chat .top .title.srch{width:auto;flex:1;min-width:0;justify-content:flex-start;height:44px;border-radius:22px;padding:0 14px;gap:10px}
-/* دکمه‌ی بستن گرد | Round Close Button: مثل تلگرام، دایره‌ی جدا کنار کپسول جستجو (جای عکس پروفایل) */
+/* دکمه‌ی بستن گرد | Round Close Button: مثل LINK، دایره‌ی جدا کنار کپسول جستجو (جای عکس پروفایل) */
 #csx{width:44px;height:44px;flex:none;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt)}
 .title.srch input::placeholder{color:var(--sub)}
 .title.srch .si{color:var(--sub);flex:none;display:flex}
@@ -1145,7 +1147,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
 
 /* ---- ۳.۰ آیکون‌ها | 3.0 Icons ---- */
-/* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه تلگرام، بدون ایموجی (Telegram-like line icons, no emoji) */
+/* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه LINK، بدون ایموجی (LINK-like line icons, no emoji) */
 const P={reply:"M9 14L4 9l5-5M4 9h10a6 6 0 016 6v3",more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M7 4h4v16H7zM13 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
 person:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6",chat:"M21 12a8 8 0 01-11.5 7.2L4 20l1.2-4.3A8 8 0 1121 12z",
 gear:"M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
@@ -1169,7 +1171,7 @@ const blueRows=()=>`<div class="blueRow" data-k="gp">${ic("group",24)}New Group<
 let CHATS=[
  {id:1,n:"Roj",m:"بمیرم برات 😭 شب توام ✨❤️",tm:"23:11",ty:"pv",pin:1,t:2,un:0,mute:0,on:0,col:"#d98"},
  {id:2,n:"Saved Messages",m:"roji · Photo",tm:"15:48",ty:"pv",pin:1,t:0,un:0,mute:0,on:0,col:"#3a9bff"},
- {id:3,n:"Telegram",v:1,m:"New login. Dear Shami, we detected a login into your account…",tm:"Thu",ty:"pv",pin:0,t:0,un:1,mute:0,on:0,col:"#2a9fe0"},
+ {id:3,n:"LINK",m:"Welcome to Link Messenger 👋",tm:"Thu",ty:"pv",pin:0,t:0,un:1,mute:0,on:0,col:"#2a9fe0"},
  {id:4,n:"Melika",m:"GIF",tm:"Wed",ty:"pv",pin:0,t:0,un:0,mute:0,on:1,col:"#777"},
  {id:5,n:"Saman",m:"🎤 Voice Message",tm:"Tue",ty:"pv",pin:0,t:0,un:0,mute:0,on:1,col:"#9b6"},
  {id:6,n:"Artin",m:"پس بشیم",tm:"Sat",ty:"pv",pin:0,t:2,un:0,mute:0,on:0,col:"#68a"},
@@ -1545,11 +1547,11 @@ const fwBody=t=>{const m=FWR.exec(t);return lkMsgPlain(m?m[2]:t)};
 const fwHead=t=>{const m=FWR.exec(t);return m?`<div class="fwh"><span class="fwt">${tr("Forwarded from")}</span><div class="fwn">${av(m[1],colOf(m[1]),0)}<span>${esc(m[1])}</span></div></div>`:""};
 /* نمایش پیام | Add Message: پارامتر آخر ed یعنی پیام ویرایش شده و کنار ساعت «ویرایش شده» می‌آید */
 function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
-/* تزئین حباب گروه | Group Bubble Decor: فرستنده از روی اعضای گروه ثابت انتخاب می‌شود؛ نام فقط اول هر دسته و آواتار فقط آخر هر دسته می‌ماند مثل تلگرام (stable sender from members; name on first of run, avatar on last of run) */
+/* تزئین حباب گروه | Group Bubble Decor: فرستنده از روی اعضای گروه ثابت انتخاب می‌شود؛ نام فقط اول هر دسته و آواتار فقط آخر هر دسته می‌ماند مثل LINK (stable sender from members; name on first of run, avatar on last of run) */
 function gpDecor(d,gc){const c=gc||CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="gp")return;let ms=(c.members||[]).filter(x=>x!=="You");if(!ms.length&&c.s&&c.s!=="You")ms=[c.s];if(!ms.length)return;const key=d.dataset.t+"|"+d.dataset.tm;const sn=ms[[...key].reduce((a,ch)=>a+ch.charCodeAt(0),0)%ms.length];d.dataset.sn=sn;d.classList.add("gp");const pv=d.previousElementSibling,same=pv&&pv.classList.contains("b")&&pv.classList.contains("gp")&&pv.dataset.sn===sn;if(!same){const h=document.createElement("div");h.className="gsn";h.style.color=colOf(sn);h.textContent=sn;d.prepend(h)}else{const o=pv.querySelector(":scope>.gsa");if(o)o.remove()}const a=document.createElement("div");a.className="gsa";a.innerHTML=av(sn,colOf(sn),0);d.append(a)}
 /* باز شدن پروفایل از آواتار | Avatar Opens Profile: لمس آواتار فرستنده در گروه، گفتگوی او را باز می‌کند و صفحه پروفایلش را نشان می‌دهد (tap on a group sender avatar opens that person's chat and shows their profile) */
 document.addEventListener("click",e=>{const a=e.target.closest("#msgs .gsa");if(!a)return;e.stopPropagation();e.preventDefault();const b=a.closest(".b"),n=b&&b.dataset.sn;if(!n)return;openByName(n);openCP()},true);
-/* کادر پیام بدون نوار پر کردن خودکار | Message Field No AutoFill Bar: کادر پیام مثل تلگرام نوشتنی ساده است (نه textarea) تا آیفون نوار «AutoFill Contact» و اسم مخاطب را بالای کیبورد نشان ندهد؛ با ویژگی value مثل قبل خوانده و نوشته می‌شود و Enter خط جدید می‌سازد (plain editable box instead of textarea so iOS shows no contact AutoFill bar; value works as before) */
+/* کادر پیام بدون نوار پر کردن خودکار | Message Field No AutoFill Bar: کادر پیام مثل LINK نوشتنی ساده است (نه textarea) تا آیفون نوار «AutoFill Contact» و اسم مخاطب را بالای کیبورد نشان ندهد؛ با ویژگی value مثل قبل خوانده و نوشته می‌شود و Enter خط جدید می‌سازد (plain editable box instead of textarea so iOS shows no contact AutoFill bar; value works as before) */
 (function(){const el=$("#mi"),d=document.createElement("div");
  ["id","dir"].forEach(a=>{if(el.hasAttribute(a))d.setAttribute(a,el.getAttribute(a))});
  d.setAttribute("contenteditable","true");d.setAttribute("role","textbox");d.setAttribute("aria-multiline","true");d.setAttribute("spellcheck","false");d.setAttribute("autocorrect","off");d.setAttribute("autocapitalize","sentences");d.setAttribute("enterkeyhint","enter");
@@ -1724,7 +1726,7 @@ function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  $("#pf_bio").textContent=u.bio||"";$("#pf_bio_w").style.display=u.bio?"":"none";
  $("#pf_bday").textContent=u.bday?fmtDate(u.bday):"";$("#pf_bday_w").style.display=u.bday?"":"none";
  ["#myav","#myav2","#pf_av","#tbav","#pf_full"].forEach(q=>paintAv($(q),u))}
-/* کیفیت عکس پروفایل | Profile Photo Quality: عکس پروفایل مثل تلگرام با اندازه‌ی ۶۴۰ پیکسل و کیفیت بالا ذخیره می‌شود، نه بندانگشتی ۳۲۰ کم‌کیفیت (profile photos are saved at 640px high quality like Telegram, not a 320px thumbnail) */
+/* کیفیت عکس پروفایل | Profile Photo Quality: عکس پروفایل مثل LINK با اندازه‌ی ۶۴۰ پیکسل و کیفیت بالا ذخیره می‌شود، نه بندانگشتی ۳۲۰ کم‌کیفیت (profile photos are saved at 640px high quality like LINK, not a 320px thumbnail) */
 function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=640;const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,640,640);cb(c.toDataURL("image/jpeg",.92))};im.src=r.result};r.readAsDataURL(file)};f.click()}
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
  $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";bdShow();$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
@@ -1813,10 +1815,10 @@ function lkDrop(ids){ids.forEach(i=>{if(LKU[i])URL.revokeObjectURL(LKU[i]);delet
 const lkEnc=o=>LKM+JSON.stringify(o);
 function lkDec(t){const m=FWR.exec(t),x=m?m[2]:t;if(!x||x[0]!==LKM)return null;try{return JSON.parse(x.slice(1))}catch(e){return null}}
 function lkMsgPlain(t){const o=lkDec(t);if(!o)return t;const n=o.it.length,a=o.it[0];/* متن لیست چت | Chat List Text: اگر کپشن دارد بعد از نوع رسانه نشان داده می‌شود */const pl=o.k==="files"?"📎 "+(n>1?n+" files":a.n):(n>1?"🖼 "+n+" items":(a.t==="video"?"🎬 Video":"🖼 Photo"));return o.cap?pl+": "+o.cap:pl}
-/* ظاهر پیام رسانه | Media Bubble: عکس و ویدیو به‌صورت آلبوم ردیفی مثل تلگرام (تا ۱۰ تا)، فایل‌ها به‌صورت یک بسته که هر کدام دکمه‌ی دانلود جدا دارد */
-/* چیدمان تلگرامی ۳ و ۴ عکس | Telegram Mosaic: اگر عکس اول عمودی باشد، آن بزرگ در سمت چپ می‌ایستد و بقیه زیر هم در ستون راست می‌آیند؛ در غیر این صورت چیدمان ردیفی قبلی می‌ماند */
+/* ظاهر پیام رسانه | Media Bubble: عکس و ویدیو به‌صورت آلبوم ردیفی مثل LINK (تا ۱۰ تا)، فایل‌ها به‌صورت یک بسته که هر کدام دکمه‌ی دانلود جدا دارد */
+/* چیدمان LINKی ۳ و ۴ عکس | LINK Mosaic: اگر عکس اول عمودی باشد، آن بزرگ در سمت چپ می‌ایستد و بقیه زیر هم در ستون راست می‌آیند؛ در غیر این صورت چیدمان ردیفی قبلی می‌ماند */
 function lkTele(o){const it=o.it,n=it.length;if(o.k==="files"||n<3||n>4)return null;const f=it[0];if(!((f.w||1)/(f.h||1)<1))return null;
- const cell=(x,i,st)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+i+'" style="'+st+'"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':'')):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>';
+ const cell=(x,i,st)=>'<div class="lkc'+(lkRm(x)?' lkrm'+(x.t==='video'?' vd':''):'')+'" data-lkm="'+x.id+'" data-i="'+i+'" style="'+st+'"><img alt="">'+lkCellIn(x,o)+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>';
  const H=Math.round(mClamp(168/((f.w||1)/(f.h||1)),250,340));
  let h='<div class="lkbody lka" style="flex-direction:row;height:'+H+'px">'+cell(f,0,'width:168px;flex:none')+'<div class="lkr" style="flex-direction:column;flex:1 1 0;height:100%;width:auto">';
  for(let i=1;i<n;i++)h+=cell(it[i],i,'flex:1 1 0;width:100%');
@@ -1835,14 +1837,50 @@ const lkDur=s=>{s=Math.round(s||0);return Math.floor(s/60)+":"+String(s%60).padS
 const lkSz=b=>b<1e6?Math.max(1,Math.round(b/1e3))+" KB":b<1e9?(b/1e6).toFixed(1)+" MB":(b/1e9).toFixed(2)+" GB";
 /* مدت و حجم ویدیو | Video Info: برچسب گوشه‌ی بالا-چپ ویدیو؛ در حین ارسال همان‌جا درصد نوشته می‌شود و بعد از ارسال همان‌جا مدت و بعد حجم (top-left badge: percent while sending, then duration and size) */
 const lkVInfo=x=>[x.d?lkDur(x.d):"",x.s?lkSz(x.s):""].filter(Boolean).join(" · ");
-/* حباب با کپشن | Bubble With Caption: بدنه‌ی رسانه و زیرش کپشن در یک حباب (مثل تلگرام) */
+/* دانلود رسانه‌ی دریافتی | Incoming Media Download: رسانه‌ای که مخاطب می‌فرستد خودکار دانلود نمی‌شود؛ تصویر تار با دکمه‌ی دانلود و فقط حجم نشان داده می‌شود؛ با لمس دکمه حلقه پر می‌شود و کنار حجم، حجم دانلودشده و درصد می‌آید؛ بعد از پایان تصویر واضح می‌شود و برای ویدیو مدت نوشته می‌شود (received media is never auto-downloaded: blurred thumbnail + download button + size only; on tap the ring fills and "downloaded / total · percent" shows; when done the image clears and a video shows its duration) */
+const lkRm=x=>!!(x&&x.r&&!(CFG.dl&&CFG.dl[x.id]));
+function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span><span class="lkdw sm" data-dw="'+x.id+'">'+lkDlI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkSz(x.s)+'</span>';
+ return x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':(x.r?(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':''))):''}
+const LKD={};
+function lkDlInfo(cell){const id=cell.dataset.lkm,b=cell.closest(".b");if(!b)return null;const o=lkDec(b.dataset.t),x=o&&o.it.find(i=>i.id===id);return x?{id,b,x}:null}
+function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd||LKD[id])return;
+ const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now();dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');
+ const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
+ const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}},100);LKD[id]={iv,p:0};up(0)}
+function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd)return;
+ if(LKD[id]){clearInterval(LKD[id].iv);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkSz(x.s);return}
+ lkDlStart(cell,q.b,x)}
+/* پخش هم‌زمان با دانلود | Stream While Downloading: ویدیوی دانلودنشده با دکمه‌ی پخش باز می‌شود، دانلود هم‌زمان شروع می‌شود، فقط همان مقدار دانلودشده پخش می‌شود و روی نوار زمان یک نوار خاکستری روشن مقدار دانلودشده را نشان می‌دهد؛ اگر پخش به انتهای دانلودشده برسد می‌ایستد و با رسیدن داده ادامه می‌دهد (play button streams: download starts together, only the downloaded part plays, a lighter grey bar on the timeline shows what is downloaded, playback waits at the edge and resumes when more arrives) */
+const LKS={iv:0,stall:0};
+function lkStreamX(){const x=LKV.it&&LKV.it[LKV.i];return x&&x.t==="video"&&lkRm(x)?x:null}
+function lkStrLim(){const x=lkStreamX();if(!x)return null;const q=LKD[x.id];return q?q.p||0:0}
+function lkStrTick(){const v=$("#lkv");if(!v||!v.classList.contains("on")){clearInterval(LKS.iv);LKS.iv=0;return}const x=lkStreamX();
+ if(!x){v.classList.remove("str");$("#lkvbuf").style.transform="scaleX(1)";clearInterval(LKS.iv);LKS.iv=0;if(LKS.stall){LKS.stall=0;const m=LKV.v;if(m)m.play().catch(()=>{})}return}
+ const bf=(LKD[x.id]&&LKD[x.id].p)||0;$("#lkvbuf").style.transform="scaleX("+bf+")";
+ const m=LKV.v,d=lkVDur();if(!m||!d)return;const lim=bf*d;
+ if(m.currentTime>lim+.05){m.currentTime=lim}
+ if(!m.paused&&bf<1&&m.currentTime>=lim-.08){m.pause();LKS.stall=1;$("#lkvpl").innerHTML='<i class="lksp" style="width:30px;height:30px"></i>'}
+ else if(LKS.stall&&lim-m.currentTime>1){LKS.stall=0;m.play().catch(()=>{})}}
+function lkStrSync(){const v=$("#lkv");if(!v)return;const x=lkStreamX();v.classList.toggle("str",!!x);LKS.stall=0;clearInterval(LKS.iv);LKS.iv=0;const b=$("#lkvbuf");if(b)b.style.transform="scaleX("+(x?((LKD[x.id]&&LKD[x.id].p)||0):1)+")";if(x)LKS.iv=setInterval(lkStrTick,150)}
+function lkStream(cell){const q=lkDlInfo(cell);if(!q)return;if(!LKD[q.id])lkDlStart(cell,q.b,q.x);lkOpen(q.b.dataset.t,+cell.dataset.i||0,q.b);
+ let n=0;const iv=setInterval(()=>{const m=LKV.v;if(m&&m.readyState>=1||++n>30){clearInterval(iv);if(m)m.play().catch(()=>{})}},100)}
+function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
+ cell.classList.remove("lkrm","vd");const dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(dw)dw.remove();if(bd)bd.remove();
+ if(x.t==="video"&&x.d)cell.insertAdjacentHTML("beforeend",'<span class="lkdu">'+lkDur(x.d)+'</span>')}
+$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(c.classList.contains("vd")&&!e.target.closest(".lkdw"))lkStream(c);else lkDlTap(c)},true);
+/* نمایش دریافت رسانه | Demo Receive: چون سرور نیست، مخاطب بعد از ارسال رسانه‌ی ما، همان رسانه را با شناسه‌ی تازه و بدون دانلود خودکار برایمان می‌فرستد (no server: the contact sends the same media back as a not-yet-downloaded message so the receive flow can be tried) */
+async function lkEcho(c,it,res){if(!c||c.id===2)return;await new Promise(ok=>setTimeout(ok,1600));const nit=[];
+ for(let i=0;i<it.length;i++){const x=it[i],nid=lkId();LKB[nid]=res[i].blob;try{await Promise.race([lkPut(nid,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}nit.push({id:nid,t:x.t,n:x.n,s:x.s,w:x.w,h:x.h,d:x.d,r:1})}
+ const text=lkEnc({k:"album",it:nit}),now=lkNow();(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["ot",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;bumpChat(c);
+ if(S.openId===c.id&&$("#chat").classList.contains("on"))addMsg("ot",text,now);else c.un=(c.un||0)+1;saveCfg();renderChats()}
+/* حباب با کپشن | Bubble With Caption: بدنه‌ی رسانه و زیرش کپشن در یک حباب (مثل LINK) */
 function lkMsgHtml(t){const o=lkDec(t);if(!o)return fwBody(t);return lkMsgBody(o)+(o.cap?'<div class="lkcap" dir="auto">'+esc(o.cap)+'</div>':'')}
 /* بدنه‌ی رسانه | Media Body: فقط عکس‌ها یا فایل‌ها بدون کپشن */
 function lkMsgBody(o){
  if(o.k==="files")return '<div class="lkbody lkf">'+o.it.map(x=>'<div class="lkfr"><div class="lkfi">'+esc((x.n.split(".").pop()||"file").slice(0,4).toUpperCase())+'</div><div class="lkft"><b dir="auto">'+esc(x.n)+'</b><span>'+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+(o.pend?'<i class="lksp"></i>':lkDlI)+'</div></div>').join("")+'</div>';
  const lkT=lkTele(o);if(lkT)return lkT;const rows=lkSplit(o.it);let i=0,W=0,h='<div class="lkbody lka">';
  rows.forEach(n=>{const sg=rows.length===1&&n===1,r=o.it.slice(i,i+n),a=r.map(x=>mClamp((x.w||1)/(x.h||1),sg?.5:.7,1.7)),rh=Math.min(250/a.reduce((p,q)=>p+q,0),sg?320:200);if(sg)W=Math.round(rh*a[0]);
-  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':'')):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
+  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc'+(lkRm(x)?' lkrm'+(x.t==='video'?' vd':''):'')+'" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+lkCellIn(x,o)+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
  return (W?h.replace('lkbody lka"','lkbody lka" style="width:'+W+'px"'):h)+'</div>'}
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
 async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),b=r&&(r.thumb||(r.blob&&r.blob.type.startsWith("image/")?r.blob:null));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
@@ -1898,9 +1936,9 @@ function lkPend(c,k,files,cap){
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
   const text=lkEnc({k,it,cap:cap||undefined}),now=lkNow();
   (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();
-  if(d.isConnected){d.classList.remove("pend");d.dataset.t=text;const b=d.querySelector(".lkbody");if(b)b.outerHTML=lkMsgBody(lkDec(text));lkHydrate(d)}}}
+  if(d.isConnected){d.classList.remove("pend");d.dataset.t=text;const b=d.querySelector(".lkbody");if(b)b.outerHTML=lkMsgBody(lkDec(text));lkHydrate(d)}if(k==="album")lkEcho(c,it,res)}}
 /* ارسال | Send Media: دکمه‌ی گیره چند فایل را می‌گیرد؛ عکس و ویدیو (تا ۱۰ تا در هر آلبوم) به‌صورت آلبوم و فایل‌ها (تا ۱۰ تا در هر بسته) به‌صورت یک بسته فرستاده می‌شوند؛ کارها یکی‌یکی انجام می‌شوند */
-/* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل تلگرام از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
+/* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل LINK از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
 /* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
 /* ارسال امن بدون فایل اصلی | Safe Step Without Original: دیگر با خطا فایل اصلی فرستاده نمی‌شود؛ خطا بالا می‌رود و حباب حذف می‌شود (errors propagate, the original is never sent) */
 Object.assign(FA,{"Compression failed":"فشرده‌سازی ناموفق بود؛ فایل ارسال نشد"});
@@ -2027,7 +2065,7 @@ function mpvEdited(i){mpvDraw(i)}
 const _pp0=pickPhoto;
 pickPhoto=function(cb,bg){if(bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)bgPreview(file,cb)};f.click();return}const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
 Object.assign(FA,{"Profile photo":"عکس پروفایل"});
-(function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}#mpv.avp #mpTr>*:first-child{overflow:hidden}/* خاکستری بیرون دایره | Circle Outside Dim: بیرون دایره‌ی راهنمای عکس پروفایل کمی خاکستری می‌شود مثل تلگرام (the area outside the profile photo circle guide is dimmed grey like Telegram) */#mpv.avp #mpeR::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle closest-side,transparent calc(100% - .5px),rgba(0,0,0,.42) 100%)}";document.head.append(st)})();
+(function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}#mpv.avp #mpTr>*:first-child{overflow:hidden}/* خاکستری بیرون دایره | Circle Outside Dim: بیرون دایره‌ی راهنمای عکس پروفایل کمی خاکستری می‌شود مثل LINK (the area outside the profile photo circle guide is dimmed grey like LINK) */#mpv.avp #mpeR::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle closest-side,transparent calc(100% - .5px),rgba(0,0,0,.42) 100%)}";document.head.append(st)})();
 /* قاب مربعی پروفایل | Avatar Square Frame: بعد از چرخش یا آینه، قاب برش دوباره مربعی و وسط‌چین می‌شود تا دایره‌ی راهنما بیضی نشود */
 function avSquare(){const a=MPE.W/MPE.H;let w=1,h=1;if(a>1)w=1/a;else h=a;MPE.ratio=1;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
 /* بازنشانی مربعی | Square Reset Hook: فقط وقتی پیش‌نمایش پروفایل باز است، بعد از بازنشانی قاب، مربعی‌اش می‌کند */
@@ -2048,9 +2086,9 @@ async function avPreview(file,cb){
   mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.92))}catch(e){toast("Couldn't use this photo");return}b0();end()}
 }
 /* برش پس‌زمینه | Background Crop: وقتی عکس پس‌زمینه‌ی چت انتخاب می‌شود، همان ویرایشگر برش پروفایل باز می‌شود؛ قاب برش روی نسبت دقیق صفحه‌ی چت قفل است (فقط کوچک و بزرگ و جابه‌جا می‌شود) و بدون دایره‌ی راهنما */
-(function(){const st=document.createElement("style");st.textContent="#mpv.bgp #mpeR::after{display:none!important}";document.head.append(st)})();
+(function(){const st=document.createElement("style");st.textContent="#mpv.bgp #mpeR::after,#mpv.bgp #mpeR::before,#mpv.bgp .avg{display:none!important}";document.head.append(st)})();
 /* نسبت صفحه‌ی چت | Chat Ratio: عرض تقسیم بر ارتفاع همان جایی که پس‌زمینه نشان داده می‌شود */
-function bgRatio(){const c=$("#chat"),w=c?c.clientWidth:0,h=c?c.clientHeight:0;return w>50&&h>50?w/h:innerWidth/innerHeight}
+function bgRatio(){for(const id of["#chat","#app"]){const c=$(id),w=c?c.clientWidth:0,h=c?c.clientHeight:0;if(w>50&&h>50)return w/h}return innerWidth/innerHeight}
 /* قاب پس‌زمینه | Background Frame: بزرگ‌ترین قاب وسط‌چین با نسبت صفحه‌ی چت؛ بعد از چرخش یا آینه دوباره همین‌طور می‌شود */
 function bgFrame(){const R=MPE.bgR||1,a=MPE.W/MPE.H;let w=1,h=1;if(a>R)w=R/a;else h=a/R;MPE.ratio=R;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
 /* بازنشانی پس‌زمینه | Background Reset Hook: فقط وقتی برش پس‌زمینه باز است، بعد از بازنشانی قاب، نسبت قفل را برمی‌گرداند */
@@ -2178,7 +2216,7 @@ async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
  [...$("#mpTr").children].forEach((s,i)=>{const m=s.querySelector("img,video");if(!m)return;const vd=m.tagName==="VIDEO";m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{const had=isFinite(MPV.f[i].__d)&&MPV.f[i].__d>0;mpvDur(i);if(!had&&MPV.f[i].__d>0&&MPV.i===i){mpvSel(i);if(!(MPV.th[i]&&MPV.th[i].some(Boolean)))mpvThumbs(i,MPV.tok)}try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
  o.classList.add("on");mpvGo(0,0);lp.set(files.length);lp.end()}
-/* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را مثل تلگرام تمام‌صفحه باز می‌کند؛ کشیدن چپ و راست = قبلی و بعدی، کشیدن به پایین = بستن، دو انگشت یا دو بار لمس = زوم (Telegram-like: swipe sideways, swipe down to close, pinch or double-tap to zoom) */
+/* نمایشگر رسانه | Media Viewer: لمس عکس یا ویدیو آن را مثل LINK تمام‌صفحه باز می‌کند؛ کشیدن چپ و راست = قبلی و بعدی، کشیدن به پایین = بستن، دو انگشت یا دو بار لمس = زوم (LINK-like: swipe sideways, swipe down to close, pinch or double-tap to zoom) */
 /* داده‌ی نمایشگر | Viewer State: آلبوم، شماره‌ی فعلی، پیام مبدا، ویدیوی در حال پخش و بی‌صدا بودن (album, index, source bubble, playing video, mute flag) */
 const LKV={it:[],i:0,b:null,v:null,mu:false,busy:false,raf:0,lt:""};
 /* وضعیت زوم | Zoom State: بزرگ‌نمایی s و جابه‌جایی x و y رسانه‌ی وسط (scale and offset of the centre media) */
@@ -2216,6 +2254,7 @@ async function lkVFill(s,k){const x=LKV.it[k],c=k===LKV.i,sg=x?k+":"+(x.t==="vid
  else{el=document.createElement("img");el.draggable=false;el.src=u;s.appendChild(el)}}
 /* هماهنگ‌سازی بالا و پایین | Sync Chrome: شمارنده، نام، زمان، حالت ویدیو و نوار را برای رسانه‌ی فعلی تازه می‌کند (refreshes counter, name, time, video mode and bar for the current item) */
 function lkVSync(){const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.bs?LKV.bs[LKV.i]:LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
+{const _vs=lkVSync;lkVSync=function(){const r=_vs.apply(this,arguments);try{lkStrSync()}catch(e){}return r}}
 /* رفتن به شماره | Go To Item: زوم را ریست می‌کند و سه اسلاید (قبلی، فعلی، بعدی) را پر می‌کند (resets zoom, fills prev / current / next) */
 function lkVGo(i){LKV.i=i;LKZ.s=1;LKZ.x=0;LKZ.y=0;const tk=$("#lkvtk");[...tk.children].forEach(s=>{const m=s.firstElementChild;if(m){m.style.transition="none";m.style.transform=""}});[...tk.children].forEach((s,k)=>lkVFill(s,i+k-1));lkVSync()}
 /* چرخش اسلایدها | Rotate Slides: بعد از رفتن به بعدی یا قبلی همان سه عنصر جابه‌جا می‌شوند و فقط یکی تازه ساخته می‌شود (the same 3 elements rotate, only one is rebuilt) */
@@ -2234,7 +2273,7 @@ function lkVDbl(px,py){if(LKZ.s>1.02){LKZ.s=1;LKZ.x=0;LKZ.y=0}else{lkVZoom(px,py
 function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v.id="lkv";
  v.innerHTML='<div id="lkvbg"></div><div id="lkvs"><div id="lkvtk"><div class="lkvsl"></div><div class="lkvsl"></div><div class="lkvsl"></div></div></div>'
   +'<div class="lkvc lkvcb" id="lkvx">'+ic("back",22)+'</div><div class="lkvc" id="lkvtt"><b id="lkvn"></b><span id="lkvsub"></span></div><div class="lkvc lkvcb" id="lkvm">'+ic("more",22)+'</div><div class="lkvc" id="lkvcnt"></div>'
-  +'<div class="lkvc" id="lkvpl"></div><div class="lkvc lkvcb" id="lkvmu"></div><div class="lkvc" id="lkvsk"><span id="lkvt0">0:00</span><div id="lkvbar"><i id="lkvfil"></i></div><span id="lkvt1">0:00</span></div>'
+  +'<div class="lkvc" id="lkvpl"></div><div class="lkvc lkvcb" id="lkvmu"></div><div class="lkvc" id="lkvsk"><span id="lkvt0">0:00</span><div id="lkvbar"><i id="lkvbuf"></i><i id="lkvfil"></i></div><span id="lkvt1">0:00</span></div>'
   +'<div class="lkvc lkvcb big" id="lkvfw">'+ic("fwd",22)+'</div><div class="lkvc lkvcb big" id="lkvdl">'+ic("trash",22)+'</div>'
   +'<div id="lkvmn"><div id="lkvsv">'+lkDlI+'<span>Save</span></div></div>';
  document.body.appendChild(v);
@@ -2247,7 +2286,7 @@ function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v
  $("#lkvmu").onclick=()=>{LKV.mu=!LKV.mu;if(LKV.v)LKV.v.muted=LKV.mu;lkVMu()};
  /* کشیدن نوار پخش | Seek Drag: لمس یا کشیدن روی خط، ویدیو را همان لحظه به آن نقطه می‌برد (touch or drag on the bar seeks live) */
  const bar=$("#lkvbar");let sk=false;
- const seek=e=>{const m=LKV.v,d=lkVDur();if(!m||!d)return;const r=bar.getBoundingClientRect();m.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*d;lkVUp()};
+ const seek=e=>{const m=LKV.v,d=lkVDur();if(!m||!d)return;const r=bar.getBoundingClientRect();let tt=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*d;const bl=lkStrLim();if(bl!=null)tt=Math.min(tt,Math.max(0,bl*d-.1));m.currentTime=tt;lkVUp()};
  bar.addEventListener("pointerdown",e=>{sk=true;bar.setPointerCapture(e.pointerId);seek(e)});
  bar.addEventListener("pointermove",e=>{if(sk)seek(e)});
  bar.addEventListener("pointerup",()=>{sk=false});bar.addEventListener("pointercancel",()=>{sk=false});
@@ -2269,7 +2308,7 @@ function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v
   if(e.touches.length)return;const q=g,dt=Math.max(1,Date.now()-q.t),tk=$("#lkvtk");g=null;
   if(q.k==="sw"){const d=q.dx<0?1:-1,n=LKV.i+d,W=st.clientWidth;if((Math.abs(q.dx)>W*.2||Math.abs(q.dx)/dt>.45&&Math.abs(q.dx)>30)&&n>=0&&n<LKV.it.length)lkVMove(d);else{tk.style.transition="transform .2s";tk.style.transform="translateX(0)"}}
   else if(q.k==="cl"){const H=st.clientHeight;if(Math.abs(q.dy)>110||Math.abs(q.dy)/dt>.6&&Math.abs(q.dy)>40){LKV.busy=true;tk.style.transition="transform .2s ease-in";tk.style.transform="translateY("+(q.dy>0?H:-H)+"px)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=0;setTimeout(()=>{LKV.busy=false;lkVClose()},200)}else{tk.style.transition="transform .2s";tk.style.transform="translateY(0)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=1;v.classList.remove("drag")}}
-  else if(q.k==="?"){e.preventDefault();/* نوار نامرئی لبه | Invisible Edge Strip: لمس ۲۲٪ چپ = رسانه‌ی قبلی، ۲۲٪ راست = رسانه‌ی بعدی (بدون زوم)؛ وسط مثل قبل کنترل‌ها را نشان یا پنهان می‌کند (tap left 22% = previous, right 22% = next, like Telegram) */{const r=st.getBoundingClientRect(),fx=(q.x-r.left)/r.width;if(LKZ.s<=1.02&&(fx<.22||fx>.78)){clearTimeout(tm);lt=0;lkVMove(fx<.22?-1:1);return}}const now=Date.now();if(now-lt<300&&Math.hypot(q.x-lx,q.y-ly)<40){clearTimeout(tm);lt=0;lkVDbl(q.x,q.y)}else{lt=now;lx=q.x;ly=q.y;tm=setTimeout(()=>v.classList.toggle("hid"),260)}}});
+  else if(q.k==="?"){e.preventDefault();/* نوار نامرئی لبه | Invisible Edge Strip: لمس ۲۲٪ چپ = رسانه‌ی قبلی، ۲۲٪ راست = رسانه‌ی بعدی (بدون زوم)؛ وسط مثل قبل کنترل‌ها را نشان یا پنهان می‌کند (tap left 22% = previous, right 22% = next, like LINK) */{const r=st.getBoundingClientRect(),fx=(q.x-r.left)/r.width;if(LKZ.s<=1.02&&(fx<.22||fx>.78)){clearTimeout(tm);lt=0;lkVMove(fx<.22?-1:1);return}}const now=Date.now();if(now-lt<300&&Math.hypot(q.x-lx,q.y-ly)<40){clearTimeout(tm);lt=0;lkVDbl(q.x,q.y)}else{lt=now;lx=q.x;ly=q.y;tm=setTimeout(()=>v.classList.toggle("hid"),260)}}});
  st.addEventListener("touchcancel",()=>{g=null;lkVPos();$("#lkvbg").style.opacity=1;v.classList.remove("drag");LKZ.s=1;LKZ.x=0;LKZ.y=0;lkVZa(false)});
  /* موس و کیبورد | Desktop Input: چرخ موس و دو کلیک = زوم، یک کلیک = کنترل‌ها، فلش‌ها = قبلی و بعدی، Esc = بستن (wheel / double-click zoom, click toggles controls, arrows, Esc) */
  st.addEventListener("wheel",e=>{e.preventDefault();lkVZoom(e.clientX,e.clientY,Math.max(1,Math.min(5,LKZ.s*(e.deltaY<0?1.2:1/1.2))));lkVCl();lkVZa(false)},{passive:false});
@@ -2332,16 +2371,46 @@ const BGPAL=["#fdf1c5","#fecdd3","#fdeadb","#fbc99a","#d6edfe","#d3f4d7","#e6daf
 function bgThemeCss(){const c=document.documentElement.classList;if(c.contains("link")||c.contains("linkdark"))return "var(--lkpat) 0 0/312px 312px var(--chatbg)";return "radial-gradient(var(--dotc) 1.4px,transparent 1.5px) 0 0/20px 20px,linear-gradient(165deg,var(--chatbg),var(--card2))"}
 function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat var(--chatbg)";if(b.t==="color"&&b.color)return b.color;return bgThemeCss()}
 function applyBg(){$("#chat").style.background=bgCss()}
-function renderBgs(){if(CFG.bg.t==="photo"&&CFG.bg.photo&&!CFG.bgPhoto)CFG.bgPhoto=CFG.bg.photo;if(CFG.bg.t==="color"&&CFG.bg.color&&!CFG.bgColor)CFG.bgColor=CFG.bg.color;
- const t=CFG.bg.t,gp=CFG.bgPhoto,gc=CFG.bgColor,isTh=t!=="photo"&&t!=="color";
- $("#bgRow").innerHTML=(gp?`<div class="bgs${t==="photo"?" on":""}" data-bg="photo" style="background:url(${gp}) center/cover"></div>`:"")+`<div class="bgs${isTh?" on":""}" data-bg="theme" style="background:${bgThemeCss()}"></div>`+(gc?`<div class="bgs${t==="color"?" on":""}" data-bg="color" style="background:${gc}"></div>`:"");
- $("#bgPal").innerHTML=BGPAL.map(c=>`<div class="bgw${t==="color"&&CFG.bg.color===c?" on":""}" data-bc="${c}" style="background:${c}"></div>`).join("")+`<label class="bgw" style="background:conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"><input type="color" id="bgCol" value="${gc||"#ffffff"}"></label>`;
- $$("[data-bg]").forEach(e=>e.onclick=()=>{const k=e.dataset.bg;if(k==="photo"){if(!CFG.bgPhoto)return;CFG.bg={t:"photo",photo:CFG.bgPhoto}}else if(k==="color"){if(!CFG.bgColor)return;CFG.bg={t:"color",color:CFG.bgColor}}else CFG.bg={t:"preset",id:"theme"};saveCfg();applyBg();renderBgs()});
- $$("[data-bc]").forEach(e=>e.onclick=()=>setBgColor(e.dataset.bc));
- $("#bgCol").oninput=e=>{$("#chat").style.background=e.target.value};$("#bgCol").onchange=e=>setBgColor(e.target.value)}
+/* لیست پس‌زمینه‌ها | Backgrounds List: حداکثر ۱۰ پس‌زمینه‌ی گفتگو (پیش‌فرض + عکس + رنگ + گرادیانت)؛ نگه‌داشتن روی هر کدام دکمه‌ی حذف را نشان می‌دهد (max 10 chat backgrounds incl. the default; long-press shows Delete) */
+function bgList(){let L=CFG.bgList;if(!L){L=CFG.bgList=[];if(CFG.bgPhoto)L.push({t:"photo",photo:CFG.bgPhoto});if(CFG.bgColor)L.push({t:"color",color:CFG.bgColor});if(CFG.bg.t==="photo"&&CFG.bg.photo&&!L.some(x=>x.photo===CFG.bg.photo))L.push({t:"photo",photo:CFG.bg.photo});if(CFG.bg.t==="color"&&CFG.bg.color&&!L.some(x=>x.color===CFG.bg.color))L.push({t:"color",color:CFG.bg.color});L.splice(9)}return L}
+const bgKey=x=>x.t==="photo"?"p"+x.photo:"c"+x.color;
+function bgFull(x){const L=bgList();if(L.some(y=>bgKey(y)===bgKey(x)))return false;if(L.length>=9){toast("Maximum 10 backgrounds. Hold one to delete it.");return true}return false}
+function bgAdd(x){const L=bgList();if(bgFull(x))return false;if(!L.some(y=>bgKey(y)===bgKey(x)))L.push(x);CFG.bg={...x};saveCfg();applyBg();renderBgs();return true}
+function renderBgs(){const L=bgList(),cur=CFG.bg,isTh=cur.t!=="photo"&&cur.t!=="color",ck=(cur.t==="photo"||cur.t==="color")?bgKey(cur):"";
+ $("#bgRow").innerHTML=`<div class="bgs${isTh?" on":""}" data-bg="theme" style="background:${bgThemeCss()}"></div>`+L.map((x,i)=>`<div class="bgs${bgKey(x)===ck?" on":""}" data-bi="${i}" style="position:relative;background:${x.t==="photo"?"url("+x.photo+") center/cover":x.color}"></div>`).join("");
+ $("#bgPal").innerHTML=`<label class="bgw" style="background:conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"><input type="color" id="bgCol" value="${cur.t==="color"&&/^#[0-9a-f]{6}$/i.test(cur.color||"")?cur.color:"#ffffff"}"></label>`;
+ $$("[data-bg]").forEach(e=>e.onclick=()=>{CFG.bg={t:"preset",id:"theme"};saveCfg();applyBg();renderBgs()});
+ $$("[data-bi]").forEach(e=>{let tm=0,lp=0;const i=+e.dataset.bi,cl=()=>clearTimeout(tm);
+  e.onpointerdown=()=>{lp=0;cl();tm=setTimeout(()=>{lp=1;
+   e.innerHTML='<div data-del="1" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);color:#ff453a;border-radius:10px;font-size:12px;font-weight:700">Delete</div>';
+   setTimeout(()=>document.addEventListener("pointerdown",ev=>{if(!ev.target.closest("[data-del]"))renderBgs()},{once:true}),0)},500)};
+  e.onpointerup=e.onpointerleave=e.onpointercancel=cl;
+  e.onclick=ev=>{if(lp){lp=0;return}
+   if(ev.target.closest("[data-del]")){const x=L.splice(i,1)[0];if(x&&ck&&bgKey(x)===ck)CFG.bg={t:"preset",id:"theme"};saveCfg();applyBg();renderBgs();return}
+   CFG.bg={...L[i]};saveCfg();applyBg();renderBgs()}});
+ $("#bgCol").oninput=e=>{$("#chat").style.background=e.target.value};$("#bgCol").onchange=e=>setBgColor(e.target.value);bgGradUI()}
+
+/* گرادیانت | Gradient: دکمه‌ی گرادیانت کنار رنگ دلخواه؛ ۲ تا ۴ رنگ و زاویه‌ی چرخش (gradient button next to the custom color: 2-4 colors and a rotation angle) */
+function gCss(g){return "linear-gradient("+g.a+"deg,"+g.c.slice(0,g.n).join(",")+")"}
+function bgGradUI(){const P=$("#bgPal");if(!P)return;
+ const g=CFG.bgGrad=CFG.bgGrad||{n:2,c:["#ff7e5f","#feb47b","#6a11cb","#2575fc"],a:135},isG=CFG.bg.t==="color"&&/gradient/.test(CFG.bg.color||"");
+ const b=document.createElement("div");b.className="bgw"+(isG?" on":"");b.id="bgGb";b.style.background=gCss(g);b.onclick=()=>{window.__gOpen=!window.__gOpen;$("#bgGp").style.display=window.__gOpen?"flex":"none"};P.append(b);
+ const pn=document.createElement("div");pn.id="bgGp";pn.style.cssText="display:"+(window.__gOpen?"flex":"none")+";flex:0 0 100%;flex-direction:column;align-items:center;gap:10px;width:100%";
+ pn.innerHTML='<div id="bgGv" style="width:100%;height:48px;border-radius:12px"></div><div id="bgGn" style="display:flex;gap:8px"></div><div id="bgGc" style="display:flex;gap:10px"></div><div style="display:flex;align-items:center;gap:8px;width:100%"><input type="range" id="bgGa" min="0" max="360" style="flex:1"><span id="bgGt" style="min-width:40px;text-align:end"></span><div class="pill" id="bgGr">&#8635; 45&deg;</div></div><div class="pill blue" id="bgGo" style="color:#fff;width:100%">Apply</div>';
+ P.append(pn);
+ const draw=()=>{const css=gCss(g);$("#bgGv").style.background=css;$("#bgGb").style.background=css;$("#bgGa").value=g.a;$("#bgGt").textContent=g.a+"°";
+  $("#bgGn").innerHTML=[2,3,4].map(n=>'<div class="pill" data-gn="'+n+'" style="'+(g.n===n?"background:var(--blue);color:#fff":"")+'">'+n+'</div>').join("");
+  $("#bgGc").innerHTML=g.c.slice(0,g.n).map((c,i)=>'<label class="bgw" style="background:'+c+'"><input type="color" data-gi="'+i+'" value="'+c+'"></label>').join("");
+  $$("[data-gn]").forEach(e=>e.onclick=()=>{g.n=+e.dataset.gn;saveCfg();draw()});
+  $$("[data-gi]").forEach(e=>{e.oninput=()=>{g.c[+e.dataset.gi]=e.value;e.parentNode.style.background=e.value;const css=gCss(g);$("#bgGv").style.background=css;$("#bgGb").style.background=css;$("#chat").style.background=css};e.onchange=()=>{saveCfg();draw()}})};
+ draw();
+ $("#bgGa").oninput=e=>{g.a=+e.target.value;$("#bgGt").textContent=g.a+"°";const css=gCss(g);$("#bgGv").style.background=css;$("#bgGb").style.background=css;$("#chat").style.background=css};
+ $("#bgGa").onchange=()=>saveCfg();
+ $("#bgGr").onclick=()=>{g.a=(g.a+45)%360;saveCfg();draw();$("#chat").style.background=gCss(g)};
+ $("#bgGo").onclick=()=>{if(bgAdd({t:"color",color:gCss(g)})){CFG.bgGrad=null;saveCfg();renderBgs()}}}
 /* رنگ دلخواه | Custom Color: رنگ انتخاب شده را به عنوان پس زمینه ی چت ذخیره و اعمال می کند */
-function setBgColor(c){CFG.bg={t:"color",color:c};CFG.bgColor=c;saveCfg();applyBg();renderBgs()}
-$("#bgPick").onclick=()=>pickPhoto(d=>{CFG.bg={t:"photo",photo:d};CFG.bgPhoto=d;saveCfg();applyBg();renderBgs()},true);
+function setBgColor(c){return bgAdd({t:"color",color:c})}
+$("#bgPick").onclick=()=>{if(bgList().length>=9){toast("Maximum 10 backgrounds. Hold one to delete it.");return}pickPhoto(d=>{bgAdd({t:"photo",photo:d})},true)};
 /* تغییر رمز | Change Password: رمز فعلی را چک می‌کند و رمز جدید را (فقط داخل برنامه) جایگزین می‌کند */
 $("#cpOk").onclick=()=>{const u=S.user;if(!u)return;const o=$("#cp_old").value,n=$("#cp_new").value,r=$("#cp_rep").value;
  if(o!==u.pass){toast(tr("Current password is wrong"));return}
@@ -2545,7 +2614,7 @@ $("#rbarX").onclick=clearReply;
   dx=Math.max(-80,Math.min(0,x));b.style.transform=`translateX(${dx*.85}px)`;const r=b.querySelector(".ri");r.style.right=dx>0?"auto":"";r.style.left=dx>0?"-38px":"";r.style.opacity=Math.min(1,Math.abs(dx)/50);r.style.transform=`scale(${Math.min(1,Math.abs(dx)/60)})`},{passive:true});
  M.addEventListener("touchend",()=>{if(!b)return;const hit=dx<-60,r=b.querySelector(".ri");b.style.transition="transform .2s";b.style.transform="";r.style.opacity=0;r.style.transform="scale(.5)";if(hit)setReply(b);b=null;dx=0})})();
 
-/* رفتن به پیام پاسخ‌داده‌شده | Jump To Replied Message: با زدن روی نقل‌قول داخل حباب، به پیام اصلی اسکرول نرم می‌شود (وسط صفحه، مثل تلگرام) و خیلی کمرنگ هایلایت می‌شود؛ با اولین لمس صفحه هایلایت برداشته می‌شود */
+/* رفتن به پیام پاسخ‌داده‌شده | Jump To Replied Message: با زدن روی نقل‌قول داخل حباب، به پیام اصلی اسکرول نرم می‌شود (وسط صفحه، مثل LINK) و خیلی کمرنگ هایلایت می‌شود؛ با اولین لمس صفحه هایلایت برداشته می‌شود */
 function findReplied(q){const all=[...$$("#msgs .b")];let t=q.dataset.rid&&all.find(x=>x.dataset.id===q.dataset.rid);if(t)return t;
  const nm=q.querySelector("b").textContent,tx=q.querySelector("span").textContent,w=nm==="You"?"me":"ot";
  return all.slice(0,all.indexOf(q.closest(".b"))).reverse().find(x=>x.dataset.t===tx&&x.dataset.w===w)||null}
@@ -2658,7 +2727,7 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
    $("#ap_list").innerHTML=L.length?L.map(p=>`<div class="gr" data-n="${esc(p[0])}">${av(p[0],colOf(p[0]),0,"s")}<div class="mid"><div class="n">${esc(p[0])}</div><div class="m">${p[1]}</div></div></div>`).join(""):`<div class="item" style="color:var(--sub)">${tr("No more members")}</div>`;
    $$("#ap_list .gr").forEach(r=>r.onclick=()=>{const n=r.dataset.n;c.admins=[...(c.admins||[]),n];CFG.cadm=CFG.cadm||{};CFG.cadm[c.id]=c.admins;saveCfg();pk.classList.remove("on");refresh();sync();openPerm(c,n)});
    $("#apX").onclick=()=>pk.classList.remove("on");pk.classList.add("on")}}
-/* دسترسی ادمین | Admin Rights: مثل تلگرام، سازنده‌ی کانال برای هر ادمین مشخص می‌کند چه کارهایی مجاز باشد؛ هر گزینه یک کلید روشن/خاموش است و در CFG.cperm ذخیره می‌شود (like Telegram, the creator picks what each admin may do; each option is an on/off switch saved in CFG.cperm) */
+/* دسترسی ادمین | Admin Rights: مثل LINK، سازنده‌ی کانال برای هر ادمین مشخص می‌کند چه کارهایی مجاز باشد؛ هر گزینه یک کلید روشن/خاموش است و در CFG.cperm ذخیره می‌شود (like LINK, the creator picks what each admin may do; each option is an on/off switch saved in CFG.cperm) */
  /* لیست دسترسی ادمین | Admin Rights List: کانال و گروه هرکدام گزینه‌های خودشان را دارند (channel and group have their own options) */const RTC=[["info","Change Channel Info"],["post","Post Messages"],["edit","Edit Messages of Others"],["del","Delete Messages of Others"],["subs","Add Subscribers"],["adm","Add New Admins"]],RTG=[["info","Change Group Info"],["del","Delete Messages"],["ban","Ban Users"],["subs","Add Members"],["pin","Pin Messages"],["adm","Add New Admins"]];
  Object.assign(FA,{"Rights":"دسترسی‌ها","Admin Rights":"دسترسی‌های ادمین","Change Channel Info":"تغییر اطلاعات کانال","Post Messages":"ارسال پیام","Edit Messages of Others":"ویرایش پیام دیگران","Delete Messages of Others":"حذف پیام دیگران","Add Subscribers":"افزودن عضو","Add New Admins":"افزودن ادمین جدید","What can this admin do?":"این ادمین چه کارهایی می‌تواند انجام دهد؟","Administrators":"ادمیناسوری","Admin":"ادمین","Dismiss Admin":"حذف از ادمین‌ها","No more members":"عضو دیگری نیست","Only the creator can add admins":"فقط سازنده‌ی کانال می‌تواند ادمین اضافه کند"});
  const pm=document.createElement("div");pm.className="screen sub";pm.id="cperm";pm.style.zIndex="85";$("#app").append(pm);
@@ -2678,7 +2747,7 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
  Object.assign(FA,{"Clear Channel History":"پاک کردن تاریخچه کانال","Delete Channel":"حذف کانال","Clear":"پاک کردن","Delete":"حذف","Channel history cleared":"تاریخچه کانال پاک شد","Channel deleted":"کانال حذف شد"});
  $("#ce_clr").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!mine(c))return;confirmBox(tr(c.ty==="gp"?"Clear Group History":"Clear Channel History"),c.n,tr("Clear"),1,()=>{CFG.cleared=CFG.cleared||{};CFG.sent=CFG.sent||{};CFG.cleared[c.id]=1;CFG.sent[c.id]=[];c.m="";saveCfg();S.lastD=null;$("#msgs").innerHTML="";$("#cedit").classList.remove("on");toast(tr(c.ty==="gp"?"Group history cleared":"Channel history cleared"));renderChats()})};
  $("#ce_del").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!mine(c))return;confirmBox(tr(c.ty==="gp"?"Delete Group":"Delete Channel"),c.n,tr("Delete"),1,()=>{const id=c.id;CHATS=CHATS.filter(x=>x.id!==id);[CFG.sent,CFG.cleared,CFG.cadm,CFG.cperm,CFG.hid,CFG.pins].forEach(m=>{if(m)delete m[id]});saveCfg();stopPl();$("#cedit").classList.remove("on");$("#cp").classList.remove("on");$("#back").click();renderChats();toast(tr(c.ty==="gp"?"Group deleted":"Channel deleted"))})};
- /* مجوز اعضا | Member Permissions: فقط برای گروه؛ ادمین (سازنده) مشخص می‌کند همه‌ی اعضا چه کارهایی بتوانند بکنند؛ مثل تلگرام کلید روشن/خاموش و ذخیره در CFG.gperm (groups only; the admin decides what all members may do, saved in CFG.gperm) */
+ /* مجوز اعضا | Member Permissions: فقط برای گروه؛ ادمین (سازنده) مشخص می‌کند همه‌ی اعضا چه کارهایی بتوانند بکنند؛ مثل LINK کلید روشن/خاموش و ذخیره در CFG.gperm (groups only; the admin decides what all members may do, saved in CFG.gperm) */
  Object.assign(FA,{"Permissions":"مجوزها","Members Can":"اعضا می‌توانند","What can members of this group do?":"اعضای این گروه چه کارهایی می‌توانند انجام دهند؟","Send Messages":"ارسال پیام","Send Media":"ارسال رسانه","Send Stickers & GIFs":"ارسال استیکر و گیف","Send Polls":"ارسال نظرسنجی","Embed Links":"پیش‌نمایش لینک","Add Members":"افزودن عضو","Pin Messages":"پین کردن پیام","Change Group Info":"تغییر اطلاعات گروه","Delete Messages":"حذف پیام‌ها","Ban Users":"مسدود کردن کاربران","Clear Group History":"پاک کردن تاریخچه گروه","Delete Group":"حذف گروه","Group history cleared":"تاریخچه گروه پاک شد","Group deleted":"گروه حذف شد"});
  const GPK=[["msg","Send Messages"],["media","Send Media"],["stk","Send Stickers & GIFs"],["poll","Send Polls"],["link","Embed Links"],["add","Add Members"],["pin","Pin Messages"],["info","Change Group Info"]];
  function gpOf(c){return Object.assign({msg:1,media:1,stk:1,poll:1,link:1,add:1,pin:1,info:1},(CFG.gperm||{})[c.id]||{})}
@@ -2740,7 +2809,7 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
  const oc=chatMsgs;chatMsgs=function(c){const h=CFG.hid&&CFG.hid[c.id];const l=oc(c);return h&&h.length?l.filter(m=>!h.includes(m[1]+"|"+m[2])):l};
  window.applyPin=function(){const pt=CFG.pins&&CFG.pins[S.openId],pb=$(".pinbar");if(!pb)return;const sm=pb.querySelector("small"),sp=pb.querySelector("span");if(!sm)return;if(!pb.dataset.dflt)pb.dataset.dflt=sm.textContent;
   sm.textContent=pt?fwBody(pt).replace(/<[^>]*>/g,"").slice(0,60):pb.dataset.dflt;if(sp)sp.textContent=tr("Pinned Message")};
- /* برگه‌ی ارسال | Share Sheet (Forward): انتخاب چند گفتگو، جستجو، شرح و دکمه Send با شمارنده؛ مثل تلگرام (multi-select chats, search, caption, Send with count) */
+ /* برگه‌ی ارسال | Share Sheet (Forward): انتخاب چند گفتگو، جستجو، شرح و دکمه Send با شمارنده؛ مثل LINK (multi-select chats, search, caption, Send with count) */
  function fwd(b,many){const raw=b.dataset.t,fm=FWR.exec(raw),inner=fm?fm[2]:raw,src=fm?fm[1]:(b.classList.contains("me")?(S.user?S.user.name:"You"):$("#cname").textContent),t=txt(b)||inner;let o=$("#shov");
   if(!o){o=document.createElement("div");o.id="shov";o.innerHTML=`<div class="shs"><div class="shh"><div class="shx" id="shX">${ic("close",20)}</div><div class="sht"><b id="shT"></b><small id="shS"></small></div><div class="shx" id="shU">${ic("share",20)}</div></div><div class="shsr"><input id="shQ" autocomplete="off" autocorrect="off" spellcheck="false"><div class="shx">${ic("group",22)}</div></div><div class="shgrid" id="shG"></div><div class="shcap"><input id="shC" autocomplete="off" spellcheck="false">${ic("smile",24)}</div><div class="shsend off" id="shB"></div></div>`;$("#app").append(o)}
   const sel=new Set(),q=$("#shQ"),cap=$("#shC"),G=$("#shG"),B=$("#shB");
@@ -2808,7 +2877,7 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
 /* ---- ارسال هنگام آنلاین و زمان‌بندی‌شده | Send When Online & Scheduled Send ---- */
 /* آیکون‌ها | Icons: ساعت و تقویم (clock, calendar) */
 P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4";
-/* ---- حالت انتخاب مثل تلگرام | Select Mode ---- */
+/* ---- حالت انتخاب مثل LINK | Select Mode ---- */
 /* حالت انتخاب | Select Mode: با زدن Select در منوی پیام، بالا سه کپسول (پاک کردن گفتگو، تعداد انتخاب‌ها، انصراف) و پایین سه دکمه (سطل، دانلود، فوروارد) می‌آید. هر پیام یک دایره‌ی سمت چپ دارد و هر عکس آلبوم دایره‌ی جدای خودش را دارد. بعد از حذف، فوروارد، دانلود یا انصراف از حالت انتخاب بیرون می‌آید */
 (function(){
  const M=$('#msgs'),C=$('#chat');
@@ -3031,26 +3100,26 @@ function island(kind){var t=document.querySelector("#chats .top .title");if(!t)r
 var r=t.getBoundingClientRect(),old=t.getAttribute("style")||"",ph=document.createElement("div");
 ph.style.cssText="width:"+r.width+"px;height:"+r.height+"px;flex:none";t.parentNode.insertBefore(ph,t);
 var w=document.createElement("div");w.style.display="none";while(t.firstChild)w.appendChild(t.firstChild);t.appendChild(w);
-var E="cubic-bezier(.2,.9,.3,1.12)";
-t.style.cssText=old+";position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;text-align:center;padding:0;transition:left .55s "+E+",top .55s "+E+",width .55s "+E+",height .55s "+E+",border-radius .55s";
-var c=document.createElement("div");c.style.cssText="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;opacity:0;transition:opacity .25s .2s;white-space:nowrap;padding:0;font-weight:700;font-size:16px;color:var(--txt)";
-function go(W,H,dy){var cw=document.documentElement.clientWidth,M=10,L=Math.max(M,Math.min(cw-W-M,r.left+r.width/2-W/2));t.style.left=L+"px";t.style.top=(r.top+dy)+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,32)+"px";c.style.opacity="1"}
+var E="cubic-bezier(.22,.8,.24,1)";
+t.style.cssText=old+";position:fixed;max-width:none;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;text-align:center;padding:0;transition:left .6s "+E+",top .6s "+E+",width .6s "+E+",height .6s "+E+",border-radius .6s "+E;
+var c=document.createElement("div");c.style.cssText="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;opacity:0;transition:opacity .3s .3s;text-align:center;white-space:nowrap;padding:0;font-weight:700;font-size:16px;color:var(--txt)";
+function go(W,H,dy){var cw=document.documentElement.clientWidth,M=10,L=Math.max(M,Math.min(cw-W-M,r.left+r.width/2-W/2));t.style.left=L+"px";t.style.top=(r.top-(H-r.height)/2)+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,32)+"px";c.style.opacity="1"}
 function close(){c.style.transition="opacity .15s";c.style.opacity="0";t.style.left=r.left+"px";t.style.top=r.top+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
-setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},540)}
+setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},640)}
 if(kind==="found"){var m=document.createElement("div");m.textContent=L("Update found","آپدیت پیدا شد");
 var u=document.createElement("div");u.textContent=L("Update Link","آپدیت لینک");u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
 u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(document.documentElement.clientWidth-20,260),100,6)})})}
-else{c.textContent=kind==="none"?L("No update found","آپدیتی پیدا نشد"):L("Check failed","بررسی انجام نشد");t.appendChild(c);
+else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):L("Check failed","بررسی انجام نشد");t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,1300)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
 var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
 var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
 if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v4")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
 if(await h(net)!==oldH){fresh=net;res="found"}
-}catch(e){res="err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
+}catch(e){res=navigator.onLine===false?"err":"none"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}
@@ -3067,7 +3136,7 @@ addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{upd
   R.innerHTML=L.length?L.map(b=>{const t=fwBody(b.dataset.t).replace(/<[^>]*>/g,""),i=t.toLowerCase().indexOf(q),a=Math.max(0,i-25),sn=t.slice(a,i+q.length+60);
    const k=i-a,h=esc(sn.slice(0,k))+"<mark>"+esc(sn.slice(k,k+q.length))+"</mark>"+esc(sn.slice(k+q.length));
    return `<div class="it" data-id="${b.dataset.id}"><small>${b.dataset.w==="me"?tr("You"):$("#cname").textContent||""} · ${(b.querySelector("small")||{}).textContent||""}</small>${a?"…":""}${h}</div>`}).join(""):`<div class="em">${tr("No results")}</div>`}
- /* باز کردن نوار جستجو | Open Search Bar: مثل تلگرام؛ کپسول با ذره‌بین و «Search this chat» + دایره‌ی ✕ جدا؛ دکمه‌ی برگشت و عکس پروفایل موقتاً پنهان می‌شوند */
+ /* باز کردن نوار جستجو | Open Search Bar: مثل LINK؛ کپسول با ذره‌بین و «Search this chat» + دایره‌ی ✕ جدا؛ دکمه‌ی برگشت و عکس پروفایل موقتاً پنهان می‌شوند */
  function openS(){if(on)return;on=1;T.classList.add("srch");[...T.children].forEach(x=>x.style.display="none");$("#back").style.display="none";$("#cav").style.display="none";
   const w=document.createElement("div");w.id="csw";w.style.cssText="display:flex;flex:1;align-items:center;gap:10px;min-width:0";
   w.innerHTML=`<span class="si"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span><input id="csi" placeholder="${tr("Search this chat")}" autocomplete="off" enterkeyhint="search" style="flex:1;min-width:0">`;T.append(w);
@@ -3148,7 +3217,7 @@ window.applyPin=function(){const pb=$(".pinbar");if(!pb)return;const P=pinsOf(S.
 (function(){const o=document.createElement("div");o.id="pnov";$("#chat").append(o);
  o.addEventListener("click",e=>{const it=e.target.closest(".pbub");o.classList.remove("on");if(it)pinJump(pinsOf(S.openId)[+it.dataset.i])});
  $(".pinbar").addEventListener("click",e=>{/* زدن روی نوار | Tap Bar: با بیش از یک پین، زدن روی هر جای نوار لیست پین‌ها را باز می‌کند؛ با یک پین مثل قبل به پیام می‌رود (OLD, superseded by Jump To Shown Pin below: the bar itself now scrolls to the shown pin, and only the icon button opens the pin list) */if(pinsOf(S.openId).length<2)return;e.stopImmediatePropagation();const P=pinsOf(S.openId);/* اسکرول به پین نمایشی | Jump To Shown Pin: زدن روی نوار به همان پیامی که در نوار دیده می شود اسکرول می کند؛ فقط زدن روی دکمه آیکن سمت چپ حباب پین ها را باز می کند (tapping the bar scrolls to the pin shown on it; only the icon button opens the pins bubble sheet) */if(!e.target.closest(".pi")){const cur=$(".pinbar").dataset.cur;pinJump(P.includes(cur)?cur:P[P.length-1]);return}
-  /* حباب پین ها | Pin Bubbles: با بیش از یک پین، پیام های پین شده مثل تلگرام پشت سر هم و به شکل حباب گفتگو در یک صفحه نشان داده می شوند؛ زدن روی هر حباب به همان پیام می رود (with several pins, tapping the bar shows the pinned messages one after another as chat bubbles; tapping a bubble jumps to that message) */const bs=[...$$("#msgs .b")],pm0=P.map((r,i)=>({r,i,s:bs.find(x=>x.dataset.t===r)})).sort((a,b)=>(a.s?bs.indexOf(a.s):-1)-(b.s?bs.indexOf(b.s):-1));o.innerHTML=`<div class="pc"><div class="ph2">${tr("Pinned Messages")} (${P.length})</div><div class="pmsgs"></div></div>`;const pm=o.querySelector(".pmsgs");pm0.forEach(x=>{let d;/* دسته‌بندی تاریخ | Date Groups: هر بار که تاریخ ارسال پیام عوض شد، چسبک تاریخ مثل خود گفتگو (امروز، آبان ۱۸ ...) قبل پیام می‌آید */if(x.s){let e=x.s.previousElementSibling;while(e&&!e.classList.contains("dsep"))e=e.previousElementSibling;const dl=e?e.textContent:"";if(dl&&dl!==pm.dataset.ld){const h=document.createElement("div");h.className="dsep";h.textContent=dl;pm.append(h);pm.dataset.ld=dl}}if(x.s){d=x.s.cloneNode(true);d.classList.remove("hl");d.querySelectorAll(".ri").forEach(n=>n.remove())}else{d=document.createElement("div");d.className="b ot";d.textContent=fwBody(x.r).replace(/<[^>]*>/g,"")}d.classList.add("pbub");d.dataset.i=x.i;pm.append(d)});o.classList.add("on")},true)})();
+  /* حباب پین ها | Pin Bubbles: با بیش از یک پین، پیام های پین شده مثل LINK پشت سر هم و به شکل حباب گفتگو در یک صفحه نشان داده می شوند؛ زدن روی هر حباب به همان پیام می رود (with several pins, tapping the bar shows the pinned messages one after another as chat bubbles; tapping a bubble jumps to that message) */const bs=[...$$("#msgs .b")],pm0=P.map((r,i)=>({r,i,s:bs.find(x=>x.dataset.t===r)})).sort((a,b)=>(a.s?bs.indexOf(a.s):-1)-(b.s?bs.indexOf(b.s):-1));o.innerHTML=`<div class="pc"><div class="ph2">${tr("Pinned Messages")} (${P.length})</div><div class="pmsgs"></div></div>`;const pm=o.querySelector(".pmsgs");pm0.forEach(x=>{let d;/* دسته‌بندی تاریخ | Date Groups: هر بار که تاریخ ارسال پیام عوض شد، چسبک تاریخ مثل خود گفتگو (امروز، آبان ۱۸ ...) قبل پیام می‌آید */if(x.s){let e=x.s.previousElementSibling;while(e&&!e.classList.contains("dsep"))e=e.previousElementSibling;const dl=e?e.textContent:"";if(dl&&dl!==pm.dataset.ld){const h=document.createElement("div");h.className="dsep";h.textContent=dl;pm.append(h);pm.dataset.ld=dl}}if(x.s){d=x.s.cloneNode(true);d.classList.remove("hl");d.querySelectorAll(".ri").forEach(n=>n.remove())}else{d=document.createElement("div");d.className="b ot";d.textContent=fwBody(x.r).replace(/<[^>]*>/g,"")}d.classList.add("pbub");d.dataset.i=x.i;pm.append(d)});o.classList.add("on")},true)})();
 /* نگه داشتن نوار پین | Pin Bar Long Press: با نگه داشتن انگشت روی نوار پین، همان کاری می‌شود که دکمه‌ی سمت راست (آیکون پین) می‌کند؛ کلیک بعد از نگه داشتن نادیده گرفته می‌شود */
 (function(){const pb=$(".pinbar");let tm=0,sx=0,sy=0,fired=0;
  const clr=()=>{clearTimeout(tm);tm=0};
@@ -3157,7 +3226,7 @@ window.applyPin=function(){const pb=$(".pinbar");if(!pb)return;const P=pinsOf(S.
  ["pointerup","pointercancel","pointerleave"].forEach(ev=>pb.addEventListener(ev,clr));
  document.addEventListener("click",e=>{if(fired&&e.isTrusted&&e.target.closest&&e.target.closest(".pinbar")){fired=0;e.stopImmediatePropagation();e.preventDefault()}},true);
  pb.addEventListener("contextmenu",e=>e.preventDefault())})();
-/* پین هنگام اسکرول | Pin On Scroll: مثل تلگرام، وقتی چند پیام پین شده باشد، با اسکرول نوار پین به پیام پین‌شده‌ی همان بخش تبدیل می‌شود؛ پایین‌ترین پین در دید (یا بالاتر از دید) نمایش داده می‌شود، پس در انتهای گفتگو آخرین پیام پین‌شده است و با بالا رفتن به پین‌های قدیمی‌تر می‌رسد و شماره‌اش (#) عوض می‌شود (like Telegram, with several pins the bar follows the scroll: it shows the lowest pin at or above the visible bottom, so at the end of the chat it is the latest pin and scrolling up reaches older ones with its # changing) */
+/* پین هنگام اسکرول | Pin On Scroll: مثل LINK، وقتی چند پیام پین شده باشد، با اسکرول نوار پین به پیام پین‌شده‌ی همان بخش تبدیل می‌شود؛ پایین‌ترین پین در دید (یا بالاتر از دید) نمایش داده می‌شود، پس در انتهای گفتگو آخرین پیام پین‌شده است و با بالا رفتن به پین‌های قدیمی‌تر می‌رسد و شماره‌اش (#) عوض می‌شود (like LINK, with several pins the bar follows the scroll: it shows the lowest pin at or above the visible bottom, so at the end of the chat it is the latest pin and scrolling up reaches older ones with its # changing) */
 (function(){const M=$("#msgs");let raf=0;
  const upd=()=>{raf=0;const P=pinsOf(S.openId),pb=$(".pinbar");if(P.length<2||!pb||pb.style.display==="none")return;
   const mt=M.getBoundingClientRect().top,bs=[...$$("#msgs .b")];
@@ -3172,7 +3241,7 @@ window.applyPin=function(){const pb=$(".pinbar");if(!pb)return;const P=pinsOf(S.
 })();
 applyPin();
 
-/* تاریخ چسبان | Sticky Date Fix: فقط تاریخِ بخش فعلی بالای صفحه می‌ماند، تاریخ‌های قبلی پنهان می‌شوند و با رسیدن تاریخ بعدی، تاریخ قبلی مثل تلگرام به بالا هل داده می‌شود (دیگر روی هم نمی‌افتند) */
+/* تاریخ چسبان | Sticky Date Fix: فقط تاریخِ بخش فعلی بالای صفحه می‌ماند، تاریخ‌های قبلی پنهان می‌شوند و با رسیدن تاریخ بعدی، تاریخ قبلی مثل LINK به بالا هل داده می‌شود (دیگر روی هم نمی‌افتند) */
 (function(){const M=$("#msgs");let raf=0;
  function fix(){raf=0;const D=[...M.querySelectorAll(".dsep")];if(!D.length)return;
   /* اصلاح فاصله‌ی داخلی | Padding Fix: تاریخ چسبان به اندازه‌ی فاصله‌ی داخلی بالای پیام‌ها (padding) پایین‌تر از لبه می‌ایستد، پس همان فاصله هم حساب می‌شود */const pt=parseFloat(getComputedStyle(M).paddingTop)||0,st=M.getBoundingClientRect().top+M.clientTop+pt+4,stuck=[],below=[];
