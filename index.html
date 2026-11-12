@@ -845,7 +845,8 @@ html.light #login input,html.light .inbar input,html.light .inbar textarea,html.
 #schl .slt{text-align:center;display:flex;flex-direction:column}
 #schl .slt b{font-size:16px}
 #schl .slt small{font-size:12px;color:var(--sub)}
-#schl #slList{flex:1;min-height:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 20px);gap:6px}
+#schl #slList{flex:1;min-height:0;padding:10px 12px calc(env(safe-area-inset-bottom) + var(--ext,0px) + 20px);gap:6px}
+#schl #slList>:first-child{margin-top:auto}
 #schl #slList .dsep{align-self:center}
 #schl .sli{align-self:flex-end;max-width:78%;font-size:15px;line-height:1.35;border-bottom-right-radius:5px}
 #schl .sli>div{display:block;-webkit-line-clamp:unset;overflow:visible}
@@ -878,7 +879,7 @@ html.light #login input,html.light .inbar input,html.light .inbar textarea,html.
 .shbtn{margin-top:10px;height:54px;border-radius:27px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
 #schl .slt small{display:none}
 .shav{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}
-#schl .slin{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);background:var(--menu)}
+#schl .slin{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + var(--ext,0px) + 8px);background:var(--menu)}
 #schl .slin input{flex:1;min-width:0;height:40px;border-radius:20px;border:0;background:var(--card2);color:var(--txt);padding:0 14px;font-size:16px;outline:0;-webkit-user-select:text;user-select:text}
 #schl .slx{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center}
 #schl .slsb{justify-content:space-around;font-size:16px;font-weight:600;color:var(--blue)}
@@ -3392,7 +3393,7 @@ CFG.sched=CFG.sched||[];
  const slm=document.createElement("div");slm.id="slmv";slm.innerHTML='<div class="smc"></div>';$("#app").append(slm);
  function renderSl(){const L=CFG.sched.filter(r=>r.cid===S.openId).sort((a,b)=>(a.mode==="sched"?a.at:a.created)-(b.mode==="sched"?b.at:b.created));
   sl.querySelector("b").textContent=tr("Scheduled Messages");sl.querySelector("small").textContent="";$("#slAv").textContent=((CHATS.find(x=>x.id===S.openId)||{}).n||"?").trim().charAt(0);$("#slI").placeholder=tr("Message");
-  /* حباب زمان‌بندی | Scheduled Bubbles: هر پیام مثل حباب خود گفتگو با آیکون ساعت و ساعت ارسال؛ بالای هر روز جداکننده (each message as a real chat bubble with clock icon and send time; separator above each day) */let lg=null;$("#slList").innerHTML=L.map(r=>{const k=r.mode==="sched"?new Date(r.at).toDateString():"online",sep=k!==lg?`<div class="dsep">${esc(r.mode==="sched"?tr("Scheduled for")+" "+(k===new Date().toDateString()?dayLabel(0):new Date(r.at).toLocaleDateString()):tr("Will be sent when online"))}</div>`:"";lg=k;return sep+`<div class="sli b me" data-id="${r.id}"><div>${esc(lkMsgPlain(r.v))}</div><small>${r.mode==="sched"?hh(r.at)+" ":""}${ic("clock",13)}</small></div>`}).join("");
+  /* حباب زمان‌بندی | Scheduled Bubbles: هر پیام مثل حباب خود گفتگو با آیکون ساعت و ساعت ارسال؛ بالای هر روز جداکننده (each message as a real chat bubble with clock icon and send time; separator above each day) */let lg=null;$("#slList").innerHTML=L.map(r=>{const k=r.mode==="sched"?new Date(r.at).toDateString():"online",sep=k!==lg?`<div class="dsep">${esc(r.mode==="sched"?dayLabel(Math.round((new Date(new Date().toDateString())-new Date(k))/864e5)):tr("Will be sent when online"))}</div>`:"";lg=k;return sep+`<div class="sli b me" data-id="${r.id}"><div>${esc(lkMsgPlain(r.v))}</div><small>${r.mode==="sched"?hh(r.at)+" ":""}${ic("clock",13)}</small></div>`}).join("");
   if(!L.length)sl.classList.remove("on");slApply();
   $$("#slList .sli").forEach(el=>{let t=null;const st=()=>{t=setTimeout(()=>{t=null;slMenu(CFG.sched.find(x=>x.id===el.dataset.id),el)},450)},cl=()=>{clearTimeout(t)};
    el.addEventListener("touchstart",st,{passive:true});el.addEventListener("mousedown",st);["touchmove","touchend","touchcancel","mouseup","mouseleave"].forEach(e=>el.addEventListener(e,cl,{passive:true}))})}
