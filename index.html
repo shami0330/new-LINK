@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <!--
  ⚠️ NOTE TO ANY AI OR EDITOR WORKING ON THIS FILE / توجه به هر هوش مصنوعی یا ویرایشگر:
@@ -525,6 +526,11 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mpn{position:absolute;right:10px;bottom:57px;width:28px;height:28px;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
 #mpv.vid .mpmute{display:flex}
 #mpv.vid .mpn{bottom:102px;background:rgba(120,120,128,.7);border-color:transparent}
+/* دکمه‌ی + افزودن بیشتر | Add More Button: دایره‌ی + کنار شمارنده؛ همان ظاهر شمارنده و کنار آن (plus circle beside the counter, same look) */
+#mpv .mpadd{right:46px;font-size:20px;font-weight:400;cursor:pointer;line-height:1}
+#mpv.vid .mpadd{bottom:102px;background:rgba(120,120,128,.7);border-color:transparent}
+/* پنهان در حالت عکس پروفایل | Hidden In Avatar Mode: در تغییر عکس پروفایل افزودن بیشتر معنی ندارد (no add button when changing profile photo) */
+#mpv.avp #mpAdd{display:none!important}
 /* نوار برش ویدیو | Video Trim Strip: قاب تصویرهای ریز با دستگیره‌ی چپ و راست، بخش حذف‌شده تیره و خط سفید جای پخش */
 #mpv .mptl{touch-action:none;display:none;position:absolute;left:8px;right:8px;bottom:48px;height:42px}
 #mpv.vid .mptl{display:block}
@@ -2066,7 +2072,7 @@ function mpvHandle(h,side){const off=()=>{h._d=0};h.addEventListener("pointerdow
 /* ساخت صفحه | Build Preview Screen: یک بار صفحه‌ی پیش‌نمایش را می‌سازد و دکمه‌ها و کشیدن بین فایل‌ها را وصل می‌کند */
 function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o.id="mpv";
  o.innerHTML=`<div class="mpt"><span id="mpTo"></span><b class="mpbd" id="mpIdx"></b></div>
-<div class="mpm" id="mpM"><div class="mptr" id="mpTr"></div><div class="mpmute" id="mpMute"></div><div class="mpn" id="mpN"></div>
+<div class="mpm" id="mpM"><div class="mptr" id="mpTr"></div><div class="mpmute" id="mpMute"></div><div class="mpn" id="mpN"></div><div class="mpn mpadd" id="mpAdd" aria-label="Add more"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" style="display:block"><path d="M7 1.5v11M1.5 7h11"/></svg></div>
 <div class="mptl" id="mpTl"><div class="mpst" id="mpSt"></div><div class="mpdm l" id="mpDl"></div><div class="mpdm r" id="mpDr"></div><div class="mpsel" id="mpSel"><i class="mphd l"></i><i class="mphd r"></i></div><i class="mpph" id="mpPh"></i></div>
 <div class="mpcap"><input id="mpCap" autocomplete="off" autocapitalize="off"></div></div>
 <div class="mpbar"><div class="mpr" id="mpBack">${ic("back",22)}</div><div class="mptools"><span data-mt="crop">${MPI.crop}</span><span data-mt="draw">${MPI.draw}</span><span data-mt="adj">${MPI.adj}</span><b class="mpq" id="mpQ"></b></div><div class="mpr s" id="mpSend">${ic("send",24)}</div></div>
@@ -2087,6 +2093,8 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  /* حذف از انتخاب | Deselect: لمس نشان شماره، فایل فعلی را از انتخاب خارج می‌کند؛ اگر چیزی نماند پیش‌نمایش بسته می‌شود */
  $("#mpIdx").onclick=()=>{const i=MPV.i,s=MPV.sel;if(s[i]&&s.filter(Boolean).length<=1)return;s[i]=!s[i];$("#mpIdx").classList.toggle("off",!s[i]);$("#mpIdx").textContent=s[i]?s.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=s.filter(Boolean).length};
  $("#mpMute").onclick=()=>{MPV.mute[MPV.i]=!MPV.mute[MPV.i];mpvMuteUi(MPV.i);const v=mpvV();if(v)v.muted=!!MPV.mute[MPV.i]};
+/* دکمه‌ی + افزودن بیشتر | Add More Click: گالری را باز می‌کند و فایل‌های انتخابی را به پیش‌نمایش فعلی اضافه می‌کند (opens the gallery and adds the chosen files to the open preview) */
+$("#mpAdd").onclick=()=>{const f=$("#mediaIn");f.value="";f.removeAttribute("accept");f.accept="image/*,video/*";f.multiple=true;f.onchange=()=>{const a=[...f.files].filter(x=>lkKind(x)!=="file");if(a.length)mpvAppend(a)};f.click()};
  /* ارسال از پیش‌نمایش | Send From Preview: برش‌های واقعی را روی فایل می‌گذارد، صفحه را می‌بندد، آلبوم را می‌فرستد و شرح را پیام جدا بعدش می‌فرستد */
  $("#mpSend").onclick=async()=>{const S=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!S.length)return;const L=S.filter(i=>lkKind(MPV.f[i])==="video"&&mpvQv(i)!=="Original");if(L.length&&!(await mpAsk("ارسال با این کیفیت ممکن است زمان‌بر باشد، به دلیل فشرده‌سازی. ادامه می‌دهید؟")))L.forEach(i=>MPV.rec[i].q="Original");const F=S.map(i=>MPV.f[i]),cap=$("#mpCap").value.trim();
   /* دستورکار هر فایل | Per-file Recipe: برش، تنظیم رنگ، چرخش، آینه و کوتاه‌کردن هر فایل را به دستورکار سیستم رسانه تبدیل می‌کند، کیفیت را می‌گذارد و اندازه‌ی حباب را با شکل جدید هماهنگ می‌کند */
@@ -2357,6 +2365,17 @@ function lkLoad(n){if(!document.getElementById("lkLoadCss")){const s=document.cr
  const tk=setInterval(()=>{if(p<cap){p+=(cap-p)*.08;show()}},100);
  return{set(k){cap=k>=n?100:Math.min(99,(k+.9)/n*100);p=Math.max(p,k/n*100);show()},end(){clearInterval(tk);setTimeout(()=>e.remove(),150)}}}
 function mpAsk(t){return new Promise(ok=>{const b=document.createElement("div");b.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";b.innerHTML='<div style="background:#1c1c1e;color:#fff;border-radius:14px;padding:18px;width:min(86vw,300px);text-align:center;font-size:15px"><div data-q style="margin-bottom:16px"></div><div style="display:flex;gap:10px"><button data-a="0" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2c2c2e;color:#fff;font-size:15px">No</button><button data-a="1" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2f8fff;color:#fff;font-size:15px">Yes</button></div></div>';b.querySelector("[data-q]").textContent=t;b.onclick=e=>{const x=e.target.closest("button");if(!x)return;b.remove();ok(x.dataset.a==="1")};document.body.appendChild(b)})}
+/* افزودن رسانه | Append Media: فایل‌های تازه را به انتهای پیش‌نمایش باز اضافه می‌کند، همه انتخاب‌شده و آمادهٔ ارسال (appends new files to the end of the open preview, all selected and ready to send) */
+async function mpvAppend(files){if(!files.length)return;const lp=lkLoad(files.length);try{let n=0;await Promise.all(files.map(f=>lkDims(f).finally(()=>lp.set(++n))))}catch(e){lp.end();throw e}
+ const t=$("#mpTr"),first=MPV.f.length;
+ files.forEach(f=>{const i=MPV.f.length,vd=lkKind(f)==="video",p=(f.__h||1)>(f.__w||1),u=URL.createObjectURL(f);
+  MPV.f.push(f);MPV.u.push(u);MPV.rec.push({});MPV.th.push([]);MPV.mute.push(false);MPV.sel.push(true);
+  const s=document.createElement("div");s.className="mps"+(p?" pt":"");
+  s.innerHTML=vd?`<video src="${u}" playsinline webkit-playsinline preload="auto"></video><div class="mpp">${MPI.play}</div>`:`<img src="${u}">`;
+  s.insertAdjacentHTML("beforeend",'<canvas class="mpc"></canvas>');t.appendChild(s);
+  const m=s.querySelector("img,video");m.addEventListener(vd?"loadeddata":"load",()=>mpvDraw(i));
+  if(vd){m.addEventListener("seeked",()=>mpvDraw(i));m.addEventListener("loadedmetadata",()=>{mpvDur(i);if(MPV.i===i)mpvSel(i);try{m.currentTime=Math.min(.05,(m.duration||1)/2)}catch(e){}})}});
+ lp.set(files.length);lp.end();mpvGo(first,true)}
 async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id===S.openId);const lp=lkLoad(files.length);try{let n=0;await Promise.all(files.map(f=>lkDims(f).finally(()=>lp.set(++n))))}catch(e){lp.end();throw e}const o=mpvEl();MPV.u.forEach(u=>URL.revokeObjectURL(u));
  Object.assign(MPV,{f:files,i:0,rec:files.map(()=>({})),th:[],mute:[],sel:files.map(()=>true),tok:MPV.tok+1,to:c?c.n:""});MPV.u=files.map(f=>URL.createObjectURL(f));
  $("#mpTo").textContent="↑ "+tr(MPV.to);$("#mpCap").value="";$("#mpCap").placeholder=tr("Add a caption...");
@@ -3482,3 +3501,4 @@ return {ADTS:Ku,ALL_FORMATS:Xh,ALL_TRACK_TYPES:Dl,AUDIO_CODECS:pe,AdtsInputForma
 </script>
 </body>
 </html>
+</body></html>
