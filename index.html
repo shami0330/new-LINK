@@ -3122,14 +3122,14 @@ var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="curs
 u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(document.documentElement.clientWidth-20,260),100,6)})})}
-else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):L("Check your connection","اتصال اینترنت را بررسی کنید");t.appendChild(c);
+else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):kind==="err"?L("Check your connection","اتصال اینترنت را بررسی کنید"):L("Check failed","بررسی انجام نشد")+" ("+kind.slice(5)+")";t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,1300)}}
-async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
+async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none",st=0;try{
 var u=new URL(IDX());u.searchParams.set("_u",Date.now());
-var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
+var r=await fetch(u.href,{cache:"no-store"});if(!r.ok){var u2=new URL("index.html",u.href);u2.searchParams.set("_u",Date.now());if(u2.pathname!==u.pathname)r=await fetch(u2.href,{cache:"no-store"})}st=1;if(!r.ok)throw new Error("HTTP "+r.status);var net=await r.text();
 if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v4")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
 if(await h(net)!==oldH){fresh=net;res="found"}
-}catch(e){res="err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
+}catch(e){res=st?"fail:"+String(e&&e.message||e).slice(0,40):"err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}
