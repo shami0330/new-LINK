@@ -855,6 +855,36 @@ html.light #login input,html.light .inbar input,html.light .inbar textarea,html.
 #sedov{position:absolute;inset:0;z-index:98;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 #sedov.on{opacity:1;pointer-events:auto}
 .schc textarea{min-height:84px;max-height:140px;border-radius:14px;border:0;background:var(--card2);color:var(--txt);padding:10px 14px;font-size:16px;line-height:20px;outline:0;resize:none;width:100%;font-family:inherit;-webkit-user-select:text;user-select:text}
+/* شیت زمان‌بندی مثل تلگرام | Telegram-style Schedule Sheet */
+#schs{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+#schs.on{opacity:1;pointer-events:auto}
+#schs .shc{width:calc(100% - 16px);max-width:420px;margin-bottom:calc(env(safe-area-inset-bottom) + 8px);background:var(--card);color:var(--txt);border-radius:34px;padding:14px 16px 16px;transform:translateY(40px);transition:transform .25s}
+#schs.on .shc{transform:none}
+.shh{display:flex;align-items:center;justify-content:space-between}
+.shh b{font-size:17px}
+.shi{width:38px;height:38px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--txt)}
+.shi.on{color:var(--blue)}
+.shm{display:flex;align-items:center;justify-content:space-between;margin:12px 4px 4px;font-size:17px;font-weight:600}
+.shn{display:flex;gap:22px;color:var(--blue);font-size:26px;line-height:1}
+.shn i{font-style:normal;cursor:pointer;padding:0 6px}
+.shg{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;text-align:center}
+.shg .w{color:var(--sub);font-size:11px;font-weight:600;padding:8px 0}
+.shg .d{width:40px;height:40px;margin:auto;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:50%}
+.shg .d.p{color:var(--sub);opacity:.5;pointer-events:none}
+.shg .d.s{background:var(--blue);color:#fff;font-weight:600}
+.shr{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:16px}
+.shp{background:var(--card2);border-radius:14px;padding:6px 12px;font-size:16px;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px}
+.shp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;-webkit-appearance:none;appearance:none}
+.shbtn{margin-top:10px;height:54px;border-radius:27px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+#schl .slt small{display:none}
+.shav{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}
+#schl .slin{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);background:var(--menu)}
+#schl .slin input{flex:1;min-width:0;height:40px;border-radius:20px;border:0;background:var(--card2);color:var(--txt);padding:0 14px;font-size:16px;outline:0;-webkit-user-select:text;user-select:text}
+#schl .slx{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center}
+#schl .slsb{justify-content:space-around;font-size:16px;font-weight:600;color:var(--blue)}
+#schl .slsb>div{padding:10px 8px}
+#schl .sli.sel{outline:2px solid var(--blue);outline-offset:2px}
+.smc div.sep{border-top:6px solid rgba(120,120,128,.18)}
 html.light #tabbar{background:rgba(255,255,255,.92)}
 html.light .sec{background:#e9e9ee}
 html.light .dt{color-scheme:light}
@@ -3336,11 +3366,14 @@ CFG.sched=CFG.sched||[];
  /* رفتن به فرستنده | Open Original Sender: لمس سربرگ «Forwarded from» مستقیم گفتگوی فرستنده را باز می‌کند (tap the header to open the sender's chat) */
  document.addEventListener("click",e=>{const h=e.target.closest("#msgs .fwh");if(!h)return;const n=h.querySelector(".fwn span").textContent,c=CHATS.find(x=>x.n===n)||(S.user&&n===S.user.name?CHATS.find(x=>x.id===2):null);if(c)openChat(c.id);else openByName(n)});
  /* منوی نگه‌داشتن | Hold Menu: نگه‌داشتن دکمه ارسال با متن نوشته‌شده (hold send with text typed) */
- const mv=document.createElement("div");mv.id="smv";mv.innerHTML='<div class="smc"><div data-m="online">'+ic("clock",22)+'<span></span></div><div data-m="sched">'+ic("cal",22)+'<span></span></div></div>';$("#app").append(mv);
- function openMenu2(){const r=sb.getBoundingClientRect(),c=mv.querySelector(".smc"),sp=mv.querySelectorAll("span");sp[0].textContent=tr("Send When Online");sp[1].textContent=tr("Schedule Message");mv.style.display="block";c.style.bottom=($("#app").getBoundingClientRect().bottom-r.top+8)+"px";c.style.right="12px"}
- mv.onclick=e=>{const d=e.target.closest("[data-m]");mv.style.display="none";if(!d)return;if(d.dataset.m==="online")queue("online");else openSched()};
- let ht=null;const hs=()=>{if(!$("#mi").value.trim())return;ht=setTimeout(()=>{S.sendHold=true;openMenu2()},450)},he=()=>{clearTimeout(ht);setTimeout(()=>{S.sendHold=false},350)};
- sb.addEventListener("touchstart",hs,{passive:true});sb.addEventListener("mousedown",hs);["touchend","touchmove","touchcancel","mouseup","mouseleave"].forEach(ev=>sb.addEventListener(ev,()=>clearTimeout(ht),{passive:true}));["touchend","mouseup"].forEach(ev=>sb.addEventListener(ev,he,{passive:true}));
+ const mv=document.createElement("div");mv.id="smv";mv.innerHTML='<div class="smc"><div data-m="silent">'+ic("mute",22)+'<span></span></div><div data-m="sched">'+ic("cal",22)+'<span></span></div><div data-m="online">'+ic("clock",22)+'<span></span></div></div>';$("#app").append(mv);
+ function openMenu2(){const r=sb.getBoundingClientRect(),c=mv.querySelector(".smc"),sp=mv.querySelectorAll("span");sp[0].textContent=tr("Send Without Sound");sp[1].textContent=tr("Schedule Message");sp[2].textContent=tr("Send When Online");mv._t=Date.now();mv.style.display="block";c.style.bottom=($("#app").getBoundingClientRect().bottom-r.top+8)+"px";c.style.right="12px"}
+ mv.onclick=e=>{if(Date.now()-(mv._t||0)<700)return;const d=e.target.closest("[data-m]");mv.style.display="none";if(!d)return;if(d.dataset.m==="silent")send();else if(d.dataset.m==="online")queue("online");else openSched()};
+ let ht=null,hx=0,hy=0;const hs=e=>{if(!$("#mi").value.trim())return;const p=(e.touches&&e.touches[0])||e;hx=p.clientX;hy=p.clientY;clearTimeout(ht);ht=setTimeout(()=>{ht=null;S.sendHold=true;openMenu2()},400)},hm=e=>{if(!ht)return;const p=(e.touches&&e.touches[0])||e;if(Math.abs(p.clientX-hx)>14||Math.abs(p.clientY-hy)>14){clearTimeout(ht);ht=null}},he=()=>{clearTimeout(ht);ht=null;setTimeout(()=>{S.sendHold=false},600)};
+ sb.style.webkitTouchCallout="none";sb.style.webkitUserSelect="none";sb.style.userSelect="none";
+ sb.addEventListener("touchstart",hs,{passive:true});sb.addEventListener("touchmove",hm,{passive:true});sb.addEventListener("touchend",he,{passive:true});sb.addEventListener("touchcancel",he,{passive:true});
+ sb.addEventListener("mousedown",e=>{if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;hs(e)});sb.addEventListener("mouseup",he);sb.addEventListener("mouseleave",()=>{clearTimeout(ht);ht=null});
+ sb.addEventListener("contextmenu",e=>{e.preventDefault();if($("#mi").value.trim()&&mv.style.display!=="block"){S.sendHold=true;openMenu2()}});
  /* پنجره زمان‌بندی | Schedule Dialog: انتخاب تاریخ و ساعت؛ زمان باید در آینده باشد (pick date + time; must be in the future) */
  const sd=document.createElement("div");sd.id="schov";sd.innerHTML='<div class="schc"><b></b><label></label><input type="date" id="schD"><label></label><input type="time" id="schTm"><div class="schok" id="schOk"></div><div class="schno" id="schNo"></div></div>';$("#app").append(sd);
  function openSched(){const d=new Date(Date.now()+120000);$("#schD").value=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());$("#schTm").value=p2(d.getHours())+":"+p2(d.getMinutes());
@@ -3355,25 +3388,63 @@ CFG.sched=CFG.sched||[];
  function updSchIcon(){try{if(sl.classList.contains("on"))renderSl()}catch(e){}const n=CFG.sched.filter(r=>r.cid===S.openId).length,m=$("#mi");ib.style.display=n?"flex":"none";m.classList.toggle("hasSch",n>0);if(n){ib.style.left=(m.offsetLeft+7)+"px";ib.style.top=(m.offsetTop+m.offsetHeight-33)+"px"}}
  const g0=grow;grow=function(){g0();updSchIcon()};
  /* کارت لیست | List Card */
- const sl=document.createElement("div");sl.id="schl";sl.innerHTML='<div class="slc"><div class="slh"><div class="pill" id="slBack"></div><div class="slt"><b></b><small></small></div><div style="width:38px"></div></div><div id="slList"></div></div>';$("#app").append(sl);$("#slBack").innerHTML=ic("back",22);$("#slBack").onclick=()=>sl.classList.remove("on");
+ const sl=document.createElement("div");sl.id="schl";sl.innerHTML='<div class="slc"><div class="slh"><div class="pill" id="slBack"></div><div class="slt"><b></b><small></small></div><div class="shav" id="slAv"></div></div><div id="slList"></div><div class="slin" id="slIn"><input id="slI" autocomplete="off"><div class="slx" id="slX"></div></div><div class="slin slsb" id="slSb" style="display:none"></div></div>';$("#app").append(sl);$("#slBack").innerHTML=ic("close",22);$("#slBack").onclick=()=>sl.classList.remove("on");
  const slm=document.createElement("div");slm.id="slmv";slm.innerHTML='<div class="smc"></div>';$("#app").append(slm);
  function renderSl(){const L=CFG.sched.filter(r=>r.cid===S.openId).sort((a,b)=>(a.mode==="sched"?a.at:a.created)-(b.mode==="sched"?b.at:b.created));
-  sl.querySelector("b").textContent=tr("Scheduled Messages");sl.querySelector("small").textContent=tr("Hold a message for options");
+  sl.querySelector("b").textContent=tr("Scheduled Messages");sl.querySelector("small").textContent="";$("#slAv").textContent=((CHATS.find(x=>x.id===S.openId)||{}).n||"?").trim().charAt(0);$("#slI").placeholder=tr("Message");
   /* حباب زمان‌بندی | Scheduled Bubbles: هر پیام مثل حباب خود گفتگو با آیکون ساعت و ساعت ارسال؛ بالای هر روز جداکننده (each message as a real chat bubble with clock icon and send time; separator above each day) */let lg=null;$("#slList").innerHTML=L.map(r=>{const k=r.mode==="sched"?new Date(r.at).toDateString():"online",sep=k!==lg?`<div class="dsep">${esc(r.mode==="sched"?tr("Scheduled for")+" "+(k===new Date().toDateString()?dayLabel(0):new Date(r.at).toLocaleDateString()):tr("Will be sent when online"))}</div>`:"";lg=k;return sep+`<div class="sli b me" data-id="${r.id}"><div>${esc(lkMsgPlain(r.v))}</div><small>${r.mode==="sched"?hh(r.at)+" ":""}${ic("clock",13)}</small></div>`}).join("");
-  if(!L.length)sl.classList.remove("on");
+  if(!L.length)sl.classList.remove("on");slApply();
   $$("#slList .sli").forEach(el=>{let t=null;const st=()=>{t=setTimeout(()=>{t=null;slMenu(CFG.sched.find(x=>x.id===el.dataset.id),el)},450)},cl=()=>{clearTimeout(t)};
    el.addEventListener("touchstart",st,{passive:true});el.addEventListener("mousedown",st);["touchmove","touchend","touchcancel","mouseup","mouseleave"].forEach(e=>el.addEventListener(e,cl,{passive:true}))})}
  ib.onclick=()=>{renderSl();if(CFG.sched.some(r=>r.cid===S.openId))sl.classList.add("on")};
  sl.onclick=e=>{if(e.target===sl)sl.classList.remove("on")};
  /* منوی گزینه‌ها | Options Menu: ارسال همین حالا (بدون توجه به زمان‌بندی)، ویرایش، حذف */
  function slMenu(r,el){if(!r)return;const c=slm.querySelector(".smc"),b=el.getBoundingClientRect(),a=$("#app").getBoundingClientRect();
-  c.innerHTML='<div data-a="now">'+ic("plane",22)+'<span>'+tr("Send Now")+'</span></div><div data-a="edit">'+ic("pen",22)+'<span>'+tr("Edit")+'</span></div><div data-a="del" style="color:var(--red)">'+ic("trash",22)+'<span>'+tr("Delete")+'</span></div>';
-  slm.style.display="block";c.style.left=Math.max(12,Math.min(a.width-252,b.left+(b.width-240)/2))+"px";c.style.top=Math.max(70,Math.min(b.bottom+6,a.height-190))+"px";
+  c.innerHTML='<div data-a="now">'+ic("plane",22)+'<span>'+tr("Send Now")+'</span></div><div data-a="re">'+ic("clock",22)+'<span>'+tr("Reschedule")+'</span></div><div data-a="copy">'+ic("copy",22)+'<span>'+tr("Copy")+'</span></div><div data-a="edit">'+ic("pen",22)+'<span>'+tr("Edit")+'</span></div><div data-a="del" style="color:var(--red)">'+ic("trash",22)+'<span>'+tr("Delete")+'</span></div><div data-a="sel" class="sep">'+ic("sel",22)+'<span>'+tr("Select")+'</span></div>';
+  slm.style.display="block";c.style.left=Math.max(12,Math.min(a.width-252,b.left+(b.width-240)/2))+"px";c.style.top=Math.max(70,Math.min(b.bottom+6,a.height-340))+"px";
   c.onclick=e=>{const d=e.target.closest("[data-a]");slm.style.display="none";if(!d)return;
    if(d.dataset.a==="now"){deliver(r);renderSl()}
    else if(d.dataset.a==="del"){CFG.sched.splice(CFG.sched.indexOf(r),1);saveCfg();const x=$('#msgs [data-pid="'+r.id+'"]');if(x)x.remove();updSchIcon();renderSl()}
-   else slEdit(r)}}
+   else if(d.dataset.a==="edit")slEdit(r);else if(d.dataset.a==="re")openSched({at:r.mode==="sched"?r.at:0,onOk:at=>{r.mode="sched";r.at=at;saveCfg();renderSl()}});else if(d.dataset.a==="copy"){try{navigator.clipboard.writeText(r.v)}catch(e){}toast("Copied")}else if(d.dataset.a==="sel"){slSel=new Set([r.id]);slApply()}}}
  slm.onclick=e=>{if(e.target===slm)slm.style.display="none"};
+
+ /* ===== شیت زمان‌بندی مثل تلگرام | Telegram-style Schedule Sheet + Select Mode ===== */
+ Object.assign(FA,{"Send Without Sound":"ارسال بی‌صدا","Send today at":"ارسال امروز ساعت","Send on":"ارسال در","at":"ساعت","Repeat":"تکرار","Never":"هرگز","Reschedule":"زمان‌بندی مجدد","Select":"انتخاب","Message":"پیام","Pick a future time":"زمانی در آینده انتخاب کنید"});
+ P.copy=P.copy||"M8 8h12v12H8zM4 4h12v2M4 4v12h2";P.sel="M12 21a9 9 0 100-18 9 9 0 000 18zM8 12l3 3 5-6";
+ let slSel=null,SH=null;
+ const sh=document.createElement("div");sh.id="schs";sh.innerHTML='<div class="shc"><div class="shh"><div class="shi" id="shX"></div><b id="shT"></b><div class="shi" id="shB"></div></div><div class="shm"><span id="shMo"></span><span class="shn"><i id="shPv">\u2039</i><i id="shNx">\u203A</i></span></div><div class="shg" id="shG"></div><div class="shr"><span id="shTl"></span><label class="shp"><span id="shTv"></span><input type="time" id="shTi"></label></div><div class="shr"><span id="shRl"></span><span class="shp" style="opacity:.7"><span id="shRv"></span></span></div><div class="shbtn" id="shOk"></div></div>';$("#app").append(sh);
+ $("#shX").innerHTML=ic("close",20);$("#shB").innerHTML=ic("bell",20);
+ const shLoc=()=>CFG.lang==="fa"?"fa-IR-u-ca-gregory":"en-US";
+ function shR(){const fa=CFG.lang==="fa",loc=shLoc(),first=new Date(SH.vy,SH.vm,1),td=new Date();td.setHours(0,0,0,0);
+  $("#shMo").textContent=first.toLocaleDateString(loc,{month:"long",year:"numeric"});
+  const off=(first.getDay()+1)%7,nd=new Date(SH.vy,SH.vm+1,0).getDate();let h="";
+  for(let i=0;i<7;i++)h+='<div class="w">'+new Date(2026,10,14+i).toLocaleDateString(loc,{weekday:"short"}).toUpperCase()+'</div>';
+  for(let i=0;i<off;i++)h+="<div></div>";
+  for(let d=1;d<=nd;d++){const past=new Date(SH.vy,SH.vm,d)<td,sel=SH.vy===SH.y&&SH.vm===SH.m&&d===SH.d;h+='<div class="d'+(past?" p":"")+(sel?" s":"")+'" data-d="'+d+'">'+d.toLocaleString(fa?"fa-IR":"en-US")+'</div>'}
+  $("#shG").innerHTML=h;$("#shPv").style.visibility=(SH.vy*12+SH.vm)>(td.getFullYear()*12+td.getMonth())?"visible":"hidden";
+  $("#shTv").textContent=SH.t;$("#shTi").value=SH.t;
+  const isT=SH.y===td.getFullYear()&&SH.m===td.getMonth()&&SH.d===td.getDate();
+  $("#shOk").textContent=isT?tr("Send today at")+" "+SH.t:tr("Send on")+" "+new Date(SH.y,SH.m,SH.d).toLocaleDateString(loc,{day:"numeric",month:"short"})+" "+tr("at")+" "+SH.t}
+ openSched=function(o){o=o||{};const d=o.at&&o.at>Date.now()?new Date(o.at):new Date(Date.now()+120000);
+  SH={y:d.getFullYear(),m:d.getMonth(),d:d.getDate(),vy:d.getFullYear(),vm:d.getMonth(),t:p2(d.getHours())+":"+p2(d.getMinutes()),onOk:o.onOk||(at=>queue("sched",at))};
+  $("#shT").textContent=tr("Schedule Message");$("#shTl").textContent=tr("Time");$("#shRl").textContent=tr("Repeat");$("#shRv").innerHTML=tr("Never")+" "+ic("lock",14);shR();sh.classList.add("on")};
+ $("#shG").onclick=e=>{const d=e.target.closest("[data-d]");if(!d||d.classList.contains("p"))return;SH.y=SH.vy;SH.m=SH.vm;SH.d=+d.dataset.d;shR()};
+ $("#shPv").onclick=()=>{SH.vm--;if(SH.vm<0){SH.vm=11;SH.vy--}shR()};$("#shNx").onclick=()=>{SH.vm++;if(SH.vm>11){SH.vm=0;SH.vy++}shR()};
+ $("#shTi").oninput=e=>{if(e.target.value){SH.t=e.target.value;shR()}};
+ $("#shB").onclick=()=>$("#shB").classList.toggle("on");
+ $("#shX").onclick=()=>sh.classList.remove("on");sh.onclick=e=>{if(e.target===sh)sh.classList.remove("on")};
+ $("#shOk").onclick=()=>{const t=SH.t.split(":"),at=new Date(SH.y,SH.m,SH.d,+t[0],+t[1]).getTime();if(!at||at<=Date.now()+5000){toast("Pick a future time");return}sh.classList.remove("on");SH.onOk(at)};
+ /* صفحه پیام‌های زمان‌بندی‌شده | Scheduled page: input bar + select mode */
+ $("#slX").innerHTML=ic("send",20);
+ function addSched(v,at){const r={id:"p"+Date.now().toString(36),cid:S.openId,v,mode:"sched",at,created:Date.now()};CFG.sched.push(r);saveCfg();updSchIcon();renderSl()}
+ function slGo(){const v=$("#slI").value.trim();if(!v)return;openSched({onOk:at=>{addSched(v,at);$("#slI").value=""}})}
+ $("#slX").onclick=slGo;$("#slI").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();slGo()}};
+ function slApply(){$$("#slList .sli").forEach(el=>el.classList.toggle("sel",!!slSel&&slSel.has(el.dataset.id)));$("#slIn").style.display=slSel?"none":"flex";const b=$("#slSb");b.style.display=slSel?"flex":"none";if(slSel)b.innerHTML='<div data-k="del" style="color:var(--red)">'+tr("Delete")+' ('+slSel.size+')</div><div data-k="now">'+tr("Send Now")+'</div><div data-k="done">'+tr("Cancel")+'</div>'}
+ $("#slList").onclick=e=>{if(!slSel)return;const el=e.target.closest(".sli");if(!el)return;const id=el.dataset.id;if(slSel.has(id))slSel.delete(id);else slSel.add(id);slApply()};
+ $("#slSb").onclick=e=>{const k=e.target.closest("[data-k]");if(!k)return;const ids=[...slSel],L=CFG.sched.filter(r=>ids.includes(r.id));
+  if(k.dataset.k==="del"){L.forEach(r=>{CFG.sched.splice(CFG.sched.indexOf(r),1);const x=$('#msgs [data-pid="'+r.id+'"]');if(x)x.remove()});saveCfg()}else if(k.dataset.k==="now"){L.forEach(r=>deliver(r))}
+  slSel=null;updSchIcon();renderSl()};
+ $("#slBack").onclick=()=>{slSel=null;sl.classList.remove("on")};
  /* ویرایش قبل از ارسال | Edit Before Sending: متن و (برای زمان‌بندی‌شده) تاریخ و ساعت */
  const se=document.createElement("div");se.id="sedov";se.innerHTML='<div class="schc"><b></b><textarea id="sedT" autocomplete="off" autocorrect="off" spellcheck="false"></textarea><div id="sedDT"><label></label><input type="date" id="sedD"><label></label><input type="time" id="sedM"></div><div class="schok" id="sedOk"></div><div class="schno" id="sedNo"></div></div>';$("#app").append(se);
  let ER=null;
