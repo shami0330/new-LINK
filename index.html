@@ -597,6 +597,53 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .mpe .mptools svg{width:26px;height:26px}
 #mpv .mpe .mpch b{background:#3a3a3c;color:#fff}
 #mpv .mpe .mpch b.on{background:#fff;color:#000}
+/* ---- ظاهر نقاشی و متن | Draw & Text Editor CSS: ظاهر ویرایشگر نقاشی و متن روی عکس پیش‌نمایش (بدون استیکر) ---- */
+#mpv .mpd{position:absolute;inset:0;z-index:7;background:#000;display:none;flex-direction:column;direction:ltr;color:#fff}
+#mpv .mpd.on{display:flex}
+#mpv .mpd .dtop{flex:none;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top) + 10px) 18px 10px}
+#mpv .mpd .dc{width:54px;height:54px;border-radius:50%;background:#1c1c1e;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+#mpv .mpd .dc.s{background:var(--blue)}
+#mpv .mpd .dp{height:54px;padding:0 24px;border-radius:27px;background:#1c1c1e;color:#fff;font-size:18px;font-weight:600;display:flex;align-items:center;cursor:pointer}
+#mpv .mpd .off{opacity:.35;pointer-events:none}
+#mpv .mpd .dst{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#mpv .mpd .dw{position:relative}
+#mpv .mpd .dw canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#mpv .mpd .dw .di{touch-action:none}
+#mpv .mpd .dsz{position:absolute;left:0;top:50%;margin-top:-100px;width:26px;height:200px;border-radius:0 13px 13px 0;background:rgba(120,120,128,.55);z-index:3;touch-action:none}
+#mpv .mpd .dsz i{position:absolute;left:-18px;width:44px;height:44px;margin-top:-22px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+#mpv .mpd .dbt{flex:none;background:#000;padding:8px 14px calc(env(safe-area-inset-bottom) + 16px)}
+#mpv .mpd .dr1{display:flex;align-items:flex-end;justify-content:space-between;height:84px;gap:10px}
+#mpv .mpd .dwh{width:44px;height:44px;border-radius:50%;background:conic-gradient(#f33,#ff0,#3f3,#0ff,#33f,#f3f,#f33);position:relative;overflow:hidden;flex:none;margin-bottom:6px}
+#mpv .mpd .dwh input{position:absolute;inset:-10px;width:70px;height:70px;opacity:0;cursor:pointer}
+#mpv .mpd .dtl{display:flex;gap:26px;align-items:flex-end;height:84px;overflow:hidden}
+#mpv .mpd .dtl b{width:36px;height:76px;border-radius:10px 10px 0 0;background:linear-gradient(#3a3a3c,#1c1c1e);position:relative;transform:translateY(24px);transition:transform .15s;cursor:pointer;flex:none}
+#mpv .mpd .dtl b.on{transform:none}
+#mpv .mpd .dtl b::before{content:"";position:absolute;left:8px;right:8px;top:-14px;height:16px;border-radius:8px 8px 2px 2px;background:var(--tc)}
+#mpv .mpd .dtl b::after{content:"";position:absolute;left:0;right:0;top:30px;height:8px;background:var(--tc)}
+#mpv .mpd .dtx{display:none;align-items:center;gap:12px;flex:1;margin-bottom:6px}
+#mpv .mpd[data-m=text] .dtx{display:flex}
+#mpv .mpd[data-m=text] .dtl{display:none}
+#mpv .mpd[data-m=draw] #mpdPl{visibility:hidden}
+#mpv .mpd .dsq{width:44px;height:44px;border-radius:12px;background:#fff;color:#000;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+#mpv .mpd .dsq.s0{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #fff}
+#mpv .mpd .dsq.s2{background:#3a3a3c;color:#fff;-webkit-text-stroke:1px #000}
+#mpv .mpd .dsq.pl{border-radius:50%;background:rgba(120,120,128,.5);color:#fff;font-size:30px;font-weight:400}
+#mpv .mpd #mpdAl{background:transparent;flex-direction:column;gap:5px;color:#fff}
+#mpv .mpd #mpdAl i{display:block;height:3px;border-radius:2px;background:#fff;width:26px}
+#mpv .mpd #mpdAl i:nth-child(2){width:16px}
+#mpv .mpd #mpdAl[data-a="0"]{align-items:flex-start}
+#mpv .mpd #mpdAl[data-a="1"]{align-items:center}
+#mpv .mpd #mpdAl[data-a="2"]{align-items:flex-end}
+#mpv .mpd .dcol{display:flex;justify-content:space-between;align-items:center;padding:10px 0 14px}
+#mpv .mpd .dcol i{width:34px;height:34px;border-radius:50%;cursor:pointer;flex:none;box-sizing:border-box}
+#mpv .mpd .dcol i.on{box-shadow:0 0 0 3px #000,0 0 0 5px #fff}
+#mpv .mpd .dr3{display:flex;justify-content:space-between;align-items:center}
+#mpv .mpd .dseg{display:flex;background:#1c1c1e;border-radius:30px;padding:4px}
+#mpv .mpd .dseg b{padding:0 20px;line-height:46px;border-radius:23px;font-weight:600;font-size:18px;color:#fff;cursor:pointer}
+#mpv .mpd .dseg b.on{background:#48484a}
+#mpv .mpd .mpdti{position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 70px);z-index:9;background:rgba(28,28,30,.98);border-radius:20px;padding:10px;display:none;gap:10px;align-items:flex-end}
+#mpv .mpd .mpdti.on{display:flex}
+#mpv .mpd .mpdti textarea{flex:1;min-height:70px;background:#2c2c2e;color:#fff;border:0;border-radius:14px;padding:10px 12px;font:inherit;font-size:18px;resize:none;outline:0;user-select:text;-webkit-user-select:text}
 #mpv .mpa .ab{flex:none;flex-direction:row;justify-content:space-between;align-items:center;background:none;border-radius:0;padding:0;gap:8px;margin-top:6px}
 #mpv .mpa .ab .mpch{padding:0;gap:8px;overflow:visible;align-items:center}
 #mpv .mpa .ab .mpr{width:36px;height:36px;flex:none}
@@ -2086,7 +2133,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  $("#app").append(o);
  o.querySelectorAll(".mphd").forEach(h=>mpvHandle(h,h.classList.contains("l")?"l":"r"));mpvScrub(o.querySelector(".mptl"));
  /* اتصال ابزارها | Tool Buttons: برش به ویرایشگر برش، تنظیم به برگه‌ی تنظیم، کیفیت به چرخش بین کیفیت‌ها؛ نقاشی هنوز غیرفعال است */
- o.querySelector('[data-mt="crop"]').onclick=mpvCrop;o.querySelector('[data-mt="adj"]').onclick=mpvAdj;o.querySelector('[data-mt="draw"]').onclick=()=>toast("Coming soon");
+ o.querySelector('[data-mt="crop"]').onclick=mpvCrop;o.querySelector('[data-mt="adj"]').onclick=mpvAdj;/* اتصال نقاشی | Draw Hook: دکمه‌ی نقاشی ویرایشگر نقاشی و متن را باز می‌کند */o.querySelector('[data-mt="draw"]').onclick=mpdOpen;
  $("#mpQ").onclick=()=>{const i=MPV.i,a=mpvQs(i),n=a[(a.indexOf(mpvQv(i))+1)%a.length];MPV.rec[i].asFile=false;MPV.rec[i].q=n;$("#mpQ").textContent=n};
  mpeInit();
  $("#mpBack").onclick=mpvClose;
@@ -2221,6 +2268,115 @@ const _pp0=pickPhoto;
 pickPhoto=function(cb,bg){if(bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)bgPreview(file,cb)};f.click();return}const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
 Object.assign(FA,{"Profile photo":"عکس پروفایل"});
 (function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}#mpv.avp #mpTr>*:first-child{overflow:hidden}/* خاکستری بیرون دایره | Circle Outside Dim: بیرون دایره‌ی راهنمای عکس پروفایل کمی خاکستری می‌شود مثل LINK (the area outside the profile photo circle guide is dimmed grey like LINK) */#mpv.avp #mpeR::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle closest-side,transparent calc(100% - .5px),rgba(0,0,0,.42) 100%)}";document.head.append(st)})();
+/* ---- ویرایشگر نقاشی و متن | Draw & Text Editor: نقاشی و نوشتن متن روی عکس در پیش‌نمایش (بدون استیکر)؛ با تایید، نتیجه روی خود عکس ثبت می‌شود ---- */
+/* وضعیت ویرایشگر | Editor State: همه‌ی چیزهای کشیده‌شده و انتخاب‌های فعلی (ابزار، رنگ، اندازه) */
+const MPD={items:[],cur:null,sel:null,mode:"draw",tool:"pen",color:"#ffffff",sz:.3,tz:.3,ts:1,ta:1,i:0,B:null,fam:"sans-serif",pin:null,drag:null};
+const MPDC=["#ff453a","#ff9f0a","#ffd60a","#30d158","#7be0d6","#0a84ff","#bf5af2","#ffffff"],MPDT=[["pen","#ffffff"],["arrow","#ff9f0a"],["marker","#ffd60a"],["neon","#30d158"],["eraser","#f4a3a3"]];
+Object.assign(FA,{"Draw":"نقاشی","Text":"متن","Clear All":"پاک کردن همه","Only photos":"نقاشی فقط برای عکس است","Please wait":"کمی صبر کنید","Failed":"خطا"});
+/* ساخت صفحه | Build Editor: صفحه‌ی نقاشی و متن را یک‌بار می‌سازد و دکمه‌هایش را وصل می‌کند */
+function mpdInit(){let o=$("#mpd");if(o)return o;o=document.createElement("div");o.id="mpd";o.className="mpd";o.dataset.m="draw";
+ const svg=p=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+ o.innerHTML=`<div class="dtop"><div class="dc" id="mpdUn">${svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>')}</div><div class="dp" id="mpdCl">${tr("Clear All")}</div></div>
+<div class="dst" id="mpdSt"><div class="dw" id="mpdW"><canvas id="mpdI" class="di"></canvas></div><div class="dsz" id="mpdSz"><i id="mpdSzI"></i></div></div>
+<div class="mpdti" id="mpdTi"><div class="dc" id="mpdTx">${ic("close",20)}</div><textarea id="mpdTa" dir="auto" rows="2"></textarea><div class="dc s" id="mpdTok">${ic("check",22)}</div></div>
+<div class="dbt"><div class="dr1"><label class="dwh"><input type="color" id="mpdWh" value="#ffffff"></label>
+<div class="dtl" id="mpdTl">${MPDT.map(t=>`<b data-t="${t[0]}" style="--tc:${t[1]}"></b>`).join("")}</div>
+<div class="dtx"><div class="dsq s1" id="mpdTs">A</div><div class="dsq" id="mpdAl" data-a="1"><i></i><i></i><i></i></div><div class="dsq" id="mpdDl" style="display:none">${svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>')}</div></div>
+<div class="dsq pl" id="mpdPl">+</div></div>
+<div class="dcol" id="mpdCo">${MPDC.map(c=>`<i data-c="${c}" style="background:${c}"></i>`).join("")}</div>
+<div class="dr3"><div class="dc" id="mpdX">${ic("close",22)}</div><div class="dseg" id="mpdSg"><b data-m="draw">${tr("Draw")}</b><b data-m="text">${tr("Text")}</b></div><div class="dc s" id="mpdOk">${ic("check",24)}</div></div></div>`;
+ $("#mpv").append(o);
+ const P=new Map(),c=$("#mpdI"),pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+ /* لمس‌ها | Touch Handling: در حالت نقاشی خط می‌کشد؛ در حالت متن متن را انتخاب، جابه‌جا، با دو انگشت بزرگ و بچرخان می‌کند، و لمس خالی متن تازه می‌سازد */
+ c.onpointerdown=e=>{c.setPointerCapture(e.pointerId);P.set(e.pointerId,pt(e));const[x,y]=pt(e);
+  if(MPD.mode==="draw"){if(P.size>1){MPD.cur=null;return}MPD.cur={t:"s",tool:MPD.tool,color:MPD.color,w:.004+MPD.sz*.04,pts:[[x,y]]};mpdKick();return}
+  if(P.size===2&&MPD.sel){const[a,b]=[...P.values()];MPD.pin={d:Math.hypot((b[0]-a[0])*c.width,(b[1]-a[1])*c.height)||1,a:Math.atan2((b[1]-a[1])*c.height,(b[0]-a[0])*c.width),s:MPD.sel.size,r:MPD.sel.rot||0};MPD.drag=null;MPD.moved=true;return}
+  const h=mpdHit(x,y);MPD.moved=false;MPD.down=[x,y];MPD.tapEmpty=!h;MPD.drag=h?{dx:h.x-x,dy:h.y-y,was:MPD.sel===h}:null;if(h)MPD.sel=h;mpdUi();mpdKick()};
+ c.onpointermove=e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,pt(e));const[x,y]=pt(e);
+  if(MPD.mode==="draw"){if(MPD.cur){MPD.cur.pts.push([x,y]);mpdKick()}return}
+  if(MPD.pin&&P.size>=2&&MPD.sel){const[a,b]=[...P.values()],d=Math.hypot((b[0]-a[0])*c.width,(b[1]-a[1])*c.height),an=Math.atan2((b[1]-a[1])*c.height,(b[0]-a[0])*c.width);MPD.sel.size=mClamp(MPD.pin.s*d/MPD.pin.d,.02,.5);MPD.sel.rot=MPD.pin.r+an-MPD.pin.a;mpdUi();mpdKick();return}
+  if(MPD.drag&&MPD.sel){if(Math.hypot((x-MPD.down[0])*c.width,(y-MPD.down[1])*c.height)>6)MPD.moved=true;if(MPD.moved){MPD.sel.x=x+MPD.drag.dx;MPD.sel.y=y+MPD.drag.dy;mpdKick()}}};
+ c.onpointerup=c.onpointercancel=e=>{if(!P.delete(e.pointerId))return;
+  if(MPD.mode==="draw"){if(MPD.cur&&!P.size){MPD.items.push(MPD.cur);MPD.cur=null;mpdUi();mpdKick()}return}
+  if(P.size===0){if(!MPD.moved){if(MPD.drag&&MPD.drag.was)mpdAsk(MPD.sel);else if(MPD.tapEmpty){if(MPD.sel)MPD.sel=null;else mpdAsk(null,MPD.down)}}MPD.drag=null;MPD.pin=null;MPD.tapEmpty=false;mpdUi();mpdKick()}else if(P.size===1){MPD.pin=null;MPD.drag=null}};
+ /* نوار اندازه | Size Slider: ضخامت قلم یا اندازه‌ی متن را با کشیدن انگشت تغییر می‌دهد */
+ const sz=$("#mpdSz"),mv=e=>{const r=sz.getBoundingClientRect(),v=mClamp(1-(e.clientY-r.top)/r.height,0,1);if(MPD.mode==="text"){if(MPD.sel)MPD.sel.size=.035+v*.15;else MPD.tz=v}else MPD.sz=v;mpdUi();mpdKick()};
+ sz.onpointerdown=e=>{sz.setPointerCapture(e.pointerId);sz.dr=1;mv(e)};sz.onpointermove=e=>{if(sz.dr)mv(e)};sz.onpointerup=sz.onpointercancel=()=>{sz.dr=0};
+ /* رنگ و ابزار | Colors and Tools: انتخاب رنگ، ابزار، سبک و چینش متن؛ اگر متنی انتخاب باشد همان تغییر می‌کند */
+ const col=v=>{MPD.color=v;if(MPD.mode==="text"&&MPD.sel)MPD.sel.color=v;mpdUi();mpdKick()};
+ $("#mpdCo").onclick=e=>{const i=e.target.closest("i");if(i)col(i.dataset.c)};$("#mpdWh").oninput=e=>col(e.target.value);
+ $("#mpdTl").onclick=e=>{const b=e.target.closest("b");if(b){MPD.tool=b.dataset.t;mpdUi()}};
+ $("#mpdTs").onclick=()=>{const v=((MPD.sel?MPD.sel.ts:MPD.ts)+1)%3;MPD.ts=v;if(MPD.sel)MPD.sel.ts=v;mpdUi();mpdKick()};
+ $("#mpdAl").onclick=()=>{const v=((MPD.sel?MPD.sel.ta:MPD.ta)+1)%3;MPD.ta=v;if(MPD.sel)MPD.sel.ta=v;mpdUi();mpdKick()};
+ $("#mpdDl").onclick=()=>{MPD.items=MPD.items.filter(t=>t!==MPD.sel);MPD.sel=null;mpdUi();mpdKick()};
+ $("#mpdPl").onclick=()=>{MPD.sel=null;mpdUi();mpdKick();mpdAsk(null,[.5,.5])};
+ $("#mpdSg").onclick=e=>{const b=e.target.closest("b");if(b){MPD.mode=b.dataset.m;MPD.sel=null;mpdUi();mpdKick()}};
+ $("#mpdUn").onclick=()=>{const t=MPD.items.pop();if(t===MPD.sel)MPD.sel=null;mpdUi();mpdKick()};
+ $("#mpdCl").onclick=()=>{MPD.items=[];MPD.sel=null;mpdUi();mpdKick()};
+ /* نوشتن متن | Text Entry: کادر نوشتن متن تازه یا ویرایش متن انتخاب‌شده */
+ $("#mpdTx").onclick=()=>{$("#mpdTi").classList.remove("on");$("#mpdTa").blur()};
+ $("#mpdTok").onclick=()=>{const v=$("#mpdTa").value.trim(),t=MPD.ed;$("#mpdTi").classList.remove("on");$("#mpdTa").blur();
+  if(t){if(v)t.text=v;else{MPD.items=MPD.items.filter(q=>q!==t);MPD.sel=null}}else if(v){const n={t:"t",text:v,color:MPD.color,size:.035+MPD.tz*.15,x:MPD.edPos[0],y:MPD.edPos[1],rot:0,ts:MPD.ts,ta:MPD.ta};MPD.items.push(n);MPD.sel=n}mpdUi();mpdKick()};
+ $("#mpdX").onclick=mpdClose;$("#mpdOk").onclick=mpdDone;
+ addEventListener("resize",()=>{if(o.classList.contains("on"))mpdFit()});return o}
+/* باز کردن | Open Editor: عکس صفحه‌ی فعلی را با برش و رنگ فعلی آماده و ویرایشگر را نشان می‌دهد؛ برای ویدیو کار نمی‌کند */
+function mpdOpen(){const i=MPV.i,f=MPV.f[i];if(lkKind(f)!=="photo"){toast("Only photos");return}const s=mpvSrc(i);if(!s.sw||!s.sh){toast("Please wait");return}
+ mpdInit();Object.assign(MPD,{i,items:[],cur:null,sel:null,mode:"draw",fam:getComputedStyle(document.body).fontFamily||"sans-serif"});
+ const r=MPV.rec[i],cr=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?s.sh:s.sw,h2=rot%180?s.sw:s.sh;let dw=cr.w*w2,dh=cr.h*h2;const k=Math.min(1,2560/Math.max(dw,dh));dw=Math.max(1,Math.round(dw*k));dh=Math.max(1,Math.round(dh*k));
+ const B=document.createElement("canvas");B.width=dw;B.height=dh;mDraw(B.getContext("2d"),s.m,s.sw,s.sh,mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip}),cr,dw,dh);
+ const w=$("#mpdW"),old=w.querySelector(".db");if(old)old.remove();B.className="db";w.insertBefore(B,w.firstChild);MPD.B=B;
+ $("#mpd").classList.add("on");mpdUi();requestAnimationFrame(mpdFit)}
+function mpdClose(){$("#mpd").classList.remove("on");$("#mpdTi").classList.remove("on");MPD.B=null;const old=$("#mpdW .db");if(old)old.remove()}
+/* تایید | Confirm: نقاشی و متن را روی عکس می‌گذارد، عکس تازه را جای عکس قبلی می‌گذارد و برش و رنگ را دوباره از صفر می‌کند */
+async function mpdDone(){const D=MPD,i=D.i;if(!D.B||!D.items.length){mpdClose();return}
+ const o=document.createElement("canvas");o.width=D.B.width;o.height=D.B.height;const x=o.getContext("2d");x.drawImage(D.B,0,0);
+ const L=document.createElement("canvas");L.width=o.width;L.height=o.height;mpdRender(L.getContext("2d"),D.items,L.width,L.height,null);x.drawImage(L,0,0);
+ const old=MPV.f[i],ty=/png|webp/.test(old.type)?old.type:"image/jpeg",ex=ty==="image/png"?".png":ty==="image/webp"?".webp":".jpg",bl=await new Promise(r=>o.toBlob(r,ty,.92));
+ if(!bl){toast("Failed");return}
+ const nf=new File([bl],(old.name||"image").replace(/\.[^.]+$/,"")+ex,{type:ty,lastModified:Date.now()});Object.getOwnPropertyNames(old).forEach(k=>{if(k.startsWith("__"))nf[k]=old[k]});
+ try{await lkDims(nf)}catch(e){}nf.__w=o.width;nf.__h=o.height;
+ MPV.f[i]=nf;URL.revokeObjectURL(MPV.u[i]);MPV.u[i]=URL.createObjectURL(nf);const im=$("#mpTr").children[i].querySelector("img");if(im)im.src=MPV.u[i];
+ const r=MPV.rec[i];delete r.crop;delete r.adjust;delete r.rotate;delete r.flip;mpvDraw(i);mpdClose()}
+/* اندازه‌ی بوم | Fit Canvas: عکس را در فضای موجود جا می‌دهد و بوم نقاشی را هم‌اندازه‌ی آن می‌کند */
+function mpdFit(){const st=$("#mpdSt"),B=MPD.B;if(!B||!st.clientWidth)return;const a=B.width/B.height;let w=st.clientWidth,h=w/a;if(h>st.clientHeight){h=st.clientHeight;w=h*a}
+ const W=$("#mpdW");W.style.width=w+"px";W.style.height=h+"px";const c=$("#mpdI"),K=Math.min(2,devicePixelRatio||1);c.width=Math.round(w*K);c.height=Math.round(h*K);mpdKick()}
+/* به‌روزرسانی ظاهر | Refresh UI: دکمه‌ها، رنگ انتخابی، ابزار و جای نوار اندازه را با وضعیت فعلی هماهنگ می‌کند */
+function mpdUi(){const o=$("#mpd"),M=MPD,tx=M.mode==="text",ss=tx&&M.sel;o.dataset.m=M.mode;
+ $("#mpdUn").classList.toggle("off",!M.items.length);$("#mpdCl").classList.toggle("off",!M.items.length);
+ o.querySelectorAll("#mpdSg b").forEach(b=>b.classList.toggle("on",b.dataset.m===M.mode));o.querySelectorAll("#mpdTl b").forEach(b=>b.classList.toggle("on",b.dataset.t===M.tool));
+ const cl=ss?M.sel.color:M.color;o.querySelectorAll("#mpdCo i").forEach(i=>i.classList.toggle("on",i.dataset.c===cl));
+ $("#mpdTs").className="dsq s"+(ss?M.sel.ts:M.ts);$("#mpdAl").dataset.a=ss?M.sel.ta:M.ta;$("#mpdDl").style.display=ss?"flex":"none";
+ const v=tx?(ss?(M.sel.size-.035)/.15:M.tz):M.sz;$("#mpdSzI").style.top=((1-mClamp(v,0,1))*200)+"px"}
+/* کادر متن | Open Text Box: کادر نوشتن را باز می‌کند؛ اگر متنی داده شود ویرایشش می‌کند وگرنه متن تازه در جای لمس می‌سازد */
+function mpdAsk(t,pos){MPD.ed=t;MPD.edPos=pos||[.5,.5];$("#mpdTa").value=t?t.text:"";$("#mpdTi").classList.add("on");setTimeout(()=>$("#mpdTa").focus(),30)}
+/* بازپخش | Repaint: نقاشی را حداکثر یک‌بار در هر فریم دوباره می‌کشد */
+function mpdKick(){if(MPD.raf)return;MPD.raf=requestAnimationFrame(()=>{MPD.raf=0;const c=$("#mpdI");if(c)mpdRender(c.getContext("2d"),MPD.cur?MPD.items.concat([MPD.cur]):MPD.items,c.width,c.height,MPD.sel)})}
+/* پیدا کردن متن | Text Hit Test: متنی را که زیر انگشت است برمی‌گرداند (از رویی‌ترین) */
+function mpdHit(x,y){const c=$("#mpdI"),g=c.getContext("2d"),W=c.width,H=c.height;for(let k=MPD.items.length-1;k>=0;k--){const t=MPD.items[k];if(t.t!=="t")continue;const m=mpdMeasure(g,t,W),dx=(x-t.x)*W,dy=(y-t.y)*H,co=Math.cos(-(t.rot||0)),si=Math.sin(-(t.rot||0)),lx=dx*co-dy*si,ly=dx*si+dy*co;if(Math.abs(lx)<=m.bw/2+8&&Math.abs(ly)<=m.bh/2+8)return t}return null}
+/* اندازه‌ی متن | Text Measure: اندازه‌ی جعبه‌ی متن را حساب می‌کند */
+function mpdMeasure(x,t,W){const px=t.size*W,ls=t.text.split("\n");x.font="700 "+px+"px "+MPD.fam;const tw=Math.max(px*.5,...ls.map(s=>x.measureText(s).width)),p=px*.35;return{px,ls,lh:px*1.3,p,bw:tw+p*2,bh:ls.length*px*1.3+p*.6}}
+function mpdLum(c){const n=parseInt(c.slice(1),16);return(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))/255}
+/* کشیدن همه | Render All: همه‌ی خط‌ها و متن‌ها را روی بوم شفاف می‌کشد؛ اندازه‌ها نسبت به عرض عکس‌اند پس روی عکس اصلی هم درست می‌افتند */
+function mpdRender(x,items,W,H,sel){x.clearRect(0,0,W,H);items.forEach(t=>t.t==="s"?mpdStroke(x,t,W,H):mpdText(x,t,W,H,t===sel))}
+/* کشیدن خط | Draw Stroke: قلم، فلش، ماژیک، نئون و پاک‌کن */
+function mpdStroke(x,s,W,H){const p=s.pts;if(!p.length)return;const lw=Math.max(1,s.w*W),P=s.tool==="arrow"?[p[0],p[p.length-1]]:p;x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=s.color;
+ x.beginPath();x.moveTo(P[0][0]*W,P[0][1]*H);if(P.length===1)x.lineTo(P[0][0]*W+.01,P[0][1]*H);
+ for(let k=1;k<P.length-1;k++){const a=P[k],b=P[k+1];x.quadraticCurveTo(a[0]*W,a[1]*H,(a[0]+b[0])/2*W,(a[1]+b[1])/2*H)}
+ if(P.length>1){const e=P[P.length-1];x.lineTo(e[0]*W,e[1]*H)}
+ if(s.tool==="eraser"){x.globalCompositeOperation="destination-out";x.strokeStyle="#000";x.lineWidth=lw*1.8;x.stroke()}
+ else if(s.tool==="marker"){x.globalAlpha=.5;x.lineCap="square";x.lineWidth=lw*2.4;x.stroke()}
+ else if(s.tool==="neon"){x.shadowColor=s.color;x.shadowBlur=lw*2.4;x.lineWidth=lw*1.4;x.stroke();x.stroke();x.shadowBlur=0;x.strokeStyle="#fff";x.lineWidth=lw*.6;x.stroke()}
+ else{x.lineWidth=lw;x.stroke();if(s.tool==="arrow"&&P.length>1){const a=P[0],e=P[1],an=Math.atan2((e[1]-a[1])*H,(e[0]-a[0])*W),L=lw*4.5;x.beginPath();[-.5,.5].forEach(d=>{x.moveTo(e[0]*W,e[1]*H);x.lineTo(e[0]*W-L*Math.cos(an+d),e[1]*H-L*Math.sin(an+d))});x.stroke()}}
+ x.restore()}
+/* کشیدن متن | Draw Text: متن را با سه سبک (ساده، پس‌زمینه‌دار، دورخط) و چینش و چرخش می‌کشد؛ اگر انتخاب باشد قاب خط‌چین نشان می‌دهد */
+function mpdText(x,t,W,H,sel){const m=mpdMeasure(x,t,W);x.save();x.translate(t.x*W,t.y*H);x.rotate(t.rot||0);
+ const tx=t.ta===0?-m.bw/2+m.p:t.ta===2?m.bw/2-m.p:0,bright=mpdLum(t.color)>.6;x.textAlign=t.ta===0?"left":t.ta===2?"right":"center";x.textBaseline="middle";x.font="700 "+m.px+"px "+MPD.fam;
+ if(t.ts===1){x.fillStyle=t.color;x.beginPath();const a=-m.bw/2,b=-m.bh/2,r=m.px*.35;x.moveTo(a+r,b);x.arcTo(a+m.bw,b,a+m.bw,b+m.bh,r);x.arcTo(a+m.bw,b+m.bh,a,b+m.bh,r);x.arcTo(a,b+m.bh,a,b,r);x.arcTo(a,b,a+m.bw,b,r);x.closePath();x.fill()}
+ const y0=-(m.ls.length-1)*m.lh/2;m.ls.forEach((s,k)=>{const y=y0+k*m.lh;
+  if(t.ts===2){x.lineJoin="round";x.lineWidth=m.px*.2;x.strokeStyle=bright?"#000":"#fff";x.strokeText(s,tx,y)}else if(t.ts===0){x.shadowColor="rgba(0,0,0,.4)";x.shadowBlur=m.px*.12}
+  x.fillStyle=t.ts===1?(bright?"#000":"#fff"):t.color;x.fillText(s,tx,y);x.shadowBlur=0});
+ if(sel){const d=Math.max(3,W*.005);x.setLineDash([d*3,d*2]);x.lineWidth=d*.7;x.strokeStyle="rgba(255,255,255,.85)";x.strokeRect(-m.bw/2-d*4,-m.bh/2-d*4,m.bw+d*8,m.bh+d*8);x.setLineDash([]);x.fillStyle="#0a84ff";[-1,1].forEach(q=>{x.beginPath();x.arc(q*(m.bw/2+d*4),0,d*2.2,0,7);x.fill()})}
+ x.restore()}
 /* قاب مربعی پروفایل | Avatar Square Frame: بعد از چرخش یا آینه، قاب برش دوباره مربعی و وسط‌چین می‌شود تا دایره‌ی راهنما بیضی نشود */
 function avSquare(){const a=MPE.W/MPE.H;let w=1,h=1;if(a>1)w=1/a;else h=a;MPE.ratio=1;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
 /* بازنشانی مربعی | Square Reset Hook: فقط وقتی پیش‌نمایش پروفایل باز است، بعد از بازنشانی قاب، مربعی‌اش می‌کند */
