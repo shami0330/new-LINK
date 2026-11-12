@@ -423,6 +423,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 .schc input::-webkit-calendar-picker-indicator{margin:0}
 .schok{height:48px;border-radius:26px;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:6px}
 .schno{text-align:center;color:var(--blue);padding:8px}
+#dobov{position:absolute;inset:0;z-index:97;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}#dobov.on{opacity:1;pointer-events:auto}#dobov .row{display:flex;gap:8px}#dobov select{flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:16px;padding:0 6px}
 /* ===== برگه‌ی ارسال | Share Sheet (Forward) =====
 /* برگه‌ی ارسال | Share Sheet: برگه‌ی گرد از پایین با انیمیشن، مثل تلگرام (rounded bottom sheet, slides up) */
 #shov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
@@ -702,7 +703,7 @@ html.light #login .pf{color:#000}
 .tabs.many .tab{flex:1 0 auto;padding:0 12px}
 /* نمونه پس‌زمینه | Background Swatch: مربع کوچک انتخاب پس‌زمینه‌ی گفتگو */
 .bgs{width:62px;height:90px;border-radius:12px;border:2px solid transparent;background-clip:padding-box;flex:none}
-.bgs.on{border-color:var(--blue)}
+.bgs.on{border-color:var(--blue)}.bgw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(128,128,128,.35);box-sizing:border-box;flex:none;position:relative;overflow:hidden}.bgw.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue)}.bgw input{position:absolute;inset:-8px;width:60px;height:60px;opacity:0;cursor:pointer;border:0;padding:0}
 /* منوی پوشه‌ها | Folder Menu: کادر دوم سمت چپ منوی گفتگو، با لیست همه‌ی پوشه‌ها */
 /* تب فرعی چسبیده | Attached Sub-tab: زیرمنو دقیقاً چسبیده به سمت چپ منوی اصلی و هم‌تراز ردیف مربوطه (flush against the main menu, aligned with its row) */
 #menu2{position:absolute;right:216px;left:auto;width:max-content;min-width:150px;max-width:230px;max-height:55vh;overflow-y:auto;background:var(--menu);backdrop-filter:blur(20px);border-radius:16px;display:none;z-index:50;animation:fade .15s}
@@ -778,21 +779,33 @@ html.linkdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
 html.linkdark #csr .it mark{background:rgba(244,63,94,.35)}
 html.linkdark #login{background:var(--lkpat) 0 0/312px 312px var(--bg)}
 /* سه تم تازه | Three New Themes: اقیانوس، جنگل و بنفش؛ هرکدام نسخه‌ی روز و شب دارند و با حالت شب عوض می‌شوند */
-html.ocean{--bg:#e8f4fb;--card:#ffffff;--card2:#d4e9f5;--line:#bcdced;--txt:#0a2540;--sub:#4f7a96;--bubIn:#ffffff;--bubOut:#bfe3f7;--chatbg:#dbeef9;--dotc:rgba(2,132,199,.10);--dotc2:rgba(2,132,199,.06);--dotc3:rgba(2,132,199,.07);--menu:rgba(255,255,255,.97);--pin:#d4e9f5;--sec:#d4e9f5;--chip:#c3dff0;--dsep:rgba(255,255,255,.88);--smalltx:rgba(10,37,64,.5);--prev:#4f7a96;--snd:#0a2540}
-html.ocean #tabbar{background:rgba(255,255,255,.94)}html.ocean .sec{background:#d4e9f5}html.ocean .item .ic[style*="2f8fff"]{background:var(--blue)!important}
-html.ocean .b.me{color:#0a2540}html.ocean .b.me small{color:rgba(10,37,64,.55)}html.ocean #login input,html.ocean #login .pf,html.ocean .inbar input,html.ocean .inbar textarea,html.ocean .inbar #mi{color:#0a2540}
-html.oceandark{--bg:#06141f;--card:#0d2433;--card2:#14344a;--line:#1c4561;--txt:#e6f4fb;--sub:#7fa6bd;--bubIn:#0f2a3b;--bubOut:#0369a1;--chatbg:#06141f;--dotc:rgba(56,189,248,.10);--dotc2:rgba(56,189,248,.06);--dotc3:rgba(56,189,248,.07);--menu:rgba(13,36,51,.97);--pin:#091c2a;--sec:#05121b;--chip:#1c4561;--dsep:rgba(13,36,51,.88);--smalltx:rgba(230,244,251,.6);--prev:#7fa6bd;--snd:#e6f4fb}
-html.oceandark #tabbar{background:rgba(13,36,51,.94)}html.oceandark .sec{background:#05121b}html.oceandark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
-html.forest{--bg:#eaf4ea;--card:#fbfffb;--card2:#d5e8d5;--line:#bcd8bc;--txt:#12301a;--sub:#587a5e;--bubIn:#ffffff;--bubOut:#c6efc9;--chatbg:#dcecdc;--dotc:rgba(22,163,74,.10);--dotc2:rgba(22,163,74,.06);--dotc3:rgba(22,163,74,.07);--menu:rgba(251,255,251,.97);--pin:#d5e8d5;--sec:#d5e8d5;--chip:#c4dec4;--dsep:rgba(251,255,251,.88);--smalltx:rgba(18,48,26,.5);--prev:#587a5e;--snd:#12301a}
-html.forest #tabbar{background:rgba(251,255,251,.94)}html.forest .sec{background:#d5e8d5}html.forest .item .ic[style*="2f8fff"]{background:var(--blue)!important}
-html.forest .b.me{color:#12301a}html.forest .b.me small{color:rgba(18,48,26,.55)}html.forest #login input,html.forest #login .pf,html.forest .inbar input,html.forest .inbar textarea,html.forest .inbar #mi{color:#12301a}
-html.forestdark{--bg:#08140c;--card:#10261a;--card2:#183823;--line:#21492f;--txt:#e8f6ea;--sub:#86ab8d;--bubIn:#12291b;--bubOut:#15803d;--chatbg:#08140c;--dotc:rgba(74,222,128,.10);--dotc2:rgba(74,222,128,.06);--dotc3:rgba(74,222,128,.07);--menu:rgba(16,38,26,.97);--pin:#0b1c11;--sec:#061009;--chip:#21492f;--dsep:rgba(16,38,26,.88);--smalltx:rgba(232,246,234,.6);--prev:#86ab8d;--snd:#e8f6ea}
-html.forestdark #tabbar{background:rgba(16,38,26,.94)}html.forestdark .sec{background:#061009}html.forestdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
-html.violet{--bg:#f3edfb;--card:#ffffff;--card2:#e4d8f6;--line:#d3c1ee;--txt:#2a1250;--sub:#7a5fa3;--bubIn:#ffffff;--bubOut:#ddd0fa;--chatbg:#ebe2f8;--dotc:rgba(124,58,237,.10);--dotc2:rgba(124,58,237,.06);--dotc3:rgba(124,58,237,.07);--menu:rgba(255,255,255,.97);--pin:#e4d8f6;--sec:#e4d8f6;--chip:#d8c8f1;--dsep:rgba(255,255,255,.88);--smalltx:rgba(42,18,80,.5);--prev:#7a5fa3;--snd:#2a1250}
-html.violet #tabbar{background:rgba(255,255,255,.94)}html.violet .sec{background:#e4d8f6}html.violet .item .ic[style*="2f8fff"]{background:var(--blue)!important}
-html.violet .b.me{color:#2a1250}html.violet .b.me small{color:rgba(42,18,80,.55)}html.violet #login input,html.violet #login .pf,html.violet .inbar input,html.violet .inbar textarea,html.violet .inbar #mi{color:#2a1250}
-html.violetdark{--bg:#0f0a1c;--card:#1b1230;--card2:#2a1d49;--line:#3a2a63;--txt:#f1eaff;--sub:#a493c7;--bubIn:#1e1436;--bubOut:#6d28d9;--chatbg:#0f0a1c;--dotc:rgba(167,139,250,.10);--dotc2:rgba(167,139,250,.06);--dotc3:rgba(167,139,250,.07);--menu:rgba(27,18,48,.97);--pin:#140d25;--sec:#0c0817;--chip:#3a2a63;--dsep:rgba(27,18,48,.88);--smalltx:rgba(241,234,255,.6);--prev:#a493c7;--snd:#f1eaff}
-html.violetdark #tabbar{background:rgba(27,18,48,.94)}html.violetdark .sec{background:#0c0817}html.violetdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+/* رنگ‌های زنده‌تر تم‌ها | Vivid Theme Colors: زمینه، کارت، حباب و حاشیه همه از خانواده‌ی رنگ اصلیِ هر تم‌اند (مثل تم لینک که از رنگ‌های لوگو ساخته شده)؛ رنگ‌ها سیرتر و دقیق‌تر شدند */
+html.ocean{--bg:#d6edfe;--card:#f7fcff;--card2:#b3dffa;--line:#8ec8f0;--txt:#062c4d;--sub:#3a7399;--bubIn:#ffffff;--bubOut:#8ccff7;--chatbg:#c2e6fd;--dotc:rgba(2,132,199,.14);--dotc2:rgba(2,132,199,.08);--dotc3:rgba(2,132,199,.10);--menu:rgba(247,252,255,.97);--pin:#b3dffa;--sec:#b3dffa;--chip:#9dd3f4;--dsep:rgba(247,252,255,.88);--smalltx:rgba(6,44,77,.55);--prev:#3a7399;--snd:#062c4d}
+html.ocean #tabbar{background:rgba(247,252,255,.94)}html.ocean .sec{background:#b3dffa}html.ocean .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.ocean .b.me{color:#062c4d}html.ocean .b.me small{color:rgba(6,44,77,.55)}html.ocean #login input,html.ocean #login .pf,html.ocean .inbar input,html.ocean .inbar textarea,html.ocean .inbar #mi{color:#062c4d}
+html.oceandark{--bg:#03111f;--card:#082640;--card2:#0d4068;--line:#125a8c;--txt:#e0f4ff;--sub:#63b4e3;--bubIn:#0a2d4a;--bubOut:#0284c7;--chatbg:#03111f;--dotc:rgba(56,189,248,.14);--dotc2:rgba(56,189,248,.08);--dotc3:rgba(56,189,248,.10);--menu:rgba(8,38,64,.97);--pin:#071b2d;--sec:#020d17;--chip:#125a8c;--dsep:rgba(8,38,64,.88);--smalltx:rgba(224,244,255,.62);--prev:#63b4e3;--snd:#e0f4ff}
+html.oceandark #tabbar{background:rgba(8,38,64,.94)}html.oceandark .sec{background:#020d17}html.oceandark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.forest{--bg:#d3f4d7;--card:#f6fff7;--card2:#b0e7b9;--line:#8dd899;--txt:#0b3016;--sub:#3f7d4c;--bubIn:#ffffff;--bubOut:#97e8a2;--chatbg:#c1edc7;--dotc:rgba(22,163,74,.14);--dotc2:rgba(22,163,74,.08);--dotc3:rgba(22,163,74,.10);--menu:rgba(246,255,247,.97);--pin:#b0e7b9;--sec:#b0e7b9;--chip:#9fdea8;--dsep:rgba(246,255,247,.88);--smalltx:rgba(11,48,22,.55);--prev:#3f7d4c;--snd:#0b3016}
+html.forest #tabbar{background:rgba(246,255,247,.94)}html.forest .sec{background:#b0e7b9}html.forest .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.forest .b.me{color:#0b3016}html.forest .b.me small{color:rgba(11,48,22,.55)}html.forest #login input,html.forest #login .pf,html.forest .inbar input,html.forest .inbar textarea,html.forest .inbar #mi{color:#0b3016}
+html.forestdark{--bg:#06150b;--card:#0a2a14;--card2:#124a22;--line:#17682e;--txt:#e4fbe8;--sub:#66c07a;--bubIn:#0d3219;--bubOut:#16a34a;--chatbg:#06150b;--dotc:rgba(74,222,128,.14);--dotc2:rgba(74,222,128,.08);--dotc3:rgba(74,222,128,.10);--menu:rgba(10,42,20,.97);--pin:#081c0f;--sec:#040f08;--chip:#17682e;--dsep:rgba(10,42,20,.88);--smalltx:rgba(228,251,232,.62);--prev:#66c07a;--snd:#e4fbe8}
+html.forestdark #tabbar{background:rgba(10,42,20,.94)}html.forestdark .sec{background:#040f08}html.forestdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.violet{--bg:#e6dafe;--card:#fbf8ff;--card2:#cdb8fa;--line:#b697f4;--txt:#260e55;--sub:#6d4ba8;--bubIn:#ffffff;--bubOut:#c3a8fc;--chatbg:#d8c6fc;--dotc:rgba(124,58,237,.14);--dotc2:rgba(124,58,237,.08);--dotc3:rgba(124,58,237,.10);--menu:rgba(251,248,255,.97);--pin:#cdb8fa;--sec:#cdb8fa;--chip:#bfa3f6;--dsep:rgba(251,248,255,.88);--smalltx:rgba(38,14,85,.55);--prev:#6d4ba8;--snd:#260e55}
+html.violet #tabbar{background:rgba(251,248,255,.94)}html.violet .sec{background:#cdb8fa}html.violet .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.violet .b.me{color:#260e55}html.violet .b.me small{color:rgba(38,14,85,.55)}html.violet #login input,html.violet #login .pf,html.violet .inbar input,html.violet .inbar textarea,html.violet .inbar #mi{color:#260e55}
+html.violetdark{--bg:#0e0720;--card:#1c0f3a;--card2:#31195f;--line:#4a2a8f;--txt:#f3ecff;--sub:#a98fe0;--bubIn:#20123f;--bubOut:#7c3aed;--chatbg:#0e0720;--dotc:rgba(167,139,250,.14);--dotc2:rgba(167,139,250,.08);--dotc3:rgba(167,139,250,.10);--menu:rgba(28,15,58,.97);--pin:#130a28;--sec:#0a0515;--chip:#4a2a8f;--dsep:rgba(28,15,58,.88);--smalltx:rgba(243,236,255,.62);--prev:#a98fe0;--snd:#f3ecff}
+/* دو تم تازه | Two More Themes: غروب (نارنجی گرم) و شکوفه (صورتی)؛ هرکدام نسخه‌ی روز و شب دارند و همان ساختار سه تم قبلی را دارند */
+html.sunset{--bg:#fdeadb;--card:#fff9f4;--card2:#fbd3b0;--line:#f5bd8f;--txt:#431407;--sub:#9a5a35;--bubIn:#ffffff;--bubOut:#fbc99a;--chatbg:#fbdcc2;--dotc:rgba(234,88,12,.14);--dotc2:rgba(234,88,12,.08);--dotc3:rgba(234,88,12,.10);--menu:rgba(255,249,244,.97);--pin:#fbd3b0;--sec:#fbd3b0;--chip:#f7c298;--dsep:rgba(255,249,244,.88);--smalltx:rgba(67,20,7,.55);--prev:#9a5a35;--snd:#431407}
+html.sunset #tabbar{background:rgba(255,249,244,.94)}html.sunset .sec{background:#fbd3b0}html.sunset .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.sunset .b.me{color:#431407}html.sunset .b.me small{color:rgba(67,20,7,.55)}html.sunset #login input,html.sunset #login .pf,html.sunset .inbar input,html.sunset .inbar textarea,html.sunset .inbar #mi{color:#431407}
+html.sunsetdark{--bg:#1a0a04;--card:#2a1408;--card2:#43200c;--line:#6b3513;--txt:#ffeee0;--sub:#d79a6c;--bubIn:#301709;--bubOut:#c2410c;--chatbg:#1a0a04;--dotc:rgba(251,146,60,.14);--dotc2:rgba(251,146,60,.08);--dotc3:rgba(251,146,60,.10);--menu:rgba(42,20,8,.97);--pin:#200d05;--sec:#130702;--chip:#6b3513;--dsep:rgba(42,20,8,.88);--smalltx:rgba(255,238,224,.62);--prev:#d79a6c;--snd:#ffeee0}
+html.sunsetdark #tabbar{background:rgba(42,20,8,.94)}html.sunsetdark .sec{background:#130702}html.sunsetdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.blossom{--bg:#fde4ef;--card:#fff7fb;--card2:#fbc4dc;--line:#f5a8cb;--txt:#4a0d2a;--sub:#9d4a72;--bubIn:#ffffff;--bubOut:#f9b4d2;--chatbg:#fbd3e4;--dotc:rgba(219,39,119,.14);--dotc2:rgba(219,39,119,.08);--dotc3:rgba(219,39,119,.10);--menu:rgba(255,247,251,.97);--pin:#fbc4dc;--sec:#fbc4dc;--chip:#f6b2d0;--dsep:rgba(255,247,251,.88);--smalltx:rgba(74,13,42,.55);--prev:#9d4a72;--snd:#4a0d2a}
+html.blossom #tabbar{background:rgba(255,247,251,.94)}html.blossom .sec{background:#fbc4dc}html.blossom .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.blossom .b.me{color:#4a0d2a}html.blossom .b.me small{color:rgba(74,13,42,.55)}html.blossom #login input,html.blossom #login .pf,html.blossom .inbar input,html.blossom .inbar textarea,html.blossom .inbar #mi{color:#4a0d2a}
+html.blossomdark{--bg:#16050e;--card:#26091a;--card2:#3e1029;--line:#66183f;--txt:#ffe8f2;--sub:#d98bb0;--bubIn:#2c0b1e;--bubOut:#be185d;--chatbg:#16050e;--dotc:rgba(244,114,182,.14);--dotc2:rgba(244,114,182,.08);--dotc3:rgba(244,114,182,.10);--menu:rgba(38,9,26,.97);--pin:#1c0713;--sec:#100309;--chip:#66183f;--dsep:rgba(38,9,26,.88);--smalltx:rgba(255,232,242,.62);--prev:#d98bb0;--snd:#ffe8f2}
+html.blossomdark #tabbar{background:rgba(38,9,26,.94)}html.blossomdark .sec{background:#100309}html.blossomdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
+html.violetdark #tabbar{background:rgba(26,16,51,.94)}html.violetdark .sec{background:#0a0515}html.violetdark .item .ic[style*="2f8fff"]{background:var(--blue)!important}
 
 
 /* ===== انیمیشن اتصال لینک | Link Connection Animation Styles ===== */
@@ -967,7 +980,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
     <div class="cap" data-t="Enter your name and add an optional profile photo.">Enter your name and add an optional profile photo.</div>
     <div class="card"><input class="fld" id="ed_bio" dir="auto" data-p="Bio" placeholder="Bio" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="70"></div>
     <div class="cap" data-t="Only your contacts can see your bio.">Only your contacts can see your bio.</div>
-    <div class="card"><div class="item" onclick="if(event.target.id!=='ed_bday'){try{ed_bday.showPicker()}catch(e){ed_bday.focus()}}"><div class="ic" style="background:#ff9f0a"><i data-ic="cake" data-s="18"></i></div><span data-t="Birthday">Birthday</span><input type="date" id="ed_bday" class="dt"></div></div>
+    <div class="card"><div class="item" onclick="bdOpen()"><div class="ic" style="background:#ff9f0a"><i data-ic="cake" data-s="18"></i></div><span data-t="Birthday">Birthday</span><input type="hidden" id="ed_bday"><span id="ed_bdayT" class="dt"></span></div></div>
     <div class="cap" data-t="Only your contacts can see your birthday.">Only your contacts can see your birthday.</div>
     <div class="card">
       <div class="item"><div class="ic" style="background:#30a46c"><i data-ic="mail" data-s="18"></i></div><span data-t="Email">Email</span><span class="rr" id="ed_email" dir="ltr" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></div>
@@ -992,7 +1005,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <div class="body">
     <div id="fe_custom"><div class="card" style="margin-top:14px"><input class="fld" id="fe_name" dir="auto" data-p="Folder Name" placeholder="Folder Name" autocomplete="off" autocorrect="off" spellcheck="false" ></div>
       <div class="hd" data-t="Quick Add">Quick Add</div><div class="card"><div class="item" data-qa="gp" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Groups">Add All Groups</span></div><div class="item" data-qa="ch" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Channels">Add All Channels</span></div><div class="item" data-qa="pv" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Personal Chats">Add All Personal Chats</span></div></div>
-      <div class="hd" data-t="Chats">Chats</div><div class="card" id="feChats"></div></div>
+      <div class="hd" data-t="Chats">Chats</div><div class="card"><input class="fld" id="fe_search" dir="auto" data-p="Search Chats" placeholder="Search Chats" autocomplete="off" autocorrect="off" spellcheck="false"></div><div class="card" id="feSrcAll" style="display:none;margin-top:10px"><div class="item" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Results">Add All Results</span></div></div><div class="card" id="feChats" style="margin-top:10px"></div></div>
     <div id="fe_info" style="display:none"><div class="cap" data-t="This folder fills automatically with its chat type.">This folder fills automatically with its chat type.</div></div>
     <div class="card" style="margin-top:20px"><div class="item" id="feDel" style="color:var(--red);justify-content:center" data-t="Delete Folder">Delete Folder</div></div>
   </div>
@@ -1016,13 +1029,15 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <div class="body"><div class="hd" data-t="Theme">Theme</div><div class="card">
     <!-- تم لینک ادغام‌شده | Merged Link Theme Row: یک ردیف برای تم لینک؛ روز خودکار لینک روشن، شب خودکار لینک تیره -->
     <!-- آیکن تم‌ها | Theme Icons: به‌جای نقطه‌ی رنگی، هر تم یک آیکن ساده و مینیمال دارد (لینک = لوگوی خود برنامه، اقیانوس = موج، جنگل = درخت، بنفش = گل) -->
-    <div class="item" data-th="link"><img class="tlg" alt="" style="width:22px;height:22px;flex:none;object-fit:contain;margin-inline-end:12px"><span data-t="Link">Link</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="link"><svg class="tlg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e11d48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span data-t="Link">Link</span><span class="rr" style="color:var(--blue)"></span></div>
     <div class="item" data-th="ocean"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M2 9c2-3 4-3 6 0s4 3 6 0 4-3 6 0 2 1 2 1"/><path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0 2 1 2 1"/></svg><span data-t="Ocean">Ocean</span><span class="rr" style="color:var(--blue)"></span></div>
     <div class="item" data-th="forest"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/></svg><span data-t="Forest">Forest</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="violet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.4" fill="#7c3aed"/></svg><span data-t="Violet">Violet</span><span class="rr" style="color:var(--blue)"></span></div></div>
+    <div class="item" data-th="violet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.4" fill="#7c3aed"/></svg><span data-t="Violet">Violet</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="sunset"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M4.2 10.2l1.4 1.4M1 18h2M21 18h2M18.4 11.6l1.4-1.4M23 22H1"/></svg><span data-t="Sunset">Sunset</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="blossom"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span data-t="Blossom">Blossom</span><span class="rr" style="color:var(--blue)"></span></div></div>
     <div class="hd" data-t="Night Mode">Night Mode</div><div class="card"><div class="item" id="nightRow"><span data-t="Night Mode">Night Mode</span><span class="sw" id="nightSw"></span></div></div>
     <div class="hd" data-t="Accent Color">Accent Color</div><div class="card"><div class="item" id="accRow" style="gap:12px;justify-content:center"></div></div>
-    <div class="hd" data-t="Chat Background">Chat Background</div><div class="card"><div class="item" id="bgRow" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPick" style="color:var(--blue)"><i data-ic="camera" data-s="20"></i><span data-t="Choose from Gallery">Choose from Gallery</span></div></div></div>
+    <div class="hd" data-t="Chat Background">Chat Background</div><div class="card"><div class="item" id="bgRow" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPal" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPick" style="color:var(--blue)"><i data-ic="camera" data-s="20"></i><span data-t="Choose from Gallery">Choose from Gallery</span></div></div></div>
 </div>
 
 <!-- زبان | Language -->
@@ -1628,11 +1643,11 @@ function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");
 /* مسدودسازی پنجره‌های مرورگر | Native Dialog Block: هیچ پیغام تأیید، هشدار یا اعلان مرورگر باز نمی‌شود؛ alert به پیام داخلی برنامه تبدیل می‌شود (no browser popups anywhere; alert becomes the in-app toast) */
 window.alert=m=>toast(String(m));window.confirm=()=>true;window.prompt=()=>null;window.onbeforeunload=null;
 /* تم مؤثر | Effective Theme: اگر تم لینک انتخاب شده و گوشی در حالت شب است، لینک تیره برمی‌گرداند؛ وگرنه همان تم انتخابی */
-const THM={"link": ["#e11d48", "#f43f5e", "#fdf1c5", "#1a0709"], "ocean": ["#0284c7", "#38bdf8", "#e8f4fb", "#06141f"], "forest": ["#16a34a", "#4ade80", "#eaf4ea", "#08140c"], "violet": ["#7c3aed", "#a78bfa", "#f3edfb", "#0f0a1c"]};
+const THM={"link": ["#e11d48", "#f43f5e", "#fdf1c5", "#1a0709"], "ocean": ["#0284c7", "#38bdf8", "#d6edfe", "#03111f"], "forest": ["#16a34a", "#4ade80", "#d3f4d7", "#06150b"], "violet": ["#7c3aed", "#a78bfa", "#e6dafe", "#0e0720"], "sunset": ["#ea580c", "#fb923c", "#fdeadb", "#1a0a04"], "blossom": ["#db2777", "#f472b6", "#fde4ef", "#16050e"]};
 const thAcc=()=>{const t=THM[CFG.theme];if(t)CFG.accent=CFG.night?t[1]:t[0]};
 function effTheme(){if(CFG.theme==="linkdark")CFG.theme="link";return THM[CFG.theme]&&CFG.night?CFG.theme+"dark":CFG.theme}
 /* اعمال تم | Apply Theme: کلاس‌ها و رنگ نوار بالا را بر اساس تم مؤثر (روز/شب) تنظیم می‌کند */
-function applyTheme(){const T=effTheme(),b=T.endsWith("dark")?T.slice(0,-4):T,nt=T.endsWith("dark"),t=THM[b];$("meta[name=theme-color]").content=t?(nt?t[3]:t[2]):T==="light"?"#f2f2f7":"#000000";const c=document.documentElement.classList;Object.keys(THM).forEach(k=>{c.toggle(k,T===k);c.toggle(k+"dark",T===k+"dark")});c.toggle("light",T==="light"||(!!t&&!nt));document.documentElement.style.setProperty("--blue",CFG.accent)}
+function applyTheme(){const T=effTheme(),b=T.endsWith("dark")?T.slice(0,-4):T,nt=T.endsWith("dark"),t=THM[b];$("meta[name=theme-color]").content=t?(nt?t[3]:t[2]):T==="light"?"#f2f2f7":"#000000";const c=document.documentElement.classList;Object.keys(THM).forEach(k=>{c.toggle(k,T===k);c.toggle(k+"dark",T===k+"dark")});c.toggle("light",T==="light"||(!!t&&!nt));document.documentElement.style.setProperty("--blue",CFG.accent);try{applyBg();renderBgs()}catch(e){}}
 /* گوش‌دادن به روز/شب | Day-Night Listener: وقتی حالت روز/شب گوشی عوض شد، تم لینک خودکار عوض می‌شود */
 /* ناوبری | Sub-page Navigation: باز و بسته شدن صفحه‌ها (open/close with a stack) */
 function openSub(id){S.subs.push(id);$$(".sub").forEach(x=>x.classList.toggle("on",x.id===id));$("#tabbar").style.display="none"}
@@ -1641,6 +1656,25 @@ function closeSub(){S.subs.pop();const id=S.subs[S.subs.length-1];$$(".sub").for
 const fullName=u=>(u.name+" "+(u.last||"")).trim();
 const fmtDate=d=>{const D=new Date(d+"T00:00");if(CFG.lang!=="fa"){const j=jFin(D);return j.d+" "+j.m+" "+j.y}return D.toLocaleDateString("fa-IR-u-ca-persian",{day:"numeric",month:"short",year:"numeric"})};
 function paintAv(el,u){const n=u.name||"?";if(u.photo){el.style.backgroundImage="url("+u.photo+")";el.style.backgroundSize="cover";el.style.backgroundPosition="center";el.textContent=""}else{el.style.backgroundImage="none";el.style.backgroundColor=colOf(n);el.style.background=colOf(n);el.textContent=n.trim()[0].toUpperCase()}}
+/* تقویم شمسی تاریخ تولد | Jalali Birthday Picker: به جای تقویم میلادی مرورگر، سه انتخابگر روز، ماه و سال شمسی؛ تاریخ آینده قابل انتخاب نیست؛ وقتی تاریخی نیست چیزی نشان داده نمی شود؛ مقدار واقعی در ed_bday به شکل میلادی ذخیره می شود */
+const JMF=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const j2g=(jy,jm,jd)=>{jy+=1595;let days=-355668+(365*jy)+(~~(jy/33))*8+~~(((jy%33)+3)/4)+jd+((jm<7)?(jm-1)*31:((jm-7)*30)+186);let gy=400*~~(days/146097);days%=146097;if(days>36524){gy+=100*~~(--days/36524);days%=36524;if(days>=365)days++}gy+=4*~~(days/1461);days%=1461;if(days>365){gy+=~~((days-1)/365);days=(days-1)%365}let gd=days+1;const sal=[0,31,((gy%4==0&&gy%100!=0)||(gy%400==0))?29:28,31,30,31,30,31,31,30,31,30,31];let gm;for(gm=0;gm<13&&gd>sal[gm];gm++)gd-=sal[gm];return[gy,gm,gd]};
+const g2j=d=>{const o={};new Intl.DateTimeFormat("en-u-ca-persian-nu-latn",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(d).forEach(p=>o[p.type]=p.value);return[+o.year,+o.month,+o.day]};
+const jLen=(y,m)=>{if(m<7)return 31;if(m<12)return 30;const g=j2g(y,12,30),r=g2j(new Date(g[0],g[1]-1,g[2],12));return r[1]===12&&r[2]===30?30:29};
+function bdShow(){const v=$("#ed_bday").value;$("#ed_bdayT").textContent=v?fmtDate(v):""}
+(function(){const o=document.createElement("div");o.id="dobov";o.innerHTML='<div class="schc"><b id="dobT"></b><div class="row"><select id="dobD"></select><select id="dobM"></select><select id="dobY"></select></div><div class="schok" id="dobOk"></div><div class="schno" id="dobClr" style="color:var(--red)"></div><div class="schno" id="dobNo"></div></div>';$("#app").append(o)})();
+function bdOpen(){const T=g2j(new Date()),fa=CFG.lang==="fa",v=$("#ed_bday").value,c=v?g2j(new Date(v+"T12:00")):[0,0,0];let y=c[0],m=c[1],d=c[2];
+ const num=n=>fa?n.toLocaleString("fa-IR",{useGrouping:false}):String(n),op=(val,t,sel)=>`<option value="${val}"${sel?" selected":""}>${t}</option>`,close=()=>$("#dobov").classList.remove("on");
+ const fill=()=>{if(y>T[0])y=T[0];const mx=y===T[0]?T[1]:12;if(m>mx)m=mx;const dx=y&&m?Math.min(jLen(y,m),y===T[0]&&m===T[1]?T[2]:31):31;if(d>dx)d=dx;
+  let h=op(0,fa?"سال":"Year",!y);for(let i=T[0];i>=T[0]-100;i--)h+=op(i,num(i),i===y);$("#dobY").innerHTML=h;
+  h=op(0,fa?"ماه":"Month",!m);for(let i=1;i<=mx;i++)h+=op(i,fa?JMF[i-1]:JM[i-1],i===m);$("#dobM").innerHTML=h;
+  h=op(0,fa?"روز":"Day",!d);for(let i=1;i<=dx;i++)h+=op(i,num(i),i===d);$("#dobD").innerHTML=h};
+ $("#dobT").textContent=fa?"تاریخ تولد":"Birthday";$("#dobOk").textContent=fa?"تایید":"Done";$("#dobClr").textContent=fa?"حذف تاریخ":"Remove Date";$("#dobNo").textContent=fa?"لغو":"Cancel";
+ fill();
+ $("#dobY").onchange=e=>{y=+e.target.value;fill()};$("#dobM").onchange=e=>{m=+e.target.value;fill()};$("#dobD").onchange=e=>{d=+e.target.value};
+ $("#dobNo").onclick=close;$("#dobClr").onclick=()=>{$("#ed_bday").value="";bdShow();close()};
+ $("#dobOk").onclick=()=>{if(!y||!m||!d){toast(fa?"سال، ماه و روز را انتخاب کنید":"Pick year, month and day");return}const g=j2g(y,m,d),p=n=>String(n).padStart(2,"0");$("#ed_bday").value=g[0]+"-"+p(g[1])+"-"+p(g[2]);bdShow();close()};
+ $("#dobov").classList.add("on")}
 function initUser(){const u=S.user;u.pass=$("#pw").value;u.last=S.signup?($("#nm2")?$("#nm2").value.trim():""):"";u.bio="";u.bday="";u.photo="";u.username=(u.email.split("@")[0].toLowerCase().match(/^[a-z0-9_]*[a-z0-9][a-z0-9_]*$/)||[""])[0];fillMe()}
 function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  $("#myname").textContent=f;$("#myname2").textContent=f;$("#pf_name").textContent=f;
@@ -1651,7 +1685,7 @@ function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  ["#myav","#myav2","#pf_av","#tbav","#pf_full"].forEach(q=>paintAv($(q),u))}
 function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=320;c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,320,320);cb(c.toDataURL("image/jpeg",.85))};im.src=r.result};r.readAsDataURL(file)};f.click()}
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
- $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
+ $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";bdShow();$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
  paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
 $("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(!S.user)return;if(S.pfBig)openViewer($("#myav"),im=>paintAv(im,S.user),false);else setBig(true)};
 $("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
@@ -1691,11 +1725,18 @@ function openFolder(k){const isNew=k==="new",def=!isNew&&!k.startsWith("f_"),f=i
  FE={id:f?f.id:null,k,def,chats:new Set(f?f.chats:[])};
  const t=isNew?"New Folder":"Edit Folder";$("#fe_title").dataset.t=t;$("#fe_title").textContent=tr(t);
  $("#fe_custom").style.display=def?"none":"";$("#fe_info").style.display=def?"":"none";$("#feOk").style.visibility=def?"hidden":"visible";
- $("#feDel").parentNode.style.display=isNew?"none":"";$("#fe_name").value=f?f.name:"";renderFeChats();openSub("fedit")}
+ $("#feDel").parentNode.style.display=isNew?"none":"";$("#fe_name").value=f?f.name:"";$("#fe_search").value="";renderFeChats();openSub("fedit")}
 /* گفتگوهای پوشه | Folder Chats: همه‌ی گفتگوها با سوییچ برای قرار دادن داخل پوشه */
-function renderFeChats(){$("#feChats").innerHTML=CHATS.map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${FE.chats.has(c.id)?" on":""}"></span></div>`).join("");
+/* جستجوی گفتگوهای پوشه | Folder Chat Search: لیست گفتگوها را بر اساس متن جستجو فیلتر می‌کند (بدون تفاوت حروف بزرگ و کوچک، ی/ک عربی هم مساوی فارسی است) */
+const feNorm=s=>String(s).toLowerCase().replace(/ي/g,"ی").replace(/ك/g,"ک");
+function feList(){const q=feNorm($("#fe_search").value.trim());return q?CHATS.filter(c=>feNorm(c.n).includes(q)):CHATS}
+function renderFeChats(){$("#feSrcAll").style.display=$("#fe_search").value.trim()?"":"none";$("#feChats").innerHTML=feList().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${FE.chats.has(c.id)?" on":""}"></span></div>`).join("");
  $$("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc;FE.chats.has(id)?FE.chats.delete(id):FE.chats.add(id);e.querySelector(".sw").classList.toggle("on",FE.chats.has(id))})}
 $("#fNew").onclick=()=>openFolder("new");$("#feX").onclick=closeSub;
+/* رویدادهای جستجو | Search Events: با هر حرفی که نوشته می‌شود نتیجه‌ها به‌روز می‌شوند (تیک‌های قبلی می‌مانند)؛ «افزودن همه نتایج» همه‌ی نتایج نمایش‌داده‌شده را تیک می‌زند */
+Object.assign(FA,{"Search Chats":"جستجوی گفتگوها","Add All Results":"افزودن همه نتایج"});
+$("#fe_search").oninput=renderFeChats;
+$("#feSrcAll").onclick=()=>{feList().forEach(c=>FE.chats.add(c.id));renderFeChats()};
 $$("[data-qa]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.qa).forEach(x=>FE.chats.add(x.id));renderFeChats()});
 /* ذخیره پوشه | Save Folder */
 $("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){toast(tr("Folder name can't be empty"));return}
@@ -1913,7 +1954,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  return o}
 /* آیکن‌های ویرایش | Edit Icons: آیکن چرخش و آینه و ترجمه‌ی برچسب‌های ویرایشگر */
 MPI.rot=MPS('<path d="M4 12a8 8 0 108-8M4 4v5h5"/>');MPI.flp=MPS('<path d="M12 3v18M7.5 7L3 17h4.5zM16.5 7L21 17h-4.5z"/>');
-Object.assign(FA,{"Night Mode":"حالت شب","Ocean":"اقیانوس","Forest":"جنگل","Violet":"بنفش","Free":"آزاد","Original":"اصلی","Square":"مربع","Brightness":"روشنایی","Contrast":"کنتراست","Saturation":"اشباع","Reset":"بازنشانی","Auto":"خودکار"});
+Object.assign(FA,{"Night Mode":"حالت شب","Ocean":"اقیانوس","Forest":"جنگل","Violet":"بنفش","Sunset":"غروب","Blossom":"شکوفه","Free":"آزاد","Original":"اصلی","Square":"مربع","Brightness":"روشنایی","Contrast":"کنتراست","Saturation":"اشباع","Reset":"بازنشانی","Auto":"خودکار"});
 /* منبع تصویر | Item Source: عنصر عکس یا ویدیوی صفحه‌ی i و اندازه‌ی واقعی آن را می‌دهد */
 function mpvSrc(i){const m=$("#mpTr").children[i].querySelector("img,video"),vd=m.tagName==="VIDEO";return{m,sw:vd?m.videoWidth:m.naturalWidth,sh:vd?m.videoHeight:m.naturalHeight}}
 /* رسم نتیجه | Draw Edited Preview: نتیجه‌ی برش، چرخش، آینه و رنگ را با همان mDraw سیستم رسانه روی بوم صفحه می‌کشد تا پیش‌نمایش با فایل ارسالی یکی باشد */
@@ -1927,7 +1968,7 @@ function mpvIsEd(i){const r=MPV.rec[i];return !mPlain(mediaRecipe({crop:r.crop,a
 function mpvEdited(i){mpvDraw(i)}
 /* پیش‌نمایش عکس پروفایل | Profile Photo Preview: قبل از تایید، عکس در همان صفحه پیش‌نمایش ارسال و ویرایشگر برش می‌آید؛ برش همیشه مربعی است و دایره‌ی راهنمای کم‌رنگ نشان داده می‌شود (shows the send preview and square crop editor with a faint circle guide before a profile photo is confirmed) */
 const _pp0=pickPhoto;
-pickPhoto=function(cb,bg){if(bg)return _pp0(cb,bg);const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
+pickPhoto=function(cb,bg){if(bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)bgPreview(file,cb)};f.click();return}const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
 Object.assign(FA,{"Profile photo":"عکس پروفایل"});
 (function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3}";document.head.append(st)})();
 /* قاب مربعی پروفایل | Avatar Square Frame: بعد از چرخش یا آینه، قاب برش دوباره مربعی و وسط‌چین می‌شود تا دایره‌ی راهنما بیضی نشود */
@@ -1948,6 +1989,30 @@ async function avPreview(file,cb){
  cr.onclick=async()=>{await c0();MPE.ratio=1};
  sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=320,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
   mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.85))}catch(e){toast("Couldn't use this photo");return}b0();end()}
+}
+/* برش پس‌زمینه | Background Crop: وقتی عکس پس‌زمینه‌ی چت انتخاب می‌شود، همان ویرایشگر برش پروفایل باز می‌شود؛ قاب برش روی نسبت دقیق صفحه‌ی چت قفل است (فقط کوچک و بزرگ و جابه‌جا می‌شود) و بدون دایره‌ی راهنما */
+(function(){const st=document.createElement("style");st.textContent="#mpv.bgp #mpeR::after{display:none!important}";document.head.append(st)})();
+/* نسبت صفحه‌ی چت | Chat Ratio: عرض تقسیم بر ارتفاع همان جایی که پس‌زمینه نشان داده می‌شود */
+function bgRatio(){const c=$("#chat"),w=c?c.clientWidth:0,h=c?c.clientHeight:0;return w>50&&h>50?w/h:innerWidth/innerHeight}
+/* قاب پس‌زمینه | Background Frame: بزرگ‌ترین قاب وسط‌چین با نسبت صفحه‌ی چت؛ بعد از چرخش یا آینه دوباره همین‌طور می‌شود */
+function bgFrame(){const R=MPE.bgR||1,a=MPE.W/MPE.H;let w=1,h=1;if(a>R)w=R/a;else h=a/R;MPE.ratio=R;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
+/* بازنشانی پس‌زمینه | Background Reset Hook: فقط وقتی برش پس‌زمینه باز است، بعد از بازنشانی قاب، نسبت قفل را برمی‌گرداند */
+const _mr1=mpeReset;
+mpeReset=function(){_mr1();if($("#mpv").classList.contains("bgp"))bgFrame()};
+/* پیش‌نمایش پس‌زمینه | Background Preview: ویرایشگر برش با نسبت قفل‌شده؛ با تایید، عکس برش‌خورده دقیقاً با اندازه‌ی نمایش پس‌زمینه ساخته می‌شود */
+async function bgPreview(file,cb){
+ const R=bgRatio();
+ await mpvOpen([file]);
+ const o=$("#mpv"),sb=$("#mpSend"),bb=$("#mpBack"),cr=o.querySelector('[data-mt="crop"]'),s0=sb.onclick,b0=bb.onclick,c0=cr.onclick;
+ o.classList.add("avp","bgp");$("#mpTo").textContent=tr("Chat Background");MPE.bgR=R;
+ const w=file.__w||1,h=file.__h||1,r=MPV.rec[0],a=w/h;
+ r.crop=a>R?{x:(1-R/a)/2,y:0,w:R/a,h:1}:{x:0,y:(1-a/R)/2,w:1,h:a/R};
+ mpvEdited(0);
+ const end=()=>{o.classList.remove("avp","bgp");sb.onclick=s0;bb.onclick=b0;cr.onclick=c0};
+ bb.onclick=()=>{b0();end()};
+ cr.onclick=async()=>{await c0();MPE.ratio=R};
+ sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),cv=document.createElement("canvas"),W=R>=1?900:Math.round(900*R),H=R>=1?Math.round(900/R):900;cv.width=W;cv.height=H;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw/ch>R+.01){const nw=ch*R/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(cw/ch<R-.01){const nh=cw/R/h2;c.y+=(c.h-nh)/2;c.h=nh}
+  mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,W,H);cb(cv.toDataURL("image/jpeg",.8))}catch(e){toast("Couldn't use this photo");return}b0();end()}
 }
 /* کیفیت‌ها | Quality Options: برای عکس SD و HD (پریست‌های photoSD و photoHD)، برای ویدیو ارتفاع‌های پریست videoChat تا اندازه‌ی خود ویدیو */
 function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const s=Math.min(f.__w||1080,f.__h||1080);return MP.videoChat.heights.filter(h=>h<=Math.max(240,s))}
@@ -2014,7 +2079,7 @@ function mzSharp(){const cv=$("#mpeC"),Wz=MPE.W*MZ.s,Hz=MPE.H*MZ.s,k=Math.min(2,
 /* زوم روی قاب | Zoom To Crop: صحنه را بزرگ می‌کند و قاب برش را وسط صفحه می‌گذارد */
 function mzIn(){clearTimeout(MZ.t);if(!MPE.src||!$("#mpe").classList.contains("on"))return;
  const S=$("#mpeS"),c=MPE.c,cw=S.clientWidth,ch=S.clientHeight,W=MPE.W,H=MPE.H,s=Math.min(MZ.max,(cw-2*MZ.m)/(c.w*W),(ch-2*MZ.m)/(c.h*H));
- if(!(s>1.08))return;
+ if(!(s>1.08)){if(MZ.z)mzOut();return}
  mzPut(s,cw/2-(c.x+c.w/2)*W*s,ch/2-(c.y+c.h/2)*H*s,1);mzSharp();MZ.z=1}
 /* برگشت از زوم | Zoom Back: صحنه با انیمیشن به اندازه‌ی کامل برمی‌گردد */
 function mzOut(){clearTimeout(MZ.t);if(!MZ.z)return;MZ.z=0;const S=$("#mpeS");mzPut(1,(S.clientWidth-MPE.W)/2,(S.clientHeight-MPE.H)/2,1);setTimeout(()=>{if(!MZ.z)mpeDraw()},280)}
@@ -2036,7 +2101,7 @@ function mzOut(){clearTimeout(MZ.t);if(!MZ.z)return;MZ.z=0;const S=$("#mpeS");mz
    else if(MZ.pn&&MZ.pn.id===e.pointerId){const n=MZ.pn;mzPut(MZ.s,n.l+e.clientX-n.x,n.tp+e.clientY-n.y,0)}});
   const up=e=>{MZ.pts.delete(e.pointerId);if(MZ.pn&&MZ.pn.id===e.pointerId)MZ.pn=null;
    if(MZ.pc&&MZ.pts.size<2){MZ.pc=null;if(MZ.s<1.03){MZ.z=1;mzOut()}else{MZ.z=1;mzSharp()}}
-   if(MZ.pts.size)return;clearTimeout(MZ.t);if(MZ.sk){MZ.sk=0;return}if(!MZ.z&&JSON.stringify(MPE.c)!==MZ.c0)MZ.t=setTimeout(mzIn,1000)};
+   if(MZ.pts.size)return;clearTimeout(MZ.t);if(MZ.sk){MZ.sk=0;return}if(JSON.stringify(MPE.c)!==MZ.c0)MZ.t=setTimeout(mzIn,1000)};
   S.addEventListener("pointerup",up);S.addEventListener("pointercancel",up);
   $("#mpeH").addEventListener("click",()=>{mzOut();clearTimeout(MZ.t);MZ.t=setTimeout(mzIn,1000)});
   ["#mpeX","#mpeOk","#mpeRot","#mpeFlp"].forEach(q=>$(q).addEventListener("click",()=>clearTimeout(MZ.t)))}})();
@@ -2201,13 +2266,22 @@ function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove(
  $$("#menu2 div").forEach(d=>d.onclick=()=>{CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
 /* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
 /* پس‌زمینه‌ی لینک | Link Background Preset: الگوی زنجیر پیکسلی لوگو، اولین گزینه و پیش‌فرض */
-const BGS=[["link","var(--lkpat) 0 0/312px 312px var(--chatbg)"],["none","var(--chatbg)"],["dots","radial-gradient(var(--dotc) 1.3px,transparent 1.4px) 0 0/18px 18px var(--chatbg)"],["lines","repeating-linear-gradient(45deg,var(--dotc2) 0 2px,transparent 2px 14px) var(--chatbg)"],["grid","linear-gradient(var(--dotc3) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--dotc3) 1px,transparent 1px) 0 0/22px 22px var(--chatbg)"],["blue","linear-gradient(160deg,#0b1a33,#12315f)"],["green","linear-gradient(160deg,#0c2a22,#17503f)"],["warm","linear-gradient(160deg,#2a1a14,#55321f)"],["violet","linear-gradient(160deg,#1c1233,#3b2468)"]];
-function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat var(--chatbg)";const p=BGS.find(x=>x[0]===b.id);return p?p[1]:"var(--chatbg)"}
+/* پالت رنگ پس زمینه | Background Color Palette: رنگ های برگرفته از تم ها (روشن و تیره) برای انتخاب سریع؛ دایره ی رنگین کمانی برای انتخاب رنگ دلخواه */
+const BGPAL=["#fdf1c5","#fecdd3","#fdeadb","#fbc99a","#d6edfe","#d3f4d7","#e6dafe","#fde4ef","#ffffff","#e5e5ea","#1a0709","#03111f","#06150b","#0e0720","#1a0a04","#16050e","#2c2c2e","#000000"];
+/* پس زمینه ی تم | Theme Background: تنها پس زمینه ی آماده؛ از رنگ های تم فعلی ساخته می شود (تم لینک = الگوی لوگو، بقیه = نقطه های ریز و شیب رنگی) و با عوض شدن تم خودکار عوض می شود */
+function bgThemeCss(){const c=document.documentElement.classList;if(c.contains("link")||c.contains("linkdark"))return "var(--lkpat) 0 0/312px 312px var(--chatbg)";return "radial-gradient(var(--dotc) 1.4px,transparent 1.5px) 0 0/20px 20px,linear-gradient(165deg,var(--chatbg),var(--card2))"}
+function bgCss(){const b=CFG.bg;if(b.t==="photo"&&b.photo)return "url("+b.photo+") center/cover no-repeat var(--chatbg)";if(b.t==="color"&&b.color)return b.color;return bgThemeCss()}
 function applyBg(){$("#chat").style.background=bgCss()}
-function renderBgs(){const ph=CFG.bg.t==="photo"&&CFG.bg.photo;
- $("#bgRow").innerHTML=(ph?`<div class="bgs on" data-bg="photo" style="background:url(${CFG.bg.photo}) center/cover"></div>`:"")+BGS.map(p=>`<div class="bgs${!ph&&(CFG.bg.id||"none")===p[0]?" on":""}" data-bg="${p[0]}" style="background:${p[1]}"></div>`).join("");
- $$("[data-bg]").forEach(e=>e.onclick=()=>{if(e.dataset.bg==="photo")return;CFG.bg={t:"preset",id:e.dataset.bg};saveCfg();applyBg();renderBgs()})}
-$("#bgPick").onclick=()=>pickPhoto(d=>{CFG.bg={t:"photo",photo:d};saveCfg();applyBg();renderBgs()},true);
+function renderBgs(){if(CFG.bg.t==="photo"&&CFG.bg.photo&&!CFG.bgPhoto)CFG.bgPhoto=CFG.bg.photo;if(CFG.bg.t==="color"&&CFG.bg.color&&!CFG.bgColor)CFG.bgColor=CFG.bg.color;
+ const t=CFG.bg.t,gp=CFG.bgPhoto,gc=CFG.bgColor,isTh=t!=="photo"&&t!=="color";
+ $("#bgRow").innerHTML=(gp?`<div class="bgs${t==="photo"?" on":""}" data-bg="photo" style="background:url(${gp}) center/cover"></div>`:"")+`<div class="bgs${isTh?" on":""}" data-bg="theme" style="background:${bgThemeCss()}"></div>`+(gc?`<div class="bgs${t==="color"?" on":""}" data-bg="color" style="background:${gc}"></div>`:"");
+ $("#bgPal").innerHTML=BGPAL.map(c=>`<div class="bgw${t==="color"&&CFG.bg.color===c?" on":""}" data-bc="${c}" style="background:${c}"></div>`).join("")+`<label class="bgw" style="background:conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"><input type="color" id="bgCol" value="${gc||"#ffffff"}"></label>`;
+ $$("[data-bg]").forEach(e=>e.onclick=()=>{const k=e.dataset.bg;if(k==="photo"){if(!CFG.bgPhoto)return;CFG.bg={t:"photo",photo:CFG.bgPhoto}}else if(k==="color"){if(!CFG.bgColor)return;CFG.bg={t:"color",color:CFG.bgColor}}else CFG.bg={t:"preset",id:"theme"};saveCfg();applyBg();renderBgs()});
+ $$("[data-bc]").forEach(e=>e.onclick=()=>setBgColor(e.dataset.bc));
+ $("#bgCol").oninput=e=>{$("#chat").style.background=e.target.value};$("#bgCol").onchange=e=>setBgColor(e.target.value)}
+/* رنگ دلخواه | Custom Color: رنگ انتخاب شده را به عنوان پس زمینه ی چت ذخیره و اعمال می کند */
+function setBgColor(c){CFG.bg={t:"color",color:c};CFG.bgColor=c;saveCfg();applyBg();renderBgs()}
+$("#bgPick").onclick=()=>pickPhoto(d=>{CFG.bg={t:"photo",photo:d};CFG.bgPhoto=d;saveCfg();applyBg();renderBgs()},true);
 /* تغییر رمز | Change Password: رمز فعلی را چک می‌کند و رمز جدید را (فقط داخل برنامه) جایگزین می‌کند */
 $("#cpOk").onclick=()=>{const u=S.user;if(!u)return;const o=$("#cp_old").value,n=$("#cp_new").value,r=$("#cp_rep").value;
  if(o!==u.pass){toast(tr("Current password is wrong"));return}
@@ -2224,7 +2298,7 @@ $$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelec
 $$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
 $("#nightRow").onclick=()=>{CFG.night=!CFG.night;thAcc();saveCfg();applyTheme();renderVals()};
 /* لوگوی تم لینک | Link Theme Logo: لوگوی کنار تم لینک همان لوگوی صفحه‌ی ورود است (کپی منبع، نه تکرار داده) */
-$$("#appear .tlg").forEach(i=>i.src=$(".lgo").src);
+$$("#appear img.tlg").forEach(i=>i.src=$(".lgo").src);
 $$("[data-th]").forEach(e=>e.onclick=()=>{CFG.theme=e.dataset.th;thAcc();saveCfg();applyTheme();renderVals()});
 /* مقدارها | Refresh Values */
 function renderVals(){
