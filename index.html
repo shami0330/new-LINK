@@ -204,7 +204,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #chat>.top,#chat>.pinbar{position:relative;z-index:6}
 #chat .msgs{margin-top:calc(-1 * var(--hh,0px));padding-top:calc(var(--hh,0px) + 6px)}
 /* چسبیدن تاریخ | Sticky Date Offset: برچسب تاریخ زیر هدر می‌چسبد نه پشت آن (date label sticks below the header) */
-#chat .dsep{top:calc(var(--hh,0px) + 4px)}
+#chat .dsep{top:-4px}
 /* ===== پروفایل مخاطب | Contact Profile Styles ===== */
 /* صفحه پروفایل | Profile Page: از راست وارد می‌شود (slides in from the right, 0.3s) */
 #cp{position:absolute;inset:0;background:var(--bg);z-index:70;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -2111,7 +2111,8 @@ function mpvClose(){mpvStop();MPV.tok++;$("#mpe").classList.remove("on");$("#mpa
 function mpvDur(i){const f=MPV.f[i],s=$("#mpTr").children[i],v=s&&s.querySelector("video");if(isFinite(f.__d)&&f.__d>0)return f.__d;if(v&&isFinite(v.duration)&&v.duration>0){f.__d=v.duration;return f.__d}return 0}
 /* دستگیره‌ی برش | Trim Handle: کشیدن دستگیره‌ی چپ یا راست شروع یا پایان ویدیو را عوض می‌کند (حداقل یک ثانیه)؛ اگر مدت ویدیو معلوم نباشد هیچ‌چیز را تغییر نمی‌دهد تا نوار جمع نشود (does nothing if the length is unknown, so the bar can't collapse) */
 function mpvScrub(tl){let on=0;const seek=e=>{const i=MPV.i,d=mpvDur(i),r=tl.getBoundingClientRect(),v=mpvV();if(!d||!r.width||!v)return;const o=MPV.rec[i].trim||{start:0,end:d},t=Math.max(o.start,Math.min(mClamp((e.clientX-r.left)/r.width,0,1)*d,o.end-.1));v.currentTime=t;$("#mpPh").style.left=(t/d*100)+"%"};
-tl.addEventListener("pointerdown",e=>{e.stopPropagation();on=1;tl.setPointerCapture(e.pointerId);mpvStop();seek(e)});tl.addEventListener("pointermove",e=>{if(on)seek(e)});tl.addEventListener("pointerup",()=>{if(!on)return;on=0;mpvPlay()});tl.addEventListener("pointercancel",()=>{on=0})}
+tl.addEventListener("pointerdown",e=>{e.stopPropagation();on=1;tl.setPointerCapture(e.pointerId);mpvStop();seek(e)});tl.addEventListener("pointermove",e=>{if(on)seek(e)});/* رها کردن نشانگر | Release Playhead: بعد از کلیک یا کشیدن روی نوار، پخش شروع نمی‌شود؛ ویدیو همان‌جا می‌ماند تا کاربر دکمه‌ی پخش را بزند (clicking or dragging the bar no longer starts playback; it stays put until play is pressed) */
+tl.addEventListener("pointerup",()=>{if(!on)return;on=0});tl.addEventListener("pointercancel",()=>{on=0})}
 function mpvHandle(h,side){const off=()=>{h._d=0};h.addEventListener("pointerdown",e=>{e.stopPropagation();h.setPointerCapture(e.pointerId);h._d=1});
  h.addEventListener("pointermove",e=>{if(!h._d)return;const i=MPV.i,d=mpvDur(i),r=$("#mpTl").getBoundingClientRect();if(!d||!r.width)return;const t=mClamp((e.clientX-r.left)/r.width,0,1)*d,o=MPV.rec[i].trim||{start:0,end:d},m=Math.min(1,d/2);
   if(side==="l")o.start=Math.max(0,Math.min(t,o.end-m));else o.end=Math.min(d,Math.max(t,o.start+m));MPV.rec[i].trim=o;mpvSel(i);mpvStop();const v=mpvV();if(v)v.currentTime=side==="l"?o.start:o.end;$("#mpPh").style.left=((side==="l"?o.start:o.end)/(d||1)*100)+"%"});
@@ -3578,7 +3579,7 @@ applyPin();
 /* تاریخ چسبان | Sticky Date Fix: فقط تاریخِ بخش فعلی بالای صفحه می‌ماند، تاریخ‌های قبلی پنهان می‌شوند و با رسیدن تاریخ بعدی، تاریخ قبلی مثل LINK به بالا هل داده می‌شود (دیگر روی هم نمی‌افتند) */
 (function(){const M=$("#msgs");let raf=0;
  function fix(){raf=0;const D=[...M.querySelectorAll(".dsep")];if(!D.length)return;
-  /* اصلاح فاصله‌ی داخلی | Padding Fix: تاریخ چسبان به اندازه‌ی فاصله‌ی داخلی بالای پیام‌ها (padding) پایین‌تر از لبه می‌ایستد، پس همان فاصله هم حساب می‌شود */const pt=parseFloat(getComputedStyle(M).paddingTop)||0,st=M.getBoundingClientRect().top+M.clientTop+pt+4,stuck=[],below=[];
+  /* اصلاح فاصله‌ی داخلی | Padding Fix: تاریخ چسبان به اندازه‌ی فاصله‌ی داخلی بالای پیام‌ها (padding) پایین‌تر از لبه می‌ایستد، پس همان فاصله هم حساب می‌شود */const pt=parseFloat(getComputedStyle(M).paddingTop)||0,st=M.getBoundingClientRect().top+M.clientTop+pt+(parseFloat(getComputedStyle(D[0]).top)||0),stuck=[],below=[];
   D.forEach(d=>{d.style.transform="";d.style.visibility="";(d.getBoundingClientRect().top<=st+2?stuck:below).push(d)});
   stuck.slice(0,-1).forEach(d=>d.style.visibility="hidden");
   const cur=stuck[stuck.length-1],nx=below[0];
