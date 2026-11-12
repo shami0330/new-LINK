@@ -2,7 +2,7 @@
    روش کار: اول همه‌چیز از کش مرورگر باز می‌شود (سریع و آفلاین)؛ بررسی آپدیت در پس‌زمینه توسط صفحه انجام می‌شود.
    VERSION: فقط وقتی خود sw.js یا فایل‌های کنار index.html (آیکن‌ها، مانیفست) عوض شدند یکی زیاد کن.
    برای عوض شدن index.html لازم نیست؛ صفحه خودش آپدیت را پیدا می‌کند. */
-const VERSION = 2;
+const VERSION = 3;
 const CACHE = "link-v" + VERSION;
 const SCOPE = self.registration.scope;
 const INDEX = new URL("index.html", SCOPE).href;

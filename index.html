@@ -3006,37 +3006,48 @@ setPw();
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
 (function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null;
 var IDX=function(){return new URL("index.html",location.href).href};
-var st=document.createElement("style");st.textContent="@keyframes updspin{to{transform:rotate(360deg)}}#upd-spin{animation:updspin .8s linear infinite;flex:none}";document.head.appendChild(st);
-async function h(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).join(",")}
-/* آیکون در حال بررسی | Checking Icon: زنجیر پنهان و یک دایره‌ی چرخان جایش می‌آید */
-function spin(on){var ic=document.getElementById("lkConn");if(!ic)return;var sp=document.getElementById("upd-spin");
-if(on){if(sp)return;sp=document.createElementNS("http://www.w3.org/2000/svg","svg");sp.id="upd-spin";sp.setAttribute("viewBox","0 0 24 24");sp.setAttribute("width","18");sp.setAttribute("height","18");sp.setAttribute("fill","none");sp.setAttribute("stroke","currentColor");sp.setAttribute("stroke-width","2.4");sp.setAttribute("stroke-linecap","round");sp.innerHTML='<circle cx="12" cy="12" r="8" stroke-opacity=".25"/><path d="M12 4a8 8 0 018 8"/>';ic.style.display="none";ic.parentNode.insertBefore(sp,ic)}
-else{if(sp)sp.remove();ic.style.display=""}}
+/* تبدیل آیکون | Icon Morph: خود دو خط زنجیر (#lkConn) به یک دایره‌ی چرخان تبدیل می‌شوند (نقطه‌به‌نقطه)؛ هنگام پایان دوباره به زنجیر برمی‌گردند */
+var K={on:0,m:0,rot:0,rot0:0,rotEnd:0,raf:0,last:0,gt:0,done:null,ic:null,pa:null,pb:null,da:"",db:"",A:null,B:null},N=40,R=7.5;
+function ease(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2}
+function samp(p){var L=p.getTotalLength(),o=[];for(var i=0;i<N;i++){var q=p.getPointAtLength(L*i/(N-1));o.push([q.x,q.y])}return o}
+function frame(ts){var dt=Math.min(.05,(ts-K.last)/1000||.016);K.last=ts;K.gt+=dt;
+if(K.on){K.m=Math.min(1,K.m+dt/.5);K.rot+=dt*420}else{K.m=Math.max(0,K.m-dt/.45);K.rot=K.rot0+(K.rotEnd-K.rot0)*ease(1-K.m)}
+var e=ease(K.m),gap=(34+24*Math.sin(K.gt*5))*Math.PI/180,hh=Math.PI/2-gap/2,da=[],db=[];
+for(var i=0;i<N;i++){var u=i/(N-1),t1=Math.PI/4+hh*(1-2*u),t2=-3*Math.PI/4+hh*(1-2*u);
+var xa=K.A[i][0]*(1-e)+(12+R*Math.cos(t1))*e,ya=K.A[i][1]*(1-e)+(12+R*Math.sin(t1))*e;
+var xb=K.B[i][0]*(1-e)+(12+R*Math.cos(t2))*e,yb=K.B[i][1]*(1-e)+(12+R*Math.sin(t2))*e;
+da.push((i?"L":"M")+xa.toFixed(2)+" "+ya.toFixed(2));db.push((i?"L":"M")+xb.toFixed(2)+" "+yb.toFixed(2))}
+K.pa.setAttribute("d",da.join(""));K.pb.setAttribute("d",db.join(""));K.ic.style.transform="rotate("+K.rot+"deg)";
+if(!K.on&&K.m===0){K.pa.setAttribute("d",K.da);K.pb.setAttribute("d",K.db);K.ic.style.transform="";K.raf=0;var f=K.done;K.done=null;if(f)f();return}
+K.raf=requestAnimationFrame(frame)}
+function spin(on){if(on){var ic=document.getElementById("lkConn");if(!ic||K.raf)return Promise.resolve();var a=ic.querySelector(".a"),b=ic.querySelector(".b");if(!a||!b)return Promise.resolve();
+K.ic=ic;K.pa=a;K.pb=b;K.da=a.getAttribute("d");K.db=b.getAttribute("d");K.A=samp(a);K.B=samp(b);K.on=1;K.m=0;K.rot=0;K.gt=0;K.last=performance.now();K.raf=requestAnimationFrame(frame);return Promise.resolve()}
+return new Promise(function(res){if(!K.raf){res();return}K.on=0;K.rot0=K.rot;K.rotEnd=Math.ceil(K.rot/360)*360;K.done=res})}
 /* دایناميک آیلند | Dynamic Island: خود کپسول بالای چت‌ها (با تم برنامه) سر جایش باز می‌شود و بعد دوباره جمع می‌شود */
 function island(kind){var t=document.querySelector("#chats .top .title");if(!t)return;isl=1;
 var r=t.getBoundingClientRect(),old=t.getAttribute("style")||"",ph=document.createElement("div");
 ph.style.cssText="width:"+r.width+"px;height:"+r.height+"px;flex:none";t.parentNode.insertBefore(ph,t);
 var w=document.createElement("div");w.style.display="none";while(t.firstChild)w.appendChild(t.firstChild);t.appendChild(w);
 var E="cubic-bezier(.2,.9,.3,1.12)";
-t.style.cssText=old+";position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;transition:left .5s "+E+",width .5s "+E+",height .5s "+E+",border-radius .5s";
-var c=document.createElement("div");c.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px;opacity:0;transition:opacity .25s .2s;white-space:nowrap;padding:0 8px;font-weight:700;font-size:16px;color:var(--txt)";
-function go(W,H){var L=(innerWidth-W)/2;t.style.left=L+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=(H/2)+"px";c.style.opacity="1"}
-function close(){c.style.transition="opacity .15s";c.style.opacity="0";t.style.left=r.left+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
+t.style.cssText=old+";position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;transition:left .55s "+E+",top .55s "+E+",width .55s "+E+",height .55s "+E+",border-radius .55s";
+var c=document.createElement("div");c.style.cssText="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .25s .2s;white-space:nowrap;padding:0 8px;font-weight:700;font-size:16px;color:var(--txt)";
+function go(W,H,dy){var L=(innerWidth-W)/2;t.style.left=L+"px";t.style.top=(r.top+dy)+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,32)+"px";c.style.opacity="1"}
+function close(){c.style.transition="opacity .15s";c.style.opacity="0";t.style.left=r.left+"px";t.style.top=r.top+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
 setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},540)}
 if(kind==="found"){var m=document.createElement("div");m.textContent="آپدیت پیدا شد";
 var u=document.createElement("div");u.textContent="آپدیت لینک";u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
 u.onclick=async function(){u.textContent="در حال آپدیت...";u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
-x.onclick=close;c.append(m,u,x);t.appendChild(c);
-requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(innerWidth*.94,350),Math.max(r.height,52))})})}
+x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
+requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(innerWidth*.9,320),104,6)})})}
 else{c.textContent=kind==="none"?"آپدیتی پیدا نشد":"بررسی انجام نشد";t.appendChild(c);
-requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height)})});setTimeout(close,1300)}}
+requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,200),r.height+16,6)})});setTimeout(close,1300)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
 var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
 var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
-if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v2")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
+if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v3")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
 if(await h(net)!==oldH){fresh=net;res="found"}
-}catch(e){res="err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,700)});spin(false);island(res)}}
+}catch(e){res="err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}
