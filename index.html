@@ -3468,6 +3468,114 @@ function setPw(){$("#pw").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEy
 $("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
+/* ===== ویس مثل تلگرام | Telegram-style Voice Message: نگه‌دار = ضبط، کشیدن به کنار = لغو، کشیدن به بالا = قفل، رها کردن = ارسال (hold to record, slide aside to cancel, slide up to lock, release to send). ضبط با Opus مونو ۴۸ کیلوهرتز ۳۲ کیلوبیت (همان mediaRecord) */
+(function(){
+const chat=$("#chat"),snd=$("#send");
+Object.assign(FA,{"Slide to cancel":"برای لغو بکشید","Hold to record voice message":"برای ضبط ویس نگه دارید","Microphone access denied":"دسترسی به میکروفن رد شد","Voice message":"پیام صوتی","Cannot play this audio":"پخش این صدا ممکن نیست"});
+const css=document.createElement("style");css.textContent=`
+#send{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#send.vbig{transform:scale(1.9);position:relative;z-index:9;box-shadow:0 0 0 7px rgba(47,143,255,.2)}
+#send.vlk{transform:scale(1.25);position:relative;z-index:9}
+#vrec{position:absolute;display:none;align-items:center;gap:10px;box-sizing:border-box;padding:0 60px 0 14px;background:var(--card);border-radius:20px;z-index:8;direction:ltr;color:var(--txt);font-size:16px;font-variant-numeric:tabular-nums}
+#vrec.on{display:flex}
+#vrec.rv{flex-direction:row-reverse;padding:0 14px 0 60px}
+#vrec .vdot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;animation:vblink 1s infinite}
+@keyframes vblink{50%{opacity:.25}}
+#vrec .vt{min-width:64px}
+#vrec .vsl{flex:1;text-align:center;color:var(--sub);white-space:nowrap;transition:opacity .1s}
+#vrec .vcn{flex:1;text-align:center;color:var(--blue);font-weight:600}
+#vrec .vtr{width:40px;height:40px;margin-left:-14px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--red);flex:none}
+#vrec .vpl{flex:1;min-width:0;height:34px;border-radius:17px;background:var(--blue);display:flex;align-items:center;gap:8px;padding:0 12px 0 3px;color:#fff}
+#vrec .vpp{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;flex:none}
+#vrec .vpl .vwf{flex:1}
+#vrec .vpl .vd{font-size:13px}
+#vlock{position:absolute;display:none;width:40px;height:78px;box-sizing:border-box;border-radius:20px;background:var(--card);flex-direction:column;align-items:center;justify-content:space-around;padding:8px 0;z-index:8;color:var(--txt);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+#vlock.on{display:flex}
+#vlock.st{height:40px;border-radius:50%;padding:0;justify-content:center}
+.lkvo{display:flex;align-items:center;gap:10px;min-width:200px;padding:2px 0}
+.lkvo .vpb{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--bubOut);display:flex;align-items:center;justify-content:center;flex:none}
+.b.ot .lkvo .vpb{background:var(--blue);color:#fff}
+.lkvo .vcol{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.vwf{display:flex;align-items:center;gap:2px;height:26px}
+.vwf i{width:2px;border-radius:1px;background:currentColor;opacity:.4;flex:none}
+.vwf i.on{opacity:1}
+.lkvo .vdu{font-size:12px;opacity:.75}
+.b.mm:has(.lkvo){padding:7px 11px 3px}
+.b.mm:has(.lkvo) small{padding:0}`;
+document.head.append(css);
+const ov=document.createElement("div");ov.id="vrec";chat.append(ov);
+const lk=document.createElement("div");lk.id="vlock";chat.append(lk);
+snd.addEventListener("contextmenu",e=>e.preventDefault());
+let R=null,cur=null;
+const fT=s=>{const m=Math.floor(s/60),x=Math.floor(s%60),c=Math.floor((s%1)*100);return m+":"+String(x).padStart(2,"0")+","+String(c).padStart(2,"0")};
+const fd=s=>{s=Math.round(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+const chev='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+function bars(wf,n){if(!wf.length)return Array(n).fill(14);const mx=Math.max(.02,...wf),o=[];for(let i=0;i<n;i++){const a=Math.floor(i*wf.length/n),b=Math.max(a+1,Math.floor((i+1)*wf.length/n));let m=0;for(let j=a;j<b;j++)m=Math.max(m,wf[j]||0);o.push(Math.round(12+88*Math.min(1,m/mx)))}return o}
+const barsH=a=>a.map(h=>'<i style="height:'+Math.max(12,h)*.26+'px"></i>').join("");
+/* حباب ویس | Voice Bubble */
+const _body=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="voice"){const x=o.it[0];return '<div class="lkvo" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vpb">'+ic("play",18)+'</div><div class="vcol"><div class="vwf">'+barsH(x.wf||[])+'</div><span class="vdu">'+fd(x.d)+'</span></div></div>'}return _body(o)};
+const _plain=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="voice")return "🎤 "+tr("Voice message")+" "+fd(o.it[0].d);return _plain(t)};
+const setPB=(vo,p)=>{const b=vo.querySelector(".vpb");if(b)b.innerHTML=ic(p?"pause":"play",18)};
+function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}}
+async function playVo(vo){const id=vo.dataset.vid;if(cur&&cur.vo===vo){if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}return}
+ stopCur();let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
+ if(!b){toast("File removed from cache");return}
+ const a=new Audio(URL.createObjectURL(b)),bs=vo.querySelectorAll(".vwf i"),du=vo.querySelector(".vdu"),D=+vo.dataset.d;cur={a,vo};
+ a.ontimeupdate=()=>{const f=a.currentTime/((isFinite(a.duration)&&a.duration)||D||1);bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));du.textContent=fd(a.currentTime)};
+ a.onended=stopCur;
+ try{await a.play();setPB(vo,true)}catch(e){toast("Cannot play this audio");stopCur()}}
+$("#msgs").addEventListener("click",e=>{const p=e.target.closest(".lkvo .vpb");if(!p)return;e.stopPropagation();e.preventDefault();playVo(p.closest(".lkvo"))},true);
+/* ارسال | Send Voice */
+async function sendVoice(res,wf){
+ if(!res||!res.blob||res.duration<.5){toast("Hold to record voice message");return}
+ const c=CHATS.find(x=>x.id===S.openId);if(!c)return;
+ const id=lkId();LKB[id]=res.blob;try{await Promise.race([lkPut(id,{blob:res.blob}),new Promise(ok=>setTimeout(ok,5000))])}catch(e){}
+ const it={id,t:"voice",n:res.name,s:res.size,d:Math.round(res.duration*10)/10,wf:bars(wf,32)};
+ CFG.media=CFG.media||{};(CFG.media[c.id]=CFG.media[c.id]||[]).push({id,type:"voice",name:res.name,size:res.size});
+ const text=lkEnc({k:"voice",it:[it]}),now=lkNow();
+ (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);
+ c.m=lkMsgPlain(text);c.tm=now;bumpChat(c);saveCfg();
+ addMsg("me",text,now,0,S.reply);if(typeof clearReply==="function")clearReply();try{renderChats()}catch(e){}}
+/* رابط | UI */
+function pos(){const cr=chat.getBoundingClientRect(),sr=snd.getBoundingClientRect();R.right=sr.left>cr.width/2;ov.style.left="7px";ov.style.right="7px";ov.style.bottom=(cr.bottom-sr.bottom)+"px";ov.style.height=sr.height+"px";lk.style.left=(sr.left-cr.left)+"px";lk.style.bottom=(cr.bottom-sr.top+24)+"px";lk.style.transform=""}
+function cleanup(o){clearInterval(o.iv);try{o.an&&MPERM.src&&MPERM.src.disconnect(o.an)}catch(e){}if(o.pa){try{o.pa.pause();URL.revokeObjectURL(o.pa.src)}catch(e){}}ov.className="";ov.innerHTML="";lk.className="";lk.innerHTML="";lk.style.transform="";snd.classList.remove("vbig","vlk");updSend();if(R===o)R=null}
+async function discard(o){if(o.done)return;o.done=1;try{if(!o.res)await o.rec.cancel()}catch(e){}cleanup(o);try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}}
+async function finish(o){if(o.done)return;o.done=1;let res=o.res;try{if(!res)res=await o.rec.stop()}catch(e){}const wf=o.wf;cleanup(o);await sendVoice(res,wf)}
+function showRec(o){o.shown=true;pos();ov.innerHTML='<i class="vdot"></i><span class="vt">0:00,00</span><span class="vsl">‹ '+tr("Slide to cancel")+'</span>';ov.className="on"+(R.right?"":" rv");if(!R.right)ov.querySelector(".vsl").textContent=tr("Slide to cancel")+" ›";snd.classList.add("vbig");lk.innerHTML=ic("lock",18)+chev;lk.className="on";S.sendHold=true}
+function lockRec(o){o.locked=true;ov.querySelector(".vsl").outerHTML='<span class="vcn">'+tr("Cancel")+'</span>';snd.classList.remove("vbig");snd.classList.add("vlk");snd.innerHTML=ic("send",20);lk.className="on st";lk.style.transform="";lk.innerHTML=ic("pause",16);try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
+async function toPreview(o){if(o.prev)return;o.prev=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}if(!res||res.duration<.5){o.done=1;cleanup(o);toast("Hold to record voice message");return}
+ o.res=res;lk.className="";const b=bars(o.wf,28);
+ ov.innerHTML='<div class="vtr">'+ic("trash",20)+'</div><div class="vpl"><div class="vpp">'+ic("play",14)+'</div><div class="vwf">'+barsH(b)+'</div><span class="vd">'+fd(res.duration)+'</span></div>';
+ snd.classList.remove("vlk");snd.innerHTML=ic("send",20)}
+ov.addEventListener("click",e=>{const o=R;if(!o)return;if(e.target.closest(".vcn"))discard(o);else if(e.target.closest(".vtr"))discard(o);else if(e.target.closest(".vpp")&&o.res){const p=e.target.closest(".vpp"),bs=ov.querySelectorAll(".vwf i"),dd=ov.querySelector(".vd");
+ if(!o.pa){o.pa=new Audio(URL.createObjectURL(o.res.blob));o.pa.ontimeupdate=()=>{const f=o.pa.currentTime/((isFinite(o.pa.duration)&&o.pa.duration)||o.res.duration||1);bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));dd.textContent=fd(o.pa.currentTime)};o.pa.onended=()=>{p.innerHTML=ic("play",14);bs.forEach(x=>x.classList.remove("on"));dd.textContent=fd(o.res.duration)}}
+ if(o.pa.paused){o.pa.play().then(()=>{p.innerHTML=ic("pause",14)}).catch(()=>toast("Cannot play this audio"))}else{o.pa.pause();p.innerHTML=ic("play",14)}}});
+lk.addEventListener("click",e=>{const o=R;if(o&&o.locked&&!o.prev)toPreview(o)});
+snd.addEventListener("click",e=>{const o=R;if(!o||!o.locked||S.sendHold)return;e.stopImmediatePropagation();e.preventDefault();finish(o)},true);
+snd.addEventListener("pointerdown",async e=>{
+ if(R||$("#mi").value.trim()||(window.lkEdMed&&window.lkEdMed())||S.rec!=="voice")return;
+ if(e.pointerType==="mouse"&&e.button!==0)return;
+ const o=R={sx:e.clientX,sy:e.clientY,pid:e.pointerId,t0:Date.now(),wf:[],up:0};
+ try{snd.setPointerCapture(e.pointerId)}catch(_){}
+ let rec;try{rec=await mediaRecord("voice")}catch(err){if(R===o)R=null;toast("Microphone access denied");return}
+ o.rec=rec;
+ if(o.up){/* قبل از آماده شدن رها شد | released before ready */if(Date.now()-o.t0<300||!o.shown){o.done=1;try{await rec.cancel()}catch(_){}if(R===o)R=null;return}}
+ const go=()=>{if(o.done||o.shown)return;showRec(o);
+  try{o.an=MPERM.ctx.createAnalyser();o.an.fftSize=512;MPERM.src.connect(o.an)}catch(_){}
+  const buf=o.an?new Uint8Array(o.an.fftSize):null,vt=ov.querySelector(".vt"),sl=ov.querySelector(".vsl");o.sl=sl;
+  o.iv=setInterval(()=>{if(buf){o.an.getByteTimeDomainData(buf);let s=0;for(const v of buf){const x=(v-128)/128;s+=x*x}o.wf.push(Math.sqrt(s/buf.length))}else o.wf.push(Math.random()*.3);const t=vt&&ov.querySelector(".vt");if(t)t.textContent=fT(rec.seconds)},50)};
+ const w=Math.max(0,220-(Date.now()-o.t0));setTimeout(()=>{if(!o.up&&!o.done)go();else if(o.up&&!o.done&&Date.now()-o.t0>=220){}},w);
+});
+snd.addEventListener("pointermove",e=>{const o=R;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?-1:1,sd=Math.max(0,-dx*sg);
+ if(o.sl){o.sl.style.transform="translateX("+(dx*sg<0?dx:0)+"px)";o.sl.style.opacity=Math.max(0,1-sd/110)}
+ lk.style.transform="translateY("+Math.min(0,dy)+"px)";
+ if(sd>110)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
+const up=e=>{const o=R;if(!o||e.pointerId!==o.pid)return;if(o.locked){o.pid=-1;S.sendHold=true;setTimeout(()=>S.sendHold=false,400);return}
+ o.up=Date.now();if(!o.rec)return;if(!o.shown){o.done=1;o.rec.cancel().catch(()=>{});cleanup(o);return}
+ S.sendHold=true;setTimeout(()=>S.sendHold=false,400);if(e.type==="pointercancel")discard(o);else finish(o)};
+snd.addEventListener("pointerup",up);snd.addEventListener("pointercancel",up);
+setTimeout(()=>{try{mediaWarm("voice")}catch(e){}},3000);
+})();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
