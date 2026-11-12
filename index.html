@@ -1329,7 +1329,7 @@ const MP={
  videoChat:{kind:"video",heights:[240,360,480,720,1080],bitrates:{240:4e5,360:7e5,480:12e5,720:25e5,1080:5e6}},
  videoFile:{kind:"video",original:true,vbr:8e6},
  videoMsg:{kind:"video",w:300,h:300,ratio:1,maxSec:60,vbr:8e5,abr:64e3},
- voice:{kind:"audio",abr:32e3},
+ voice:{kind:"audio",abr:64e3},
  audioFile:{kind:"audio",original:true,abr:64e3},
  file:{kind:"file",original:true}
 };
@@ -1524,12 +1524,12 @@ function mediaRun(file,recipe,pn,opt){const job=mQ.then(()=>mRun(file,recipe,pn,
 /* ضبط ویس | Voice Record: با رمزگذار Opus مستقیم فایل OGG تک‌کاناله و ۴۸ کیلوهرتز می‌سازد؛ اجازه‌ی میکروفن فقط یک‌بار گرفته می‌شود */
 async function mRecVoice(P){
  mLib("recorder");
- const st=await mediaStream("mic",{audio:{channelCount:1,sampleRate:48000,echoCancellation:true,noiseSuppression:true}});
+ const st=await mediaStream("mic",{audio:{channelCount:1,sampleRate:48000,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
  MPERM.busy.mic=(MPERM.busy.mic||0)+1;
  if(!MPERM.ctx||MPERM.ctx.state==="closed")MPERM.ctx=mAC(48000);
  await MPERM.ctx.resume().catch(()=>{});
  if(!MPERM.src||MPERM.srcStream!==st){MPERM.src=MPERM.ctx.createMediaStreamSource(st);MPERM.srcStream=st}
- const rc=new Recorder({encoderPath:mLibBlob("encoder"),encoderSampleRate:48000,numberOfChannels:1,encoderApplication:2048,encoderBitRate:P.abr||32e3,streamPages:false,sourceNode:MPERM.src});
+ const rc=new Recorder({encoderPath:mLibBlob("encoder"),encoderSampleRate:48000,numberOfChannels:1,encoderApplication:2049,encoderBitRate:P.abr||32e3,streamPages:false,sourceNode:MPERM.src});
  let data=null,cancelled=false;const t0=Date.now();
  rc.ondataavailable=u=>{data=u};
  const result=new Promise(ok=>{rc.onstop=()=>{const dur=(Date.now()-t0)/1000;try{rc.close()}catch(e){}MPERM.busy.mic--;mediaIdle("mic");ok(cancelled||!data?null:mResult(new Blob([data],{type:"audio/ogg"}),"voice-"+t0,"audio/ogg",0,0,dur))}});
@@ -3540,23 +3540,30 @@ async function sendVoice(res,wf){
 function pos(){const cr=chat.getBoundingClientRect(),sr=snd.getBoundingClientRect();R.right=sr.left>cr.width/2;ov.style.left="7px";ov.style.right="7px";ov.style.bottom=(cr.bottom-sr.bottom)+"px";ov.style.height=sr.height+"px";lk.style.left=(sr.left-cr.left)+"px";lk.style.bottom=(cr.bottom-sr.top+24)+"px";lk.style.transform=""}
 function cleanup(o){clearInterval(o.iv);try{o.an&&MPERM.src&&MPERM.src.disconnect(o.an)}catch(e){}if(o.pa){try{o.pa.pause();URL.revokeObjectURL(o.pa.src)}catch(e){}}ov.className="";ov.innerHTML="";lk.className="";lk.innerHTML="";lk.style.transform="";snd.classList.remove("vbig","vlk");updSend();if(R===o)R=null}
 async function discard(o){if(o.done)return;o.done=1;try{if(!o.res)await o.rec.cancel()}catch(e){}cleanup(o);try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}}
-async function finish(o){if(o.done)return;o.done=1;let res=o.res;try{if(!res)res=await o.rec.stop()}catch(e){}const wf=o.wf;cleanup(o);await sendVoice(res,wf)}
+async function finish(o){if(o.done)return;o.done=1;let res=o.res;try{if(!res)res=await o.rec.stop()}catch(e){}let wf=o.wf;const T=o.trm;cleanup(o);if(res&&T&&(T.s>.01||T.e<.99)){const d=res.duration;try{const r2=await mediaRun(res.file,{trim:{start:T.s*d,end:T.e*d}},"voice");if(r2&&!r2.failed){if(!r2.duration)r2.duration=(T.e-T.s)*d;res=r2;wf=wf.slice(Math.floor(T.s*wf.length),Math.max(Math.floor(T.s*wf.length)+1,Math.ceil(T.e*wf.length)))}}catch(e){}}await sendVoice(res,wf)}
 function showRec(o){o.shown=true;pos();ov.innerHTML='<i class="vdot"></i><span class="vt">0:00,00</span><span class="vsl">‹ '+tr("Slide to cancel")+'</span>';ov.className="on"+(R.right?"":" rv");if(!R.right)ov.querySelector(".vsl").textContent=tr("Slide to cancel")+" ›";snd.classList.add("vbig");lk.innerHTML=ic("lock",18)+chev;lk.className="on";S.sendHold=true}
 function lockRec(o){o.locked=true;ov.querySelector(".vsl").outerHTML='<span class="vcn">'+tr("Cancel")+'</span>';snd.classList.remove("vbig");snd.classList.add("vlk");snd.innerHTML=ic("send",20);lk.className="on st";lk.style.transform="";lk.innerHTML=ic("pause",16);try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
 async function toPreview(o){if(o.prev)return;o.prev=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}if(!res||res.duration<.5){o.done=1;cleanup(o);toast("Hold to record voice message");return}
- o.res=res;lk.className="";const b=bars(o.wf,28);
- ov.innerHTML='<div class="vtr">'+ic("trash",20)+'</div><div class="vpl"><div class="vpp">'+ic("play",14)+'</div><div class="vwf">'+barsH(b)+'</div><span class="vd">'+fd(res.duration)+'</span></div>';
- snd.classList.remove("vlk");snd.innerHTML=ic("send",20)}
+ o.res=res;o.trm={s:0,e:1};lk.className="";const b=bars(o.wf,28);
+ ov.innerHTML='<div class="vtr">'+ic("trash",20)+'</div><div class="vpl"><div class="vpp">'+ic("play",14)+'</div><div class="vwf vtw">'+barsH(b)+'<b class="vth l"></b><b class="vth r"></b></div><span class="vd">'+fd(res.duration)+'</span></div>';
+ snd.classList.remove("vlk");snd.innerHTML=ic("send",20);vtrimInit(o)}
+/* برش ویس | Voice Trim: دو دستگیره روی موج صدا؛ اجرای برش هنگام ارسال */
+(function(){const s=document.createElement("style");s.textContent=".vtw{position:relative;touch-action:none}.vth{position:absolute;top:-4px;bottom:-4px;width:12px;margin-left:-6px;cursor:ew-resize;touch-action:none}.vth:after{content:'';position:absolute;left:4px;right:4px;top:0;bottom:0;border-radius:3px;background:#fff}.vwf i.vout{opacity:.12!important}";document.head.appendChild(s)})();
+function vtrimInit(o){const w=ov.querySelector(".vtw");if(!w)return;const L=w.querySelector(".vth.l"),Rh=w.querySelector(".vth.r"),bs=[...w.querySelectorAll("i")];
+ const draw=()=>{const t=o.trm;L.style.left=t.s*100+"%";Rh.style.left=t.e*100+"%";bs.forEach((x,i)=>x.classList.toggle("vout",(i+.5)/bs.length<t.s||(i+.5)/bs.length>t.e));const d=ov.querySelector(".vd");if(d)d.textContent=fd((t.e-t.s)*o.res.duration)};draw();
+ [[L,"s"],[Rh,"e"]].forEach(([h,k])=>{h.addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();h.setPointerCapture(e.pointerId);h._d=1});
+  h.addEventListener("pointermove",e=>{if(!h._d)return;const r=w.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),g=Math.min(.5,.6/Math.max(1,o.res.duration));if(k==="s")o.trm.s=Math.min(f,o.trm.e-g);else o.trm.e=Math.max(f,o.trm.s+g);if(o.pa){try{o.pa.pause()}catch(_){}}draw()});
+  const up2=()=>{h._d=0};h.addEventListener("pointerup",up2);h.addEventListener("pointercancel",up2)})}
 ov.addEventListener("click",e=>{const o=R;if(!o)return;if(e.target.closest(".vcn"))discard(o);else if(e.target.closest(".vtr"))discard(o);else if(e.target.closest(".vpp")&&o.res){const p=e.target.closest(".vpp"),bs=ov.querySelectorAll(".vwf i"),dd=ov.querySelector(".vd");
- if(!o.pa){o.pa=new Audio(URL.createObjectURL(o.res.blob));o.pa.ontimeupdate=()=>{const f=o.pa.currentTime/((isFinite(o.pa.duration)&&o.pa.duration)||o.res.duration||1);bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));dd.textContent=fd(o.pa.currentTime)};o.pa.onended=()=>{p.innerHTML=ic("play",14);bs.forEach(x=>x.classList.remove("on"));dd.textContent=fd(o.res.duration)}}
- if(o.pa.paused){o.pa.play().then(()=>{p.innerHTML=ic("pause",14)}).catch(()=>toast("Cannot play this audio"))}else{o.pa.pause();p.innerHTML=ic("play",14)}}});
+ if(!o.pa){o.pa=new Audio(URL.createObjectURL(o.res.blob));o.pa.ontimeupdate=()=>{const D0=o.res.duration,T=o.trm;if(T&&o.pa.currentTime>=T.e*D0-.03&&!o.pa.paused){o.pa.pause();o.pa.currentTime=T.s*D0;p.innerHTML=ic("play",14)}const f=o.pa.currentTime/((isFinite(o.pa.duration)&&o.pa.duration)||o.res.duration||1);bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));dd.textContent=fd(o.pa.currentTime)};o.pa.onended=()=>{p.innerHTML=ic("play",14);bs.forEach(x=>x.classList.remove("on"));dd.textContent=fd(o.res.duration)}}
+ if(o.pa.paused){if(o.trm){const D0=o.res.duration;if(o.pa.currentTime<o.trm.s*D0||o.pa.currentTime>=o.trm.e*D0-.05)o.pa.currentTime=o.trm.s*D0}o.pa.play().then(()=>{p.innerHTML=ic("pause",14)}).catch(()=>toast("Cannot play this audio"))}else{o.pa.pause();p.innerHTML=ic("play",14)}}});
 lk.addEventListener("click",e=>{const o=R;if(o&&o.locked&&!o.prev)toPreview(o)});
 snd.addEventListener("click",e=>{const o=R;if(!o||!o.locked||S.sendHold)return;e.stopImmediatePropagation();e.preventDefault();finish(o)},true);
 snd.addEventListener("pointerdown",async e=>{
  if(R||$("#mi").value.trim()||(window.lkEdMed&&window.lkEdMed())||S.rec!=="voice")return;
  if(e.pointerType==="mouse"&&e.button!==0)return;
  const o=R={sx:e.clientX,sy:e.clientY,pid:e.pointerId,t0:Date.now(),wf:[],up:0};
- try{snd.setPointerCapture(e.pointerId)}catch(_){}
+ snd.style.touchAction="none";try{snd.setPointerCapture(e.pointerId)}catch(_){}
  let rec;try{rec=await mediaRecord("voice")}catch(err){if(R===o)R=null;toast("Microphone access denied");return}
  o.rec=rec;
  if(o.up){/* قبل از آماده شدن رها شد | released before ready */if(Date.now()-o.t0<300||!o.shown){o.done=1;try{await rec.cancel()}catch(_){}if(R===o)R=null;return}}
@@ -3569,7 +3576,7 @@ snd.addEventListener("pointerdown",async e=>{
 snd.addEventListener("pointermove",e=>{const o=R;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?-1:1,sd=Math.max(0,-dx*sg);
  if(o.sl){o.sl.style.transform="translateX("+(dx*sg<0?dx:0)+"px)";o.sl.style.opacity=Math.max(0,1-sd/110)}
  lk.style.transform="translateY("+Math.min(0,dy)+"px)";
- if(sd>110)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
+ if(sd>90)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
 const up=e=>{const o=R;if(!o||e.pointerId!==o.pid)return;if(o.locked){o.pid=-1;S.sendHold=true;setTimeout(()=>S.sendHold=false,400);return}
  o.up=Date.now();if(!o.rec)return;if(!o.shown){o.done=1;o.rec.cancel().catch(()=>{});cleanup(o);return}
  S.sendHold=true;setTimeout(()=>S.sendHold=false,400);if(e.type==="pointercancel")discard(o);else finish(o)};
