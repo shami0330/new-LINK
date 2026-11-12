@@ -732,7 +732,9 @@ html.light #login .pf{color:#000}
 #peek .pkh{background:var(--menu);text-align:center;padding:8px 0;flex:none}
 #peek .pkh b{display:block;font-size:16px}
 #peek .pkh small{color:var(--sub);font-size:12px}
-#peekMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#peekMsgs{flex:1;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;padding:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* نسخه دقیق گفتگو | Peek Exact Copy: پیام‌ها با همان عرض گفتگوی اصلی چیده می‌شوند و کل آن کوچک می‌شود (zoom)، پس چیدمان و عکس‌ها دقیقاً مثل گفتگو هستند و چیزی به چپ و راست نمی‌رود */
+#peekIn{display:flex;flex-direction:column;gap:6px;padding:10px 12px;box-sizing:border-box}
 /* تم روشن | Light Theme */
 html.light{--bg:#f2f2f7;--card:#fff;--card2:#e5e5ea;--line:#d1d1d6;--txt:#000;--sub:#6d6d72;--bubIn:#fff;--bubOut:#b9d2ff;--chatbg:#e4e9ef;--dotc:rgba(0,0,0,.07);--dotc2:rgba(0,0,0,.04);--dotc3:rgba(0,0,0,.05);--menu:rgba(255,255,255,.96);--pin:#e9e9ee;--sec:#e9e9ee;--chip:#d1d1d6;--dsep:rgba(255,255,255,.85);--smalltx:rgba(0,0,0,.45);--prev:#929297;--snd:#1c1c1e;color-scheme:light}
 /* آیکون عکس پروفایل در روز | Profile Photo Icon (Day): کاشی آبی روشن به‌جای سرمه‌ای تیره (light blue tile instead of dark navy) */
@@ -1333,7 +1335,7 @@ else if(P.heights){const q=(opt.height>=240&&opt.height<=1080)?opt.height:720;/*
 else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
 const tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
 /* سقف ۳۰ فریم | 30fps Cap: ویدیوی ۶۰ فریمی نصف فریم را فشرده می‌کند تا کار تقریباً دو برابر سریع‌تر شود (60fps source encodes half the frames, about 2x faster) */
-const ps=await vt.computePacketStats(120),fps=mClamp(Math.round(ps.averagePacketRate||30),12,30);
+let fps=30;try{const ps=await vt.computePacketStats(120);fps=mClamp(Math.round(ps.averagePacketRate||30),12,30)}catch(e){}
 /* چرخش و آینه | Rotate and Flip: در دستورکار اول آینه و بعد چرخش است، پس برای کتابخانه (که اول می‌چرخاند و بعد آینه می‌کند) زاویه برعکس داده می‌شود (recipe flips then rotates; the library rotates then flips, so the angle is reversed when flipped) */
 const vo={codec:"avc",width:dw,height:dh,fit:"fill",bitrate:br,frameRate:fps,keyFrameInterval:2,rotate:rec.flip?(360-rot)%360:rot,flip:!!rec.flip};
 if(c.w<.999||c.h<.999)vo.crop={left:Math.round(c.x*w2),top:Math.round(c.y*h2),width:Math.max(2,Math.round(cw)),height:Math.max(2,Math.round(ch))};
@@ -1342,7 +1344,8 @@ if(rec.adjust){const cv=document.createElement("canvas");cv.width=dw;cv.height=d
 vo.process=s=>{x.drawImage(s.toCanvasImageSource(),0,0,dw,dh);if(f&&!MHASF)mPixelAdjust(x,dw,dh,rec.adjust);return new B.VideoSample(new VideoFrame(cv,{timestamp:Math.round(s.timestamp*1e6),duration:Math.round((s.duration||1/fps)*1e6)}))};vo.processedWidth=dw;vo.processedHeight=dh}
 const out=new B.Output({format:new B.Mp4OutputFormat({fastStart:"in-memory"}),target:new B.BufferTarget()});
 const conv=await B.Conversion.init({input:inp,output:out,trim:{start:st,end:en},video:vo});
-if(!conv.isValid)throw new Error("video not supported");
+/* دلیل خطا | Error Reason: اگر تبدیل ممکن نباشد، دلیل و نوع ویدیو در پیام خطا نوشته می‌شود تا بشود علت را فهمید (if conversion is impossible, the reason and video type go in the error message) */
+if(!conv.isValid)throw new Error("video not supported: "+conv.discardedTracks.map(d=>(d.track.isAudioTrack()?"audio ":"video ")+d.reason).join(", ")+" ["+(vt.codec||"?")+" "+sw+"x"+sh+"]"+(typeof VideoEncoder==="undefined"?" no-WebCodecs":""));
 if(opt.onProgress)conv.onProgress=p=>opt.onProgress(mClamp(p,0,1));
 if(opt.signal){if(opt.signal.aborted)throw new Error("cancelled");opt.signal.addEventListener("abort",()=>{conv.cancel()},{once:true})}
 try{await conv.execute()}catch(e){if(e instanceof B.ConversionCanceledError)throw new Error("cancelled");throw e}
@@ -1858,7 +1861,7 @@ function lkPend(c,k,files,cap){
    /* مرحله ۲ بارگذاری | Step 2 Upload: حلقه دوباره از صفر شروع می شود و با پیشرفت واقعی آپلود پر می شود (ring restarts from 0 and follows the real upload) */
    /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */lkRing(d,x.id,"u",0);if(LK_UPLOAD_URL){await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",p))}else{LKB[x.id]=res[i].blob;await new Promise(ok=>setTimeout(ok,350));try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}lkRing(d,x.id,"u",1);
    const g=cell();if(g)g.parentNode.classList.add("lkd")}}
-  catch(e){d.remove();toast(/compress|timeout/.test(String(e&&e.message))?"Compression failed":"Send failed");return}
+  catch(e){d.remove();const em=String(e&&e.message||e);toast(/compress|timeout/.test(em)?"Compression failed":"Send failed");/* علت خطا | Error Detail: علت واقعی فشرده‌سازی زیر پیام نشان داده می‌شود و ۹ ثانیه می‌ماند تا خوانده شود (the real compress reason is shown in the toast for 9 seconds) */if(/compress/.test(em)){const tt=$("#toast");tt.textContent+=" ["+em.replace(/^compress failed: /,"").slice(0,160)+"]";clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}return}
   for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
    if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
@@ -2270,10 +2273,9 @@ $("#ccClear").onclick=()=>{lkDrop(mediaOf(CC).map(x=>x.id));CFG.media[CC]=[];CSE
 $("#clrCache").onclick=()=>{lkDrop([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};saveCfg();renderCache();toast("Cache cleared")};
 /* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
 /* پیش‌نمایش دقیق | Exact Peek: همان سازندهٔ حباب‌های خود گفتگو (addMsg) را داخل یک کانتینر جدا اجرا می‌کند تا محتوا دقیقا یکی باشد؛ گفتگو باز نمی‌شود پس سین نمی‌خورد (runs the real chat bubble builder into a separate container; the chat is not opened so nothing is marked read) */
-function peekHtml(c){const h=document.createElement("div"),sl=S.lastD,sm=S.mid;S.lastD=null;try{chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],null,s[4],h,c))}catch(e){}S.lastD=sl;S.mid=sm;return h.innerHTML||peekHtmlOld(c)}
-function peekHtmlOld(c){let last=null;return chatMsgs(c).map(([w,t,tm,n])=>{const sep=last!==n?`<div class="dsep">${dayLabel(n)}</div>`:"";last=n;return sep+`<div class="b ${w}">${esc(lkMsgPlain(t))}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small></div>`}).join("")}
+function peekHtml(c){const h=document.createElement("div"),sl=S.lastD,sm=S.mid;S.lastD=null;try{chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],null,s[4],h,c))}catch(e){}S.lastD=sl;S.mid=sm;return h.innerHTML}
 function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
- const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.querySelectorAll(".b").forEach(b=>{if(b.querySelector("[data-lkm]"))lkHydrate(b)});m.scrollTop=1e9}
+ const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();const ph=peekHtml(c);m.innerHTML=ph?`<div id="peekIn">${ph}</div>`:`<div style="margin:auto;color:var(--sub);padding:10px 12px">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";/* اندازه نسخه دقیق | Exact Copy Size: عرض گفتگوی اصلی را به پیام‌ها می‌دهد و با zoom به عرض پنجره‌ی پیش‌نمایش می‌رساند (gives messages the real chat width, then zooms down to the peek width) */p.style.display="flex";{const pi=$("#peekIn"),W=p.parentNode.clientWidth;if(pi&&W){pi.style.width=W+"px";pi.style.zoom=m.clientWidth/W}}p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.querySelectorAll(".b").forEach(b=>{if(b.querySelector("[data-lkm]"))lkHydrate(b)});m.scrollTop=1e9}
 /* افزودن به پوشه | Add To Folder: کادر دوم سمت چپ منو با لیست همه‌ی پوشه‌ها (شخصی، گروه، کانال و پوشه‌های ساخته‌شده)؛ انتخاب = نمایش گفتگو در آن پوشه بدون حذف از پوشه‌ی فعلی؛ آخر لیست «ساخت پوشه‌ی جدید» */
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
@@ -3114,7 +3116,7 @@ applyPin();
  loginLang()})();
 </script>
 <!-- کتابخانه | Library mediabunny: ویدیو را سریع و با کارت گرافیک گوشی فشرده می‌کند؛ فقط وقتی لازم شود باز می‌شود و در شروع برنامه هیچ هزینه‌ای ندارد (fast hardware video converter, MPL-2.0, v1.65.2; opens only when needed, no cost at start) -->
-<script type="text/plain" id="lkLib_mediabunny">window.MediaBunny=(()=>{/*!
+<script type="text/plain" id="lkLib_mediabunny">window.MediaBunny=(()=>{"use strict";/*!
  * Copyright (c) 2026-present, Vanilagy and contributors
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
