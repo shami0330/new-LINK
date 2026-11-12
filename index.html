@@ -156,6 +156,11 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .b{position:relative;touch-action:pan-y;max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
 .b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
+/* حباب گروه | Group Bubble Style: جای آواتار سمت چپ، نام فرستنده بالای متن (room for avatar on the left, sender name above text) */
+.b.ot.gp{margin-left:38px;overflow:visible}
+.b.ot.gp .gsn{font-size:13px;font-weight:600;line-height:1.2;margin:0 0 3px;direction:ltr;text-align:left;white-space:nowrap}
+.b.ot.gp .gsa{position:absolute;left:-38px;bottom:0;width:30px;height:30px}
+.b.ot.gp .gsa .av{width:30px;height:30px;font-size:14px;margin:0}
 .b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
 .b.ot small{color:var(--smalltx)}
 /* جداکننده تاریخ | Date Separator: کپسول وسط بالای هر روز گفتگو (centered date capsule, sticky at top) */
@@ -743,6 +748,19 @@ html.light #login input,html.light .inbar input,html.light .inbar textarea,html.
 .sli>div{overflow-wrap:anywhere;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .sli small{display:block;text-align:right;color:rgba(255,255,255,.75);margin-top:4px;font-size:12px}
 /* منوی پیام زمان‌بندی‌شده | Scheduled Item Menu: نگه‌داشتن روی پیام (ارسال همین حالا، ویرایش، حذف) */
+/* صفحه پیام‌های زمان‌بندی‌شده | Scheduled Messages Page: مثل تلگرام، با لمس آیکون ساعت یک صفحهٔ گفتگو با همان حباب‌ها و پس‌زمینه باز می‌شود (like Telegram: tapping the clock icon opens a chat-style page with the same bubbles and background) */
+#schl{align-items:stretch;justify-content:stretch;background:var(--chatbg);transform:translateX(30px);transition:opacity .2s,transform .25s}
+#schl.on{transform:none}
+#schl .slc{max-height:none;height:100%;border-radius:0;padding:0;gap:0;background:var(--chatbg)}
+#schl .slh{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px;background:var(--menu);backdrop-filter:blur(20px);flex:none}
+#schl .slt{text-align:center;display:flex;flex-direction:column}
+#schl .slt b{font-size:16px}
+#schl .slt small{font-size:12px;color:var(--sub)}
+#schl #slList{flex:1;min-height:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 20px);gap:6px}
+#schl #slList .dsep{align-self:center}
+#schl .sli{align-self:flex-end;max-width:78%;font-size:15px;line-height:1.35;border-bottom-right-radius:5px}
+#schl .sli>div{display:block;-webkit-line-clamp:unset;overflow:visible}
+#schl .sli small{display:flex;align-items:center;justify-content:flex-end;gap:4px}
 #slmv{position:absolute;inset:0;z-index:99;display:none}
 /* ویرایش پیام زمان‌بندی‌شده | Scheduled Edit Dialog: متن و زمان قبل از ارسال */
 #sedov{position:absolute;inset:0;z-index:98;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -1510,7 +1528,11 @@ const FWR=/^\u21aa([^\u2063]*)\u2063([\s\S]*)$/;
 const fwBody=t=>{const m=FWR.exec(t);return lkMsgPlain(m?m[2]:t)};
 const fwHead=t=>{const m=FWR.exec(t);return m?`<div class="fwh"><span class="fwt">${tr("Forwarded from")}</span><div class="fwn">${av(m[1],colOf(m[1]),0)}<span>${esc(m[1])}</span></div></div>`:""};
 /* نمایش پیام | Add Message: پارامتر آخر ed یعنی پیام ویرایش شده و کنار ساعت «ویرایش شده» می‌آید */
-function addMsg(w,t,tm,n=0,rp=null,ed=0){if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);$("#msgs").append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;$("#msgs").append(d);if(d.querySelector("[data-lkm]"))lkHydrate(d);$("#msgs").scrollTop=1e9;return d}
+function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${esc(rp.t)}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
+/* تزئین حباب گروه | Group Bubble Decor: فرستنده از روی اعضای گروه ثابت انتخاب می‌شود؛ نام فقط اول هر دسته و آواتار فقط آخر هر دسته می‌ماند مثل تلگرام (stable sender from members; name on first of run, avatar on last of run) */
+function gpDecor(d,gc){const c=gc||CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="gp")return;const ms=(c.members||[]).filter(x=>x!=="You");if(!ms.length)return;const key=d.dataset.t+"|"+d.dataset.tm;const sn=ms[[...key].reduce((a,ch)=>a+ch.charCodeAt(0),0)%ms.length];d.dataset.sn=sn;d.classList.add("gp");const pv=d.previousElementSibling,same=pv&&pv.classList.contains("b")&&pv.classList.contains("gp")&&pv.dataset.sn===sn;if(!same){const h=document.createElement("div");h.className="gsn";h.style.color=colOf(sn);h.textContent=sn;d.prepend(h)}else{const o=pv.querySelector(":scope>.gsa");if(o)o.remove()}const a=document.createElement("div");a.className="gsa";a.innerHTML=av(sn,colOf(sn),0);d.append(a)}
+/* باز شدن پروفایل از آواتار | Avatar Opens Profile: لمس آواتار فرستنده در گروه، گفتگوی او را باز می‌کند و صفحه پروفایلش را نشان می‌دهد (tap on a group sender avatar opens that person's chat and shows their profile) */
+document.addEventListener("click",e=>{const a=e.target.closest("#msgs .gsa");if(!a)return;e.stopPropagation();e.preventDefault();const b=a.closest(".b"),n=b&&b.dataset.sn;if(!n)return;openByName(n);openCP()},true);
 /* کادر پیام بدون نوار پر کردن خودکار | Message Field No AutoFill Bar: کادر پیام مثل تلگرام نوشتنی ساده است (نه textarea) تا آیفون نوار «AutoFill Contact» و اسم مخاطب را بالای کیبورد نشان ندهد؛ با ویژگی value مثل قبل خوانده و نوشته می‌شود و Enter خط جدید می‌سازد (plain editable box instead of textarea so iOS shows no contact AutoFill bar; value works as before) */
 (function(){const el=$("#mi"),d=document.createElement("div");
  ["id","dir"].forEach(a=>{if(el.hasAttribute(a))d.setAttribute(a,el.getAttribute(a))});
@@ -2249,9 +2271,11 @@ $("#ccDelSel").onclick=()=>{lkDrop(mediaOf(CC).filter(x=>CSEL.has(x.id)).map(x=>
 $("#ccClear").onclick=()=>{lkDrop(mediaOf(CC).map(x=>x.id));CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
 $("#clrCache").onclick=()=>{lkDrop([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};saveCfg();renderCache();toast("Cache cleared")};
 /* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
-function peekHtml(c){let last=null;return chatMsgs(c).map(([w,t,tm,n])=>{const sep=last!==n?`<div class="dsep">${dayLabel(n)}</div>`:"";last=n;return sep+`<div class="b ${w}">${esc(lkMsgPlain(t))}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small></div>`}).join("")}
+/* پیش‌نمایش دقیق | Exact Peek: همان سازندهٔ حباب‌های خود گفتگو (addMsg) را داخل یک کانتینر جدا اجرا می‌کند تا محتوا دقیقا یکی باشد؛ گفتگو باز نمی‌شود پس سین نمی‌خورد (runs the real chat bubble builder into a separate container; the chat is not opened so nothing is marked read) */
+function peekHtml(c){const h=document.createElement("div"),sl=S.lastD,sm=S.mid;S.lastD=null;chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],null,s[4],h,c));S.lastD=sl;S.mid=sm;return h.innerHTML}
+function peekHtmlOld(c){let last=null;return chatMsgs(c).map(([w,t,tm,n])=>{const sep=last!==n?`<div class="dsep">${dayLabel(n)}</div>`:"";last=n;return sep+`<div class="b ${w}">${esc(lkMsgPlain(t))}<small>${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small></div>`}).join("")}
 function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c.id===2?"":c.on?"online":c.ty==="pv"?"last seen recently":"200 members";
- const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.scrollTop=1e9}
+ const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();m.innerHTML=peekHtml(c)||`<div style="margin:auto;color:var(--sub)">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";p.style.display="flex";p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.querySelectorAll(".b").forEach(b=>{if(b.querySelector("[data-lkm]"))lkHydrate(b)});m.scrollTop=1e9}
 /* افزودن به پوشه | Add To Folder: کادر دوم سمت چپ منو با لیست همه‌ی پوشه‌ها (شخصی، گروه، کانال و پوشه‌های ساخته‌شده)؛ انتخاب = نمایش گفتگو در آن پوشه بدون حذف از پوشه‌ی فعلی؛ آخر لیست «ساخت پوشه‌ی جدید» */
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
  const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
@@ -2678,7 +2702,7 @@ P.smile="M12 21a9 9 0 100-18 9 9 0 000 18zM8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9
 Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"برداشتن پین","Forward":"فوروارد","Copied":"کپی شد","Forwarded":"فوروارد شد","Forward to":"فوروارد به","Delete message?":"پیام حذف شود؟","Pinned Message":"پیام پین‌شده","Share with":"ارسال به","Add a caption...":"یک شرح بنویسید...","Forwarded from":"فوروارد از","Send When Online":"ارسال هنگام آنلاین شدن","Schedule Message":"ارسال زمان‌بندی‌شده","Scheduled for":"زمان‌بندی‌شده برای","Will be sent when online":"با آنلاین شدن ارسال می‌شود","Pick a future time":"زمانی در آینده انتخاب کنید","Delivered":"ارسال شد","Date":"تاریخ","Time":"ساعت","Schedule":"زمان‌بندی"});
 (function(){const ov=document.createElement("div");ov.id="mmenu";$("#app").append(ov);
  const E1=["❤️","🤣","😭","🤪","🥰","🔥","💔"],E2=["👍","👎","😂","😮","😢","🙏","👏","🎉","🤔","😡"];
- const txt=b=>{const c=b.cloneNode(true);c.querySelectorAll("small,.ri,.q,.rxn,.fwh,.pnl").forEach(x=>x.remove());return c.textContent.trim()};
+ const txt=b=>{const c=b.cloneNode(true);c.querySelectorAll("small,.ri,.q,.rxn,.fwh,.pnl,.gsn,.gsa").forEach(x=>x.remove());return c.textContent.trim()};
  /* ساعت پیام | Message Time: از دیتای خود حباب خوانده می‌شود چون برچسب ویرایش شده جلوی ساعت می‌آید */const tmOf=b=>b.dataset.tm||"";
  const key=b=>b.dataset.t+"|"+tmOf(b);
  const close=()=>{ov.classList.remove("on");ov.innerHTML=""};
@@ -2903,14 +2927,14 @@ CFG.sched=CFG.sched||[];
  P.pen="M4 20h4L19 9l-4-4L4 16zM13 7l4 4";P.plane="M3 12l18-9-6 18-3-8z";
  /* آیکون نوار پیام | Bar Icon: سمت چپ داخل کادر پیام؛ لمسش لیست پیام‌های زمان‌بندی‌شده را باز می‌کند */
  const ib=document.createElement("div");ib.id="schBtn";ib.innerHTML=ic("clock",16);const bar=$("#mi").parentElement;if(getComputedStyle(bar).position==="static")bar.style.position="relative";bar.append(ib);
- function updSchIcon(){const n=CFG.sched.filter(r=>r.cid===S.openId).length,m=$("#mi");ib.style.display=n?"flex":"none";m.classList.toggle("hasSch",n>0);if(n){ib.style.left=(m.offsetLeft+7)+"px";ib.style.top=(m.offsetTop+m.offsetHeight-33)+"px"}}
+ function updSchIcon(){try{if(sl.classList.contains("on"))renderSl()}catch(e){}const n=CFG.sched.filter(r=>r.cid===S.openId).length,m=$("#mi");ib.style.display=n?"flex":"none";m.classList.toggle("hasSch",n>0);if(n){ib.style.left=(m.offsetLeft+7)+"px";ib.style.top=(m.offsetTop+m.offsetHeight-33)+"px"}}
  const g0=grow;grow=function(){g0();updSchIcon()};
  /* کارت لیست | List Card */
- const sl=document.createElement("div");sl.id="schl";sl.innerHTML='<div class="slc"><b></b><small></small><div id="slList"></div></div>';$("#app").append(sl);
+ const sl=document.createElement("div");sl.id="schl";sl.innerHTML='<div class="slc"><div class="slh"><div class="pill" id="slBack"></div><div class="slt"><b></b><small></small></div><div style="width:38px"></div></div><div id="slList"></div></div>';$("#app").append(sl);$("#slBack").innerHTML=ic("back",22);$("#slBack").onclick=()=>sl.classList.remove("on");
  const slm=document.createElement("div");slm.id="slmv";slm.innerHTML='<div class="smc"></div>';$("#app").append(slm);
  function renderSl(){const L=CFG.sched.filter(r=>r.cid===S.openId).sort((a,b)=>(a.mode==="sched"?a.at:a.created)-(b.mode==="sched"?b.at:b.created));
   sl.querySelector("b").textContent=tr("Scheduled Messages");sl.querySelector("small").textContent=tr("Hold a message for options");
-  $("#slList").innerHTML=L.map(r=>`<div class="sli" data-id="${r.id}"><div>${esc(r.v)}</div><small>${esc(lbl(r))}</small></div>`).join("");
+  /* حباب زمان‌بندی | Scheduled Bubbles: هر پیام مثل حباب خود گفتگو با آیکون ساعت و ساعت ارسال؛ بالای هر روز جداکننده (each message as a real chat bubble with clock icon and send time; separator above each day) */let lg=null;$("#slList").innerHTML=L.map(r=>{const k=r.mode==="sched"?new Date(r.at).toDateString():"online",sep=k!==lg?`<div class="dsep">${esc(r.mode==="sched"?tr("Scheduled for")+" "+(k===new Date().toDateString()?dayLabel(0):new Date(r.at).toLocaleDateString()):tr("Will be sent when online"))}</div>`:"";lg=k;return sep+`<div class="sli b me" data-id="${r.id}"><div>${esc(lkMsgPlain(r.v))}</div><small>${r.mode==="sched"?hh(r.at)+" ":""}${ic("clock",13)}</small></div>`}).join("");
   if(!L.length)sl.classList.remove("on");
   $$("#slList .sli").forEach(el=>{let t=null;const st=()=>{t=setTimeout(()=>{t=null;slMenu(CFG.sched.find(x=>x.id===el.dataset.id),el)},450)},cl=()=>{clearTimeout(t)};
    el.addEventListener("touchstart",st,{passive:true});el.addEventListener("mousedown",st);["touchmove","touchend","touchcancel","mouseup","mouseleave"].forEach(e=>el.addEventListener(e,cl,{passive:true}))})}
