@@ -3002,7 +3002,38 @@ $("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
 </script>
-<script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{}));
+<script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
+/* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
+(function(){var busy=0,fresh=null,oldH=null;
+var IDX=function(){return new URL("index.html",location.href).href};
+var st=document.createElement("style");st.textContent="@keyframes updspin{to{transform:rotate(360deg)}}#upd-spin{animation:updspin .8s linear infinite;flex:none}";document.head.appendChild(st);
+async function h(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).join(",")}
+/* آیکون در حال بررسی | Checking Icon: زنجیر پنهان و یک دایره‌ی چرخان جایش می‌آید */
+function spin(on){var ic=document.getElementById("lkConn");if(!ic)return;var sp=document.getElementById("upd-spin");
+if(on){if(sp)return;sp=document.createElementNS("http://www.w3.org/2000/svg","svg");sp.id="upd-spin";sp.setAttribute("viewBox","0 0 24 24");sp.setAttribute("width","18");sp.setAttribute("height","18");sp.setAttribute("fill","none");sp.setAttribute("stroke","currentColor");sp.setAttribute("stroke-width","2.4");sp.setAttribute("stroke-linecap","round");sp.innerHTML='<circle cx="12" cy="12" r="8" stroke-opacity=".25"/><path d="M12 4a8 8 0 018 8"/>';ic.style.display="none";ic.parentNode.insertBefore(sp,ic)}
+else{if(sp)sp.remove();ic.style.display=""}}
+/* دایناميک آیلند | Dynamic Island: از یک قرص کوچک بالای صفحه باز می‌شود و بعد جمع می‌شود */
+function island(kind){var o=document.getElementById("upd-isl");if(o)o.remove();
+var d=document.createElement("div");d.id="upd-isl";
+d.style.cssText="position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:2147483647;background:#000;color:#fff;font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;direction:rtl;overflow:hidden;width:96px;height:30px;border-radius:15px;box-shadow:0 6px 24px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12);transition:width .5s cubic-bezier(.2,.9,.3,1.15),height .5s cubic-bezier(.2,.9,.3,1.15),border-radius .5s;display:flex;align-items:center;justify-content:center;white-space:nowrap";
+var c=document.createElement("div");c.style.cssText="display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .25s .2s;padding:0 12px";
+function close(){c.style.transition="opacity .15s";c.style.opacity="0";d.style.width="96px";d.style.height="30px";d.style.borderRadius="15px";setTimeout(function(){d.remove()},520)}
+if(kind==="found"){var t=document.createElement("div");t.textContent="آپدیت پیدا شد";t.style.cssText="color:#fff";
+var u=document.createElement("div");u.textContent="آپدیت لینک";u.style.cssText="cursor:pointer;background:#1d9bf0;color:#fff;padding:7px 14px;border-radius:18px;font-size:14px";
+var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:rgba(255,255,255,.16)";
+u.onclick=async function(){u.textContent="در حال آپدیت...";u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
+x.onclick=close;c.append(t,u,x);d.appendChild(c);document.body.appendChild(d);
+requestAnimationFrame(function(){requestAnimationFrame(function(){d.style.width="min(92vw,340px)";d.style.height="56px";d.style.borderRadius="28px";c.style.opacity="1"})})}
+else{c.textContent=kind==="none"?"آپدیتی پیدا نشد":"بررسی انجام نشد";d.appendChild(c);document.body.appendChild(d);
+requestAnimationFrame(function(){requestAnimationFrame(function(){d.style.width="180px";d.style.height="44px";d.style.borderRadius="22px";c.style.opacity="1"})});setTimeout(close,1300)}}
+async function chk(){if(busy)return;busy=1;spin(true);var res="none";try{
+var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
+var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
+if(oldH===null){var hit=await caches.match(IDX());if(!hit)throw 0;oldH=await h(await hit.text())}
+if(await h(net)!==oldH){fresh=net;res="found"}
+}catch(e){res="err"}finally{busy=0;await new Promise(function(r){setTimeout(r,700)});spin(false);island(res)}}
+addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()});document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()})}).catch(function(){})});
+})()}
 /* جستجو در گفتگو | In-Chat Search: نگه داشتن روی نام بالای گفتگو آن را به نوار جستجو تبدیل می‌کند و نتایج (از جدیدترین) زیر نوار لیست می‌شوند؛ زدن روی هر نتیجه به همان پیام می‌رود */
 (function(){
  const T=$("#chat .top .title");let tm=0,on=0,lp=0;
