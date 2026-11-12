@@ -1848,7 +1848,9 @@ const lkSz=b=>b<1e6?Math.max(1,Math.round(b/1e3))+" KB":b<1e9?(b/1e6).toFixed(1)
 /* مدت و حجم ویدیو | Video Info: برچسب گوشه‌ی بالا-چپ ویدیو؛ در حین ارسال همان‌جا درصد نوشته می‌شود و بعد از ارسال همان‌جا مدت و بعد حجم (top-left badge: percent while sending, then duration and size) */
 const lkVInfo=x=>[x.d?lkDur(x.d):"",x.s?lkSz(x.s):""].filter(Boolean).join(" · ");
 /* دانلود رسانه‌ی دریافتی | Incoming Media Download: رسانه‌ای که مخاطب می‌فرستد خودکار دانلود نمی‌شود؛ تصویر تار با دکمه‌ی دانلود و فقط حجم نشان داده می‌شود؛ با لمس دکمه حلقه پر می‌شود و کنار حجم، حجم دانلودشده و درصد می‌آید؛ بعد از پایان تصویر واضح می‌شود و برای ویدیو مدت نوشته می‌شود (received media is never auto-downloaded: blurred thumbnail + download button + size only; on tap the ring fills and "downloaded / total · percent" shows; when done the image clears and a video shows its duration) */
-const lkRm=x=>!!(x&&x.r&&!(CFG.dl&&CFG.dl[x.id]));
+/* پاک کردن حافظه | Clear Cache Rule: فقط نسخه‌ی ذخیره‌شده روی دستگاه پاک می‌شود؛ پیام و نسخه‌ی سرور (فعلاً همان ذخیره‌ی داخلی که جای سرور است) دست نمی‌خورد و رسانه دوباره با دکمه‌ی حجم قابل دانلود است (only the on-device copy is cleared; messages and the server copy, for now the local store standing in for the server, are untouched and the media can be downloaded again) */
+function lkForget(ids){CFG.gone=CFG.gone||{};ids.forEach(function(i){CFG.gone[i]=1;if(CFG.dl)delete CFG.dl[i]})}
+const lkRm=x=>!!(x&&((x.r&&!(CFG.dl&&CFG.dl[x.id]))||(CFG.gone&&CFG.gone[x.id])));
 const lkDlP=id=>(CFG.dlp&&CFG.dlp[id]&&CFG.dlp[id].p)||0;
 function lkDlSv(id,p,w){const o=CFG.dlp&&CFG.dlp[id],c=o?o.c:S.openId;(CFG.dlp=CFG.dlp||{})[id]={p:p,c:c};if(w)saveCfg()}
 const lkDlTxt=x=>lkSz(x.s||0);
@@ -1877,7 +1879,7 @@ function lkStrTick(){const v=$("#lkv");if(!v||!v.classList.contains("on")){clear
 function lkStrSync(){const v=$("#lkv");if(!v)return;const x=lkStreamX();v.classList.toggle("str",!!x);LKS.stall=0;clearInterval(LKS.iv);LKS.iv=0;const b=$("#lkvbuf");if(b)b.style.transform="scaleX("+(x?((LKD[x.id]&&LKD[x.id].p)||0):1)+")";if(x)LKS.iv=setInterval(lkStrTick,150)}
 function lkStream(cell){const q=lkDlInfo(cell);if(!q)return;if(!LKD[q.id])lkDlStart(cell,q.b,q.x);lkOpen(q.b.dataset.t,+cell.dataset.i||0,q.b);
  let n=0;const iv=setInterval(()=>{const m=LKV.v;if(m&&m.readyState>=1||++n>30){clearInterval(iv);if(m)m.play().catch(()=>{})}},100)}
-function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;if(CFG.dlp)delete CFG.dlp[x.id];const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
+function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;if(CFG.gone)delete CFG.gone[x.id];if(CFG.dlp)delete CFG.dlp[x.id];const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
  cell.classList.remove("lkrm","vd");const dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(dw)dw.remove();if(bd)bd.remove();
  if(x.t==="video"&&x.d)cell.insertAdjacentHTML("beforeend",'<span class="lkdu">'+lkDur(x.d)+'</span>')}
 $("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(e.target.closest(".lkdu[data-rs]"))lkDlTap(c);else if(c.classList.contains("vd"))lkStream(c);else if(!LKD[c.dataset.lkm]||e.target.closest(".lkdw"))lkDlTap(c)},true);
@@ -2357,9 +2359,9 @@ function renderCC(){const c=CHATS.find(x=>x.id===CC),it=mediaOf(CC);$("#cc_title
  $$("[data-sa]").forEach(e=>e.onclick=()=>{const L=it.filter(x=>x.type===e.dataset.sa),all=L.every(x=>CSEL.has(x.id));L.forEach(x=>all?CSEL.delete(x.id):CSEL.add(x.id));renderCC()});
  const sel=it.filter(x=>CSEL.has(x.id)).length,d=$("#ccDelSel");d.style.display=sel?"":"none";d.textContent=tr("Delete Selected")+" ("+sel+")";$("#ccClear").style.display=it.length?"":"none"}
 function openCache(id){CC=id;CSEL.clear();renderCC();openSub("cachechat")}
-$("#ccDelSel").onclick=()=>{lkDrop(mediaOf(CC).filter(x=>CSEL.has(x.id)).map(x=>x.id));CFG.media[CC]=mediaOf(CC).filter(x=>!CSEL.has(x.id));CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
-$("#ccClear").onclick=()=>{lkDrop(mediaOf(CC).map(x=>x.id));if(CFG.dlp)Object.keys(CFG.dlp).forEach(k=>{if(CFG.dlp[k].c===CC)delete CFG.dlp[k]});CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
-$("#clrCache").onclick=()=>{lkDrop([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};CFG.dlp={};saveCfg();renderCache();toast("Cache cleared")};
+$("#ccDelSel").onclick=()=>{lkForget(mediaOf(CC).filter(x=>CSEL.has(x.id)).map(x=>x.id));CFG.media[CC]=mediaOf(CC).filter(x=>!CSEL.has(x.id));CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
+$("#ccClear").onclick=()=>{lkForget(mediaOf(CC).map(x=>x.id));if(CFG.dlp)Object.keys(CFG.dlp).forEach(k=>{if(CFG.dlp[k].c===CC)delete CFG.dlp[k]});CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
+$("#clrCache").onclick=()=>{lkForget([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};CFG.dlp={};saveCfg();renderCache();toast("Cache cleared")};
 /* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
 /* پیش‌نمایش دقیق | Exact Peek: همان سازندهٔ حباب‌های خود گفتگو (addMsg) را داخل یک کانتینر جدا اجرا می‌کند تا محتوا دقیقا یکی باشد؛ گفتگو باز نمی‌شود پس سین نمی‌خورد (runs the real chat bubble builder into a separate container; the chat is not opened so nothing is marked read) */
 function peekHtml(c){const h=document.createElement("div"),sl=S.lastD,sm=S.mid;S.lastD=null;try{chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],null,s[4],h,c))}catch(e){}S.lastD=sl;S.mid=sm;return h.innerHTML}
@@ -3123,13 +3125,14 @@ var r0=t.getBoundingClientRect();if(!(r0.width>0&&r0.height>0)){wk=kind;if(!wiv)
 isl=1;
 var r=t.getBoundingClientRect(),old=t.getAttribute("style")||"",ph=document.createElement("div");
 ph.style.cssText="width:"+r.width+"px;height:"+r.height+"px;flex:none";t.parentNode.insertBefore(ph,t);
-var w=document.createElement("div");w.style.display="none";while(t.firstChild)w.appendChild(t.firstChild);t.appendChild(w);
-var E="cubic-bezier(.22,.8,.24,1)";
-t.style.cssText=old+";position:fixed;max-width:none;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;text-align:center;padding:0;transition:left .6s "+E+",top .6s "+E+",width .6s "+E+",height .6s "+E+",border-radius .6s "+E;
-var c=document.createElement("div");c.style.cssText="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;opacity:0;transition:opacity .3s .3s;text-align:center;white-space:nowrap;padding:0;font-weight:700;font-size:16px;color:var(--txt)";
-function go(W,H,dy){var cw=document.documentElement.clientWidth,M=10,L=Math.max(M,Math.min(cw-W-M,r.left+r.width/2-W/2));t.style.left=L+"px";t.style.top=(r.top-(H-r.height)/2)+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,32)+"px";c.style.opacity="1"}
-function close(){c.style.transition="opacity .15s";c.style.opacity="0";t.style.left=r.left+"px";t.style.top=r.top+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
-setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},640)}
+/* انیمیشن داینامیک آیلند iOS | iOS Dynamic Island Motion: بالای کپسول ثابت می‌ماند و فقط به پایین و دو طرف باز می‌شود (فنری با کمی جهش)؛ نوشته‌ی «چتس» نرم محو می‌شود و محتوای تازه با محوشدگی و بزرگ‌شدن می‌آید؛ بستن سریع‌تر و بدون جهش است (top stays fixed, grows down and sideways with a springy overshoot; old title fades, new content blurs in; close is quicker with no overshoot) */
+var w=document.createElement("div");w.style.cssText="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:6px;opacity:1;transition:opacity .16s ease";while(t.firstChild)w.appendChild(t.firstChild);t.appendChild(w);
+var E="cubic-bezier(.3,1.32,.42,1)",EC="cubic-bezier(.5,0,.2,1)";
+t.style.cssText=old+";position:fixed;max-width:none;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;transform:none;margin:0;box-sizing:border-box;z-index:60;overflow:hidden;justify-content:center;text-align:center;padding:0;transition:width .55s "+E+",height .55s "+E+",left .55s "+E+",border-radius .55s "+E;
+var c=document.createElement("div");c.style.cssText="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;transform:scale(.86);filter:blur(8px);transition:opacity .3s .14s ease,transform .45s .1s "+E+",filter .35s .1s ease;text-align:center;white-space:nowrap;padding:0;font-weight:700;font-size:16px;color:var(--txt)";
+function go(W,H,dy){var cw=document.documentElement.clientWidth,M=10,L=Math.max(M,Math.min(cw-W-M,r.left+r.width/2-W/2));t.style.left=L+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,36)+"px";w.style.opacity="0";c.style.opacity="1";c.style.transform="none";c.style.filter="none"}
+function close(){c.style.transition="opacity .14s ease,transform .3s ease,filter .2s ease";c.style.opacity="0";c.style.transform="scale(.9)";c.style.filter="blur(6px)";w.style.transition="opacity .25s .12s ease";w.style.opacity="1";t.style.transition="width .42s "+EC+",height .42s "+EC+",left .42s "+EC+",border-radius .42s "+EC;t.style.left=r.left+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
+setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},480)}
 if(kind==="found"){var m=document.createElement("div");m.textContent=L("Update found","آپدیت پیدا شد");
 var u=document.createElement("div");u.textContent=L("Update Link","آپدیت لینک");u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
