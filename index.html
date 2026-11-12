@@ -435,6 +435,7 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 #schov.on{opacity:1;pointer-events:auto}
 .schc{width:min(320px,calc(100% - 40px));max-width:100%;background:var(--card);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 .schc b{font-size:17px;text-align:center}
+#mpv .smc,#mpv .schc{color:var(--txt)}
 .schc label{color:var(--sub);font-size:13px}
 .schc input{height:44px;border-radius:14px;border:0;background:var(--card2);color:var(--txt);padding:0 14px;font-size:16px;outline:0;-webkit-user-select:text;user-select:text;width:100%}
 /* مرتب‌سازی فیلدهای زمان‌بندی | Schedule Fields Fit: فیلد تاریخ و ساعت آیفون اندازه‌ی ذاتی دارد و از کارت بیرون می‌زند؛ اینجا هم‌عرض کارت و داخل آن نگه داشته می‌شوند */
@@ -2052,7 +2053,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  o.querySelectorAll(".mphd").forEach(h=>mpvHandle(h,h.classList.contains("l")?"l":"r"));mpvScrub(o.querySelector(".mptl"));
  /* اتصال ابزارها | Tool Buttons: برش به ویرایشگر برش، تنظیم به برگه‌ی تنظیم، کیفیت به چرخش بین کیفیت‌ها؛ نقاشی هنوز غیرفعال است */
  o.querySelector('[data-mt="crop"]').onclick=mpvCrop;o.querySelector('[data-mt="adj"]').onclick=mpvAdj;o.querySelector('[data-mt="draw"]').onclick=()=>toast("Coming soon");
- $("#mpQ").onclick=()=>{const i=MPV.i,a=mpvQs(i),n=a[(a.indexOf(mpvQv(i))+1)%a.length];MPV.rec[i].q=n;$("#mpQ").textContent=n};
+ $("#mpQ").onclick=()=>{const i=MPV.i,a=mpvQs(i),n=a[(a.indexOf(mpvQv(i))+1)%a.length];MPV.rec[i].asFile=false;MPV.rec[i].q=n;$("#mpQ").textContent=n};
  mpeInit();
  $("#mpBack").onclick=mpvClose;
  /* حذف از انتخاب | Deselect: لمس نشان شماره، فایل فعلی را از انتخاب خارج می‌کند؛ اگر چیزی نماند پیش‌نمایش بسته می‌شود */
@@ -2073,7 +2074,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  const queue=(at)=>{const sel=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!sel.length)return;const cid=S.openId,real=lkSend;
   window.lkSend=async(files,c)=>{window.lkSend=real;window.lkMQ.push({cid,files,cap:c,at});toast("ارسال زمان‌بندی شد")};orig.call(b)};
  const openD=()=>{closeD();const d=new Date(Date.now()+120000),m=document.createElement("div");m.id="mpSd";m.style.cssText="position:absolute;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center";
-  m.innerHTML='<div class="schc"><b>Schedule Message</b><label>Date</label><input type="date" id="mpSD"><label>Time</label><input type="time" id="mpST"><div class="schok" id="mpSOk" style="text-align:center;padding:12px;border-radius:14px;background:var(--acc,#2f8fff);color:#fff;font-weight:600">Schedule</div><div class="schno" id="mpSNo" style="text-align:center;padding:10px;color:var(--sub)">Cancel</div></div>';
+  m.innerHTML='<div class="schc"><b>Schedule Message</b><label>Date</label><input type="date" id="mpSD"><label>Time</label><input type="time" id="mpST"><div class="schok" id="mpSOk">Schedule</div><div class="schno" id="mpSNo">Cancel</div></div>';
   o.appendChild(m);m.querySelector("#mpSD").value=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());m.querySelector("#mpST").value=p2(d.getHours())+":"+p2(d.getMinutes());
   m.querySelector("#mpSOk").onclick=()=>{const at=new Date(m.querySelector("#mpSD").value+"T"+m.querySelector("#mpST").value).getTime();if(!at||at<=Date.now()+5000){toast("Pick a future time");return}closeD();queue(at)};
   m.querySelector("#mpSNo").onclick=closeD;m.onclick=e=>{if(e.target===m)closeD()}};
@@ -2090,15 +2091,15 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
 })();
 /* بازدید زماندار | Timed View: عکس یا ویدیوی زماندار در گفتگو محو است؛ با لمس برای مدت انتخاب‌شده (یا یک‌بار) دیده می‌شود، بعد پاک می‌شود و «پاک شده است» نشان می‌دهد */
 (()=>{const M=$("#msgs");CFG.exp=CFG.exp||{};
- const st=document.createElement("style");st.textContent=".lkttl{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:13px;font-weight:600;background:rgba(70,70,80,.5);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px);border-radius:inherit;cursor:pointer}.lkexp{display:flex;align-items:center;justify-content:center;min-height:90px;padding:14px;color:var(--sub);font-size:14px}#lkTv{position:fixed;inset:0;z-index:100000;background:#000;display:flex;align-items:center;justify-content:center}#lkTv img,#lkTv video{max-width:100%;max-height:100%}#lkTv .tc{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;right:14px;display:flex;justify-content:space-between;color:#fff;font-size:15px}#lkTv .tc span{background:rgba(255,255,255,.18);padding:6px 12px;border-radius:14px}";document.head.appendChild(st);
+ const st=document.createElement("style");st.textContent=".lkttl{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:13px;font-weight:600;background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.55) 0 1px,transparent 1.5px) 0 0/23px 27px,radial-gradient(circle at 70% 60%,rgba(255,255,255,.45) 0 1px,transparent 1.5px) 0 0/31px 19px,linear-gradient(120deg,#2b2b30 0%,#3c101d 55%,#1a060c 100%);border-radius:inherit;cursor:pointer}.lkexp{display:flex;align-items:center;justify-content:center;min-height:90px;padding:14px;color:var(--sub);font-size:14px}#lkTv{position:fixed;inset:0;z-index:100000;background:#000;display:flex;align-items:center;justify-content:center}#lkTv img,#lkTv video{max-width:100%;max-height:100%}#lkTv .tc{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;right:14px;display:flex;justify-content:space-between;color:#fff;font-size:15px}#lkTv .tc span{background:rgba(255,255,255,.18);padding:6px 12px;border-radius:14px}.lkttl .fl{width:66px;height:66px;border-radius:50%;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}.lkttl .bd{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;background:rgba(0,0,0,.4);font-style:normal;font-size:13px}.b.lkexpb{align-self:center!important;background:var(--dsep)!important;color:var(--txt)!important;border-radius:12px!important;padding:3px 12px!important;font-size:13px!important;width:auto!important;min-width:0!important;max-width:none!important;margin:4px auto!important;cursor:default}.b.lkexpb::before,.b.lkexpb::after{display:none!important}";document.head.appendChild(st);
  const lab=x=>x.ttl<0?"1× "+(x.t==="video"?"Video":"Photo"):x.ttl+"s";
- const gone=(cell,x)=>{CFG.exp[x.id]=1;saveCfg();try{if(LKU[x.id]){URL.revokeObjectURL(LKU[x.id]);delete LKU[x.id]}delete LKB[x.id]}catch(e){}const d=document.createElement("div");d.className="lkexp";d.textContent=x.t==="video"?"ویدیو پاک شده است":"عکس پاک شده است";cell.replaceWith(d)};
- const apply=()=>{M.querySelectorAll(".b").forEach(b=>{const o=lkDec(b.dataset.t);if(!o||!o.it)return;o.it.forEach(x=>{if(!x.ttl||x.t==="file")return;const cell=b.querySelector('[data-lkm="'+x.id+'"]');if(!cell)return;if(CFG.exp[x.id]){gone(cell,x);return}if(cell.querySelector(".lkttl")||b.classList.contains("pend"))return;const v=document.createElement("div");v.className="lkttl";v.innerHTML=ic("clock",26)+"<span>"+lab(x)+"</span>";cell.style.position="relative";cell.appendChild(v)})})};
+ const gone=(cell,x)=>{CFG.exp[x.id]=1;saveCfg();try{if(LKU[x.id]){URL.revokeObjectURL(LKU[x.id]);delete LKU[x.id]}delete LKB[x.id]}catch(e){}const tx=x.t==="video"?"Expired video":"Expired photo",bb=cell.closest(".b");if(bb&&bb.querySelectorAll("[data-lkm]").length<2){bb.classList.add("lkexpb");bb.textContent=tx;return}const d=document.createElement("div");d.className="lkexp";d.textContent=tx;cell.replaceWith(d)};
+ const apply=()=>{M.querySelectorAll(".b").forEach(b=>{const o=lkDec(b.dataset.t);if(!o||!o.it)return;o.it.forEach(x=>{if(!x.ttl||x.t==="file")return;const cell=b.querySelector('[data-lkm="'+x.id+'"]');if(!cell)return;if(CFG.exp[x.id]){gone(cell,x);return}if(cell.querySelector(".lkttl")||b.classList.contains("pend"))return;const v=document.createElement("div");v.className="lkttl";v.innerHTML='<i class="bd">'+(x.ttl<0?'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>':ic("clock",14))+'<span>'+(x.ttl<0?1:x.ttl)+'</span></i><i class="fl"><svg viewBox="0 0 24 24" width="34" height="34" fill="#fff"><path d="M12 2S5 9 5 14.5a7 7 0 0 0 14 0C19 11 16.5 8.5 15.5 6.5c-.5 2-1.5 3.2-2.7 3.9C13.5 7.5 12 2 12 2z"/></svg></i>';cell.style.position="relative";cell.appendChild(v)})})};
  new MutationObserver(apply).observe(M,{childList:true,subtree:true});
- M.addEventListener("click",e=>{const v=e.target.closest(".lkttl");if(!v)return;e.stopImmediatePropagation();e.preventDefault();const cell=v.closest(".lkc"),b=cell.closest(".b");if(!b||b.classList.contains("pend"))return;const o=lkDec(b.dataset.t),x=o&&o.it.find(y=>y.id===cell.dataset.lkm);if(!x)return;
-  const src=LKU[x.id]||(LKB[x.id]?(LKU[x.id]=URL.createObjectURL(LKB[x.id])):null);if(!src){toast("فایل در دسترس نیست");return}
+ M.addEventListener("click",async e=>{const v=e.target.closest(".lkttl");if(!v)return;e.stopImmediatePropagation();e.preventDefault();const cell=v.closest(".lkc"),b=cell.closest(".b");if(!b||b.classList.contains("pend"))return;const o=lkDec(b.dataset.t),x=o&&o.it.find(y=>y.id===cell.dataset.lkm);if(!x)return;
+  let bl=LKB[x.id];if(!bl){try{const rr=await lkGet(x.id);bl=rr&&rr.blob}catch(_){}}const src=bl?URL.createObjectURL(bl):(LKU[x.id]||null);if(!src){toast("File not available");return}
   const w=document.createElement("div");w.id="lkTv";w.innerHTML=(x.t==="video"?'<video src="'+src+'" autoplay playsinline></video>':'<img src="'+src+'" alt="">')+'<div class="tc"><span id="lkTx">'+(x.ttl<0?"View Once":x.ttl)+'</span><span id="lkTc">✕</span></div>';document.body.appendChild(w);
-  let left=x.ttl,iv=null;const end=()=>{clearInterval(iv);w.remove();gone(cell,x)};
+  let left=x.ttl,iv=null;const end=()=>{clearInterval(iv);w.remove();if(bl)URL.revokeObjectURL(src);gone(cell,x)};
   w.querySelector("#lkTc").onclick=end;if(x.ttl>0){iv=setInterval(()=>{left--;w.querySelector("#lkTx").textContent=left;if(left<=0)end()},1000)}
  },true);
  setInterval(apply,1500);
@@ -2106,14 +2107,11 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
 /* نگه داشتن کیفیت | Quality Hold Menu: نگه داشتن SD/HD گزینه‌های کیفیت و «ارسال به صورت فایل» را نشان می‌دهد */
 (()=>{const q=$("#mpQ"),orig=q.onclick;let t=null,lp=false;
  const close=()=>{const m=document.getElementById("qMenu");if(m)m.remove()};
- const item=(txt,on,fn)=>{const x=document.createElement("button");x.textContent=(on?"✓ ":"")+txt;x.style.cssText="display:block;width:100%;padding:12px;border:0;background:none;color:#fff;font-size:15px;text-align:right;border-bottom:1px solid #2c2c2e";x.onclick=()=>{close();fn()};return x};
- const menu=()=>{close();const i=MPV.i,m=document.createElement("div");m.id="qMenu";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:flex-end;justify-content:center";
-  const box=document.createElement("div");box.style.cssText="background:#1c1c1e;border-radius:14px 14px 0 0;width:min(100vw,420px);padding:6px 0 10px;direction:rtl";
-  const r=MPV.rec[i];const cur=mpvQv(i);
-  mpvQs(i).forEach(v=>box.appendChild(item(v,!r.asFile&&v===cur,()=>{r.asFile=false;r.q=v;q.textContent=v})));
-  box.appendChild(item("ارسال به صورت فایل",!!r.asFile,()=>{r.asFile=!r.asFile;q.textContent=r.asFile?"File":cur}));
-  box.appendChild(item("انصراف",false,()=>{}));
-  m.appendChild(box);m.onclick=e=>{if(e.target===m)close()};document.body.appendChild(m)};
+ const menu=()=>{close();const i=MPV.i,o=$("#mpv"),m=document.createElement("div");m.id="qMenu";m.style.cssText="position:absolute;inset:0;z-index:99998";
+  const r=MPV.rec[i],cur=mpvQv(i);
+  m.innerHTML='<div class="smc" style="left:12px;top:0;max-height:calc(100% - 24px);overflow:auto"><div data-m="file">'+ic("file",22)+'<span style="flex:1">Send as File</span>'+(r.asFile?ic("check",20):"")+'</div></div>';
+  m.onclick=e=>{const d=e.target.closest("[data-m]");close();if(!d)return;r.asFile=!r.asFile;q.textContent=r.asFile?"File":cur};
+  o.appendChild(m);const c=m.firstChild,or=o.getBoundingClientRect(),br=q.getBoundingClientRect();let top=br.bottom-or.top+8,left=br.left-or.left;top=Math.max(12,Math.min(top,or.height-c.offsetHeight-12));left=Math.max(12,Math.min(left,or.width-c.offsetWidth-12));c.style.top=top+"px";c.style.left=left+"px"};
  q.addEventListener("pointerdown",()=>{lp=false;t=setTimeout(()=>{lp=true;menu()},500)});
  ["pointerup","pointerleave","pointercancel"].forEach(ev=>q.addEventListener(ev,()=>clearTimeout(t)));
  q.addEventListener("click",e=>{if(lp){lp=false;e.stopImmediatePropagation();e.preventDefault()}},true);
