@@ -335,31 +335,31 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 /* استایل کپشن | Caption Style: شرح زیر عکس و ویدیو داخل همان حباب، بدون اینکه حباب را پهن کند؛ و برچسب «ویرایش شده» کنار ساعت */
 .lkcap{width:0;min-width:100%;box-sizing:border-box;padding:6px 8px 0;font-size:15px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;text-align:start}
 .edl{margin-inline-end:4px;opacity:.85}
-.lkc img{transition:filter .3s,transform .3s}.lkc.lkrm img{filter:blur(14px);transform:scale(1.2)}.lkdw{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}.lkdw.go .lkrg{position:absolute;left:1px;top:1px;background:none}.lkdw.go::after{content:"\2715";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}.lkc.lkrm .lkdu{z-index:2}
-#lkvbuf{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:rgba(255,255,255,.55);transform-origin:0 50%;transform:scaleX(1);display:none}#lkv.str #lkvbuf{display:block}#lkv.str #lkvbar{background:rgba(255,255,255,.16)}#lkvfil{z-index:1}.lkdw.sm{left:6px;top:6px;margin:0;width:26px;height:26px}.lkdw.sm svg{width:15px;height:15px}.lkdw.sm.go .lkrg{width:24px;height:24px}.lkdw.sm.go .lkrg svg{width:100%;height:100%}.lkdw.sm.go::after{font-size:12px}.lkc.lkrm.vd .lkdu{left:38px;top:9px}
+.lkc img{transition:filter .3s,transform .3s}.lkc.lkrm img{filter:blur(14px);transform:scale(1.2)}.lkdw{position:absolute;left:50%;top:calc(50% + 6px);width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}.lkdw.go .lkrg{position:absolute;left:0;top:0;width:34px;height:34px;background:none}.lkdw.go::after{content:"\2715";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px}.lkc.lkrm .lkdu{z-index:2}
+#lkvbuf{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:rgba(255,255,255,.55);transform-origin:0 50%;transform:scaleX(1);display:none}#lkv.str #lkvbuf{display:block}#lkv.str #lkvbar{background:rgba(255,255,255,.16)}#lkvfil{z-index:1}.lkdw.sm{left:6px;top:6px;margin:0;width:24px;height:24px}.lkdw.sm svg{width:14px;height:14px}.lkdw.sm.go .lkrg{width:22px;height:22px}.lkdw.sm.go .lkrg svg{width:100%;height:100%}.lkdw.sm.go::after{font-size:12px}.lkdu[data-rs]{cursor:pointer}
 .lka{width:var(--aw,250px);max-width:100%;display:flex;flex-direction:column;gap:2px;border-radius:15px;overflow:hidden}
 .lkr{display:flex;gap:2px;width:100%}
 .lkc{position:relative;overflow:hidden;background:rgba(255,255,255,.1);min-width:0;cursor:pointer}
-.lkdw,.lkpl,.lkpg{transform:scale(var(--k,1))}.lkdw.sm{transform-origin:0 0}.lkdu{transform:scale(var(--k,1));transform-origin:0 0;white-space:nowrap;max-width:calc((100% - 12px)/var(--k,1));overflow:hidden;text-overflow:ellipsis}.b[style*="--k"] .lkc.lkrm.vd .lkdu{left:6px;top:36px}
+.lkdu{white-space:nowrap;line-height:15px;box-sizing:border-box;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis}
 .lkc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .lkc img:not([src]){display:none}
 .lkc.lkx::after{content:"🗑";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.6}
-.lkpl{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center}
+.lkpl{position:absolute;left:50%;top:calc(50% + 6px);width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center}
 .lkdu{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.5);color:#fff;font-size:11px;padding:1px 7px;border-radius:9px}
-.lkpg{position:absolute;inset:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px}
+.lkpg{position:absolute;inset:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px;padding-top:12px;box-sizing:border-box}
 .lkpg em{font-style:normal}
 .lksp{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:lkspin .8s linear infinite;display:inline-block;box-sizing:border-box}
 @keyframes lkspin{to{transform:rotate(360deg)}}
 /* حلقه‌ی ارسال مثل LINK | LINK Ring: وسط هر عکس یک دایره‌ی تیره‌ی بزرگ‌تر با حلقه‌ی چرخان می‌آید؛ نگار عکس تیره نمی‌شود و حباب همان موقع کاملاً روشن است */
-.lkpg .lksp{width:44px;height:44px;border-width:3px;background:rgba(0,0,0,.45)}
+.lkpg .lksp{width:34px;height:34px;border-width:3px;background:rgba(0,0,0,.45)}
 .b.mm.pend{opacity:1}
 /* دایره‌ی وضعیت و تاری مثل LINK | LINK Status Circle: تا وقتی عکس آماده نشده تار است و روی دایره ✕ با حلقه‌ی چرخان دارد؛ وقتی آماده شد واضح می‌شود و روی دایره ✓ می‌آید */
-.lkpg::after{content:"\2715";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+.lkpg::after{content:"\2715";position:absolute;left:50%;top:calc(50% + 6px);width:34px;height:34px;margin:-17px 0 0 -17px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
 .lkc.lkd .lkpg::after{content:"\2713"}
 .lkc.lkd .lkpg .lksp{animation:none;border-color:transparent}
 .b.pend .lkc:not(.lkd) img{filter:blur(12px);transform:scale(1.2)}
 /* حلقه پیشرفت CSS | Progress Ring CSS: مسیر رنگی سبز مرحله فشرده سازی، آبی مرحله بارگذاری (green = compression, blue = upload) */
-.lkrg{position:relative;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);display:inline-block;flex:none}
+.lkrg{position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);display:inline-block;flex:none}
 .lkrg svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .lkrg circle{fill:none;stroke-width:3}
 .lkrg .t{stroke:rgba(255,255,255,.3)}
@@ -1851,17 +1851,17 @@ const lkVInfo=x=>[x.d?lkDur(x.d):"",x.s?lkSz(x.s):""].filter(Boolean).join(" · 
 const lkRm=x=>!!(x&&x.r&&!(CFG.dl&&CFG.dl[x.id]));
 const lkDlP=id=>(CFG.dlp&&CFG.dlp[id]&&CFG.dlp[id].p)||0;
 function lkDlSv(id,p,w){const o=CFG.dlp&&CFG.dlp[id],c=o?o.c:S.openId;(CFG.dlp=CFG.dlp||{})[id]={p:p,c:c};if(w)saveCfg()}
-const lkDlTxt=x=>{const p=lkDlP(x.id);return p?lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%":lkSz(x.s)};
-function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span><span class="lkdw sm" data-dw="'+x.id+'">'+lkDlI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkDlTxt(x)+'</span>';
+const lkDlTxt=x=>lkSz(x.s||0);
+function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkDlTxt(x)+'</span>';
  return x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':(x.r?(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':''))):''}
 const LKD={};
 function lkDlInfo(cell){const id=cell.dataset.lkm,b=cell.closest(".b");if(!b)return null;const o=lkDec(b.dataset.t),x=o&&o.it.find(i=>i.id===id);return x?{id,b,x}:null}
-function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd||LKD[id])return;
- const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now()-lkDlP(id)*tot,tk=0;dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');
- const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=b.style.getPropertyValue("--k")?Math.round(p*100)+"% · "+lkSz(x.s||0):lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
+function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!bd||LKD[id])return;
+ const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now()-lkDlP(id)*tot,tk=0;if(dw){dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"')}
+ const rg=dw&&dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;if(rg)rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=Math.round(p*100)+"% · "+lkSz((x.s||0)*p)};
  const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);if(LKD[id])lkDlSv(id,LKD[id].p||0,1);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}else{lkDlSv(id,p,++tk%10===0)}},100);LKD[id]={iv,p:lkDlP(id)};up(lkDlP(id))}
-function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd)return;
- if(LKD[id]){clearInterval(LKD[id].iv);lkDlSv(id,LKD[id].p||0,1);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkDlTxt(x);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
+function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!bd)return;
+ if(LKD[id]){clearInterval(LKD[id].iv);lkDlSv(id,LKD[id].p||0,1);delete LKD[id];if(dw){dw.classList.remove("go");dw.innerHTML=lkDlI}bd.textContent=lkDlTxt(x);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
  lkDlStart(cell,q.b,x)}
 /* پخش هم‌زمان با دانلود | Stream While Downloading: ویدیوی دانلودنشده با دکمه‌ی پخش باز می‌شود، دانلود هم‌زمان شروع می‌شود، فقط همان مقدار دانلودشده پخش می‌شود و روی نوار زمان یک نوار خاکستری روشن مقدار دانلودشده را نشان می‌دهد؛ اگر پخش به انتهای دانلودشده برسد می‌ایستد و با رسیدن داده ادامه می‌دهد (play button streams: download starts together, only the downloaded part plays, a lighter grey bar on the timeline shows what is downloaded, playback waits at the edge and resumes when more arrives) */
 const LKS={iv:0,stall:0};
@@ -1880,7 +1880,7 @@ function lkStream(cell){const q=lkDlInfo(cell);if(!q)return;if(!LKD[q.id])lkDlSt
 function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;if(CFG.dlp)delete CFG.dlp[x.id];const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
  cell.classList.remove("lkrm","vd");const dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(dw)dw.remove();if(bd)bd.remove();
  if(x.t==="video"&&x.d)cell.insertAdjacentHTML("beforeend",'<span class="lkdu">'+lkDur(x.d)+'</span>')}
-$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(c.classList.contains("vd")&&!e.target.closest(".lkdw"))lkStream(c);else if(!LKD[c.dataset.lkm]||e.target.closest(".lkdw"))lkDlTap(c)},true);
+$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(e.target.closest(".lkdu[data-rs]"))lkDlTap(c);else if(c.classList.contains("vd"))lkStream(c);else if(!LKD[c.dataset.lkm]||e.target.closest(".lkdw"))lkDlTap(c)},true);
 /* نمایش دریافت رسانه | Demo Receive: چون سرور نیست، مخاطب بعد از ارسال رسانه‌ی ما، همان رسانه را با شناسه‌ی تازه و بدون دانلود خودکار برایمان می‌فرستد (no server: the contact sends the same media back as a not-yet-downloaded message so the receive flow can be tried) */
 async function lkEcho(c,it,res){if(!c||c.id===2)return;await new Promise(ok=>setTimeout(ok,1600));const nit=[];
  for(let i=0;i<it.length;i++){const x=it[i],nid=lkId();LKB[nid]=res[i].blob;try{await Promise.race([lkPut(nid,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}nit.push({id:nid,t:x.t,n:x.n,s:x.s,w:x.w,h:x.h,d:x.d,r:1})}
@@ -3094,7 +3094,7 @@ setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
-(function(){var busy=0,lock=0,isl=0,fresh=null,freshP=null,oldH=null,fnew=null;
+(function(){var busy=0,lock=0,isl=0,wk=null,wiv=0,fresh=null,freshP=null,oldH=null,fnew=null;
 var IDX=function(){var x=new URL(location.href);x.search="";x.hash="";if(x.pathname.slice(-1)==="/")x.pathname+="index.html";return x.href};
 /* تابع هش | Hash Fn: اثر انگشت متن صفحه برای مقایسه نسخه؛ قبلاً تعریف نشده بود و خطای Can't find variable: h می‌داد (content fingerprint; it was missing and caused the error) */
 async function h(s){try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return("0"+x.toString(16)).slice(-2)}).join("")}catch(e){var n=5381;for(var i=0;i<s.length;i++)n=((n<<5)+n+s.charCodeAt(i))|0;return"f"+s.length+"-"+(n>>>0).toString(16)}}
@@ -3117,7 +3117,10 @@ K.ic=ic;K.pa=a;K.pb=b;K.da=a.getAttribute("d");K.db=b.getAttribute("d");K.A=samp
 return new Promise(function(res){if(!K.raf){res();return}K.on=0;K.rot0=K.rot;K.rotEnd=Math.ceil(K.rot/360)*360;K.done=res})}
 function L(e,f){var l;try{l=(JSON.parse(localStorage.getItem("lk_cfg"))||{}).lang}catch(x){}return l==="fa"?f:e}
 /* دایناميک آیلند | Dynamic Island: خود کپسول بالای چت‌ها (با تم برنامه) سر جایش باز می‌شود و بعد دوباره جمع می‌شود */
-function island(kind){var t=document.querySelector("#chats .top .title");if(!t)return;isl=1;
+function island(kind){var t=document.querySelector("#chats .top .title");if(!t)return;
+/* صبر تا دیده شدن چت‌ها | Wait Until Visible: اگر صفحه‌ی چت‌ها هنوز نمایش داده نشده (مثلاً صفحه‌ی رمز باز است) اندازه‌ی کپسول صفر است و آیلند به گوشه‌ی چپ می‌رفت؛ پس صبر می‌کند تا کپسول واقعاً دیده شود و بعد دقیقاً از وسط باز می‌شود (when Chats is not shown yet the title rect is 0 and the island jumped to the left corner; now it waits until the title is really visible and then opens from the exact center) */
+var r0=t.getBoundingClientRect();if(!(r0.width>0&&r0.height>0)){wk=kind;if(!wiv)wiv=setInterval(function(){var q=document.querySelector("#chats .top .title");if(!q||isl)return;var b=q.getBoundingClientRect();if(b.width>0&&b.height>0){clearInterval(wiv);wiv=0;var k=wk;wk=null;setTimeout(function(){island(k)},700)}},400);return}
+isl=1;
 var r=t.getBoundingClientRect(),old=t.getAttribute("style")||"",ph=document.createElement("div");
 ph.style.cssText="width:"+r.width+"px;height:"+r.height+"px;flex:none";t.parentNode.insertBefore(ph,t);
 var w=document.createElement("div");w.style.display="none";while(t.firstChild)w.appendChild(t.firstChild);t.appendChild(w);
