@@ -1318,22 +1318,32 @@ async function mImageRun(file,rec,P,opt){
 /* ---- تبدیل ویدیو | Video Convert ---- */
 /* رسانه‌بان | MediaBunny Loader: کتابخانه‌ی تبدیل ویدیو که داخل همین فایل است؛ اولین بار که لازم شود مثل بقیه‌ی کتابخانه‌ها اجرا می‌شود (بدون import و بدون آدرس blob تا همه‌جا کار کند) و بعد آماده می‌ماند (video library stored inside this file, run once when first needed like the other libraries; no import and no blob URL so it works everywhere) */
 let mMBp=null;
-function mMB(){if(!mMBp){mLib("mediabunny");mMBp=Promise.resolve(window.MediaBunny)}return mMBp}
+/* باز کردن کتابخانه رسانه‌بان | MediaBunny Open: اول به‌صورت اسکریپت داخلی اجرا می‌شود؛ اگر محیط اجازه نداد، از آدرس blob؛ اگر باز هم نشد، علت دقیق (خطا یا مسدود شدن امنیتی) در پیام خطا نوشته می‌شود (first as an inline script; if blocked, from a blob URL; if both fail the exact reason goes in the error message) */
+function mMB(){if(!mMBp)mMBp=(async()=>{if(window.MediaBunny)return window.MediaBunny;const er=[],h=e=>er.push(String(e.message||"error").slice(0,80)),v=e=>er.push("csp "+e.violatedDirective);addEventListener("error",h);addEventListener("securitypolicyviolation",v);
+try{try{const s=document.createElement("script");s.text=document.getElementById("lkLib_mediabunny").textContent;document.head.appendChild(s)}catch(e){er.push(String(e&&e.message||e).slice(0,80))}
+if(!window.MediaBunny)await new Promise(r=>{try{const s=document.createElement("script");s.src=mLibBlob("mediabunny");s.onload=s.onerror=()=>r();document.head.appendChild(s)}catch(e){er.push(String(e&&e.message||e).slice(0,80));r()}});
+await new Promise(r=>setTimeout(r,30))}finally{removeEventListener("error",h);removeEventListener("securitypolicyviolation",v)}
+if(!window.MediaBunny){mMBp=null;throw new Error("lib not loaded: "+(er.join(" | ")||"no error reported"))}
+return window.MediaBunny})();return mMBp}
 /* پیش‌بارگذاری ابزار | Tool Prewarm: کتابخانه‌ی ویدیو در زمان بیکاری از قبل آماده می‌شود تا شروع فشرده‌سازی فوری باشد (video library is readied while idle so compress starts instantly) */
 try{(window.requestIdleCallback||(f=>setTimeout(f,1500)))(()=>{mMB().catch(()=>{})})}catch(e){}
 /* تبدیل ویدیو | Video Convert: تنها راه فشرده‌سازی ویدیو. با کتابخانه‌ی MediaBunny و رمزگذار سخت‌افزاری گوشی، فایل (MP4/MOV/WebM) را می‌خواند، بخش انتخاب‌شده را با برش و چرخش و اندازه‌ی جدید و حداکثر ۳۰ فریم به MP4 (H.264) تبدیل می‌کند و صدای AAC را بدون تغییر کپی می‌کند (the only video compress path: MediaBunny + hardware encoder, output MP4) */
 async function mVideoRun(file,rec,P,opt){
-const B=await mMB();
+let B=await mMB();if(!B||typeof B.Input!=="function"){mMBp=null;try{delete window.MediaBunny}catch(e){window.MediaBunny=undefined}B=await mMB()}if(!B||typeof B.Input!=="function")throw new Error("compress failed: video library invalid ("+typeof B+")");
 const inp=new B.Input({formats:B.ALL_FORMATS,source:new B.BlobSource(file)});
 try{
 const vt=await inp.getPrimaryVideoTrack();if(!vt)throw new Error("no video track");
-const sw=await vt.getDisplayWidth(),sh=await vt.getDisplayHeight(),dur=await inp.computeDuration();
+const sw=await vt.getDisplayWidth(),sh=await vt.getDisplayHeight();let dur=await inp.computeDuration();
+/* بررسی مدت ویدیو | Duration Check: اگر مدت ویدیو خوانده نشود، قبلاً فایل ۰ ثانیه‌ای ساخته می‌شد؛ حالا یک بار از خود ترک می‌پرسد و اگر باز هم نشد خطا می‌دهد و چیزی فرستاده نمی‌شود (if duration is unknown we ask the track once, else throw instead of making a 0-second file) */
+if(!(dur>0)){try{dur=await vt.computeDuration()}catch(e){}}if(!(dur>0))throw new Error("compress failed: video duration unknown ["+(vt.codec||"?")+" "+sw+"x"+sh+"]");
 const rot=(((rec.rotate||0)%360)+360)%360,rr=rot%180,w2=rr?sh:sw,h2=rr?sw:sh,c=mediaCropFor(rec,w2,h2,P.ratio),cw=c.w*w2,ch=c.h*h2;
 let dw,dh,br;
 if(P.w){dw=P.w;dh=P.h;br=P.vbr}
 else if(P.heights){const q=(opt.height>=240&&opt.height<=1080)?opt.height:720;/* سقف کیفیت | Quality Cap: اندازه هرگز بیشتر از اندازه واقعی فایل نمی‌شود و بیت‌ریت هم از همان اندازهٔ واقعی انتخاب می‌شود (never upscale; bitrate follows the real output height) */{const k=Math.min(1,q/Math.min(cw,ch));dh=mEven(ch*k);dw=mEven(cw*k);br=P.bitrates[P.heights.filter(h=>h<=Math.min(dw,dh)+2).pop()||P.heights[0]]}}
 else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
 const tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
+/* بررسی بازه برش | Trim Range Check: اگر بازه‌ی انتخاب‌شده خالی باشد خروجی خالی ساخته می‌شد؛ حالا خطا می‌دهد (an empty trim range used to give an empty video; now it throws) */
+if(!(en-st>.05))throw new Error("compress failed: empty trim range "+st+"-"+en);
 /* سقف ۳۰ فریم | 30fps Cap: ویدیوی ۶۰ فریمی نصف فریم را فشرده می‌کند تا کار تقریباً دو برابر سریع‌تر شود (60fps source encodes half the frames, about 2x faster) */
 let fps=30;try{const ps=await vt.computePacketStats(120);fps=mClamp(Math.round(ps.averagePacketRate||30),12,30)}catch(e){}
 /* چرخش و آینه | Rotate and Flip: در دستورکار اول آینه و بعد چرخش است، پس برای کتابخانه (که اول می‌چرخاند و بعد آینه می‌کند) زاویه برعکس داده می‌شود (recipe flips then rotates; the library rotates then flips, so the angle is reversed when flipped) */
@@ -1349,7 +1359,10 @@ if(!conv.isValid)throw new Error("video not supported: "+conv.discardedTracks.ma
 if(opt.onProgress)conv.onProgress=p=>opt.onProgress(mClamp(p,0,1));
 if(opt.signal){if(opt.signal.aborted)throw new Error("cancelled");opt.signal.addEventListener("abort",()=>{conv.cancel()},{once:true})}
 try{await conv.execute()}catch(e){if(e instanceof B.ConversionCanceledError)throw new Error("cancelled");throw e}
-const res=mResult(new Blob([out.target.buffer],{type:"video/mp4"}),mBase(file),"video/mp4",dw,dh,en-st);
+const ob=new Blob([out.target.buffer||[]],{type:"video/mp4"});
+/* بررسی خروجی | Output Check: فایل ساخته‌شده دوباره باز می‌شود؛ اگر ویدیو یا مدتی نداشت ارسال نمی‌شود و علت در پیام خطا می‌آید (the result is reopened; if it has no video or no duration it is not sent and the reason shows in the error) */
+{let ok=ob.size>2000,why="size "+ob.size;if(ok){const chk=new B.Input({formats:B.ALL_FORMATS,source:new B.BlobSource(ob)});try{const v2=await chk.getPrimaryVideoTrack(),d2=await chk.computeDuration();ok=!!v2&&d2>.05;why=(v2?"dur "+d2:"no video track")}catch(e){ok=false;why=String(e&&e.message||e).slice(0,60)}finally{try{chk.dispose()}catch(e){}}}if(!ok)throw new Error("compress failed: output empty ("+why+")")}
+const res=mResult(ob,mBase(file),"video/mp4",dw,dh,en-st);
 if(conv.discardedTracks.some(d=>d.track.isAudioTrack()))res.audioDropped=true;
 return res}finally{try{inp.dispose()}catch(e){}}}
 
