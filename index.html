@@ -350,7 +350,10 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkrg circle{fill:none;stroke-width:3}
 .lkrg .t{stroke:rgba(255,255,255,.3)}
 .lkrg .f{stroke:#34c759;stroke-dasharray:var(--p,0) 100}
-.lkrg[data-ph="u"] .f{stroke:var(--blue)}
+/* حلقهٔ آپلود سفید | White Upload Ring: بعد از فشرده‌سازی حلقه سفید می‌شود، مثل تلگرام می‌چرخد و پر می‌شود (after compression the ring turns white, spins and fills like Telegram) */
+.lkrg[data-ph="u"] .f{stroke:#fff;stroke-linecap:round}
+.lkrg[data-ph="u"] svg{animation:lkspin 1s linear infinite}
+@keyframes lkspin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
 .lkc.lkd .lkpg .lkrg svg{display:none}
 .lkdl .lkrg{width:30px;height:30px}
 .lkf{display:flex;flex-direction:column;gap:8px;min-width:230px;padding:4px 6px 0}
@@ -1281,7 +1284,10 @@ async function mediaAuto(file){const o=await mediaOpen(file);try{if(o.kind==="au
 async function mediaOpen(file){
  const t=file.type||"";
  if(t.startsWith("image/")){let b;try{b=await createImageBitmap(file,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(file)}return{kind:"image",src:b,w:b.width,h:b.height,duration:0,close:()=>{if(b.close)b.close()}}}
- if(t.startsWith("video/")){const v=document.createElement("video"),u=URL.createObjectURL(file);v.muted=true;v.playsInline=true;v.preload="auto";v.src=u;await new Promise((ok,no)=>{v.onloadeddata=ok;v.onerror=()=>no(new Error("video decode"))});return{kind:"video",src:v,w:v.videoWidth,h:v.videoHeight,duration:v.duration,close:()=>{v.removeAttribute("src");v.load();URL.revokeObjectURL(u)}}}
+ /* باز کردن مطمئن ویدیو | Reliable Video Open: روی موبایل (به‌خصوص آیفون) ویدیوی جدا از صفحه هرگز بارگذاری نمی‌شد و بی‌نهایت منتظر می‌ماند (نوار سبز گیر می‌کرد)؛ حالا در صفحه مخفی قرار می‌گیرد، کلید شروع می‌خورد و بعد از ۱۵ ثانیه خطا می‌دهد (on mobile a detached video never loaded and we waited forever; now it is attached hidden, kicked, and errors after 15s) */
+ if(t.startsWith("video/")){const v=document.createElement("video"),u=URL.createObjectURL(file),rm=()=>{try{v.pause()}catch(e){}v.removeAttribute("src");try{v.load()}catch(e){}v.remove();URL.revokeObjectURL(u)};v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.style.cssText="position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none";document.body.appendChild(v);
+  try{await new Promise((ok,no)=>{const tm=setTimeout(()=>no(new Error("video load timeout")),15000);v.onloadeddata=()=>{clearTimeout(tm);try{v.pause()}catch(e){}ok()};v.onloadedmetadata=()=>{try{v.currentTime=.001}catch(e){}};v.onerror=()=>{clearTimeout(tm);no(new Error("video decode"))};v.src=u;v.load();const p=v.play();if(p&&p.catch)p.catch(()=>{})})}catch(e){rm();throw e}
+  return{kind:"video",src:v,w:v.videoWidth,h:v.videoHeight,duration:v.duration,close:rm}}
  if(t.startsWith("audio/")){const a=new Audio(),u=URL.createObjectURL(file);a.preload="metadata";a.src=u;await new Promise(ok=>{a.onloadedmetadata=ok;a.onerror=ok});const d=a.duration;URL.revokeObjectURL(u);return{kind:"audio",src:null,w:0,h:0,duration:isFinite(d)?d:0,close:()=>{}}}
  throw new Error("unsupported media")}
 /* اطلاعات رسانه | Media Info: فقط نوع، اندازه و مدت را برمی‌گرداند (برای ساختن نوار کوتاه‌کردن و محدودیت‌ها) */
@@ -1342,7 +1348,7 @@ async function mVideoRun(file,rec,P,opt){
  if(ad){const dc={codec:at.codec,sampleRate:at.audio.sample_rate,numberOfChannels:at.audio.channel_count,description:ad};for(const s of as){const t=s.cts/s.timescale;if(t>=st-.02&&t<en)muxer.addAudioChunkRaw(s.data,"key",Math.max(0,Math.round((t-st)*1e6)),Math.round(s.duration*1e6/s.timescale),{decoderConfig:dc})}}
  const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d",{willReadFrequently:!MHASF&&!!R.adjust});
  /* نگهبان گیر کردن | Stall Watchdog: اگر ۲۰ ثانیه هیچ فریمی رمزگشایی یا فشرده نشود، خطا می دهیم تا ارسال گیر نکند و فایل اصلی فرستاده شود (if no frame moves for 20s, throw so the send falls back to the original file instead of hanging) */
- let lastMove=Date.now();const stall=()=>{if(Date.now()-lastMove>20000)throw new Error("video stalled")};
+ let lastMove=Date.now();const stall=()=>{if(Date.now()-lastMove>12000)throw new Error("video stalled")};
  const waitFlush=async p=>{let fin=false;p.then(()=>{fin=true},()=>{fin=true});while(!fin){if(err)throw err;stall();await new Promise(r=>setTimeout(r,200))}await p};
  let err=null,n=0;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
  const enc=new VideoEncoder({output:(ch2,m)=>{lastMove=Date.now();muxer.addVideoChunk(ch2,m)},error:e=>{err=e}});
@@ -1353,7 +1359,7 @@ async function mVideoRun(file,rec,P,opt){
   if(err)throw err;if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");
   const s=vs[i];dec.decode(new EncodedVideoChunk({type:s.is_sync?"key":"delta",timestamp:Math.round(s.cts*1e6/s.timescale),duration:Math.round(s.duration*1e6/s.timescale),data:s.data}));
   while(dec.decodeQueueSize>8||enc.encodeQueueSize>8){if(err)throw err;stall();await new Promise(r=>setTimeout(r,4))}}
- await waitFlush(dec.flush());await waitFlush(enc.flush());if(err)throw err;muxer.finalize();
+ await waitFlush(dec.flush());await waitFlush(enc.flush());if(err)throw err;/* بدون فریم | No Frames: اگر هیچ فریمی فشرده نشد خطا می‌دهد تا راه جایگزین اجرا شود (if no frame was encoded we throw so the fallback path runs) */if(!n)throw new Error("no frames encoded");muxer.finalize();
  const res=mResult(new Blob([muxer.target.buffer],{type:"video/mp4"}),mBase(file),"video/mp4",dw,dh,en-st);if(at&&!ad)res.audioDropped=true;return res}
 
 /* ---- تبدیل صدا | Audio Convert ---- */
@@ -1372,10 +1378,12 @@ async function mVideoRec(file,rec,P,opt){
   else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
   const dur=o.duration,tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
   const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d"),out=cv.captureStream(30);let ad=false;
-  try{const C=window.AudioContext||window.webkitAudioContext;ac=new C();const d=ac.createMediaStreamDestination();ac.createMediaElementSource(v).connect(d);v.muted=false;await ac.resume().catch(()=>{});d.stream.getAudioTracks().forEach(t=>{out.addTrack(t);ad=true})}catch(e){ac=null;ad=false}
+  /* صدا بدون گیر شدن | Audio Without Stall: اول از captureStream خود ویدیو صدا گرفته می‌شود؛ وگرنه AudioContext فقط وقتی واقعا فعال باشد (چون متوقف باعث می‌شد پخش ویدیو گیر کند) (audio from the element's captureStream; AudioContext only if it is really running, since a suspended one stalls playback) */
+  try{const cap=v.captureStream||v.mozCaptureStream;if(cap){cap.call(v).getAudioTracks().forEach(t=>{out.addTrack(t);ad=true})}
+   if(!ad){const C=window.AudioContext||window.webkitAudioContext;ac=new C();await ac.resume().catch(()=>{});if(ac.state==="running"){const d=ac.createMediaStreamDestination();ac.createMediaElementSource(v).connect(d);v.muted=false;d.stream.getAudioTracks().forEach(t=>{out.addTrack(t);ad=true})}else{try{ac.close()}catch(e){}ac=null}}}catch(e){ac=null;ad=false}
   const mime=mPick(MIME_V);rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:br,audioBitsPerSecond:64e3});
   const parts=[];rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};const done=new Promise(ok=>{rc.onstop=ok});
-  v.currentTime=st;await new Promise(r=>{v.onseeked=r;setTimeout(r,2000)});
+  if(Math.abs(v.currentTime-st)>.05){v.currentTime=st;await new Promise(r=>{v.onseeked=r;setTimeout(r,2000)})}
   rc.start(500);try{await v.play()}catch(e){v.muted=true;ad=false;await v.play()}
   let last=Date.now(),lt=-1;
   await new Promise((ok,no)=>{const tick=()=>{try{if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");const t=v.currentTime;if(t!==lt){lt=t;last=Date.now()}else if(Date.now()-last>20000)throw new Error("video stalled");mDraw(x,v,o.w,o.h,rec,c,dw,dh);if(opt.onProgress)opt.onProgress(mClamp((t-st)/Math.max(.1,en-st),0,1));if(t>=en||v.ended)return ok();raf=requestAnimationFrame(tick)}catch(e){no(e)}};tick()});
@@ -1856,7 +1864,7 @@ async function lkSave(id,name){let b=LKB[id];if(!b){try{const r=await lkGet(id);
 const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 /* حلقه پیشرفت | Progress Ring: بعد از زدن ارسال روی هر عکس و ویدیو یک حلقه می آید. مرحله ۱: حلقه سبز همزمان با فشرده سازی و تغییر فرمت از ۰ تا ۱۰۰ پر می شود. مرحله ۲: دوباره از صفر با پیشرفت واقعی بارگذاری روی سرور پر می شود (after Send each photo/video gets a ring: step 1 green fills 0-100 in sync with compression and format change; step 2 restarts from 0 and follows the real upload progress to the server) */
 const lkRingH='<i class="lkrg" data-ph="c" style="--p:0"><svg viewBox="0 0 44 44"><circle class="t" cx="22" cy="22" r="19"/><circle class="f" cx="22" cy="22" r="19" pathLength="100"/></svg></i>';
-function lkRing(d,id,ph,p){const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(0,Math.min(1,p))*100))}
+function lkRing(d,id,ph,p){const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(ph==="u"?.08:0,Math.min(1,p))*100))}
 /* آدرس سرور | Server Address: آدرس سروری که فایل به آن آپلود می شود. خالی یعنی هنوز سروری وصل نیست و مرحله ۲ اجرا نمی شود (empty = no server connected yet, step 2 is skipped) */
 const LK_UPLOAD_URL="";
 function lkUpload(blob,name,onP){return new Promise((ok,no)=>{const x=new XMLHttpRequest(),f=new FormData();x.open("POST",LK_UPLOAD_URL);x.upload.onprogress=e=>{if(e.lengthComputable)onP(e.loaded/e.total)};x.onload=()=>x.status>=200&&x.status<300?(onP(1),ok(true)):no(new Error("upload "+x.status));x.onerror=()=>no(new Error("network"));f.append("file",blob,name||"file");x.send(f)})}
@@ -1886,10 +1894,10 @@ function lkPend(c,k,files,cap){
    if(!isF)lkRing(d,x.id,"c",0);
    res.push(await lkSafe(files[i],x,p=>{if(!isF)lkRing(d,x.id,"c",p)}));if(!isF)lkRing(d,x.id,"c",1);
    /* مرحله ۲ بارگذاری | Step 2 Upload: حلقه دوباره از صفر شروع می شود و با پیشرفت واقعی آپلود پر می شود (ring restarts from 0 and follows the real upload) */
-   if(LK_UPLOAD_URL){lkRing(d,x.id,"u",0);await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",p));lkRing(d,x.id,"u",1)}
+   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */lkRing(d,x.id,"u",0);if(LK_UPLOAD_URL){await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",p))}else{LKB[x.id]=res[i].blob;await new Promise(ok=>setTimeout(ok,350));try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}lkRing(d,x.id,"u",1);
    const g=cell();if(g)g.parentNode.classList.add("lkd")}}
   catch(e){d.remove();toast(/compress|timeout/.test(String(e&&e.message))?"Compression failed":"Send failed");return}
-  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}
+  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
    if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
   const text=lkEnc({k,it,cap:cap||undefined}),now=lkNow();
@@ -1900,7 +1908,8 @@ function lkPend(c,k,files,cap){
 /* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
 /* ارسال امن بدون فایل اصلی | Safe Step Without Original: دیگر با خطا فایل اصلی فرستاده نمی‌شود؛ خطا بالا می‌رود و حباب حذف می‌شود (errors propagate, the original is never sent) */
 Object.assign(FA,{"Compression failed":"فشرده‌سازی ناموفق بود؛ فایل ارسال نشد"});
-async function lkSafe(f,x,onP){return await Promise.race([lkProcess(f,x,onP||(()=>{})),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),x.t==="video"?1800000:180000))])}
+/* نگهبان بی‌پیشرفت | Progress Watchdog: اگر مدتی هیچ پیشرفتی دیده نشود خطا می‌دهد تا نوار سبز همیشه گیر نکند؛ نه مدت کل کار (errors out if no progress is seen for a while, instead of a fixed total time) */
+async function lkSafe(f,x,onP){let last=Date.now(),iv=0;const lim=x.t==="video"?90000:60000;try{return await Promise.race([lkProcess(f,x,p=>{last=Date.now();if(onP)onP(p)}),new Promise((ok,no)=>{iv=setInterval(()=>{if(Date.now()-last>lim)no(new Error("timeout"))},2000)})])}finally{clearInterval(iv)}}
 /* اندازه‌ی فیلم | Video Size First: عرض، ارتفاع و مدت فیلم قبل ساخت حباب خوانده می‌شود تا فیلم مثل عکس در کلاژ آلبوم با شکل درست بیاید */
 async function lkVDims(f){await new Promise(ok=>{const v=document.createElement("video"),u=URL.createObjectURL(f);let done=false;const fin=()=>{if(done)return;done=true;URL.revokeObjectURL(u);v.removeAttribute("src");ok()};v.preload="metadata";v.muted=true;v.onloadedmetadata=()=>{f.__w=v.videoWidth;f.__h=v.videoHeight;f.__d=v.duration;fin()};v.onerror=fin;v.src=u;setTimeout(fin,4000)})}
 async function lkDims(f){if(lkKind(f)==="video")return lkVDims(f);if(lkKind(f)!=="photo")return;try{let b;try{b=await createImageBitmap(f,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(f)}f.__w=b.width;f.__h=b.height;if(b.close)b.close()}catch(e){}}
@@ -2816,7 +2825,8 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
 #selTop #selCnt{flex:1;margin:0 4px}
 #chat.sel>.inbar{display:none}
 /* دکمه های پایین در صفحه | Select Buttons Inside Screen: دکمه های سطل، دانلود و فوروارد ۲۰ پیکسل بالاتر از لبه صفحه نمایش می ایستند مثل کپسول پایین (bottom buttons sit 20px above the display edge like the tab capsule, using --gap, so they are never cut off) */
-#selBot{position:absolute;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:space-between;padding:10px 16px calc(var(--gap,var(--ext)) + 20px);z-index:7;pointer-events:none}
+/* دکمه‌های پایین حالت انتخاب | Select Mode Bottom Buttons: حاشیهٔ امن پایین گوشی هم اضافه شد تا حذف، دانلود و فوروارد داخل صفحه بمانند و بیرون نزنند (safe-area bottom added so delete/download/forward stay inside the screen) */
+#selBot{position:absolute;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:space-between;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + var(--gap,var(--ext)) + 14px) max(16px,env(safe-area-inset-left,0px));z-index:7;pointer-events:none}
 #chat.sel>#selBot{display:flex}
 #selBot .round{width:54px;height:54px;pointer-events:auto;cursor:pointer;color:var(--txt)}
 #selBot .round.dis{opacity:.4;pointer-events:none}
