@@ -2,11 +2,11 @@
    روش کار: اول همه‌چیز از کش مرورگر باز می‌شود (سریع و آفلاین)؛ بررسی آپدیت در پس‌زمینه توسط صفحه انجام می‌شود.
    VERSION: فقط وقتی خود sw.js یا فایل‌های کنار index.html (آیکن‌ها، مانیفست) عوض شدند یکی زیاد کن.
    برای عوض شدن index.html لازم نیست؛ صفحه خودش آپدیت را پیدا می‌کند. */
-const VERSION = 3;
+const VERSION = 4;
 const CACHE = "link-v" + VERSION;
 const SCOPE = self.registration.scope;
 const INDEX = new URL("index.html", SCOPE).href;
-const CORE = [INDEX, "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png"].map(p => new URL(p, SCOPE).href);
+const CORE = [INDEX, "manifest.webmanifest?v=4", "icons/icon-192.png?v=4", "icons/icon-512.png?v=4", "icons/icon-180.png?v=4"].map(p => new URL(p, SCOPE).href);
 
 /* نصب | Install: فایل‌های اصلی ذخیره می‌شوند */
 self.addEventListener("install", e => {
