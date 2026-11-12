@@ -270,6 +270,13 @@ html.light .b.me .tick{color:var(--blue)!important}
 /* مرحله ۱ مربعی | Stage 1 Square: آواتار تمام‌عرض و مربع (full-width square, no rounding) */
 .ph.big #myav{width:100%;height:min(100vw,50vh);border-radius:0;font-size:120px}
 .ph.pull #myav{transition:none}
+/* نام و آیدی روی عکس بزرگ | Big Photo Overlay: وقتی عکس پروفایل با کشیدن باز شد، نام و آیدی و ایمیل مثل تلگرام پایین چپِ خود عکس روی یک سایه تیره می‌نشینند */
+.ph{position:relative}
+.ph.big::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none;z-index:1}
+.ph.big #myname,.ph.big #myinfo{position:absolute;left:16px;right:16px;margin:0!important;padding:0!important;text-align:left;color:#fff!important;z-index:2;animation:phIn .3s ease}
+.ph.big #myname{bottom:44px;font-size:24px}
+.ph.big #myinfo{bottom:14px;opacity:.9}
+@keyframes phIn{from{opacity:0}to{opacity:1}}
 #pfFull{position:absolute;inset:0;background:#000;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .2s;color:#fff}
 #pfFull.on{opacity:1;pointer-events:auto}
 #pfFull .fa{width:min(100vw,62vh);height:min(100vw,62vh);border-radius:0;font-size:min(40vw,24vh);background-size:cover;background-position:center}
@@ -515,6 +522,8 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv .stg{flex:1;min-height:0;position:relative;margin:calc(env(safe-area-inset-top) + 12px) 16px 12px}
 #mpv .stg .bx{position:absolute;touch-action:none}
 #mpv .stg canvas{display:block;width:100%;height:100%}
+#mpv .stg{touch-action:none}
+#mpv .stg.zm{overflow:hidden}
 #mpv .mpcr{position:absolute;border:1.5px solid #fff;box-shadow:0 0 0 4000px rgba(0,0,0,.6);box-sizing:border-box;pointer-events:none;background:linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) 33.3% 0/1px 100% no-repeat,linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) 66.6% 0/1px 100% no-repeat,linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) 0 33.3%/100% 1px no-repeat,linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) 0 66.6%/100% 1px no-repeat}
 #mpv .mpcr i{position:absolute;width:26px;height:26px}
 #mpv .mpcr .tl{top:-3px;left:-3px;border-top:4px solid #fff;border-left:4px solid #fff}
@@ -1006,10 +1015,11 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 <div class="screen sub" id="appear"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Appearance">Appearance</div><div style="width:38px"></div></div>
   <div class="body"><div class="hd" data-t="Theme">Theme</div><div class="card">
     <!-- تم لینک ادغام‌شده | Merged Link Theme Row: یک ردیف برای تم لینک؛ روز خودکار لینک روشن، شب خودکار لینک تیره -->
-    <div class="item" data-th="link"><span data-t="Link">Link</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="ocean"><i style="width:14px;height:14px;border-radius:50%;background:#0284c7;flex:none;margin-inline-end:10px"></i><span data-t="Ocean">Ocean</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="forest"><i style="width:14px;height:14px;border-radius:50%;background:#16a34a;flex:none;margin-inline-end:10px"></i><span data-t="Forest">Forest</span><span class="rr" style="color:var(--blue)"></span></div>
-    <div class="item" data-th="violet"><i style="width:14px;height:14px;border-radius:50%;background:#7c3aed;flex:none;margin-inline-end:10px"></i><span data-t="Violet">Violet</span><span class="rr" style="color:var(--blue)"></span></div></div>
+    <!-- آیکن تم‌ها | Theme Icons: به‌جای نقطه‌ی رنگی، هر تم یک آیکن ساده و مینیمال دارد (لینک = لوگوی خود برنامه، اقیانوس = موج، جنگل = درخت، بنفش = گل) -->
+    <div class="item" data-th="link"><img class="tlg" alt="" style="width:22px;height:22px;flex:none;object-fit:contain;margin-inline-end:12px"><span data-t="Link">Link</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="ocean"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M2 9c2-3 4-3 6 0s4 3 6 0 4-3 6 0 2 1 2 1"/><path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0 2 1 2 1"/></svg><span data-t="Ocean">Ocean</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="forest"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/></svg><span data-t="Forest">Forest</span><span class="rr" style="color:var(--blue)"></span></div>
+    <div class="item" data-th="violet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-inline-end:12px"><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="3.6" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.4" fill="#7c3aed"/></svg><span data-t="Violet">Violet</span><span class="rr" style="color:var(--blue)"></span></div></div>
     <div class="hd" data-t="Night Mode">Night Mode</div><div class="card"><div class="item" id="nightRow"><span data-t="Night Mode">Night Mode</span><span class="sw" id="nightSw"></span></div></div>
     <div class="hd" data-t="Accent Color">Accent Color</div><div class="card"><div class="item" id="accRow" style="gap:12px;justify-content:center"></div></div>
     <div class="hd" data-t="Chat Background">Chat Background</div><div class="card"><div class="item" id="bgRow" style="flex-wrap:wrap;gap:10px;justify-content:center"></div><div class="item" id="bgPick" style="color:var(--blue)"><i data-ic="camera" data-s="20"></i><span data-t="Choose from Gallery">Choose from Gallery</span></div></div></div>
@@ -1995,6 +2005,41 @@ function mpeInit(){
  $("#mpaOk").onclick=()=>$("#mpa").classList.remove("on")}
 /* باز کردن پیش‌نمایش | Open Preview: اندازه‌ی فایل‌ها را می‌خواند، صفحه‌ها را از عکس و ویدیو می‌سازد و پیش‌نمایش را نشان می‌دهد */
 Object.assign(FA,{"Preparing media...":"در حال آماده‌سازی..."});
+/* زوم خودکار برش | Crop Auto Zoom: یک ثانیه بعد از رها کردن قاب برش، تصویر بزرگ می‌شود تا قاب برش صفحه را پر کند و همان‌طور می‌ماند تا خودت با دو انگشت (پینچ) تغییرش بدهی؛ با یک انگشت بیرون قاب هم می‌شود تصویر را جابه‌جا کرد */
+const MZ={t:0,z:0,s:1,l:0,tp:0,sk:0,c0:"",max:3,m:18,pts:new Map(),pn:null,pc:null};
+/* جای صحنه | Stage Place: اندازه و جای صحنه‌ی برش را با مقیاس داده‌شده می‌گذارد */
+function mzPut(s,l,tp,anim){const S=$("#mpeS"),B=$("#mpeB");B.style.transition=anim?"left .35s ease,top .35s ease,width .35s ease,height .35s ease":"none";B.style.width=MPE.W*s+"px";B.style.height=MPE.H*s+"px";B.style.left=l+"px";B.style.top=tp+"px";MZ.s=s;MZ.l=l;MZ.tp=tp;S.classList.toggle("zm",s>1.001)}
+/* وضوح بوم | Canvas Sharpness: بعد از زوم، تصویر را با وضوح اندازه‌ی جدید دوباره می‌کشد */
+function mzSharp(){const cv=$("#mpeC"),Wz=MPE.W*MZ.s,Hz=MPE.H*MZ.s,k=Math.min(2,devicePixelRatio||1),f=Math.min(1,4096/(Wz*k),4096/(Hz*k));cv.width=Math.round(Wz*k*f);cv.height=Math.round(Hz*k*f);mDraw(cv.getContext("2d"),MPE.src.m,MPE.src.sw,MPE.src.sh,mediaRecipe({rotate:MPE.rot,flip:MPE.flip,adjust:MPV.rec[MPE.i].adjust}),{x:0,y:0,w:1,h:1},cv.width,cv.height)}
+/* زوم روی قاب | Zoom To Crop: صحنه را بزرگ می‌کند و قاب برش را وسط صفحه می‌گذارد */
+function mzIn(){clearTimeout(MZ.t);if(!MPE.src||!$("#mpe").classList.contains("on"))return;
+ const S=$("#mpeS"),c=MPE.c,cw=S.clientWidth,ch=S.clientHeight,W=MPE.W,H=MPE.H,s=Math.min(MZ.max,(cw-2*MZ.m)/(c.w*W),(ch-2*MZ.m)/(c.h*H));
+ if(!(s>1.08))return;
+ mzPut(s,cw/2-(c.x+c.w/2)*W*s,ch/2-(c.y+c.h/2)*H*s,1);mzSharp();MZ.z=1}
+/* برگشت از زوم | Zoom Back: صحنه با انیمیشن به اندازه‌ی کامل برمی‌گردد */
+function mzOut(){clearTimeout(MZ.t);if(!MZ.z)return;MZ.z=0;const S=$("#mpeS");mzPut(1,(S.clientWidth-MPE.W)/2,(S.clientHeight-MPE.H)/2,1);setTimeout(()=>{if(!MZ.z)mpeDraw()},280)}
+/* اتصال زوم | Zoom Wiring: پینچ با دو انگشت، جابه‌جایی با یک انگشت بیرون قاب و زوم خودکار یک‌ثانیه‌ای بعد از تغییر قاب */
+(function(){const d0=mpeDraw;mpeDraw=function(){MZ.z=0;MZ.s=1;MZ.pts.clear();MZ.pn=MZ.pc=null;clearTimeout(MZ.t);$("#mpeS").classList.remove("zm");d0();const S=$("#mpeS");MZ.l=(S.clientWidth-MPE.W)/2;MZ.tp=(S.clientHeight-MPE.H)/2};
+ const i0=mpeInit;mpeInit=function(){i0();const S=$("#mpeS"),B=$("#mpeB");
+  const mid=()=>{const a=[...MZ.pts.values()];return[(a[0].x+a[1].x)/2,(a[0].y+a[1].y)/2,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1]};
+  /* لمس روی قاب؟ | On Crop Touch: آیا انگشت روی قاب برش یا نزدیک گوشه‌هایش است (آن‌وقت قاب را می‌کشد نه تصویر را) */
+  const onCrop=e=>{const b=B.getBoundingClientRect(),c=MPE.c,px=(e.clientX-b.left)/b.width,py=(e.clientY-b.top)/b.height,X=[c.x,c.x+c.w],Y=[c.y,c.y+c.h];for(const xi of[0,1])for(const yi of[0,1])if(Math.abs((px-X[xi])*b.width)<32&&Math.abs((py-Y[yi])*b.height)<32)return true;return px>c.x&&px<c.x+c.w&&py>c.y&&py<c.y+c.h};
+  S.addEventListener("pointerdown",e=>{clearTimeout(MZ.t);MZ.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(MZ.pts.size===2){e.stopPropagation();e.preventDefault();MZ.pn=null;MZ.sk=1;
+    for(const id of MZ.pts.keys())if(id!==e.pointerId)B.dispatchEvent(new PointerEvent("pointercancel",{pointerId:id,bubbles:false}));
+    const r=S.getBoundingClientRect(),m=mid();MZ.pc={d:m[2],s:MZ.s,l:MZ.l,tp:MZ.tp,fx:m[0]-r.left,fy:m[1]-r.top};return}
+   if(MZ.pts.size>2){e.stopPropagation();return}
+   if(MZ.z&&!onCrop(e)){e.stopPropagation();e.preventDefault();MZ.sk=1;MZ.pn={id:e.pointerId,x:e.clientX,y:e.clientY,l:MZ.l,tp:MZ.tp};try{S.setPointerCapture(e.pointerId)}catch(_){}return}
+   MZ.sk=0;MZ.c0=JSON.stringify(MPE.c)},true);
+  S.addEventListener("pointermove",e=>{const q=MZ.pts.get(e.pointerId);if(q){q.x=e.clientX;q.y=e.clientY}
+   if(MZ.pc&&MZ.pts.size===2){const r=S.getBoundingClientRect(),m=mid(),pc=MZ.pc,s=Math.max(1,Math.min(6,pc.s*m[2]/pc.d)),ux=(pc.fx-pc.l)/pc.s,uy=(pc.fy-pc.tp)/pc.s;mzPut(s,m[0]-r.left-ux*s,m[1]-r.top-uy*s,0)}
+   else if(MZ.pn&&MZ.pn.id===e.pointerId){const n=MZ.pn;mzPut(MZ.s,n.l+e.clientX-n.x,n.tp+e.clientY-n.y,0)}});
+  const up=e=>{MZ.pts.delete(e.pointerId);if(MZ.pn&&MZ.pn.id===e.pointerId)MZ.pn=null;
+   if(MZ.pc&&MZ.pts.size<2){MZ.pc=null;if(MZ.s<1.03){MZ.z=1;mzOut()}else{MZ.z=1;mzSharp()}}
+   if(MZ.pts.size)return;clearTimeout(MZ.t);if(MZ.sk){MZ.sk=0;return}if(!MZ.z&&JSON.stringify(MPE.c)!==MZ.c0)MZ.t=setTimeout(mzIn,1000)};
+  S.addEventListener("pointerup",up);S.addEventListener("pointercancel",up);
+  $("#mpeH").addEventListener("click",()=>{mzOut();clearTimeout(MZ.t);MZ.t=setTimeout(mzIn,1000)});
+  ["#mpeX","#mpeOk","#mpeRot","#mpeFlp"].forEach(q=>$(q).addEventListener("click",()=>clearTimeout(MZ.t)))}})();
 /* نوار بارگذاری ۰ تا ۱۰۰ بعد از انتخاب از گالری | Gallery Loading Bar: تا آماده‌شدن پیش‌نمایش عکس و ویدیو درصد پیشرفت نشان می‌دهد */
 function lkLoad(n){if(!document.getElementById("lkLoadCss")){const s=document.createElement("style");s.id="lkLoadCss";s.textContent="#lkLoad{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}#lkLoad .lc{min-width:230px;padding:16px 20px;border-radius:18px;background:var(--card);text-align:center;font-size:14px}#lkLoad .lt{height:6px;margin-top:12px;border-radius:3px;background:rgba(127,127,127,.3);overflow:hidden}#lkLoad .lf{height:100%;width:0;border-radius:3px;background:var(--blue)}";document.head.append(s)}
  const e=document.createElement("div");e.id="lkLoad";e.innerHTML='<div class="lc"><div class="ln"></div><div class="lt"><div class="lf"></div></div></div>';document.body.append(e);
@@ -2178,6 +2223,8 @@ $("#pshade").onclick=closePick;
 $$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals()})});
 $$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
 $("#nightRow").onclick=()=>{CFG.night=!CFG.night;thAcc();saveCfg();applyTheme();renderVals()};
+/* لوگوی تم لینک | Link Theme Logo: لوگوی کنار تم لینک همان لوگوی صفحه‌ی ورود است (کپی منبع، نه تکرار داده) */
+$$("#appear .tlg").forEach(i=>i.src=$(".lgo").src);
 $$("[data-th]").forEach(e=>e.onclick=()=>{CFG.theme=e.dataset.th;thAcc();saveCfg();applyTheme();renderVals()});
 /* مقدارها | Refresh Values */
 function renderVals(){
@@ -2902,7 +2949,8 @@ function lkSlide(dir){const L=$("#clist");if(!L||!L.animate||matchMedia("(prefer
   if(dx>70&&Math.abs(dy)<Math.abs(dx)*0.6&&!$("#cp").classList.contains("on"))$("#back").click()},{passive:true})})();
 
 /* لیست پین‌ها | Pins List: پیام‌های پین‌شده‌ی گفتگو را (قدیمی به جدید) برمی‌گرداند؛ ذخیره‌ی قدیمی تک‌پیام هم پشتیبانی می‌شود */
-window.pinsOf=cid=>{const v=CFG.pins&&CFG.pins[cid];return !v?[]:Array.isArray(v)?v:[v]};
+/* ترتیب پین‌ها | Pins Send Order: پین‌ها بر اساس زمان ارسال پیام (قدیمی به جدید) چیده می‌شوند، نه بر اساس زمان پین شدن */
+window.pinsOf=cid=>{const v=CFG.pins&&CFG.pins[cid],a=!v?[]:Array.isArray(v)?v:[v];if(a.length<2)return a;const c=CHATS.find(x=>x.id===cid);if(!c)return a;const ms=chatMsgs(c).map(m=>m[1]);return a.map((r,i)=>[r,i,ms.indexOf(r)]).sort((x,y)=>x[2]-y[2]||x[1]-y[1]).map(x=>x[0])};
 /* رفتن به پیام پین‌شده | Jump To Pin: به پیام اسکرول می‌کند و هایلایتش می‌کند */
 function pinJump(raw){const t=[...$$("#msgs .b")].find(x=>x.dataset.t===raw);if(!t)return;clearHl();const M=$("#msgs");
  M.scrollTo({top:M.scrollTop+t.getBoundingClientRect().top-M.getBoundingClientRect().top-(M.clientHeight-t.offsetHeight)/2,behavior:"smooth"});
@@ -2916,7 +2964,15 @@ window.applyPin=function(){const pb=$(".pinbar");if(!pb)return;const P=pinsOf(S.
 (function(){const o=document.createElement("div");o.id="pnov";$("#chat").append(o);
  o.addEventListener("click",e=>{const it=e.target.closest(".pbub");o.classList.remove("on");if(it)pinJump(pinsOf(S.openId)[+it.dataset.i])});
  $(".pinbar").addEventListener("click",e=>{/* زدن روی نوار | Tap Bar: با بیش از یک پین، زدن روی هر جای نوار لیست پین‌ها را باز می‌کند؛ با یک پین مثل قبل به پیام می‌رود (OLD, superseded by Jump To Shown Pin below: the bar itself now scrolls to the shown pin, and only the icon button opens the pin list) */if(pinsOf(S.openId).length<2)return;e.stopImmediatePropagation();const P=pinsOf(S.openId);/* اسکرول به پین نمایشی | Jump To Shown Pin: زدن روی نوار به همان پیامی که در نوار دیده می شود اسکرول می کند؛ فقط زدن روی دکمه آیکن سمت چپ حباب پین ها را باز می کند (tapping the bar scrolls to the pin shown on it; only the icon button opens the pins bubble sheet) */if(!e.target.closest(".pi")){const cur=$(".pinbar").dataset.cur;pinJump(P.includes(cur)?cur:P[P.length-1]);return}
-  /* حباب پین ها | Pin Bubbles: با بیش از یک پین، پیام های پین شده مثل تلگرام پشت سر هم و به شکل حباب گفتگو در یک صفحه نشان داده می شوند؛ زدن روی هر حباب به همان پیام می رود (with several pins, tapping the bar shows the pinned messages one after another as chat bubbles; tapping a bubble jumps to that message) */const bs=[...$$("#msgs .b")],pm0=P.map((r,i)=>({r,i,s:bs.find(x=>x.dataset.t===r)})).sort((a,b)=>(a.s?bs.indexOf(a.s):-1)-(b.s?bs.indexOf(b.s):-1));o.innerHTML=`<div class="pc"><div class="ph2">${tr("Pinned Messages")} (${P.length})</div><div class="pmsgs"></div></div>`;const pm=o.querySelector(".pmsgs");pm0.forEach(x=>{let d;if(x.s){d=x.s.cloneNode(true);d.classList.remove("hl");d.querySelectorAll(".ri").forEach(n=>n.remove())}else{d=document.createElement("div");d.className="b ot";d.textContent=fwBody(x.r).replace(/<[^>]*>/g,"")}d.classList.add("pbub");d.dataset.i=x.i;pm.append(d)});o.classList.add("on")},true)})();
+  /* حباب پین ها | Pin Bubbles: با بیش از یک پین، پیام های پین شده مثل تلگرام پشت سر هم و به شکل حباب گفتگو در یک صفحه نشان داده می شوند؛ زدن روی هر حباب به همان پیام می رود (with several pins, tapping the bar shows the pinned messages one after another as chat bubbles; tapping a bubble jumps to that message) */const bs=[...$$("#msgs .b")],pm0=P.map((r,i)=>({r,i,s:bs.find(x=>x.dataset.t===r)})).sort((a,b)=>(a.s?bs.indexOf(a.s):-1)-(b.s?bs.indexOf(b.s):-1));o.innerHTML=`<div class="pc"><div class="ph2">${tr("Pinned Messages")} (${P.length})</div><div class="pmsgs"></div></div>`;const pm=o.querySelector(".pmsgs");pm0.forEach(x=>{let d;/* دسته‌بندی تاریخ | Date Groups: هر بار که تاریخ ارسال پیام عوض شد، چسبک تاریخ مثل خود گفتگو (امروز، آبان ۱۸ ...) قبل پیام می‌آید */if(x.s){let e=x.s.previousElementSibling;while(e&&!e.classList.contains("dsep"))e=e.previousElementSibling;const dl=e?e.textContent:"";if(dl&&dl!==pm.dataset.ld){const h=document.createElement("div");h.className="dsep";h.textContent=dl;pm.append(h);pm.dataset.ld=dl}}if(x.s){d=x.s.cloneNode(true);d.classList.remove("hl");d.querySelectorAll(".ri").forEach(n=>n.remove())}else{d=document.createElement("div");d.className="b ot";d.textContent=fwBody(x.r).replace(/<[^>]*>/g,"")}d.classList.add("pbub");d.dataset.i=x.i;pm.append(d)});o.classList.add("on")},true)})();
+/* نگه داشتن نوار پین | Pin Bar Long Press: با نگه داشتن انگشت روی نوار پین، همان کاری می‌شود که دکمه‌ی سمت راست (آیکون پین) می‌کند؛ کلیک بعد از نگه داشتن نادیده گرفته می‌شود */
+(function(){const pb=$(".pinbar");let tm=0,sx=0,sy=0,fired=0;
+ const clr=()=>{clearTimeout(tm);tm=0};
+ pb.addEventListener("pointerdown",e=>{if(e.button>0)return;fired=0;sx=e.clientX;sy=e.clientY;clr();tm=setTimeout(()=>{tm=0;fired=1;const pi=pb.querySelector(".pi");if(pi)pi.click()},450)});
+ pb.addEventListener("pointermove",e=>{if(tm&&Math.hypot(e.clientX-sx,e.clientY-sy)>10)clr()});
+ ["pointerup","pointercancel","pointerleave"].forEach(ev=>pb.addEventListener(ev,clr));
+ document.addEventListener("click",e=>{if(fired&&e.isTrusted&&e.target.closest&&e.target.closest(".pinbar")){fired=0;e.stopImmediatePropagation();e.preventDefault()}},true);
+ pb.addEventListener("contextmenu",e=>e.preventDefault())})();
 /* پین هنگام اسکرول | Pin On Scroll: مثل تلگرام، وقتی چند پیام پین شده باشد، با اسکرول نوار پین به پیام پین‌شده‌ی همان بخش تبدیل می‌شود؛ پایین‌ترین پین در دید (یا بالاتر از دید) نمایش داده می‌شود، پس در انتهای گفتگو آخرین پیام پین‌شده است و با بالا رفتن به پین‌های قدیمی‌تر می‌رسد و شماره‌اش (#) عوض می‌شود (like Telegram, with several pins the bar follows the scroll: it shows the lowest pin at or above the visible bottom, so at the end of the chat it is the latest pin and scrolling up reaches older ones with its # changing) */
 (function(){const M=$("#msgs");let raf=0;
  const upd=()=>{raf=0;const P=pinsOf(S.openId),pb=$(".pinbar");if(P.length<2||!pb||pb.style.display==="none")return;
