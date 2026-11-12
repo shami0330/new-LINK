@@ -1847,6 +1847,8 @@ const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 /* حلقه پیشرفت | Progress Ring: بعد از زدن ارسال روی هر عکس و ویدیو یک حلقه می آید. مرحله ۱: حلقه سبز همزمان با فشرده سازی و تغییر فرمت از ۰ تا ۱۰۰ پر می شود. مرحله ۲: دوباره از صفر با پیشرفت واقعی بارگذاری روی سرور پر می شود (after Send each photo/video gets a ring: step 1 green fills 0-100 in sync with compression and format change; step 2 restarts from 0 and follows the real upload progress to the server) */
 const lkRingH='<i class="lkrg" data-ph="c" style="--p:0"><svg viewBox="0 0 44 44"><circle class="t" cx="22" cy="22" r="19"/><circle class="f" cx="22" cy="22" r="19" pathLength="100"/></svg></i>';
 function lkRing(d,id,ph,p){const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(ph==="u"?.08:0,Math.min(1,p))*100))}
+/* سهم فشرده‌سازی | Compress Share: چه بخشی از حلقه‌ی یکپارچه مال فشرده‌سازی است و بقیه مال آپلود؛ فایل ۰، عکس ۰٫۳، ویدیوی Original با برش یا چرخش ۰٫۱ و بدون ویرایش ۰، بقیه‌ی ویدیوها ۰٫۷ (how much of the single ring compression takes; the rest is upload) */
+function lkCW(f,x){if(x.t==="file")return 0;if(x.t==="photo")return .3;const r=f.__rec||{};if(f.__q==="Original"&&!r.adjust&&!r.crop)return(r.trim||r.rotate||r.flip)?.1:0;return .7}
 /* آدرس سرور | Server Address: آدرس سروری که فایل به آن آپلود می شود. خالی یعنی هنوز سروری وصل نیست و مرحله ۲ اجرا نمی شود (empty = no server connected yet, step 2 is skipped) */
 const LK_UPLOAD_URL="";
 function lkUpload(blob,name,onP){return new Promise((ok,no)=>{const x=new XMLHttpRequest(),f=new FormData();x.open("POST",LK_UPLOAD_URL);x.upload.onprogress=e=>{if(e.lengthComputable)onP(e.loaded/e.total)};x.onload=()=>x.status>=200&&x.status<300?(onP(1),ok(true)):no(new Error("upload "+x.status));x.onerror=()=>no(new Error("network"));f.append("file",blob,name||"file");x.send(f)})}
@@ -1872,11 +1874,11 @@ function lkPend(c,k,files,cap){
  return async()=>{
   const res=[];
   try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] .lkpg'),isF=x.t==="file";
-   /* مرحله ۱ فشرده سازی | Step 1 Compress: حلقه سبز همزمان با فشرده سازی و تغییر فرمت از ۰ تا ۱۰۰ پر می شود (فایل ها فشرده نمی شوند) (green ring follows compression, files are not compressed) */
-   if(!isF)lkRing(d,x.id,"c",0);
-   res.push(await lkSafe(files[i],x,p=>{if(!isF)lkRing(d,x.id,"c",p)}));if(!isF)lkRing(d,x.id,"c",1);
-   /* مرحله ۲ بارگذاری | Step 2 Upload: حلقه دوباره از صفر شروع می شود و با پیشرفت واقعی آپلود پر می شود (ring restarts from 0 and follows the real upload) */
-   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */lkRing(d,x.id,"u",0);if(LK_UPLOAD_URL){await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",p))}else{LKB[x.id]=res[i].blob;await new Promise(ok=>setTimeout(ok,350));try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}lkRing(d,x.id,"u",1);
+   /* حلقه یکپارچه | Single Ring: یک حلقه‌ی سفید از ۰ تا ۱۰۰؛ بخش اول با فشرده‌سازی و بخش بعدی با آپلود پر می‌شود و دیگر دو بار پر نمی‌شود (one white ring: first part follows compression, the rest follows upload; it fills once) */
+   const cw=lkCW(files[i],x);if(!isF)lkRing(d,x.id,"u",0);
+   res.push(await lkSafe(files[i],x,p=>{if(!isF)lkRing(d,x.id,"u",p*cw)}));if(!isF)lkRing(d,x.id,"u",cw);
+   /* ادامه‌ی حلقه | Ring Continues: حلقه از جایی که فشرده‌سازی تمام شد ادامه می‌دهد و با پیشرفت واقعی آپلود تا ۱۰۰ پر می‌شود (the ring continues from where compression ended) */
+   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */lkRing(d,x.id,"u",cw);if(LK_UPLOAD_URL){await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",cw+(1-cw)*p))}else{LKB[x.id]=res[i].blob;await new Promise(ok=>setTimeout(ok,350));try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}lkRing(d,x.id,"u",1);
    const g=cell();if(g)g.parentNode.classList.add("lkd")}}
   catch(e){d.remove();const em=String(e&&e.message||e);toast(/compress|timeout/.test(em)?"Compression failed":"Send failed");/* علت خطا | Error Detail: علت واقعی فشرده‌سازی زیر پیام نشان داده می‌شود و ۹ ثانیه می‌ماند تا خوانده شود (the real compress reason is shown in the toast for 9 seconds) */if(/compress/.test(em)){const tt=$("#toast");tt.textContent+=" ["+em.replace(/^compress failed: /,"").slice(0,160)+"]";clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}return}
   for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
