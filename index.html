@@ -199,6 +199,11 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* هدر شفاف | Transparent Header: کادر پشت دکمه‌ها و نام و عکس بالای گفتگو کاملا شفاف است (بدون رنگ، تاری، سایه و خط)؛ خود کپسول‌ها دست‌نخورده می‌مانند (the bar behind the capsules is fully transparent: no color, blur, shadow or border; the capsules themselves are untouched) */
 #chat>.top{background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;border:0!important}
 #chat>.top::before,#chat>.top::after{content:none!important}
+/* پیام‌ها زیر هدر | Messages Under Header: لیست پیام تا بالای صفحه کشیده می‌شود و هدر و نوار پین شفاف روی آن شناورند، پس پیام‌ها پشت هدر هم دیده می‌شوند (messages extend to the top edge; header and pin bar float above them) */
+#chat>.top,#chat>.pinbar{position:relative;z-index:6}
+#chat .msgs{margin-top:calc(-1 * var(--hh,0px));padding-top:calc(var(--hh,0px) + 6px)}
+/* چسبیدن تاریخ | Sticky Date Offset: برچسب تاریخ زیر هدر می‌چسبد نه پشت آن (date label sticks below the header) */
+#chat .dsep{top:calc(var(--hh,0px) + 4px)}
 /* ===== پروفایل مخاطب | Contact Profile Styles ===== */
 /* صفحه پروفایل | Profile Page: از راست وارد می‌شود (slides in from the right, 0.3s) */
 #cp{position:absolute;inset:0;background:var(--bg);z-index:70;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -1122,6 +1127,10 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 <textarea id="mi" name="lk-msg" rows="1" dir="auto" placeholder="Message" autocomplete="nope-no-fill" aria-autocomplete="none" autocorrect="off" autocapitalize="sentences" spellcheck="false" inputmode="text" enterkeyhint="enter" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore="true"></textarea><div class="round send" id="send"><i data-ic="send" data-s="20"></i></div></div>
 </div>
 
+<script>
+/* اندازه‌ی هدر | Header Height Meter: ارتفاع هدر و نوار پین را اندازه می‌گیرد و به لیست پیام می‌دهد تا پیام‌ها از زیر آن‌ها شروع شوند و دیده شوند (measures header + pin bar height for the messages list) */
+(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}if(h>0)ch.style.setProperty('--hh',Math.round(h)+'px')}if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
+</script>
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
 <div id="tabbar" style="display:none">
   <div class="tb" data-s="contacts"><i data-ic="person" data-s="24"></i>Contacts</div>
@@ -2122,6 +2131,42 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
   w.querySelector("#lkTc").onclick=end;if(x.ttl>0&&!mine){iv=setInterval(()=>{left--;w.querySelector("#lkTx").textContent=left;if(left<=0)end()},1000)}
  },true);
  setInterval(apply,1500);
+})();
+/* زوم رسانه | Media Zoom: در پیش‌نمایش ارسال و در دیدن عکس/ویدیوی زماندار، با دو انگشت (پینچ) یا دو بار لمس زوم می‌شود و با یک انگشت جابه‌جا می‌شود؛ شمارش زمان ادامه دارد (pinch / double-tap zoom and pan in send preview and timed viewer) */
+(()=>{
+ /* استایل زوم | Zoom Style: جلوگیری از اسکرول و انتخاب هنگام زوم در نمایشگر زماندار (no scroll or select while zooming) */
+ const zst=document.createElement("style");zst.textContent="#lkTv{touch-action:none}#lkTv img,#lkTv video{user-select:none;-webkit-user-select:none;-webkit-user-drag:none;will-change:transform}";document.head.append(zst);
+ /* حالت‌ها | State: نقطه‌های لمس، ژست فعلی و زمان دو لمس (touch points, current gesture, double-tap memory) */
+ const Z=new WeakMap(),P=new Map();let g=null,blk=0,lt=0,lx=0,ly=0,ctx=null;
+ /* تشخیص محدوده | Scope Check: فقط لمس روی پیش‌نمایش ارسال یا نمایشگر زماندار، به‌جز دکمه‌ها (only the preview stage and the timed viewer, not their buttons) */
+ const scope=e=>{const t=e.target;if(!t||!t.closest)return null;if(t.closest("#lkTv")&&!t.closest(".tc"))return{h:t.closest("#lkTv"),k:"tv"};if(t.closest("#mpM")&&!t.closest(".mpmute,.mpn,.mptl,.mpcap")&&document.querySelector("#mpv.on"))return{h:$("#mpM"),k:"mp"};return null};
+ /* وضعیت زوم هر رسانه | Per-media Zoom State: مقیاس و جابه‌جایی صفحه‌ی فعلی یا رسانه‌ی زماندار (scale and offset of the current slide) */
+ const zs=c=>{const key=c.k==="tv"?c.h:$("#mpTr").children[MPV.i];if(!key)return{s:1,x:0,y:0,key:c.h};let z=Z.get(key);if(!z){z={s:1,x:0,y:0,key};Z.set(key,z)}return z};
+ /* اعمال زوم | Apply Zoom: مقیاس و جابه‌جایی را روی عکس، ویدیو و بوم ویرایش می‌گذارد (a=true یعنی با انیمیشن) */
+ const ap=(c,z,a)=>{z.key.querySelectorAll(c.k==="tv"?"img,video":"img,video,.mpc").forEach(el=>{el.style.transition=a?"transform .2s":"none";el.style.transformOrigin="50% 50%";el.style.transform=z.s===1&&!z.x&&!z.y?"":"translate("+z.x+"px,"+z.y+"px) scale("+z.s+")"})};
+ /* محدود کردن جابه‌جایی | Pan Clamp: رسانه‌ی زوم‌شده از قاب بیرون نمی‌رود (zoomed media cannot leave the frame) */
+ const cl=(c,z)=>{const R=c.h.getBoundingClientRect(),mx=Math.max(0,(z.s-1)*R.width/2),my=Math.max(0,(z.s-1)*R.height/2);z.x=Math.max(-mx,Math.min(mx,z.x));z.y=Math.max(-my,Math.min(my,z.y))};
+ /* دو لمس | Double-tap Zoom: اگر زوم است برمی‌گردد به اندازه‌ی اصلی، وگرنه ۲٫۵ برابر دور نقطه‌ی لمس (toggle between 1x and 2.5x at the tap point) */
+ const dbl=(c,z,x,y)=>{const R=c.h.getBoundingClientRect(),px=x-R.left-R.width/2,py=y-R.top-R.height/2;if(z.s>1.02){z.s=1;z.x=0;z.y=0}else{z.s=2.5;z.x=px*(1-2.5);z.y=py*(1-2.5);cl(c,z)}ap(c,z,1)};
+ /* شروع لمس | Pointer Down: دو انگشت = شروع پینچ؛ با زوم یک انگشت = جابه‌جایی و کشیدن اسلاید غیرفعال می‌شود (two fingers start a pinch; one finger while zoomed pans) */
+ document.addEventListener("pointerdown",e=>{const c=scope(e);if(!c)return;P.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:Date.now()});ctx=c;const z=zs(c);
+  if(P.size===2){const[a,b]=[...P.values()],R=c.h.getBoundingClientRect(),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;g={k:"pz",d0:Math.hypot(a.x-b.x,a.y-b.y)||1,s0:z.s,cx:(mx-R.left-R.width/2-z.x)/z.s,cy:(my-R.top-R.height/2-z.y)/z.s};blk=1;if(c.k==="mp")mpvPos(0,0);e.stopImmediatePropagation();return}
+  if(P.size>2||blk){e.stopImmediatePropagation();return}
+  g=z.s>1.02?{k:"pan",x:e.clientX,y:e.clientY,zx:z.x,zy:z.y}:null;if(g)e.stopImmediatePropagation()},true);
+ /* حرکت لمس | Pointer Move: پینچ یا جابه‌جایی رسانه‌ی زوم‌شده (pinch or pan the zoomed media) */
+ document.addEventListener("pointermove",e=>{const p=P.get(e.pointerId);if(!p)return;p.x=e.clientX;p.y=e.clientY;if(!ctx)return;const c=ctx,z=zs(c);
+  if(g&&g.k==="pz"&&P.size>=2){const[a,b]=[...P.values()],R=c.h.getBoundingClientRect(),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;z.s=Math.max(.7,Math.min(6,g.s0*Math.hypot(a.x-b.x,a.y-b.y)/g.d0));z.x=mx-R.left-R.width/2-z.s*g.cx;z.y=my-R.top-R.height/2-z.s*g.cy;ap(c,z,0);e.stopImmediatePropagation();return}
+  if(g&&g.k==="pan"){z.x=g.zx+e.clientX-g.x;z.y=g.zy+e.clientY-g.y;cl(c,z);ap(c,z,0);e.stopImmediatePropagation();return}
+  if(blk)e.stopImmediatePropagation()},true);
+ /* پایان لمس | Pointer Up: پایان پینچ (کمتر از ۱ برمی‌گردد)، تشخیص دو لمس سریع و پاک‌کردن لمس‌ها (end pinch, detect double-tap, clean up) */
+ const up=e=>{const had=P.get(e.pointerId);P.delete(e.pointerId);if(!had||!ctx)return;const c=ctx,z=zs(c);
+  if(g&&g.k==="pz"){if(P.size<2){g=null;if(z.s<1.02){z.s=1;z.x=0;z.y=0}z.s=Math.min(5,z.s);cl(c,z);ap(c,z,1)}e.stopImmediatePropagation();if(!P.size)blk=0;return}
+  const wasPan=g&&g.k==="pan";g=null;
+  if(e.type==="pointerup"&&!blk&&Math.hypot(e.clientX-had.sx,e.clientY-had.sy)<10&&Date.now()-had.t<300){const n=Date.now();if(n-lt<320&&Math.hypot(e.clientX-lx,e.clientY-ly)<40){lt=0;dbl(c,z,e.clientX,e.clientY);e.stopImmediatePropagation();return}lt=n;lx=e.clientX;ly=e.clientY}
+  if(wasPan||blk){e.stopImmediatePropagation();if(!P.size)blk=0}};
+ document.addEventListener("pointerup",up,true);document.addEventListener("pointercancel",up,true);
+ /* چرخ موس | Mouse Wheel Zoom: روی کامپیوتر با چرخ موس زوم می‌شود (desktop wheel zoom) */
+ document.addEventListener("wheel",e=>{const c=scope(e);if(!c)return;e.preventDefault();const z=zs(c),R=c.h.getBoundingClientRect(),mx=e.clientX-R.left-R.width/2,my=e.clientY-R.top-R.height/2,ns=Math.max(1,Math.min(5,z.s*(e.deltaY<0?1.2:1/1.2))),cx=(mx-z.x)/z.s,cy=(my-z.y)/z.s;z.s=ns;if(ns<=1.02){z.s=1;z.x=0;z.y=0}else{z.x=mx-ns*cx;z.y=my-ns*cy;cl(c,z)}ap(c,z,0)},{passive:false,capture:true});
 })();
 /* نگه داشتن کیفیت | Quality Hold Menu: نگه داشتن SD/HD گزینه‌های کیفیت و «ارسال به صورت فایل» را نشان می‌دهد */
 (()=>{const q=$("#mpQ"),orig=q.onclick;let t=null,lp=false;
