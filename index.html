@@ -494,6 +494,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv{position:absolute;inset:0 0 var(--gap,var(--ext,0px)) 0;z-index:98;background:#000;color:#fff;display:none;flex-direction:column;-webkit-user-select:none;user-select:none}
 #mpv.on{display:flex}
 #mpv .mpt{flex:none;padding:calc(env(safe-area-inset-top) + 6px) 14px 6px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#8e8e93;min-height:32px}
+#mpv .mpbd.off{background:transparent;box-shadow:inset 0 0 0 2px #fff}
 #mpv .mpbd{cursor:pointer;width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center}
 #mpv .mpm{flex:1;position:relative;overflow:hidden;min-height:0;touch-action:none}
 #mpv .mptr{position:absolute;inset:0;display:flex;gap:16px;will-change:transform}
@@ -513,7 +514,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 #mpv.vid .mpmute{display:flex}
 #mpv.vid .mpn{bottom:102px;background:rgba(120,120,128,.7);border-color:transparent}
 /* نوار برش ویدیو | Video Trim Strip: قاب تصویرهای ریز با دستگیره‌ی چپ و راست، بخش حذف‌شده تیره و خط سفید جای پخش */
-#mpv .mptl{display:none;position:absolute;left:8px;right:8px;bottom:48px;height:42px}
+#mpv .mptl{touch-action:none;display:none;position:absolute;left:8px;right:8px;bottom:48px;height:42px}
 #mpv.vid .mptl{display:block}
 #mpv .mpst{display:flex;height:100%;border-radius:10px;overflow:hidden;background:#222}
 #mpv .mpst i{flex:1;background-size:cover;background-position:center}
@@ -1906,6 +1907,10 @@ function lkMsgBody(o){
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
 async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),b=r&&(r.thumb||(r.blob&&r.blob.type.startsWith("image/")?r.blob:null));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
 /* ذخیره روی دستگاه | Download File: فایل را از انبار برمی‌دارد و دانلود می‌کند */
+const LKF={};
+function lkFileDl(dl){const id=dl.dataset.dl,n=dl.dataset.n;if(LKF[id]){clearInterval(LKF[id]);delete LKF[id];dl.innerHTML=lkDlI;return}
+const b=dl.closest(".b"),o=b&&lkDec(b.dataset.t),x=o&&o.it&&o.it.find(i=>i.id===id),T=Math.max(1500,Math.min(8000,((x&&x.s)||1e6)/1.2e6*1000)),s0=Date.now();dl.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');const rg=dl.querySelector(".lkrg");
+LKF[id]=setInterval(()=>{if(!dl.isConnected){clearInterval(LKF[id]);delete LKF[id];return}const p=Math.min(1,(Date.now()-s0)/T);rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));if(p>=1){clearInterval(LKF[id]);delete LKF[id];dl.innerHTML=lkDlI;lkSave(id,n)}},50)}
 async function lkSave(id,name){let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b){toast("File removed from cache");return}const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name||"file";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
 /* ابزار ارسال | Send Tools: شناسه‌ی تازه، نوع فایل (عکس، ویدیو، فایل) و ساعت */
 const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -1923,7 +1928,7 @@ function lkEstSize(f,x){if(x.t==="file")return f.size;if(x.t==="photo")return f.
 /* آدرس سرور | Server Address: آدرس سروری که فایل به آن آپلود می شود. خالی یعنی هنوز سروری وصل نیست و مرحله ۲ اجرا نمی شود (empty = no server connected yet, step 2 is skipped) */
 const LK_UPLOAD_URL="";
 function lkUpload(blob,name,onP){return new Promise((ok,no)=>{const x=new XMLHttpRequest(),f=new FormData();x.open("POST",LK_UPLOAD_URL);x.upload.onprogress=e=>{if(e.lengthComputable)onP(e.loaded/e.total)};x.onload=()=>x.status>=200&&x.status<300?(onP(1),ok(true)):no(new Error("upload "+x.status));x.onerror=()=>no(new Error("network"));f.append("file",blob,name||"file");x.send(f)})}
-const lkKind=f=>{const t=f.type||"";return t.startsWith("image/")?"photo":t.startsWith("video/")?"video":"file"};
+const lkKind=f=>{if(f.__asFile)return"file";const t=f.type||"";return t.startsWith("image/")?"photo":t.startsWith("video/")?"video":"file"};
 const lkNow=()=>new Date().toTimeString().slice(0,5);
 /* پیش‌نمایش کوچک | Thumbnails: از عکس ۳۲۰ پیکسلی و از ویدیو یک فریم ابتدایی می‌سازد و عرض و ارتفاع و مدت را برمی‌گرداند */
 async function lkThumb(b){try{const bm=await createImageBitmap(b),[w,h]=mFit(bm.width,bm.height,320),c=mCanvas(w,h);c.getContext("2d").drawImage(bm,0,0,w,h);bm.close();return await mToBlob(c,"image/jpeg",.7)}catch(e){return null}}
@@ -1939,7 +1944,7 @@ async function lkProcess(f,x,onP){
 /* ساخت حباب در حال ارسال | Pending Bubble: بلافاصله حباب با چرخان انتظار نشان داده می‌شود؛ تابع برگشتی بعداً فایل‌ها را آماده، ذخیره و حباب را کامل می‌کند */
 /* حباب در حال ارسال | Pending Bubble (با کپشن | with caption) */
 function lkPend(c,k,files,cap){
- const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:f.__d||0}));
+ const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:f.__d||0,ttl:f.__ttl||0}));
  it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i]);const q=LKCX[x.id]={c:0};q.p=new Promise((_,rej)=>{q.rej=rej});q.p.catch(()=>{})});
  const d=addMsg("me",lkEnc({k,it,pend:1,cap:cap||undefined}),lkNow(),0);d.classList.add("pend");d.querySelectorAll(".lkpg .lksp,.lkdl .lksp").forEach(e=>{e.outerHTML=lkRingH});
  return async()=>{
@@ -1949,7 +1954,7 @@ function lkPend(c,k,files,cap){
    const t0=Date.now(),tu0=lkEstSize(files[i],x)/LK_UPS;let tc=lkCGuess(files[i],x),last=0;const ring=v=>{last=Math.max(last,Math.min(1,v));lkRing(d,x.id,"u",last)};if(!isF)ring(0);
    res.push(await Promise.race([lkSafe(files[i],x,p=>{if(!isF){if(p>.05)tc=(Date.now()-t0)/1000/p;ring(p*lkFr(tc,tu0))}}),LKCX[x.id].p]));const tcA=(Date.now()-t0)/1000,base=Math.max(last,lkFr(tcA,res[i].blob.size/LK_UPS));ring(base);
    /* ادامه‌ی حلقه | Ring Continues: حلقه از جایی که فشرده‌سازی تمام شد ادامه می‌دهد و با پیشرفت واقعی آپلود تا ۱۰۰ پر می‌شود (the ring continues from where compression ended) */
-   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */ring(base);if(LK_UPLOAD_URL){await Promise.race([lkUpload(res[i].blob,x.n,p=>ring(base+(1-base)*p)),LKCX[x.id].p])}else{LKB[x.id]=res[i].blob;await Promise.race([new Promise(ok=>setTimeout(ok,350)),LKCX[x.id].p]);if(LKCX[x.id].c)throw new Error("cancelled");try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}ring(1);
+   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */ring(base);if(LK_UPLOAD_URL){await Promise.race([lkUpload(res[i].blob,x.n,p=>ring(base+(1-base)*p)),LKCX[x.id].p])}else{LKB[x.id]=res[i].blob;await Promise.race([new Promise(ok=>{const T=isF?Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)):350,s0=Date.now(),iv=setInterval(()=>{const p=Math.min(1,(Date.now()-s0)/T);ring(base+(1-base)*p);if(p>=1||LKCX[x.id].c){clearInterval(iv);ok()}},50)}),LKCX[x.id].p]);if(LKCX[x.id].c)throw new Error("cancelled");try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}ring(1);
    const g=cell();if(g)g.parentNode.classList.add("lkd")}catch(e){if(LKCX[x.id].c){res[i]=null;x.cx=1;delete LKB[x.id];lkDrop([x.id])}else throw e}}}
   catch(e){d.remove();const em=String(e&&e.message||e);toast(/compress|timeout/.test(em)?"Compression failed":"Send failed");/* علت خطا | Error Detail: علت واقعی فشرده‌سازی زیر پیام نشان داده می‌شود و ۹ ثانیه می‌ماند تا خوانده شود (the real compress reason is shown in the toast for 9 seconds) */if(/compress/.test(em)){const tt=$("#toast");tt.textContent+=" ["+em.replace(/^compress failed: /,"").slice(0,160)+"]";clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}return}
   const kept=it.filter(x=>!x.cx);if(!kept.length){d.remove();return}
@@ -1976,7 +1981,7 @@ async function lkSend(files,cap){const c=CHATS.find(x=>x.id===S.openId);if(!c||!
  for(let i=0;i<oth.length;i+=10){jobs.push(lkPend(c,"files",oth.slice(i,i+10),cap));cap=""}
  jobs.reduce((p,j)=>p.then(j).catch(()=>{toast("Send failed")}),Promise.resolve())}
 /* گیره، فقط عکس | Attach Photos Only: فعلاً با زدن گیره فقط عکس انتخاب می‌شود (چندتایی)؛ عکس‌ها از همان سیستم رسانه (mediaRun) رد می‌شوند، در آلبوم می‌آیند و هر عکس چرخان دایره‌ای جدا و بدون درصد دارد که با آماده‌شدن همان عکس برداشته می‌شود */
-$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.accept="image/*,video/*";f.multiple=true;f.onchange=()=>mpvOpen([...f.files].filter(x=>lkKind(x)!=="file"));f.click()};
+$("#attachBtn").onclick=()=>{const f=$("#mediaIn");f.value="";f.removeAttribute("accept");f.multiple=true;f.onchange=()=>{const a=[...f.files],m=a.filter(x=>lkKind(x)!=="file"),o=a.filter(x=>lkKind(x)==="file");if(o.length)lkSend(o,"");if(m.length)mpvOpen(m)};f.click()};
 /* پیش‌نمایش ارسال | Send Preview State: وضعیت صفحه‌ی پیش‌نمایش (فایل‌ها، شماره‌ی فعلی، برش هر ویدیو، تصویرهای نوار، بی‌صدا بودن) و آیکن‌ها */
 Object.assign(FA,{"Coming soon":"به‌زودی"});
 const MPV={f:[],i:0,rec:[],u:[],th:[],mute:[],tok:0,raf:0,to:""};
@@ -2015,7 +2020,7 @@ function mpvMuteUi(i){$("#mpMute").innerHTML=MPV.mute[i]?MPI.off:MPI.on}
 /* رفتن به صفحه | Go To Item: صفحه‌ی i را نشان می‌دهد و شماره‌ها، کیفیت، نوار برش و صدا را برای همان فایل تنظیم می‌کند */
 function mpvGo(i,a){const n=MPV.f.length;i=mClamp(i,0,n-1);mpvStop();MPV.i=i;mpvPos(a,0);
  const f=MPV.f[i],vd=lkKind(f)==="video";$("#mpv").classList.toggle("vid",vd);
- $("#mpIdx").textContent=MPV.sel[i]?MPV.sel.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=MPV.sel.filter(Boolean).length;$("#mpN").classList.toggle("v",vd);
+ $("#mpIdx").classList.toggle("off",!MPV.sel[i]);$("#mpIdx").textContent=MPV.sel[i]?MPV.sel.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=MPV.sel.filter(Boolean).length;$("#mpN").classList.toggle("v",vd);
  $("#mpQ").textContent=mpvQv(i);
  if(vd){mpvDur(i);const t=MPV.rec[i].trim;mpvSel(i);$("#mpPh").style.left=(t?t.start/(f.__d||1)*100:0)+"%";mpvPaint(i);if(!MPV.th[i]){MPV.th[i]=[];mpvThumbs(i,MPV.tok)}mpvMuteUi(i);const v=mpvV();if(v)v.muted=!!MPV.mute[i]}}
 /* بستن پیش‌نمایش | Close Preview: صفحه را می‌بندد و پخش و فایل‌های موقت را پاک می‌کند */
@@ -2023,6 +2028,8 @@ function mpvClose(){mpvStop();MPV.tok++;$("#mpe").classList.remove("on");$("#mpa
 /* مدت درست ویدیو | Safe Video Length: اگر مدت ذخیره‌شده خالی، صفر یا بی‌نهایت بود از خود ویدیوی پیش‌نمایش می‌خواند و ذخیره می‌کند؛ اگر هنوز معلوم نبود صفر برمی‌گرداند (reads the length from the preview video when the stored one is missing/0/Infinity) */
 function mpvDur(i){const f=MPV.f[i],s=$("#mpTr").children[i],v=s&&s.querySelector("video");if(isFinite(f.__d)&&f.__d>0)return f.__d;if(v&&isFinite(v.duration)&&v.duration>0){f.__d=v.duration;return f.__d}return 0}
 /* دستگیره‌ی برش | Trim Handle: کشیدن دستگیره‌ی چپ یا راست شروع یا پایان ویدیو را عوض می‌کند (حداقل یک ثانیه)؛ اگر مدت ویدیو معلوم نباشد هیچ‌چیز را تغییر نمی‌دهد تا نوار جمع نشود (does nothing if the length is unknown, so the bar can't collapse) */
+function mpvScrub(tl){let on=0;const seek=e=>{const i=MPV.i,d=mpvDur(i),r=tl.getBoundingClientRect(),v=mpvV();if(!d||!r.width||!v)return;const o=MPV.rec[i].trim||{start:0,end:d},t=Math.max(o.start,Math.min(mClamp((e.clientX-r.left)/r.width,0,1)*d,o.end-.1));v.currentTime=t;$("#mpPh").style.left=(t/d*100)+"%"};
+tl.addEventListener("pointerdown",e=>{e.stopPropagation();on=1;tl.setPointerCapture(e.pointerId);mpvStop();seek(e)});tl.addEventListener("pointermove",e=>{if(on)seek(e)});tl.addEventListener("pointerup",()=>{if(!on)return;on=0;mpvPlay()});tl.addEventListener("pointercancel",()=>{on=0})}
 function mpvHandle(h,side){const off=()=>{h._d=0};h.addEventListener("pointerdown",e=>{e.stopPropagation();h.setPointerCapture(e.pointerId);h._d=1});
  h.addEventListener("pointermove",e=>{if(!h._d)return;const i=MPV.i,d=mpvDur(i),r=$("#mpTl").getBoundingClientRect();if(!d||!r.width)return;const t=mClamp((e.clientX-r.left)/r.width,0,1)*d,o=MPV.rec[i].trim||{start:0,end:d},m=Math.min(1,d/2);
   if(side==="l")o.start=Math.max(0,Math.min(t,o.end-m));else o.end=Math.min(d,Math.max(t,o.start+m));MPV.rec[i].trim=o;mpvSel(i);mpvStop();const v=mpvV();if(v)v.currentTime=side==="l"?o.start:o.end;$("#mpPh").style.left=((side==="l"?o.start:o.end)/(d||1)*100)+"%"});
@@ -2042,24 +2049,76 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
 <label><span>${tr("Saturation")}</span><input type="range" min="-100" max="100" step="1" data-k="saturation"><b>0</b></label>
 <div class="ab"><div class="mpr" id="mpaX">${ic("close",20)}</div><div class="mpch"><div class="mpr mpbtn" id="mpaAuto" title="Auto" aria-label="Auto"><b class="mpA">A</b></div><div class="mpr mpbtn" id="mpaRst" title="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></div></div><div class="mpr s" id="mpaOk">${ic("check",22)}</div></div></div>`;
  $("#app").append(o);
- o.querySelectorAll(".mphd").forEach(h=>mpvHandle(h,h.classList.contains("l")?"l":"r"));
+ o.querySelectorAll(".mphd").forEach(h=>mpvHandle(h,h.classList.contains("l")?"l":"r"));mpvScrub(o.querySelector(".mptl"));
  /* اتصال ابزارها | Tool Buttons: برش به ویرایشگر برش، تنظیم به برگه‌ی تنظیم، کیفیت به چرخش بین کیفیت‌ها؛ نقاشی هنوز غیرفعال است */
  o.querySelector('[data-mt="crop"]').onclick=mpvCrop;o.querySelector('[data-mt="adj"]').onclick=mpvAdj;o.querySelector('[data-mt="draw"]').onclick=()=>toast("Coming soon");
  $("#mpQ").onclick=()=>{const i=MPV.i,a=mpvQs(i),n=a[(a.indexOf(mpvQv(i))+1)%a.length];MPV.rec[i].q=n;$("#mpQ").textContent=n};
  mpeInit();
  $("#mpBack").onclick=mpvClose;
  /* حذف از انتخاب | Deselect: لمس نشان شماره، فایل فعلی را از انتخاب خارج می‌کند؛ اگر چیزی نماند پیش‌نمایش بسته می‌شود */
- $("#mpIdx").onclick=()=>{const i=MPV.i,s=MPV.sel;if(s[i]&&s.filter(Boolean).length<=1)return;s[i]=!s[i];$("#mpIdx").textContent=s[i]?s.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=s.filter(Boolean).length};
+ $("#mpIdx").onclick=()=>{const i=MPV.i,s=MPV.sel;if(s[i]&&s.filter(Boolean).length<=1)return;s[i]=!s[i];$("#mpIdx").classList.toggle("off",!s[i]);$("#mpIdx").textContent=s[i]?s.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=s.filter(Boolean).length};
  $("#mpMute").onclick=()=>{MPV.mute[MPV.i]=!MPV.mute[MPV.i];mpvMuteUi(MPV.i);const v=mpvV();if(v)v.muted=!!MPV.mute[MPV.i]};
  /* ارسال از پیش‌نمایش | Send From Preview: برش‌های واقعی را روی فایل می‌گذارد، صفحه را می‌بندد، آلبوم را می‌فرستد و شرح را پیام جدا بعدش می‌فرستد */
  $("#mpSend").onclick=async()=>{const S=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!S.length)return;const L=S.filter(i=>lkKind(MPV.f[i])==="video"&&mpvQv(i)!=="Original");if(L.length&&!(await mpAsk("ارسال با این کیفیت ممکن است زمان‌بر باشد، به دلیل فشرده‌سازی. ادامه می‌دهید؟")))L.forEach(i=>MPV.rec[i].q="Original");const F=S.map(i=>MPV.f[i]),cap=$("#mpCap").value.trim();
   /* دستورکار هر فایل | Per-file Recipe: برش، تنظیم رنگ، چرخش، آینه و کوتاه‌کردن هر فایل را به دستورکار سیستم رسانه تبدیل می‌کند، کیفیت را می‌گذارد و اندازه‌ی حباب را با شکل جدید هماهنگ می‌کند */
-  F.forEach((f,k)=>{const i=S[k],r=MPV.rec[i],t=r.trim,vd=lkKind(f)==="video",tr2=vd&&t&&(t.start>.05||t.end<(f.__d||0)-.05)?{start:t.start,end:t.end}:null,rec=mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip,trim:tr2});
+  F.forEach((f,k)=>{f.__asFile=!!MPV.rec[S[k]].asFile;f.__ttl=f.__asFile?0:(window.__mpTtl||0);const i=S[k],r=MPV.rec[i],t=r.trim,vd=lkKind(f)==="video",tr2=vd&&t&&(t.start>.05||t.end<(f.__d||0)-.05)?{start:t.start,end:t.end}:null,rec=mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip,trim:tr2});
    f.__rec=mPlain(rec)?null:rec;f.__q=mpvQv(i);
    if(f.__rec){let w=f.__w||1,h=f.__h||1;if((rec.rotate||0)%180)[w,h]=[h,w];if(rec.crop){w*=rec.crop.w;h*=rec.crop.h}f.__w=w;f.__h=h}});
-  /* کپشن داخل حباب | Inline Caption: کپشن دیگر پیام جدا نیست و با عکس یا ویدیو در یک حباب می‌رود */mpvClose();await lkSend(F,cap)};
+  /* کپشن داخل حباب | Inline Caption: کپشن دیگر پیام جدا نیست و با عکس یا ویدیو در یک حباب می‌رود */mpvClose();window.__mpTtl=0;await lkSend(F,cap)};
  /* کشیدن بین فایل‌ها | Swipe Between Items: کشیدن چپ و راست فایل بعدی یا قبلی را نشان می‌دهد؛ لمس ساده ویدیو را پخش یا متوقف می‌کند */
- const M=$("#mpM");let st=null;
+ /* منوی نگه‌داشتن ارسال رسانه | Media Send Hold Menu: «Schedule Message» و «بازدید زماندار» (یک‌بار، ۳، ۵، ۱۰، ۳۰ ثانیه) داخل صفحه‌ی نمایش و بالای دکمه */
+(()=>{const b=$("#mpSend"),orig=b.onclick,o=$("#mpv"),p2=n=>String(n).padStart(2,"0");let t=null,lp=false;
+ window.lkMQ=window.lkMQ||[];
+ const close=()=>{const m=document.getElementById("mpSm");if(m)m.remove()},closeD=()=>{const m=document.getElementById("mpSd");if(m)m.remove()};
+ const queue=(at)=>{const sel=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!sel.length)return;const cid=S.openId,real=lkSend;
+  window.lkSend=async(files,c)=>{window.lkSend=real;window.lkMQ.push({cid,files,cap:c,at});toast("ارسال زمان‌بندی شد")};orig.call(b)};
+ const openD=()=>{closeD();const d=new Date(Date.now()+120000),m=document.createElement("div");m.id="mpSd";m.style.cssText="position:absolute;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center";
+  m.innerHTML='<div class="schc"><b>Schedule Message</b><label>Date</label><input type="date" id="mpSD"><label>Time</label><input type="time" id="mpST"><div class="schok" id="mpSOk" style="text-align:center;padding:12px;border-radius:14px;background:var(--acc,#2f8fff);color:#fff;font-weight:600">Schedule</div><div class="schno" id="mpSNo" style="text-align:center;padding:10px;color:var(--sub)">Cancel</div></div>';
+  o.appendChild(m);m.querySelector("#mpSD").value=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());m.querySelector("#mpST").value=p2(d.getHours())+":"+p2(d.getMinutes());
+  m.querySelector("#mpSOk").onclick=()=>{const at=new Date(m.querySelector("#mpSD").value+"T"+m.querySelector("#mpST").value).getTime();if(!at||at<=Date.now()+5000){toast("Pick a future time");return}closeD();queue(at)};
+  m.querySelector("#mpSNo").onclick=closeD;m.onclick=e=>{if(e.target===m)closeD()}};
+ /* منو داخل کادر | Menu Inside Frame: بعد از ساخت جایش طوری تنظیم می‌شود که کامل داخل صفحه بماند */
+ const menu=()=>{close();const m=document.createElement("div");m.id="mpSm";m.style.cssText="position:absolute;inset:0;z-index:99998";
+  const row=(k,ic0,tx)=>'<div data-m="'+k+'">'+ic(ic0,22)+'<span>'+tx+'</span></div>';
+  m.innerHTML='<div class="smc" style="right:12px;top:0;max-height:calc(100% - 24px);overflow:auto">'+row("sched","cal","Schedule Message")+row("1","clock","View Once")+row("3","clock","3 Seconds")+row("5","clock","5 Seconds")+row("10","clock","10 Seconds")+row("30","clock","30 Seconds")+'</div>';
+  m.onclick=e=>{const d=e.target.closest("[data-m]");close();if(!d)return;const k=d.dataset.m;if(k==="sched")openD();else{window.__mpTtl=k==="1"?-1:+k;toast(k==="1"?"فقط یک بار دیده می‌شود":"بازدید "+k+" ثانیه‌ای");orig.call(b)}};
+  o.appendChild(m);const c=m.firstChild,or=o.getBoundingClientRect(),br=b.getBoundingClientRect();let top=br.bottom-or.top+8;top=Math.max(12,Math.min(top,or.height-c.offsetHeight-12));c.style.top=top+"px"};
+ b.addEventListener("pointerdown",()=>{lp=false;t=setTimeout(()=>{lp=true;menu()},450)});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
+ b.addEventListener("click",e=>{if(lp){lp=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+ /* زمان‌سنج | Timer: فایل‌های زمان‌بندی‌شده در موعد و وقتی همان گفتگو باز است ارسال می‌شوند */
+ setInterval(()=>{window.lkMQ.slice().forEach(r=>{if(Date.now()<r.at||S.openId!==r.cid)return;window.lkMQ.splice(window.lkMQ.indexOf(r),1);lkSend(r.files,r.cap)})},1000);
+})();
+/* بازدید زماندار | Timed View: عکس یا ویدیوی زماندار در گفتگو محو است؛ با لمس برای مدت انتخاب‌شده (یا یک‌بار) دیده می‌شود، بعد پاک می‌شود و «پاک شده است» نشان می‌دهد */
+(()=>{const M=$("#msgs");CFG.exp=CFG.exp||{};
+ const st=document.createElement("style");st.textContent=".lkttl{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:13px;font-weight:600;background:rgba(70,70,80,.5);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px);border-radius:inherit;cursor:pointer}.lkexp{display:flex;align-items:center;justify-content:center;min-height:90px;padding:14px;color:var(--sub);font-size:14px}#lkTv{position:fixed;inset:0;z-index:100000;background:#000;display:flex;align-items:center;justify-content:center}#lkTv img,#lkTv video{max-width:100%;max-height:100%}#lkTv .tc{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;right:14px;display:flex;justify-content:space-between;color:#fff;font-size:15px}#lkTv .tc span{background:rgba(255,255,255,.18);padding:6px 12px;border-radius:14px}";document.head.appendChild(st);
+ const lab=x=>x.ttl<0?"1× "+(x.t==="video"?"Video":"Photo"):x.ttl+"s";
+ const gone=(cell,x)=>{CFG.exp[x.id]=1;saveCfg();try{if(LKU[x.id]){URL.revokeObjectURL(LKU[x.id]);delete LKU[x.id]}delete LKB[x.id]}catch(e){}const d=document.createElement("div");d.className="lkexp";d.textContent=x.t==="video"?"ویدیو پاک شده است":"عکس پاک شده است";cell.replaceWith(d)};
+ const apply=()=>{M.querySelectorAll(".b").forEach(b=>{const o=lkDec(b.dataset.t);if(!o||!o.it)return;o.it.forEach(x=>{if(!x.ttl||x.t==="file")return;const cell=b.querySelector('[data-lkm="'+x.id+'"]');if(!cell)return;if(CFG.exp[x.id]){gone(cell,x);return}if(cell.querySelector(".lkttl")||b.classList.contains("pend"))return;const v=document.createElement("div");v.className="lkttl";v.innerHTML=ic("clock",26)+"<span>"+lab(x)+"</span>";cell.style.position="relative";cell.appendChild(v)})})};
+ new MutationObserver(apply).observe(M,{childList:true,subtree:true});
+ M.addEventListener("click",e=>{const v=e.target.closest(".lkttl");if(!v)return;e.stopImmediatePropagation();e.preventDefault();const cell=v.closest(".lkc"),b=cell.closest(".b");if(!b||b.classList.contains("pend"))return;const o=lkDec(b.dataset.t),x=o&&o.it.find(y=>y.id===cell.dataset.lkm);if(!x)return;
+  const src=LKU[x.id]||(LKB[x.id]?(LKU[x.id]=URL.createObjectURL(LKB[x.id])):null);if(!src){toast("فایل در دسترس نیست");return}
+  const w=document.createElement("div");w.id="lkTv";w.innerHTML=(x.t==="video"?'<video src="'+src+'" autoplay playsinline></video>':'<img src="'+src+'" alt="">')+'<div class="tc"><span id="lkTx">'+(x.ttl<0?"View Once":x.ttl)+'</span><span id="lkTc">✕</span></div>';document.body.appendChild(w);
+  let left=x.ttl,iv=null;const end=()=>{clearInterval(iv);w.remove();gone(cell,x)};
+  w.querySelector("#lkTc").onclick=end;if(x.ttl>0){iv=setInterval(()=>{left--;w.querySelector("#lkTx").textContent=left;if(left<=0)end()},1000)}
+ },true);
+ setInterval(apply,1500);
+})();
+/* نگه داشتن کیفیت | Quality Hold Menu: نگه داشتن SD/HD گزینه‌های کیفیت و «ارسال به صورت فایل» را نشان می‌دهد */
+(()=>{const q=$("#mpQ"),orig=q.onclick;let t=null,lp=false;
+ const close=()=>{const m=document.getElementById("qMenu");if(m)m.remove()};
+ const item=(txt,on,fn)=>{const x=document.createElement("button");x.textContent=(on?"✓ ":"")+txt;x.style.cssText="display:block;width:100%;padding:12px;border:0;background:none;color:#fff;font-size:15px;text-align:right;border-bottom:1px solid #2c2c2e";x.onclick=()=>{close();fn()};return x};
+ const menu=()=>{close();const i=MPV.i,m=document.createElement("div");m.id="qMenu";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:flex-end;justify-content:center";
+  const box=document.createElement("div");box.style.cssText="background:#1c1c1e;border-radius:14px 14px 0 0;width:min(100vw,420px);padding:6px 0 10px;direction:rtl";
+  const r=MPV.rec[i];const cur=mpvQv(i);
+  mpvQs(i).forEach(v=>box.appendChild(item(v,!r.asFile&&v===cur,()=>{r.asFile=false;r.q=v;q.textContent=v})));
+  box.appendChild(item("ارسال به صورت فایل",!!r.asFile,()=>{r.asFile=!r.asFile;q.textContent=r.asFile?"File":cur}));
+  box.appendChild(item("انصراف",false,()=>{}));
+  m.appendChild(box);m.onclick=e=>{if(e.target===m)close()};document.body.appendChild(m)};
+ q.addEventListener("pointerdown",()=>{lp=false;t=setTimeout(()=>{lp=true;menu()},500)});
+ ["pointerup","pointerleave","pointercancel"].forEach(ev=>q.addEventListener(ev,()=>clearTimeout(t)));
+ q.addEventListener("click",e=>{if(lp){lp=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+})();
+const M=$("#mpM");let st=null;
  M.addEventListener("pointerdown",e=>{if(e.target.closest(".mpmute,.mpn,.mptl,.mpcap"))return;st={x:e.clientX,y:e.clientY,t:Date.now(),dx:0};M.setPointerCapture(e.pointerId);$("#mpTr").style.transition="none"});
  M.addEventListener("pointermove",e=>{if(!st)return;let dx=e.clientX-st.x;st.dx=dx;const n=MPV.f.length;if((MPV.i===0&&dx>0)||(MPV.i===n-1&&dx<0))dx*=.3;mpvPos(0,dx)});
  M.addEventListener("pointerup",e=>{if(!st)return;const s=st,dx=s.dx,W=M.clientWidth;st=null;
@@ -2345,7 +2404,7 @@ function lkVClose(){const v=$("#lkv");if(!v||!v.classList.contains("on")||v.clas
 /* باز کردن | Open Viewer: آلبوم و پیام مبدا را می‌گیرد و رسانه‌ی لمس‌شده را نشان می‌دهد (takes the album and source bubble, shows the tapped item) */
 function lkOpen(t,i,b){const o=lkDec(t);if(!o||o.k!=="album")return;const v=lkVEl();/* رشته‌ی سریالی رسانه | Serial Media Strip: همه‌ی عکس‌ها و ویدیوهای گفتگو از اول تا آخر یک ردیف می‌شوند و با ورق زدن همه دیده می‌شوند؛ هر مورد حباب خودش را دارد (all photos and videos of the chat form one strip start to end; each item keeps its own bubble) */let all=[],bs=[],si=Math.max(0,Math.min(o.it.length-1,i||0));try{if(b&&b.parentNode){[...b.parentNode.children].forEach(q=>{if(!q.classList||!q.classList.contains("b")||q.classList.contains("pend"))return;const d=lkDec(q.dataset.t);if(!d||d.k!=="album")return;if(q===b)si+=all.length;d.it.forEach(x=>{all.push(x);bs.push(q)})})}}catch(e){all=[]}if(!all.length||!bs.includes(b)){all=o.it;bs=null;si=Math.max(0,Math.min(o.it.length-1,i||0))}LKV.it=all;LKV.bs=bs;LKV.b=b||null;LKV.busy=false;v.classList.remove("hid","drag","out");v.classList.add("on","in");$("#lkvbg").style.cssText="";lkVPos();lkVGo(Math.max(0,Math.min(all.length-1,si)));setTimeout(()=>v.classList.remove("in"),240)}
 /* لمس در گفتگو | Chat Taps: لمس دکمه‌ی دانلود فایل را ذخیره می‌کند؛ لمس عکس یا ویدیو نمایشگر را باز می‌کند (حباب‌های در حال ارسال نه) */
-$("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkSave(dl.dataset.dl,dl.dataset.n);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i,b)}});
+$("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkFileDl(dl);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i,b)}});
 /* لیست کش | Cache List: فقط گفتگوهایی که رسانه‌ی کش‌شده دارند */
 function renderCache(){const L=CHATS.filter(c=>chatBytes(c)>0),tot=L.reduce((a,c)=>a+chatBytes(c),0);
  $("#cacheList").innerHTML=L.map(c=>`<div class="item" data-cc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="rr"><span class="v">${fmtSize(chatBytes(c))}</span><i class="chev"></i></span></div>`).join("")+(L.length?`<div class="item"><span>${tr("Total")}</span><span class="rr"><span class="v">${fmtSize(tot)}</span></span></div>`:`<div class="item" style="color:var(--sub);justify-content:center">${tr("No cached media")}</div>`);
