@@ -1353,8 +1353,8 @@ async function mVideoRun(file,rec,P,opt){
  /* نگهبان گیر کردن | Stall Watchdog: اگر ۲۰ ثانیه هیچ فریمی رمزگشایی یا فشرده نشود، خطا می دهیم تا ارسال گیر نکند و فایل اصلی فرستاده شود (if no frame moves for 20s, throw so the send falls back to the original file instead of hanging) */
  let lastMove=Date.now();const stall=()=>{if(Date.now()-lastMove>12000)throw new Error("video stalled")};
  const waitFlush=async p=>{let fin=false;p.then(()=>{fin=true},()=>{fin=true});while(!fin){if(err)throw err;stall();await new Promise(r=>setTimeout(r,200))}await p};
- let err=null,n=0,lastTs=-1e12;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
- const enc=new VideoEncoder({output:(ch2,m)=>{lastMove=Date.now();muxer.addVideoChunk(ch2,m)},error:e=>{err=e}});
+ let err=null,n=0,outN=0,lastTs=-1e12;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
+ const enc=new VideoEncoder({output:(ch2,m)=>{lastMove=Date.now();outN++;muxer.addVideoChunk(ch2,m)},error:e=>{err=e}});
  {const ec={codec,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}};if(hwp)ec.hardwareAcceleration=hwp;enc.configure(ec)}
  const dec=new VideoDecoder({output:f=>{lastMove=Date.now();try{const ts=f.timestamp;if(ts>=st*1e6-500&&ts<en*1e6&&ts-lastTs>=1e6/fps*.85){lastTs=ts;mDraw(x,f,sw,sh,R,c,dw,dh);const vf=new VideoFrame(cv,{timestamp:Math.max(0,Math.round(ts-st*1e6)),duration:Math.round(1e6/fps)});enc.encode(vf,{keyFrame:n%kfEvery===0});vf.close();n++;if(opt.onProgress)opt.onProgress(mClamp(n/total,0,1))}}finally{f.close()}},error:e=>{err=e}});
  dec.configure(dcfg);
@@ -1362,7 +1362,10 @@ async function mVideoRun(file,rec,P,opt){
   if(err)throw err;if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");
   const s=vs[i];dec.decode(new EncodedVideoChunk({type:s.is_sync?"key":"delta",timestamp:Math.round(s.cts*1e6/s.timescale),duration:Math.round(s.duration*1e6/s.timescale),data:s.data}));
   while(dec.decodeQueueSize>8||enc.encodeQueueSize>8){if(err)throw err;stall();await new Promise(r=>setTimeout(r,4))}}
- await waitFlush(dec.flush());await waitFlush(enc.flush());if(err)throw err;/* بدون فریم | No Frames: اگر هیچ فریمی فشرده نشد خطا می‌دهد تا راه جایگزین اجرا شود (if no frame was encoded we throw so the fallback path runs) */if(!n)throw new Error("no frames encoded");muxer.finalize();
+ /* پایان بدون گیر | Smooth Finish: روی آیفون flush گاهی در چند درصد آخر گیر می‌کرد و بعد از ۱۲ ثانیه کل کار دوباره با راه کند انجام می‌شد؛ حالا وقتی همه‌ی فریم‌ها فشرده شدند و ۱.۵ ثانیه فریم تازه‌ای نیامد، همین‌جا تمام می‌کنیم (flush could hang in the last percent and the whole job re-ran on the slow path; now we finish once all frames are out and nothing new arrives for 1.5s) */
+ {const fin=async p=>{let d=false;p.then(()=>{d=true},()=>{d=true});let ln=-1,lt=Date.now();while(!d){await new Promise(r=>setTimeout(r,60));const cur=n+outN;if(cur!==ln){ln=cur;lt=Date.now()}else if(n>0&&outN>=n-1&&Date.now()-lt>1500)break;else if(Date.now()-lt>12000){if(n>0&&outN>0)break;throw new Error("video stalled")}if(err&&!(n>0&&outN>0))throw err}};
+  await fin(dec.flush());await fin(enc.flush());if(err&&!(n>0&&outN>0))throw err}
+ /* بدون فریم | No Frames: اگر هیچ فریمی فشرده نشد خطا می‌دهد تا راه جایگزین اجرا شود (if no frame was encoded we throw so the fallback path runs) */if(!n)throw new Error("no frames encoded");muxer.finalize();
  const res=mResult(new Blob([muxer.target.buffer],{type:"video/mp4"}),mBase(file),"video/mp4",dw,dh,en-st);if(at&&!ad)res.audioDropped=true;return res}
 
 /* ---- تبدیل صدا | Audio Convert ---- */
