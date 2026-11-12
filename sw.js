@@ -11,4 +11,4 @@ self.addEventListener("fetch",e=>{const q=e.request,u=new URL(q.url);
  const page=q.mode==="navigate"||u.pathname.endsWith(".html")||u.pathname.slice(-1)==="/";
  const k=page?key(q.url):q.url;
  e.respondWith((async()=>{const c=await caches.open(C),hit=await c.match(k);if(hit)return hit;
-  const r=await fetch(q);if(r.ok)c.put(k,r.clone());return r})())});
+  const r=await fetch(page?q.url:q,page?{cache:"reload"}:undefined);if(r.ok)c.put(k,r.clone());return r})())});

@@ -1,16 +1,26 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
+<!--
+ ⚠️ NOTE TO ANY AI OR EDITOR WORKING ON THIS FILE / توجه به هر هوش مصنوعی یا ویرایشگر:
+ This is a PWA. Its auto-update depends on parts of THIS file. When making changes:
+ 1. Change ONLY what the user asked for. Return the COMPLETE file, never a partial one.
+ 2. NEVER remove or edit: (a) <link rel="manifest"> and the icon <link> tags in <head>;
+    (b) the "App Update" <script> block (it contains lk_ver, link-v4, IDX, chk, island);
+    (c) the navigator.serviceWorker.register("sw.js") call inside it.
+ 3. Do NOT rename this file; it must stay index.html. Do not add or change any version number: updates are detected automatically from the file's content.
+ 4. Only index.html is edited; sw.js, manifest.webmanifest and icons/ are separate files that stay as they are.
+-->
 <!-- لینک مسیجر | Link Messenger — نسخه 3.4 (Version 3.4) — داده‌های نمایشی (Demo data), بدون سرور (No server) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.webmanifest?v=4">
-<link rel="icon" type="image/png" href="icons/icon-192.png?v=4">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=4">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=4">
-<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icons/icon-180.png?v=4">
+<link rel="manifest" href="manifest.webmanifest?v=5">
+<link rel="icon" type="image/png" href="icons/icon-192.png?v=5">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=5">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=5">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icons/icon-180.png?v=5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -327,11 +337,11 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkcap{width:0;min-width:100%;box-sizing:border-box;padding:6px 8px 0;font-size:15px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;text-align:start}
 .edl{margin-inline-end:4px;opacity:.85}
 .lkc img{transition:filter .3s,transform .3s}.lkc.lkrm img{filter:blur(14px);transform:scale(1.2)}.lkdw{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}.lkdw.go .lkrg{position:absolute;left:1px;top:1px;background:none}.lkdw.go::after{content:"\2715";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}.lkc.lkrm .lkdu{z-index:2}
-#lkvbuf{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:rgba(255,255,255,.55);transform-origin:0 50%;transform:scaleX(1);display:none}#lkv.str #lkvbuf{display:block}#lkv.str #lkvbar{background:rgba(255,255,255,.16)}#lkvfil{z-index:1}.lkdw.sm{left:6px;top:6px;margin:0;width:26px;height:26px}.lkdw.sm svg{width:15px;height:15px}.lkdw.sm.go .lkrg{width:24px;height:24px}.lkdw.sm.go::after{font-size:12px}.lkc.lkrm.vd .lkdu{left:38px;top:9px}
-.lka{width:250px;max-width:100%;display:flex;flex-direction:column;gap:2px;border-radius:15px;overflow:hidden}
+#lkvbuf{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:rgba(255,255,255,.55);transform-origin:0 50%;transform:scaleX(1);display:none}#lkv.str #lkvbuf{display:block}#lkv.str #lkvbar{background:rgba(255,255,255,.16)}#lkvfil{z-index:1}.lkdw.sm{left:6px;top:6px;margin:0;width:26px;height:26px}.lkdw.sm svg{width:15px;height:15px}.lkdw.sm.go .lkrg{width:24px;height:24px}.lkdw.sm.go .lkrg svg{width:100%;height:100%}.lkdw.sm.go::after{font-size:12px}.lkc.lkrm.vd .lkdu{left:38px;top:9px}
+.lka{width:var(--aw,250px);max-width:100%;display:flex;flex-direction:column;gap:2px;border-radius:15px;overflow:hidden}
 .lkr{display:flex;gap:2px;width:100%}
 .lkc{position:relative;overflow:hidden;background:rgba(255,255,255,.1);min-width:0;cursor:pointer}
-.lkdw,.lkpl,.lkpg{transform:scale(var(--k,1))}.lkdw.sm{transform-origin:0 0}.lkdu{transform:scale(var(--k,1));transform-origin:0 0;white-space:nowrap}
+.lkdw,.lkpl,.lkpg{transform:scale(var(--k,1))}.lkdw.sm{transform-origin:0 0}.lkdu{transform:scale(var(--k,1));transform-origin:0 0;white-space:nowrap;max-width:calc((100% - 12px)/var(--k,1));overflow:hidden;text-overflow:ellipsis}.b[style*="--k"] .lkc.lkrm.vd .lkdu{left:6px;top:36px}
 .lkc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .lkc img:not([src]){display:none}
 .lkc.lkx::after{content:"🗑";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.6}
@@ -1849,7 +1859,7 @@ const LKD={};
 function lkDlInfo(cell){const id=cell.dataset.lkm,b=cell.closest(".b");if(!b)return null;const o=lkDec(b.dataset.t),x=o&&o.it.find(i=>i.id===id);return x?{id,b,x}:null}
 function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd||LKD[id])return;
  const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now()-lkDlP(id)*tot,tk=0;dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');
- const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
+ const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=b.style.getPropertyValue("--k")?Math.round(p*100)+"% · "+lkSz(x.s||0):lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
  const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);if(LKD[id])lkDlSv(id,LKD[id].p||0,1);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}else{lkDlSv(id,p,++tk%10===0)}},100);LKD[id]={iv,p:lkDlP(id)};up(lkDlP(id))}
 function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd)return;
  if(LKD[id]){clearInterval(LKD[id].iv);lkDlSv(id,LKD[id].p||0,1);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkDlTxt(x);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
@@ -3085,7 +3095,7 @@ setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
-(function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null;
+(function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null;var BUILD="b6";
 var IDX=function(){var x=new URL(location.href);x.search="";x.hash="";if(x.pathname.slice(-1)==="/")x.pathname+="index.html";return x.href};
 /* تبدیل آیکون | Icon Morph: خود دو خط زنجیر (#lkConn) به یک دایره‌ی چرخان تبدیل می‌شوند (نقطه‌به‌نقطه)؛ هنگام پایان دوباره به زنجیر برمی‌گردند */
 var K={on:0,m:0,rot:0,rot0:0,rotEnd:0,raf:0,last:0,gt:0,done:null,ic:null,pa:null,pb:null,da:"",db:"",A:null,B:null},N=40,R=7.5;
@@ -3119,21 +3129,20 @@ setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();
 if(kind==="found"){var m=document.createElement("div");m.textContent=L("Update found","آپدیت پیدا شد");
 var u=document.createElement("div");u.textContent=L("Update Link","آپدیت لینک");u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
-u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
+u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{localStorage.setItem("lk_ver",await h(fresh))}catch(e){}try{var keys=await caches.keys();for(var i=0;i<keys.length;i++)await caches.delete(keys[i]);var cc=await caches.open("link-v4");await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(document.documentElement.clientWidth-20,260),100,6)})})}
 else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):kind==="err"?L("Check your connection","اتصال اینترنت را بررسی کنید"):L("Check failed","بررسی انجام نشد")+" ("+kind.slice(5)+")";t.appendChild(c);
-requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,1300)}}
+requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,kind==="none"?1300:4500)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none",st=0;try{
 var u=new URL(IDX());u.searchParams.set("_u",Date.now());
-var r=await fetch(u.href,{cache:"no-store"});if(!r.ok){var u2=new URL("index.html",u.href);u2.searchParams.set("_u",Date.now());if(u2.pathname!==u.pathname)r=await fetch(u2.href,{cache:"no-store"})}st=1;if(!r.ok)throw new Error("HTTP "+r.status);var net=await r.text();
-if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v4")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
-if(await h(net)!==oldH){fresh=net;res="found"}
-}catch(e){res=st?"fail:"+String(e&&e.message||e).slice(0,40):"err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
+var r=await fetch(u.href,{cache:"no-store"});if(!r.ok){var u2=new URL("index.html",u.href);u2.searchParams.set("_u",Date.now());if(u2.pathname!==u.pathname)r=await fetch(u2.href,{cache:"no-store"})}st=1;if(!r.ok)throw new Error("HTTP "+r.status);var net=await r.text();var bm=net.match(new RegExp('var BU'+'ILD="([^"]*)"'));if(bm){if(bm[1]!==BUILD){fresh=net;res="found"}}
+if(res!=="found"){var nh=await h(net),bs=null;try{bs=localStorage.getItem("lk_ver")}catch(e){}if(!bs){var hit=await caches.match(IDX());bs=hit?await h(await hit.text()):nh;try{localStorage.setItem("lk_ver",bs)}catch(e){}}if(nh!==bs){fresh=net;res="found"}}
+}catch(e){res=st?"fail:"+String(e&&e.message||e).slice(0,30)+" "+location.pathname.slice(-22):"err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}
-(function(){let q=0;function run(){q=0;document.querySelectorAll("#msgs .b").forEach(b=>{const cs=b.querySelectorAll(".lkc");if(cs.length<2){if(b.style.getPropertyValue("--k"))b.style.removeProperty("--k");return}let w=1e9;cs.forEach(c=>{const x=c.clientWidth;if(x>0&&x<w)w=x});if(w===1e9)return;const k=Math.max(.4,Math.min(1,w/150)).toFixed(2);if(b.style.getPropertyValue("--k")!==k)b.style.setProperty("--k",k)})}
+(function(){let q=0;function run(){q=0;document.querySelectorAll("#msgs .b").forEach(b=>{const cs=b.querySelectorAll(".lkc");if(cs.length<2){if(b.style.getPropertyValue("--k"))b.style.removeProperty("--k");return}let n=1;b.querySelectorAll(".lkr").forEach(r=>{n=Math.max(n,r.querySelectorAll(".lkc").length)});const aw=Math.min(330,Math.max(250,n*104)),a=b.querySelector(".lka");if(a&&a.style.getPropertyValue("--aw")!==aw+"px")a.style.setProperty("--aw",aw+"px");const k=Math.max(.8,Math.min(1,aw/n/120)).toFixed(2);if(b.style.getPropertyValue("--k")!==k)b.style.setProperty("--k",k)})}
 const sch=()=>{if(!q)q=requestAnimationFrame(run)};const ms=document.getElementById("msgs");if(ms)new MutationObserver(sch).observe(ms,{childList:true,subtree:true});addEventListener("resize",sch);sch()})();
 /* جستجو در گفتگو | In-Chat Search: نگه داشتن روی نام بالای گفتگو آن را به نوار جستجو تبدیل می‌کند و نتایج (از جدیدترین) زیر نوار لیست می‌شوند؛ زدن روی هر نتیجه به همان پیام می‌رود */
 (function(){
