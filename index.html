@@ -3023,6 +3023,7 @@ K.raf=requestAnimationFrame(frame)}
 function spin(on){if(on){var ic=document.getElementById("lkConn");if(!ic||K.raf)return Promise.resolve();var a=ic.querySelector(".a"),b=ic.querySelector(".b");if(!a||!b)return Promise.resolve();
 K.ic=ic;K.pa=a;K.pb=b;K.da=a.getAttribute("d");K.db=b.getAttribute("d");K.A=samp(a);K.B=samp(b);K.on=1;K.m=0;K.rot=0;K.gt=0;K.last=performance.now();K.raf=requestAnimationFrame(frame);return Promise.resolve()}
 return new Promise(function(res){if(!K.raf){res();return}K.on=0;K.rot0=K.rot;K.rotEnd=Math.ceil(K.rot/360)*360;K.done=res})}
+function L(e,f){var l;try{l=(JSON.parse(localStorage.getItem("lk_cfg"))||{}).lang}catch(x){}return l==="fa"?f:e}
 /* دایناميک آیلند | Dynamic Island: خود کپسول بالای چت‌ها (با تم برنامه) سر جایش باز می‌شود و بعد دوباره جمع می‌شود */
 function island(kind){var t=document.querySelector("#chats .top .title");if(!t)return;isl=1;
 var r=t.getBoundingClientRect(),old=t.getAttribute("style")||"",ph=document.createElement("div");
@@ -3034,13 +3035,13 @@ var c=document.createElement("div");c.style.cssText="display:flex;flex-direction
 function go(W,H,dy){var L=(innerWidth-W)/2;t.style.left=L+"px";t.style.top=(r.top+dy)+"px";t.style.width=W+"px";t.style.height=H+"px";t.style.borderRadius=Math.min(H/2,32)+"px";c.style.opacity="1"}
 function close(){c.style.transition="opacity .15s";c.style.opacity="0";t.style.left=r.left+"px";t.style.top=r.top+"px";t.style.width=r.width+"px";t.style.height=r.height+"px";t.style.borderRadius="";
 setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();c.remove();t.setAttribute("style",old);if(!old)t.removeAttribute("style");ph.remove();isl=0},540)}
-if(kind==="found"){var m=document.createElement("div");m.textContent="آپدیت پیدا شد";
-var u=document.createElement("div");u.textContent="آپدیت لینک";u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
+if(kind==="found"){var m=document.createElement("div");m.textContent=L("Update found","آپدیت پیدا شد");
+var u=document.createElement("div");u.textContent=L("Update Link","آپدیت لینک");u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
-u.onclick=async function(){u.textContent="در حال آپدیت...";u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
+u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(innerWidth*.9,320),104,6)})})}
-else{c.textContent=kind==="none"?"آپدیتی پیدا نشد":"بررسی انجام نشد";t.appendChild(c);
+else{c.textContent=kind==="none"?L("No update found","آپدیتی پیدا نشد"):L("Check failed","بررسی انجام نشد");t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,200),r.height+16,6)})});setTimeout(close,1300)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
 var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
