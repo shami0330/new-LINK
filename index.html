@@ -331,6 +331,7 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lka{width:250px;max-width:100%;display:flex;flex-direction:column;gap:2px;border-radius:15px;overflow:hidden}
 .lkr{display:flex;gap:2px;width:100%}
 .lkc{position:relative;overflow:hidden;background:rgba(255,255,255,.1);min-width:0;cursor:pointer}
+.lkdw,.lkpl,.lkpg{transform:scale(var(--k,1))}.lkdw.sm{transform-origin:0 0}.lkdu{transform:scale(var(--k,1));transform-origin:0 0;white-space:nowrap}
 .lkc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .lkc img:not([src]){display:none}
 .lkc.lkx::after{content:"🗑";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.6}
@@ -3085,7 +3086,7 @@ setPw();
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
 (function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null;
-var IDX=function(){return new URL("index.html",location.href).href};
+var IDX=function(){var x=new URL(location.href);x.search="";x.hash="";if(x.pathname.slice(-1)==="/")x.pathname+="index.html";return x.href};
 /* تبدیل آیکون | Icon Morph: خود دو خط زنجیر (#lkConn) به یک دایره‌ی چرخان تبدیل می‌شوند (نقطه‌به‌نقطه)؛ هنگام پایان دوباره به زنجیر برمی‌گردند */
 var K={on:0,m:0,rot:0,rot0:0,rotEnd:0,raf:0,last:0,gt:0,done:null,ic:null,pa:null,pb:null,da:"",db:"",A:null,B:null},N=40,R=7.5;
 function ease(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2}
@@ -3124,7 +3125,7 @@ requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(do
 else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):L("Check your connection","اتصال اینترنت را بررسی کنید");t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,1300)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
-var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
+var u=new URL(IDX());u.searchParams.set("_u",Date.now());
 var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
 if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v4")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
 if(await h(net)!==oldH){fresh=net;res="found"}
@@ -3132,6 +3133,8 @@ if(await h(net)!==oldH){fresh=net;res="found"}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}
+(function(){let q=0;function run(){q=0;document.querySelectorAll("#msgs .b").forEach(b=>{const cs=b.querySelectorAll(".lkc");if(cs.length<2){if(b.style.getPropertyValue("--k"))b.style.removeProperty("--k");return}let w=1e9;cs.forEach(c=>{const x=c.clientWidth;if(x>0&&x<w)w=x});if(w===1e9)return;const k=Math.max(.4,Math.min(1,w/150)).toFixed(2);if(b.style.getPropertyValue("--k")!==k)b.style.setProperty("--k",k)})}
+const sch=()=>{if(!q)q=requestAnimationFrame(run)};const ms=document.getElementById("msgs");if(ms)new MutationObserver(sch).observe(ms,{childList:true,subtree:true});addEventListener("resize",sch);sch()})();
 /* جستجو در گفتگو | In-Chat Search: نگه داشتن روی نام بالای گفتگو آن را به نوار جستجو تبدیل می‌کند و نتایج (از جدیدترین) زیر نوار لیست می‌شوند؛ زدن روی هر نتیجه به همان پیام می‌رود */
 (function(){
  const T=$("#chat .top .title");let tm=0,on=0,lp=0;
