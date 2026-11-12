@@ -1323,16 +1323,19 @@ async function mVideoRun(file,rec,P,opt){
  const muxer=new Mp4Muxer.Muxer({target:new Mp4Muxer.ArrayBufferTarget(),video:{codec:"avc",width:dw,height:dh},audio:ad?{codec:"aac",sampleRate:at.audio.sample_rate,numberOfChannels:at.audio.channel_count}:undefined,fastStart:"in-memory",firstTimestampBehavior:"cross-track-offset"});
  if(ad){const dc={codec:at.codec,sampleRate:at.audio.sample_rate,numberOfChannels:at.audio.channel_count,description:ad};for(const s of as){const t=s.cts/s.timescale;if(t>=st-.02&&t<en)muxer.addAudioChunkRaw(s.data,"key",Math.max(0,Math.round((t-st)*1e6)),Math.round(s.duration*1e6/s.timescale),{decoderConfig:dc})}}
  const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d",{willReadFrequently:!MHASF&&!!R.adjust});
+ /* نگهبان گیر کردن | Stall Watchdog: اگر ۲۰ ثانیه هیچ فریمی رمزگشایی یا فشرده نشود، خطا می دهیم تا ارسال گیر نکند و فایل اصلی فرستاده شود (if no frame moves for 20s, throw so the send falls back to the original file instead of hanging) */
+ let lastMove=Date.now();const stall=()=>{if(Date.now()-lastMove>20000)throw new Error("video stalled")};
+ const waitFlush=async p=>{let fin=false;p.then(()=>{fin=true},()=>{fin=true});while(!fin){if(err)throw err;stall();await new Promise(r=>setTimeout(r,200))}await p};
  let err=null,n=0;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
- const enc=new VideoEncoder({output:(ch2,m)=>muxer.addVideoChunk(ch2,m),error:e=>{err=e}});
+ const enc=new VideoEncoder({output:(ch2,m)=>{lastMove=Date.now();muxer.addVideoChunk(ch2,m)},error:e=>{err=e}});
  enc.configure({codec,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}});
- const dec=new VideoDecoder({output:f=>{try{const ts=f.timestamp;if(ts>=st*1e6-500&&ts<en*1e6){mDraw(x,f,sw,sh,R,c,dw,dh);const vf=new VideoFrame(cv,{timestamp:Math.max(0,Math.round(ts-st*1e6)),duration:f.duration||Math.round(1e6/fps)});enc.encode(vf,{keyFrame:n%kfEvery===0});vf.close();n++;if(opt.onProgress)opt.onProgress(mClamp(n/total,0,1))}}finally{f.close()}},error:e=>{err=e}});
+ const dec=new VideoDecoder({output:f=>{lastMove=Date.now();try{const ts=f.timestamp;if(ts>=st*1e6-500&&ts<en*1e6){mDraw(x,f,sw,sh,R,c,dw,dh);const vf=new VideoFrame(cv,{timestamp:Math.max(0,Math.round(ts-st*1e6)),duration:f.duration||Math.round(1e6/fps)});enc.encode(vf,{keyFrame:n%kfEvery===0});vf.close();n++;if(opt.onProgress)opt.onProgress(mClamp(n/total,0,1))}}finally{f.close()}},error:e=>{err=e}});
  dec.configure(dcfg);
  for(let i=i0;i<i1;i++){
   if(err)throw err;if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");
   const s=vs[i];dec.decode(new EncodedVideoChunk({type:s.is_sync?"key":"delta",timestamp:Math.round(s.cts*1e6/s.timescale),duration:Math.round(s.duration*1e6/s.timescale),data:s.data}));
-  while(dec.decodeQueueSize>8||enc.encodeQueueSize>8){if(err)throw err;await new Promise(r=>setTimeout(r,4))}}
- await dec.flush();await enc.flush();if(err)throw err;muxer.finalize();
+  while(dec.decodeQueueSize>8||enc.encodeQueueSize>8){if(err)throw err;stall();await new Promise(r=>setTimeout(r,4))}}
+ await waitFlush(dec.flush());await waitFlush(enc.flush());if(err)throw err;muxer.finalize();
  const res=mResult(new Blob([muxer.target.buffer],{type:"video/mp4"}),mBase(file),"video/mp4",dw,dh,en-st);if(at&&!ad)res.audioDropped=true;return res}
 
 /* ---- تبدیل صدا | Audio Convert ---- */
@@ -1683,7 +1686,8 @@ function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  $("#pf_bio").textContent=u.bio||"";$("#pf_bio_w").style.display=u.bio?"":"none";
  $("#pf_bday").textContent=u.bday?fmtDate(u.bday):"";$("#pf_bday_w").style.display=u.bday?"":"none";
  ["#myav","#myav2","#pf_av","#tbav","#pf_full"].forEach(q=>paintAv($(q),u))}
-function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=320;c.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,320,320);cb(c.toDataURL("image/jpeg",.85))};im.src=r.result};r.readAsDataURL(file)};f.click()}
+/* کیفیت عکس پروفایل | Profile Photo Quality: عکس پروفایل مثل تلگرام با اندازه‌ی ۶۴۰ پیکسل و کیفیت بالا ذخیره می‌شود، نه بندانگشتی ۳۲۰ کم‌کیفیت (profile photos are saved at 640px high quality like Telegram, not a 320px thumbnail) */
+function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=640;const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,640,640);cb(c.toDataURL("image/jpeg",.92))};im.src=r.result};r.readAsDataURL(file)};f.click()}
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
  $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";bdShow();$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
  paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
@@ -1970,7 +1974,7 @@ function mpvEdited(i){mpvDraw(i)}
 const _pp0=pickPhoto;
 pickPhoto=function(cb,bg){if(bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)bgPreview(file,cb)};f.click();return}const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(file)avPreview(file,cb)};f.click()};
 Object.assign(FA,{"Profile photo":"عکس پروفایل"});
-(function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3}";document.head.append(st)})();
+(function(){const st=document.createElement("style");st.textContent="#mpv.avp .mpcap,#mpv.avp #mpN,#mpv.avp #mpQ,#mpv.avp #mpIdx,#mpv.avp #mpMute,#mpv.avp [data-mt=draw],#mpv.avp #mpeH{display:none!important}#mpv.avp #mpeR::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none}#mpv .avg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid rgba(255,255,255,.4);pointer-events:none;z-index:3;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}#mpv.avp #mpTr>*:first-child{overflow:hidden}/* خاکستری بیرون دایره | Circle Outside Dim: بیرون دایره‌ی راهنمای عکس پروفایل کمی خاکستری می‌شود مثل تلگرام (the area outside the profile photo circle guide is dimmed grey like Telegram) */#mpv.avp #mpeR::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle closest-side,transparent calc(100% - .5px),rgba(0,0,0,.42) 100%)}";document.head.append(st)})();
 /* قاب مربعی پروفایل | Avatar Square Frame: بعد از چرخش یا آینه، قاب برش دوباره مربعی و وسط‌چین می‌شود تا دایره‌ی راهنما بیضی نشود */
 function avSquare(){const a=MPE.W/MPE.H;let w=1,h=1;if(a>1)w=1/a;else h=a;MPE.ratio=1;MPE.c={x:(1-w)/2,y:(1-h)/2,w,h};mpeRect()}
 /* بازنشانی مربعی | Square Reset Hook: فقط وقتی پیش‌نمایش پروفایل باز است، بعد از بازنشانی قاب، مربعی‌اش می‌کند */
@@ -1987,8 +1991,8 @@ async function avPreview(file,cb){
  const end=()=>{o.classList.remove("avp");sb.onclick=s0;bb.onclick=b0;cr.onclick=c0};
  bb.onclick=()=>{b0();end()};
  cr.onclick=async()=>{await c0();MPE.ratio=1};
- sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=320,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
-  mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.85))}catch(e){toast("Couldn't use this photo");return}b0();end()}
+ sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=640,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
+  mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.92))}catch(e){toast("Couldn't use this photo");return}b0();end()}
 }
 /* برش پس‌زمینه | Background Crop: وقتی عکس پس‌زمینه‌ی چت انتخاب می‌شود، همان ویرایشگر برش پروفایل باز می‌شود؛ قاب برش روی نسبت دقیق صفحه‌ی چت قفل است (فقط کوچک و بزرگ و جابه‌جا می‌شود) و بدون دایره‌ی راهنما */
 (function(){const st=document.createElement("style");st.textContent="#mpv.bgp #mpeR::after{display:none!important}";document.head.append(st)})();
@@ -2071,7 +2075,8 @@ function mpeInit(){
 /* باز کردن پیش‌نمایش | Open Preview: اندازه‌ی فایل‌ها را می‌خواند، صفحه‌ها را از عکس و ویدیو می‌سازد و پیش‌نمایش را نشان می‌دهد */
 Object.assign(FA,{"Preparing media...":"در حال آماده‌سازی..."});
 /* زوم خودکار برش | Crop Auto Zoom: یک ثانیه بعد از رها کردن قاب برش، تصویر بزرگ می‌شود تا قاب برش صفحه را پر کند و همان‌طور می‌ماند تا خودت با دو انگشت (پینچ) تغییرش بدهی؛ با یک انگشت بیرون قاب هم می‌شود تصویر را جابه‌جا کرد */
-const MZ={t:0,z:0,s:1,l:0,tp:0,sk:0,c0:"",max:3,m:18,pts:new Map(),pn:null,pc:null};
+/* سقف زوم خودکار | Auto Zoom Limit: با هر بار تغییر قاب برش، تصویر دوباره روی همان قاب زوم می‌شود؛ سقف زوم از ۳ به ۱۲ رسید تا بعد از اولین برش، برش‌های بعدی هم زوم شوند (zoom cap raised from 3 to 12 so every later crop zooms again, not only the first) */
+const MZ={t:0,z:0,s:1,l:0,tp:0,sk:0,c0:"",max:12,m:18,pts:new Map(),pn:null,pc:null};
 /* جای صحنه | Stage Place: اندازه و جای صحنه‌ی برش را با مقیاس داده‌شده می‌گذارد */
 function mzPut(s,l,tp,anim){const S=$("#mpeS"),B=$("#mpeB");B.style.transition=anim?"left .35s ease,top .35s ease,width .35s ease,height .35s ease":"none";B.style.width=MPE.W*s+"px";B.style.height=MPE.H*s+"px";B.style.left=l+"px";B.style.top=tp+"px";MZ.s=s;MZ.l=l;MZ.tp=tp;S.classList.toggle("zm",s>1.001)}
 /* وضوح بوم | Canvas Sharpness: بعد از زوم، تصویر را با وضوح اندازه‌ی جدید دوباره می‌کشد */
