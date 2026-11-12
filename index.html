@@ -3095,7 +3095,7 @@ setPw();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
 /* آپدیت برنامه | App Update: برنامه اول از کش باز می‌شود؛ در پس‌زمینه index.html از GitHub گرفته و با نسخه‌ی کش مقایسه می‌شود. اگر فرق داشت دکمه‌ی «آپدیت برنامه» ظاهر می‌شود؛ با زدنش نسخه‌ی جدید ذخیره و صفحه رفرش می‌شود */
-(function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null;var BUILD="b6";
+(function(){var busy=0,lock=0,isl=0,fresh=null,oldH=null,fnew=null;var BUILD="b6";
 var IDX=function(){var x=new URL(location.href);x.search="";x.hash="";if(x.pathname.slice(-1)==="/")x.pathname+="index.html";return x.href};
 /* تبدیل آیکون | Icon Morph: خود دو خط زنجیر (#lkConn) به یک دایره‌ی چرخان تبدیل می‌شوند (نقطه‌به‌نقطه)؛ هنگام پایان دوباره به زنجیر برمی‌گردند */
 var K={on:0,m:0,rot:0,rot0:0,rotEnd:0,raf:0,last:0,gt:0,done:null,ic:null,pa:null,pb:null,da:"",db:"",A:null,B:null},N=40,R=7.5;
@@ -3129,18 +3129,19 @@ setTimeout(function(){while(w.firstChild)t.appendChild(w.firstChild);w.remove();
 if(kind==="found"){var m=document.createElement("div");m.textContent=L("Update found","آپدیت پیدا شد");
 var u=document.createElement("div");u.textContent=L("Update Link","آپدیت لینک");u.style.cssText="cursor:pointer;background:var(--blue);color:#fff;padding:7px 14px;border-radius:18px;font-size:14px;font-weight:600";
 var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="cursor:pointer;width:28px;height:28px;line-height:26px;text-align:center;font-size:22px;border-radius:50%;background:var(--card2);color:var(--txt);font-weight:500";
-u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{localStorage.setItem("lk_ver",await h(fresh))}catch(e){}try{var keys=await caches.keys();for(var i=0;i<keys.length;i++)await caches.delete(keys[i]);var cc=await caches.open("link-v4");await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}location.reload()};
+u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{localStorage.setItem("lk_ver",await h(fresh));if(fnew)localStorage.setItem("lk_et",fnew)}catch(e){}try{var keys=await caches.keys();for(var i=0;i<keys.length;i++)await caches.delete(keys[i]);var cc=await caches.open("link-v4");await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(document.documentElement.clientWidth-20,260),100,6)})})}
 else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):kind==="err"?L("Check your connection","اتصال اینترنت را بررسی کنید"):L("Check failed","بررسی انجام نشد")+" ("+kind.slice(5)+")";t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,kind==="none"?1300:4500)}}
-async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none",st=0;try{
+async function chk(sl){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;if(!sl)spin(true);var res="none",st=0,fet=null;try{
 var u=new URL(IDX());u.searchParams.set("_u",Date.now());
+try{var hr=await fetch(u.href,{method:"HEAD",cache:"no-store"});if(hr.ok){fet=hr.headers.get("etag")||hr.headers.get("last-modified");var so=null;try{so=localStorage.getItem("lk_et")}catch(e){}if(fet&&so===fet)throw "same"}}catch(e){if(e==="same")throw e}
 var r=await fetch(u.href,{cache:"no-store"});if(!r.ok){var u2=new URL("index.html",u.href);u2.searchParams.set("_u",Date.now());if(u2.pathname!==u.pathname)r=await fetch(u2.href,{cache:"no-store"})}st=1;if(!r.ok)throw new Error("HTTP "+r.status);var net=await r.text();var bm=net.match(new RegExp('var BU'+'ILD="([^"]*)"'));if(bm){if(bm[1]!==BUILD){fresh=net;res="found"}}
-if(res!=="found"){var nh=await h(net),bs=null;try{bs=localStorage.getItem("lk_ver")}catch(e){}if(!bs){var hit=await caches.match(IDX());bs=hit?await h(await hit.text()):nh;try{localStorage.setItem("lk_ver",bs)}catch(e){}}if(nh!==bs){fresh=net;res="found"}}
-}catch(e){res=st?"fail:"+String(e&&e.message||e).slice(0,30)+" "+location.pathname.slice(-22):"err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
+if(res!=="found"){var nh=await h(net),bs=null;try{bs=localStorage.getItem("lk_ver")}catch(e){}if(!bs){var hit=await caches.match(IDX());bs=hit?await h(await hit.text()):nh;try{localStorage.setItem("lk_ver",bs)}catch(e){}}if(nh!==bs){fresh=net;fnew=fet;res="found"}else if(fet){try{localStorage.setItem("lk_et",fet)}catch(e){}}}
+}catch(e){res=e==="same"?"none":st?"fail:"+String(e&&e.message||e).slice(0,30)+" "+location.pathname.slice(-22):"err"}finally{busy=0;lock=sl?0:Date.now()+2000;if(!sl){await new Promise(function(r){setTimeout(r,400)});await spin(false)}if(!sl||res==="found")island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
-addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
+addEventListener("load",function(){setTimeout(function(){chk(1)},2500);navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden){r.update();chk(1)}})}).catch(function(){})});
 })()}
 (function(){let q=0;function run(){q=0;document.querySelectorAll("#msgs .b").forEach(b=>{const cs=b.querySelectorAll(".lkc");if(cs.length<2){if(b.style.getPropertyValue("--k"))b.style.removeProperty("--k");return}let n=1;b.querySelectorAll(".lkr").forEach(r=>{n=Math.max(n,r.querySelectorAll(".lkc").length)});const aw=Math.min(330,Math.max(250,n*104)),a=b.querySelector(".lka");if(a&&a.style.getPropertyValue("--aw")!==aw+"px")a.style.setProperty("--aw",aw+"px");const k=Math.max(.8,Math.min(1,aw/n/120)).toFixed(2);if(b.style.getPropertyValue("--k")!==k)b.style.setProperty("--k",k)})}
 const sch=()=>{if(!q)q=requestAnimationFrame(run)};const ms=document.getElementById("msgs");if(ms)new MutationObserver(sch).observe(ms,{childList:true,subtree:true});addEventListener("resize",sch);sch()})();
