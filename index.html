@@ -647,7 +647,7 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 /* صفحه‌های تنظیمات | Settings Sub-pages: پروفایل، ویرایش، پوشه‌ها، حریم خصوصی، داده، ظاهر، زبان */
 .sub{z-index:35}
 .sub .top .title{background:none;flex:1;justify-content:center}
-.sub .body{flex:1;overflow-y:auto;padding-bottom:40px;-webkit-overflow-scrolling:touch}
+.sub .body{flex:1;overflow-y:auto;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px) + var(--ext,0px));-webkit-overflow-scrolling:touch}
 .rr{margin-inline-start:auto;color:var(--sub);display:flex;align-items:center;gap:6px}
 .rr .v{font-weight:400}
 .chev::after{content:"›";font-style:normal;font-size:20px;line-height:1}
