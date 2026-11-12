@@ -594,6 +594,9 @@ html.light .schc input[type=date],html.light .schc input[type=time]{color-scheme
 /* منوی بیشتر پروفایل | Profile More Menu: پاک کردن تاریخچه و بلاک (clear history, block) */
 #cpmov,#fwdov{position:absolute;inset:0;z-index:96;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
 #cpmov.on,#fwdov.on{display:flex}
+/* منوی حذف داخل صفحه | Delete Sheet In View: پوشش ثابت روی صفحه‌ی دیده‌شده (نه روی #app که پایینش بیرون از صفحه می‌رود) تا منو بیرون نزند و اگر بلند بود اسکرول شود (fixed to the visible screen, not #app which extends below it; scrolls if tall) */
+#fwdov{position:fixed;inset:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);box-sizing:border-box}
+#fwdov .mn{max-height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 40px);overflow-y:auto;margin-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
 #cpmov .mn,#fwdov .mn{width:calc(100% - 24px);margin-bottom:calc(env(safe-area-inset-bottom) + 17px);background:var(--menu);border-radius:16px;overflow:hidden;backdrop-filter:blur(20px)}
 #cpmov .mn div,#fwdov .mn div{padding:15px 18px;font-size:17px;border-bottom:.5px solid var(--line);color:var(--txt)}
 #cpmov .mn div:last-child,#fwdov .mn div:last-child{border:0}
@@ -1331,14 +1334,14 @@ async function mVideoRun(file,rec,P,opt){
  const sw=vt.video.width,sh=vt.video.height,rr=R.rotate%180,w2=rr?sh:sw,h2=rr?sw:sh,c=mediaCropFor(R,w2,h2,P.ratio),cw=c.w*w2,ch=c.h*h2;
  let dw,dh,br;
  if(P.w){dw=P.w;dh=P.h;br=P.vbr}
- else if(P.heights){const q=P.heights.includes(opt.height)?opt.height:720;/* سقف کیفیت | Quality Cap: اندازه هرگز بیشتر از اندازه واقعی فایل نمی‌شود و بیت‌ریت هم از همان اندازهٔ واقعی انتخاب می‌شود (never upscale; bitrate follows the real output height) */dh=mEven(Math.min(q,ch));dw=mEven(cw*dh/ch);br=P.bitrates[P.heights.filter(h=>h<=dh).pop()||P.heights[0]]}
+ else if(P.heights){const q=(opt.height>=240&&opt.height<=1080)?opt.height:720;/* سقف کیفیت | Quality Cap: اندازه هرگز بیشتر از اندازه واقعی فایل نمی‌شود و بیت‌ریت هم از همان اندازهٔ واقعی انتخاب می‌شود (never upscale; bitrate follows the real output height) */{const k=Math.min(1,q/Math.min(cw,ch));dh=mEven(ch*k);dw=mEven(cw*k);br=P.bitrates[P.heights.filter(h=>h<=Math.min(dw,dh)+2).pop()||P.heights[0]]}}
  else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
  const dur=vt.duration/vt.timescale,tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
  let i0=0,i1=vs.length;
  for(let i=0;i<vs.length;i++){if(vs[i].is_sync&&vs[i].cts/vs[i].timescale<=st+1e-4)i0=i}
  for(let i=vs.length-1;i>=0;i--){if(vs[i].cts/vs[i].timescale<en){i1=i+1;break}}
- const fps=mClamp(Math.round(vs.length/dur),12,60);
- let codec=null;for(const cd of["avc1.640028","avc1.4d0028","avc1.42001f"]){try{const r=await VideoEncoder.isConfigSupported({codec:cd,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}});if(r&&r.supported){codec=cd;break}}catch(e){}}
+ /* سقف ۳۰ فریم | 30fps Cap: ویدیوی ۶۰ فریمی نصف فریم را فشرده می‌کند تا فشرده‌سازی تقریباً دو برابر سریع‌تر شود (60fps source encodes half the frames, about 2x faster) */const fps=mClamp(Math.round(vs.length/dur),12,30);
+ /* رمزگذار سخت‌افزاری | Hardware Encoder: اول رمزگذار سخت‌افزاری گوشی را امتحان می‌کند و فقط اگر نبود نرم‌افزاری (hardware first, software only if missing) */let codec=null,hwp;for(const hw of["prefer-hardware",undefined]){for(const cd of["avc1.640028","avc1.4d0028","avc1.42001f"]){try{const cf={codec:cd,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}};if(hw)cf.hardwareAcceleration=hw;const r=await VideoEncoder.isConfigSupported(cf);if(r&&r.supported){codec=cd;hwp=hw;break}}catch(e){}}if(codec)break}
  if(!codec)throw new Error("h264 encoder missing");
  const dcfg={codec:vt.codec,codedWidth:sw,codedHeight:sh,description:mDesc(mp,vt)};
  const ds=await VideoDecoder.isConfigSupported(dcfg);if(!ds||!ds.supported)throw new Error("video codec "+vt.codec+" not supported");
@@ -1350,10 +1353,10 @@ async function mVideoRun(file,rec,P,opt){
  /* نگهبان گیر کردن | Stall Watchdog: اگر ۲۰ ثانیه هیچ فریمی رمزگشایی یا فشرده نشود، خطا می دهیم تا ارسال گیر نکند و فایل اصلی فرستاده شود (if no frame moves for 20s, throw so the send falls back to the original file instead of hanging) */
  let lastMove=Date.now();const stall=()=>{if(Date.now()-lastMove>12000)throw new Error("video stalled")};
  const waitFlush=async p=>{let fin=false;p.then(()=>{fin=true},()=>{fin=true});while(!fin){if(err)throw err;stall();await new Promise(r=>setTimeout(r,200))}await p};
- let err=null,n=0;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
+ let err=null,n=0,lastTs=-1e12;const total=Math.max(1,Math.round((en-st)*fps)),kfEvery=Math.max(1,fps*2);
  const enc=new VideoEncoder({output:(ch2,m)=>{lastMove=Date.now();muxer.addVideoChunk(ch2,m)},error:e=>{err=e}});
- enc.configure({codec,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}});
- const dec=new VideoDecoder({output:f=>{lastMove=Date.now();try{const ts=f.timestamp;if(ts>=st*1e6-500&&ts<en*1e6){mDraw(x,f,sw,sh,R,c,dw,dh);const vf=new VideoFrame(cv,{timestamp:Math.max(0,Math.round(ts-st*1e6)),duration:f.duration||Math.round(1e6/fps)});enc.encode(vf,{keyFrame:n%kfEvery===0});vf.close();n++;if(opt.onProgress)opt.onProgress(mClamp(n/total,0,1))}}finally{f.close()}},error:e=>{err=e}});
+ {const ec={codec,width:dw,height:dh,bitrate:br,framerate:fps,avc:{format:"avc"}};if(hwp)ec.hardwareAcceleration=hwp;enc.configure(ec)}
+ const dec=new VideoDecoder({output:f=>{lastMove=Date.now();try{const ts=f.timestamp;if(ts>=st*1e6-500&&ts<en*1e6&&ts-lastTs>=1e6/fps*.85){lastTs=ts;mDraw(x,f,sw,sh,R,c,dw,dh);const vf=new VideoFrame(cv,{timestamp:Math.max(0,Math.round(ts-st*1e6)),duration:Math.round(1e6/fps)});enc.encode(vf,{keyFrame:n%kfEvery===0});vf.close();n++;if(opt.onProgress)opt.onProgress(mClamp(n/total,0,1))}}finally{f.close()}},error:e=>{err=e}});
  dec.configure(dcfg);
  for(let i=i0;i<i1;i++){
   if(err)throw err;if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");
@@ -1378,7 +1381,7 @@ async function mVideoRec(file,rec,P,opt){
   const rr=(rec.rotate||0)%180,w2=rr?o.h:o.w,h2=rr?o.w:o.h,c=mediaCropFor(rec,w2,h2,P.ratio),cw=c.w*w2,ch=c.h*h2;
   let dw,dh,br;
   if(P.w){dw=P.w;dh=P.h;br=P.vbr}
-  else if(P.heights){const q=P.heights.includes(opt.height)?opt.height:720;dh=mEven(Math.min(q,ch));dw=mEven(cw*dh/ch);br=P.bitrates[P.heights.filter(h=>h<=dh).pop()||P.heights[0]]}
+  else if(P.heights){const q=(opt.height>=240&&opt.height<=1080)?opt.height:720;{const k=Math.min(1,q/Math.min(cw,ch));dh=mEven(ch*k);dw=mEven(cw*k);br=P.bitrates[P.heights.filter(h=>h<=Math.min(dw,dh)+2).pop()||P.heights[0]]}}
   else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
   const dur=o.duration,tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
   const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d"),out=cv.captureStream(30);let ad=false;
@@ -2080,7 +2083,8 @@ async function bgPreview(file,cb){
   mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,W,H);cb(cv.toDataURL("image/jpeg",.8))}catch(e){toast("Couldn't use this photo");return}b0();end()}
 }
 /* کیفیت‌ها | Quality Options: برای عکس SD و HD (پریست‌های photoSD و photoHD)، برای ویدیو ارتفاع‌های پریست videoChat تا اندازه‌ی خود ویدیو */
-function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const s=Math.min(f.__w||1080,f.__h||1080);return MP.videoChat.heights.filter(h=>h<=Math.max(240,s))}
+/* سقف کیفیت ویدیو | Video Quality Cap: بالاترین گزینه دقیقاً اندازه‌ی خود ویدیو (بعد از برش) است؛ ویدیوی ۷۲۰ هرگز ۱۰۸۰ نشان نمی‌دهد (top option is the video's own size after crop; a 720 video never offers 1080) */
+function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const r=(MPV.rec&&MPV.rec[i])||{},cr=r.crop||{w:1,h:1};let w=(f.__w||0)*(cr.w||1),h=(f.__h||0)*(cr.h||1);let s=(w&&h)?Math.min(w,h):720;s=Math.min(1080,Math.max(240,2*Math.round(s/2)));const a=MP.videoChat.heights.filter(x=>x<=s+2);if(s-(a[a.length-1]||0)>24)a.push(s);return a}
 /* کیفیت فعلی | Current Quality: کیفیت انتخاب‌شده، یا پیش‌فرض (عکس SD و ویدیو ۷۲۰ یا بالاترین ممکن) */
 function mpvQv(i){const f=MPV.f[i],q=MPV.rec[i].q,a=mpvQs(i);if(q&&a.includes(q))return q;return lkKind(f)==="video"?(a.includes(720)?720:a[a.length-1]):"SD"}
 /* نسبت‌های برش | Crop Ratios: آزاد، اصلی (نسبت خود تصویر) و نسبت‌های رایج */
@@ -2222,7 +2226,7 @@ async function lkVFill(s,k){const x=LKV.it[k],c=k===LKV.i,sg=x?k+":"+(x.t==="vid
  if(c&&x.t==="video"){el=document.createElement("video");el.playsInline=true;el.setAttribute("webkit-playsinline","");el.preload="auto";el.muted=LKV.mu;el.src=u;LKV.v=el;lkVBind(el);s.appendChild(el);el.play().catch(lkVPlI)}
  else{el=document.createElement("img");el.draggable=false;el.src=u;s.appendChild(el)}}
 /* هماهنگ‌سازی بالا و پایین | Sync Chrome: شمارنده، نام، زمان، حالت ویدیو و نوار را برای رسانه‌ی فعلی تازه می‌کند (refreshes counter, name, time, video mode and bar for the current item) */
-function lkVSync(){const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
+function lkVSync(){const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.bs?LKV.bs[LKV.i]:LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
 /* رفتن به شماره | Go To Item: زوم را ریست می‌کند و سه اسلاید (قبلی، فعلی، بعدی) را پر می‌کند (resets zoom, fills prev / current / next) */
 function lkVGo(i){LKV.i=i;LKZ.s=1;LKZ.x=0;LKZ.y=0;const tk=$("#lkvtk");[...tk.children].forEach(s=>{const m=s.firstElementChild;if(m){m.style.transition="none";m.style.transform=""}});[...tk.children].forEach((s,k)=>lkVFill(s,i+k-1));lkVSync()}
 /* چرخش اسلایدها | Rotate Slides: بعد از رفتن به بعدی یا قبلی همان سه عنصر جابه‌جا می‌شوند و فقط یکی تازه ساخته می‌شود (the same 3 elements rotate, only one is rebuilt) */
@@ -2276,21 +2280,21 @@ function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v
   if(e.touches.length)return;const q=g,dt=Math.max(1,Date.now()-q.t),tk=$("#lkvtk");g=null;
   if(q.k==="sw"){const d=q.dx<0?1:-1,n=LKV.i+d,W=st.clientWidth;if((Math.abs(q.dx)>W*.2||Math.abs(q.dx)/dt>.45&&Math.abs(q.dx)>30)&&n>=0&&n<LKV.it.length)lkVMove(d);else{tk.style.transition="transform .2s";tk.style.transform="translateX(0)"}}
   else if(q.k==="cl"){const H=st.clientHeight;if(Math.abs(q.dy)>110||Math.abs(q.dy)/dt>.6&&Math.abs(q.dy)>40){LKV.busy=true;tk.style.transition="transform .2s ease-in";tk.style.transform="translateY("+(q.dy>0?H:-H)+"px)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=0;setTimeout(()=>{LKV.busy=false;lkVClose()},200)}else{tk.style.transition="transform .2s";tk.style.transform="translateY(0)";$("#lkvbg").style.transition="opacity .2s";$("#lkvbg").style.opacity=1;v.classList.remove("drag")}}
-  else if(q.k==="?"){e.preventDefault();const now=Date.now();if(now-lt<300&&Math.hypot(q.x-lx,q.y-ly)<40){clearTimeout(tm);lt=0;lkVDbl(q.x,q.y)}else{lt=now;lx=q.x;ly=q.y;tm=setTimeout(()=>v.classList.toggle("hid"),260)}}});
+  else if(q.k==="?"){e.preventDefault();/* نوار نامرئی لبه | Invisible Edge Strip: لمس ۲۲٪ چپ = رسانه‌ی قبلی، ۲۲٪ راست = رسانه‌ی بعدی (بدون زوم)؛ وسط مثل قبل کنترل‌ها را نشان یا پنهان می‌کند (tap left 22% = previous, right 22% = next, like Telegram) */{const r=st.getBoundingClientRect(),fx=(q.x-r.left)/r.width;if(LKZ.s<=1.02&&(fx<.22||fx>.78)){clearTimeout(tm);lt=0;lkVMove(fx<.22?-1:1);return}}const now=Date.now();if(now-lt<300&&Math.hypot(q.x-lx,q.y-ly)<40){clearTimeout(tm);lt=0;lkVDbl(q.x,q.y)}else{lt=now;lx=q.x;ly=q.y;tm=setTimeout(()=>v.classList.toggle("hid"),260)}}});
  st.addEventListener("touchcancel",()=>{g=null;lkVPos();$("#lkvbg").style.opacity=1;v.classList.remove("drag");LKZ.s=1;LKZ.x=0;LKZ.y=0;lkVZa(false)});
  /* موس و کیبورد | Desktop Input: چرخ موس و دو کلیک = زوم، یک کلیک = کنترل‌ها، فلش‌ها = قبلی و بعدی، Esc = بستن (wheel / double-click zoom, click toggles controls, arrows, Esc) */
  st.addEventListener("wheel",e=>{e.preventDefault();lkVZoom(e.clientX,e.clientY,Math.max(1,Math.min(5,LKZ.s*(e.deltaY<0?1.2:1/1.2))));lkVCl();lkVZa(false)},{passive:false});
  st.addEventListener("dblclick",e=>lkVDbl(e.clientX,e.clientY));
- st.addEventListener("click",()=>{$("#lkvmn").classList.remove("on");v.classList.toggle("hid")});
+ st.addEventListener("click",e=>{$("#lkvmn").classList.remove("on");if(e.pointerType!=="touch"&&e.detail<2&&LKZ.s<=1.02){const r=st.getBoundingClientRect(),fx=(e.clientX-r.left)/r.width;if(fx<.22||fx>.78){lkVMove(fx<.22?-1:1);return}}v.classList.toggle("hid")});
  document.addEventListener("keydown",e=>{if(!v.classList.contains("on"))return;if(e.key==="Escape")lkVClose();else if(e.key==="ArrowRight")lkVMove(1);else if(e.key==="ArrowLeft")lkVMove(-1)});
  addEventListener("resize",()=>{if(v.classList.contains("on"))lkVPos()});
  return v}
 /* دکمه‌های پایین | Footer Actions: فوروارد و حذف همان عکس یا ویدیو را با روش حالت انتخاب انجام می‌دهند (forward / delete of this item through the select-mode logic) */
-function lkVAct(k){const x=LKV.it[LKV.i],b=LKV.b;if(!x||!b||!window.lkVSel)return;lkVClose();setTimeout(()=>window.lkVSel(b,x.id,k),180)}
+function lkVAct(k){const x=LKV.it[LKV.i],b=LKV.bs?LKV.bs[LKV.i]:LKV.b;if(!x||!b||!window.lkVSel)return;lkVClose();setTimeout(()=>window.lkVSel(b,x.id,k),180)}
 /* بستن | Close Viewer: ویدیو می‌ایستد، ۰.۱۶ ثانیه محو می‌شود، بعد همه‌ی اسلایدها خالی و آدرس‌ها آزاد می‌شوند (pauses, fades 0.16s, then empties slides and frees URLs) */
 function lkVClose(){const v=$("#lkv");if(!v||!v.classList.contains("on")||v.classList.contains("out"))return;if(LKV.v)LKV.v.pause();v.classList.add("out");setTimeout(()=>{v.classList.remove("on","out","hid","drag","vd");$("#lkvmn").classList.remove("on");[...$("#lkvtk").children].forEach(s=>{lkVFree(s);s.innerHTML="";s._g=""});LKV.v=null;lkVPos()},170)}
 /* باز کردن | Open Viewer: آلبوم و پیام مبدا را می‌گیرد و رسانه‌ی لمس‌شده را نشان می‌دهد (takes the album and source bubble, shows the tapped item) */
-function lkOpen(t,i,b){const o=lkDec(t);if(!o||o.k!=="album")return;const v=lkVEl();LKV.it=o.it;LKV.b=b||null;LKV.busy=false;v.classList.remove("hid","drag","out");v.classList.add("on","in");$("#lkvbg").style.cssText="";lkVPos();lkVGo(Math.max(0,Math.min(o.it.length-1,i||0)));setTimeout(()=>v.classList.remove("in"),240)}
+function lkOpen(t,i,b){const o=lkDec(t);if(!o||o.k!=="album")return;const v=lkVEl();/* رشته‌ی سریالی رسانه | Serial Media Strip: همه‌ی عکس‌ها و ویدیوهای گفتگو از اول تا آخر یک ردیف می‌شوند و با ورق زدن همه دیده می‌شوند؛ هر مورد حباب خودش را دارد (all photos and videos of the chat form one strip start to end; each item keeps its own bubble) */let all=[],bs=[],si=Math.max(0,Math.min(o.it.length-1,i||0));try{if(b&&b.parentNode){[...b.parentNode.children].forEach(q=>{if(!q.classList||!q.classList.contains("b")||q.classList.contains("pend"))return;const d=lkDec(q.dataset.t);if(!d||d.k!=="album")return;if(q===b)si+=all.length;d.it.forEach(x=>{all.push(x);bs.push(q)})})}}catch(e){all=[]}if(!all.length||!bs.includes(b)){all=o.it;bs=null;si=Math.max(0,Math.min(o.it.length-1,i||0))}LKV.it=all;LKV.bs=bs;LKV.b=b||null;LKV.busy=false;v.classList.remove("hid","drag","out");v.classList.add("on","in");$("#lkvbg").style.cssText="";lkVPos();lkVGo(Math.max(0,Math.min(all.length-1,si)));setTimeout(()=>v.classList.remove("in"),240)}
 /* لمس در گفتگو | Chat Taps: لمس دکمه‌ی دانلود فایل را ذخیره می‌کند؛ لمس عکس یا ویدیو نمایشگر را باز می‌کند (حباب‌های در حال ارسال نه) */
 $("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkSave(dl.dataset.dl,dl.dataset.n);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i,b)}});
 /* لیست کش | Cache List: فقط گفتگوهایی که رسانه‌ی کش‌شده دارند */
