@@ -1839,16 +1839,19 @@ const lkSz=b=>b<1e6?Math.max(1,Math.round(b/1e3))+" KB":b<1e9?(b/1e6).toFixed(1)
 const lkVInfo=x=>[x.d?lkDur(x.d):"",x.s?lkSz(x.s):""].filter(Boolean).join(" · ");
 /* دانلود رسانه‌ی دریافتی | Incoming Media Download: رسانه‌ای که مخاطب می‌فرستد خودکار دانلود نمی‌شود؛ تصویر تار با دکمه‌ی دانلود و فقط حجم نشان داده می‌شود؛ با لمس دکمه حلقه پر می‌شود و کنار حجم، حجم دانلودشده و درصد می‌آید؛ بعد از پایان تصویر واضح می‌شود و برای ویدیو مدت نوشته می‌شود (received media is never auto-downloaded: blurred thumbnail + download button + size only; on tap the ring fills and "downloaded / total · percent" shows; when done the image clears and a video shows its duration) */
 const lkRm=x=>!!(x&&x.r&&!(CFG.dl&&CFG.dl[x.id]));
-function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span><span class="lkdw sm" data-dw="'+x.id+'">'+lkDlI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkSz(x.s)+'</span>';
+const lkDlP=id=>(CFG.dlp&&CFG.dlp[id]&&CFG.dlp[id].p)||0;
+function lkDlSv(id,p,w){const o=CFG.dlp&&CFG.dlp[id],c=o?o.c:S.openId;(CFG.dlp=CFG.dlp||{})[id]={p:p,c:c};if(w)saveCfg()}
+const lkDlTxt=x=>{const p=lkDlP(x.id);return p?lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%":lkSz(x.s)};
+function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span><span class="lkdw sm" data-dw="'+x.id+'">'+lkDlI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkDlTxt(x)+'</span>';
  return x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':(x.r?(x.d?'<span class="lkdu">'+lkDur(x.d)+'</span>':''):((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':''))):''}
 const LKD={};
 function lkDlInfo(cell){const id=cell.dataset.lkm,b=cell.closest(".b");if(!b)return null;const o=lkDec(b.dataset.t),x=o&&o.it.find(i=>i.id===id);return x?{id,b,x}:null}
 function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd||LKD[id])return;
- const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now();dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');
+ const tot=Math.max(1500,Math.min(8000,(x.s||1e6)/1.2e6*1000)),t0=Date.now()-lkDlP(id)*tot,tk=0;dw.classList.add("go");dw.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');
  const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
- const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}},100);LKD[id]={iv,p:0};up(0)}
+ const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);if(LKD[id])lkDlSv(id,LKD[id].p||0,1);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}else{lkDlSv(id,p,++tk%10===0)}},100);LKD[id]={iv,p:lkDlP(id)};up(lkDlP(id))}
 function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd)return;
- if(LKD[id]){clearInterval(LKD[id].iv);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkSz(x.s);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
+ if(LKD[id]){clearInterval(LKD[id].iv);lkDlSv(id,LKD[id].p||0,1);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkDlTxt(x);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
  lkDlStart(cell,q.b,x)}
 /* پخش هم‌زمان با دانلود | Stream While Downloading: ویدیوی دانلودنشده با دکمه‌ی پخش باز می‌شود، دانلود هم‌زمان شروع می‌شود، فقط همان مقدار دانلودشده پخش می‌شود و روی نوار زمان یک نوار خاکستری روشن مقدار دانلودشده را نشان می‌دهد؛ اگر پخش به انتهای دانلودشده برسد می‌ایستد و با رسیدن داده ادامه می‌دهد (play button streams: download starts together, only the downloaded part plays, a lighter grey bar on the timeline shows what is downloaded, playback waits at the edge and resumes when more arrives) */
 const LKS={iv:0,stall:0};
@@ -1864,7 +1867,7 @@ function lkStrTick(){const v=$("#lkv");if(!v||!v.classList.contains("on")){clear
 function lkStrSync(){const v=$("#lkv");if(!v)return;const x=lkStreamX();v.classList.toggle("str",!!x);LKS.stall=0;clearInterval(LKS.iv);LKS.iv=0;const b=$("#lkvbuf");if(b)b.style.transform="scaleX("+(x?((LKD[x.id]&&LKD[x.id].p)||0):1)+")";if(x)LKS.iv=setInterval(lkStrTick,150)}
 function lkStream(cell){const q=lkDlInfo(cell);if(!q)return;if(!LKD[q.id])lkDlStart(cell,q.b,q.x);lkOpen(q.b.dataset.t,+cell.dataset.i||0,q.b);
  let n=0;const iv=setInterval(()=>{const m=LKV.v;if(m&&m.readyState>=1||++n>30){clearInterval(iv);if(m)m.play().catch(()=>{})}},100)}
-function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
+function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;if(CFG.dlp)delete CFG.dlp[x.id];const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
  cell.classList.remove("lkrm","vd");const dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(dw)dw.remove();if(bd)bd.remove();
  if(x.t==="video"&&x.d)cell.insertAdjacentHTML("beforeend",'<span class="lkdu">'+lkDur(x.d)+'</span>')}
 $("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(c.classList.contains("vd")&&!e.target.closest(".lkdw"))lkStream(c);else if(!LKD[c.dataset.lkm]||e.target.closest(".lkdw"))lkDlTap(c)},true);
@@ -2214,7 +2217,6 @@ function lkLoad(n){if(!document.getElementById("lkLoadCss")){const s=document.cr
  const show=()=>{fl.style.width=p+"%";lab.textContent=tr("Preparing media...")+" "+Math.round(p)+"%"};show();
  const tk=setInterval(()=>{if(p<cap){p+=(cap-p)*.08;show()}},100);
  return{set(k){cap=k>=n?100:Math.min(99,(k+.9)/n*100);p=Math.max(p,k/n*100);show()},end(){clearInterval(tk);setTimeout(()=>e.remove(),150)}}}
-/* تایید کیفیت | Quality Confirm: پیام کوتاه با دو دکمه Yes و No؛ Yes یعنی با کیفیت انتخابی و No یعنی اصلی */
 function mpAsk(t){return new Promise(ok=>{const b=document.createElement("div");b.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";b.innerHTML='<div style="background:#1c1c1e;color:#fff;border-radius:14px;padding:18px;width:min(86vw,300px);text-align:center;font-size:15px"><div data-q style="margin-bottom:16px"></div><div style="display:flex;gap:10px"><button data-a="0" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2c2c2e;color:#fff;font-size:15px">No</button><button data-a="1" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2f8fff;color:#fff;font-size:15px">Yes</button></div></div>';b.querySelector("[data-q]").textContent=t;b.onclick=e=>{const x=e.target.closest("button");if(!x)return;b.remove();ok(x.dataset.a==="1")};document.body.appendChild(b)})}
 async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id===S.openId);const lp=lkLoad(files.length);try{let n=0;await Promise.all(files.map(f=>lkDims(f).finally(()=>lp.set(++n))))}catch(e){lp.end();throw e}const o=mpvEl();MPV.u.forEach(u=>URL.revokeObjectURL(u));
  Object.assign(MPV,{f:files,i:0,rec:files.map(()=>({})),th:[],mute:[],sel:files.map(()=>true),tok:MPV.tok+1,to:c?c.n:""});MPV.u=files.map(f=>URL.createObjectURL(f));
@@ -2346,8 +2348,8 @@ function renderCC(){const c=CHATS.find(x=>x.id===CC),it=mediaOf(CC);$("#cc_title
  const sel=it.filter(x=>CSEL.has(x.id)).length,d=$("#ccDelSel");d.style.display=sel?"":"none";d.textContent=tr("Delete Selected")+" ("+sel+")";$("#ccClear").style.display=it.length?"":"none"}
 function openCache(id){CC=id;CSEL.clear();renderCC();openSub("cachechat")}
 $("#ccDelSel").onclick=()=>{lkDrop(mediaOf(CC).filter(x=>CSEL.has(x.id)).map(x=>x.id));CFG.media[CC]=mediaOf(CC).filter(x=>!CSEL.has(x.id));CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
-$("#ccClear").onclick=()=>{lkDrop(mediaOf(CC).map(x=>x.id));CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
-$("#clrCache").onclick=()=>{lkDrop([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};saveCfg();renderCache();toast("Cache cleared")};
+$("#ccClear").onclick=()=>{lkDrop(mediaOf(CC).map(x=>x.id));if(CFG.dlp)Object.keys(CFG.dlp).forEach(k=>{if(CFG.dlp[k].c===CC)delete CFG.dlp[k]});CFG.media[CC]=[];CSEL.clear();saveCfg();renderCC();renderCache();toast("Cache cleared")};
+$("#clrCache").onclick=()=>{lkDrop([].concat(...Object.values(CFG.media)).map(x=>x.id));CFG.media={};CFG.dlp={};saveCfg();renderCache();toast("Cache cleared")};
 /* پیش‌نمایش گفتگو | Chat Peek: نگه داشتن روی گفتگو، پیام‌ها را بدون خوانده شدن نشان می‌دهد و قابل اسکرول است */
 /* پیش‌نمایش دقیق | Exact Peek: همان سازندهٔ حباب‌های خود گفتگو (addMsg) را داخل یک کانتینر جدا اجرا می‌کند تا محتوا دقیقا یکی باشد؛ گفتگو باز نمی‌شود پس سین نمی‌خورد (runs the real chat bubble builder into a separate container; the chat is not opened so nothing is marked read) */
 function peekHtml(c){const h=document.createElement("div"),sl=S.lastD,sm=S.mid;S.lastD=null;try{chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],null,s[4],h,c))}catch(e){}S.lastD=sl;S.mid=sm;return h.innerHTML}
@@ -3119,14 +3121,14 @@ var x=document.createElement("div");x.textContent="\u00D7";x.style.cssText="curs
 u.onclick=async function(){u.textContent=L("Updating...","در حال آپدیت...");u.onclick=null;try{var keys=await caches.keys();for(var i=0;i<keys.length;i++){if(keys[i].indexOf("link-v")==0){var cc=await caches.open(keys[i]);await cc.put(IDX(),new Response(fresh,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}}}catch(e){}location.reload()};
 x.onclick=close;var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;justify-content:center;gap:10px";row.append(u,x);c.append(m,row);t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.min(document.documentElement.clientWidth-20,260),100,6)})})}
-else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):L("Check failed","بررسی انجام نشد");t.appendChild(c);
+else{c.textContent=kind==="none"?L("No new update","آپدیت جدیدی نیست"):L("Check your connection","اتصال اینترنت را بررسی کنید");t.appendChild(c);
 requestAnimationFrame(function(){requestAnimationFrame(function(){go(Math.max(r.width,190),r.height+14,6)})});setTimeout(close,1300)}}
 async function chk(){if(busy||isl||Date.now()<lock)return;busy=1;lock=Infinity;spin(true);var res="none";try{
 var u=new URL("index.html",location.href);u.searchParams.set("_u",Date.now());
 var r=await fetch(u.href,{cache:"no-store"});if(!r.ok)throw 0;var net=await r.text();
 if(oldH===null){var hit=await caches.match(IDX());if(hit)oldH=await h(await hit.text());else{oldH=await h(net);try{await(await caches.open("link-v4")).put(IDX(),new Response(net,{headers:{"Content-Type":"text/html; charset=utf-8"}}))}catch(e){}}}
 if(await h(net)!==oldH){fresh=net;res="found"}
-}catch(e){res=navigator.onLine===false?"err":"none"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
+}catch(e){res="err"}finally{busy=0;lock=Date.now()+5000;await new Promise(function(r){setTimeout(r,1100)});await spin(false);island(res)}}
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("#chats .top .title");if(t)chk()},true);
 addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update()})}).catch(function(){})});
 })()}

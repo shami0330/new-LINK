@@ -1,41 +1,12 @@
-/* Link PWA service worker
-   روش کار: اول همه‌چیز از کش مرورگر باز می‌شود (سریع و آفلاین)؛ بررسی آپدیت در پس‌زمینه توسط صفحه انجام می‌شود.
-   VERSION: فقط وقتی خود sw.js یا فایل‌های کنار index.html (آیکن‌ها، مانیفست) عوض شدند یکی زیاد کن.
-   برای عوض شدن index.html لازم نیست؛ صفحه خودش آپدیت را پیدا می‌کند. */
-const VERSION = 4;
-const CACHE = "link-v" + VERSION;
-const SCOPE = self.registration.scope;
-const INDEX = new URL("index.html", SCOPE).href;
-const CORE = [INDEX, "manifest.webmanifest?v=4", "icons/icon-192.png?v=4", "icons/icon-512.png?v=4", "icons/icon-180.png?v=4"].map(p => new URL(p, SCOPE).href);
-
-/* نصب | Install: فایل‌های اصلی ذخیره می‌شوند */
-self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(new Request(u, { cache: "reload" })).catch(() => {})))));
-  self.skipWaiting();
-});
-
-/* فعال شدن | Activate: کش قدیمی پاک می‌شود */
-self.addEventListener("activate", e => {
-  e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith("link-v") && k !== CACHE) await caches.delete(k);
-    await self.clients.claim();
-  })());
-});
-
-/* دریافت | Fetch: اول کش؛ اگر نبود از اینترنت (و ذخیره). درخواست‌های بررسی آپدیت (پارامتر _u) مستقیم به اینترنت می‌روند */
-self.addEventListener("fetch", e => {
-  const r = e.request;
-  if (r.method !== "GET") return;
-  const u = new URL(r.url);
-  if (u.origin !== location.origin) return;
-  if (r.headers.has("range")) return;
-  if (u.searchParams.has("_u")) return;
-  e.respondWith((async () => {
-    const key = r.mode === "navigate" ? INDEX : r.url;
-    const hit = await caches.match(key);
-    if (hit) return hit;
-    const res = await fetch(r);
-    if (res && res.status === 200) (await caches.open(CACHE)).put(key, res.clone());
-    return res;
-  })());
-});
+/* Link Messenger service worker: index.html is served from the cache (so the app opens instantly and works offline);
+   the app itself compares it with GitHub when the user taps "Chats" and asks before updating. */
+const C="link-v4",IDX=new URL("index.html",self.registration.scope).href;
+self.addEventListener("install",e=>{self.skipWaiting();
+ e.waitUntil((async()=>{try{const c=await caches.open(C);if(!(await c.match(IDX))){const r=await fetch(IDX,{cache:"reload"});if(r.ok)await c.put(IDX,r)}}catch(x){}})())});
+self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
+self.addEventListener("fetch",e=>{const q=e.request,u=new URL(q.url);
+ if(q.method!=="GET"||u.origin!==location.origin)return;
+ if(u.searchParams.has("_u")){e.respondWith(fetch(q,{cache:"no-store"}));return}
+ const idx=q.mode==="navigate"||u.pathname.endsWith("/index.html")||u.pathname.endsWith("/");
+ e.respondWith((async()=>{const c=await caches.open(C),k=idx?IDX:q,hit=await c.match(k);if(hit)return hit;
+  try{const r=await fetch(q);if(r.ok)c.put(k,r.clone());return r}catch(x){return Response.error()}})())});
