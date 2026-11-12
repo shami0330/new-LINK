@@ -1325,7 +1325,7 @@ async function mVideoRun(file,rec,P,opt){
  const sw=vt.video.width,sh=vt.video.height,rr=R.rotate%180,w2=rr?sh:sw,h2=rr?sw:sh,c=mediaCropFor(R,w2,h2,P.ratio),cw=c.w*w2,ch=c.h*h2;
  let dw,dh,br;
  if(P.w){dw=P.w;dh=P.h;br=P.vbr}
- else if(P.heights){const q=P.heights.includes(opt.height)?opt.height:720;dh=mEven(Math.min(q,ch));dw=mEven(cw*dh/ch);br=P.bitrates[q]}
+ else if(P.heights){const q=P.heights.includes(opt.height)?opt.height:720;/* سقف کیفیت | Quality Cap: اندازه هرگز بیشتر از اندازه واقعی فایل نمی‌شود و بیت‌ریت هم از همان اندازهٔ واقعی انتخاب می‌شود (never upscale; bitrate follows the real output height) */dh=mEven(Math.min(q,ch));dw=mEven(cw*dh/ch);br=P.bitrates[P.heights.filter(h=>h<=dh).pop()||P.heights[0]]}
  else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
  const dur=vt.duration/vt.timescale,tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
  let i0=0,i1=vs.length;
@@ -1358,6 +1358,30 @@ async function mVideoRun(file,rec,P,opt){
 
 /* ---- تبدیل صدا | Audio Convert ---- */
 /* تبدیل صدا | Audio Convert: صدا را می‌خواند، بخش انتخاب‌شده (trim) را برمی‌دارد، تک‌کاناله و ۴۸ کیلوهرتز می‌کند و با رمزگذار Opus به فایل OGG می‌سازد؛ خیلی سریع‌تر از مدت صدا (faster than real time) */
+/* فشرده‌سازی موبایل | Mobile Video Compress: اگر مرورگر (مثلا آیفون) WebCodecs نداشت، همان راه خطا می‌خورد و این راه جایگزین آن اجرا می‌شود (if WebCodecs is missing or fails, this path runs instead) */
+async function mVideoSafe(file,rec,P,opt){try{return await mVideoRun(file,rec,P,opt)}catch(e){if(/cancelled/.test(String(e&&e.message)))throw e;try{return await mVideoRec(file,rec,P,opt)}catch(e2){throw e}}}
+/* فشرده‌سازی با ضبط مرورگر | Recorder Compress: بخش انتخاب‌شده را پخش می‌کند، هر فریم را با اندازهٔ محدودشده روی بوم می‌کشد و ضبط می‌کند؛ درصد پیشرفت واقعی از جای پخش است (plays the trimmed part, draws each frame at the capped size and records it; progress = real playback position) */
+async function mVideoRec(file,rec,P,opt){
+ if(!(window.MediaRecorder&&HTMLCanvasElement.prototype.captureStream))throw new Error("recorder missing");
+ const o=await mediaOpen(file),v=o.src;let ac=null,raf=0,rc=null;
+ try{
+  const rr=(rec.rotate||0)%180,w2=rr?o.h:o.w,h2=rr?o.w:o.h,c=mediaCropFor(rec,w2,h2,P.ratio),cw=c.w*w2,ch=c.h*h2;
+  let dw,dh,br;
+  if(P.w){dw=P.w;dh=P.h;br=P.vbr}
+  else if(P.heights){const q=P.heights.includes(opt.height)?opt.height:720;dh=mEven(Math.min(q,ch));dw=mEven(cw*dh/ch);br=P.bitrates[P.heights.filter(h=>h<=dh).pop()||P.heights[0]]}
+  else{dh=mEven(ch);dw=mEven(cw);br=P.vbr}
+  const dur=o.duration,tr=rec.trim||{},st=mClamp(tr.start||0,0,dur);let en=mClamp(tr.end!=null?tr.end:dur,st,dur);if(P.maxSec)en=Math.min(en,st+P.maxSec);
+  const cv=document.createElement("canvas");cv.width=dw;cv.height=dh;const x=cv.getContext("2d"),out=cv.captureStream(30);let ad=false;
+  try{const C=window.AudioContext||window.webkitAudioContext;ac=new C();const d=ac.createMediaStreamDestination();ac.createMediaElementSource(v).connect(d);v.muted=false;await ac.resume().catch(()=>{});d.stream.getAudioTracks().forEach(t=>{out.addTrack(t);ad=true})}catch(e){ac=null;ad=false}
+  const mime=mPick(MIME_V);rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:br,audioBitsPerSecond:64e3});
+  const parts=[];rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};const done=new Promise(ok=>{rc.onstop=ok});
+  v.currentTime=st;await new Promise(r=>{v.onseeked=r;setTimeout(r,2000)});
+  rc.start(500);try{await v.play()}catch(e){v.muted=true;ad=false;await v.play()}
+  let last=Date.now(),lt=-1;
+  await new Promise((ok,no)=>{const tick=()=>{try{if(opt.signal&&opt.signal.aborted)throw new Error("cancelled");const t=v.currentTime;if(t!==lt){lt=t;last=Date.now()}else if(Date.now()-last>20000)throw new Error("video stalled");mDraw(x,v,o.w,o.h,rec,c,dw,dh);if(opt.onProgress)opt.onProgress(mClamp((t-st)/Math.max(.1,en-st),0,1));if(t>=en||v.ended)return ok();raf=requestAnimationFrame(tick)}catch(e){no(e)}};tick()});
+  v.pause();rc.stop();await done;if(!parts.length)throw new Error("recorder empty");
+  const m=rc.mimeType||mime||"video/mp4",res=mResult(new Blob(parts,{type:m}),mBase(file),m,dw,dh,en-st);if(!ad)res.audioDropped=true;return res
+ }finally{cancelAnimationFrame(raf);try{if(rc&&rc.state!=="inactive")rc.stop()}catch(e){}if(ac)try{ac.close()}catch(e){}o.close()}}
 async function mAudioRun(file,rec,P,opt){
  const oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,48000),ab=await oc.decodeAudioData(await file.arrayBuffer());
  const tr=rec.trim||{},st=mClamp(tr.start||0,0,ab.duration),en=mClamp(tr.end!=null?tr.end:ab.duration,st,ab.duration),a=Math.floor(st*48000),b=Math.floor(en*48000);
@@ -1383,7 +1407,7 @@ async function mRun(file,recipe,pn,opt){
  const plain=()=>({file,blob:file,name:file.name,type:file.type,size:file.size,original:true});
  if(P.kind==="file"||(P.original&&mPlain(rec)))return plain();
  let Q=P;if(P.original&&P.kind==="image")Q={kind:"image",mime:/^image\/(jpeg|png|webp)$/.test(file.type)?file.type:"image/jpeg",maxSide:99999,q:.95};
- try{return Q.kind==="image"?await mImageRun(file,rec,Q,opt):Q.kind==="video"?await mVideoRun(file,rec,Q,opt):await mAudioRun(file,rec,Q,opt)}
+ try{return Q.kind==="image"?await mImageRun(file,rec,Q,opt):Q.kind==="video"?await mVideoSafe(file,rec,Q,opt):await mAudioRun(file,rec,Q,opt)}
  catch(e){const r=plain();r.failed=String(e&&e.message||e);return r}}
 /* صف پس‌زمینه | Background Queue: کارهای سنگین یکی‌یکی و بدون قفل کردن صفحه انجام می‌شوند */
 let mQ=Promise.resolve();
@@ -1844,8 +1868,8 @@ async function lkPoster(f){try{const o=await mediaOpen(f),v=o.src;try{v.currentT
 /* آماده‌سازی هر فایل | Prepare File: عکس با سیستم رسانه به JPEG سبک (SD) و ویدیو به MP4 با ۷۲۰ تبدیل می‌شود؛ فایل‌ها بدون تغییر می‌روند. اگر تبدیل شکست بخورد خود فایل اصلی فرستاده می‌شود */
 async function lkProcess(f,x,onP){
  let blob=f,thumb=null,name=f.name,w=0,h=0,dur=0;
- if(x.t==="photo"){onP=onP||(()=>{});onP(0);const r=await mediaRun(f,f.__rec||null,f.__q==="HD"?"photoHD":"photoSD",{onProgress:p=>onP(p*.9)});blob=r.blob;name=r.original?f.name:r.name;w=r.w||0;h=r.h||0;thumb=await lkThumb(blob);if(!w){const i=await mediaInfo(f).catch(()=>null);if(i){w=i.w;h=i.h}}}
- else if(x.t==="video"){const p=await lkPoster(f);thumb=p.thumb;w=p.w;h=p.h;dur=f.__rec&&f.__rec.trim?f.__rec.trim.end-f.__rec.trim.start:p.d;onP=onP||(()=>{});onP(0);const r=await mediaRun(f,f.__rec||null,"videoChat",{height:f.__q||720,onProgress:p=>onP(p*.9)});blob=r.blob;name=r.original?f.name:r.name;
+ if(x.t==="photo"){onP=onP||(()=>{});onP(0);const r=await mediaRun(f,f.__rec||null,f.__q==="HD"?"photoHD":"photoSD",{onProgress:p=>onP(p)});/* بدون فشرده‌سازی ارسال نمی‌شود | No Uncompressed Send: اگر فشرده‌سازی شکست بخورد خطا می‌دهد و فایل اصلی فرستاده نمی‌شود (if compression fails we throw; the original is never sent) */if(r.failed)throw new Error("compress failed: "+r.failed);blob=r.blob;name=r.original?f.name:r.name;w=r.w||0;h=r.h||0;thumb=await lkThumb(blob);if(!w){const i=await mediaInfo(f).catch(()=>null);if(i){w=i.w;h=i.h}}}
+ else if(x.t==="video"){const p=await lkPoster(f);thumb=p.thumb;w=p.w;h=p.h;dur=f.__rec&&f.__rec.trim?f.__rec.trim.end-f.__rec.trim.start:p.d;onP=onP||(()=>{});onP(0);const r=await mediaRun(f,f.__rec||null,"videoChat",{height:f.__q||720,onProgress:p=>onP(p)});if(r.failed)throw new Error("compress failed: "+r.failed);blob=r.blob;name=r.original?f.name:r.name;
   /* پوستر نتیجه | Result Poster: اگر ویدیو در پیش‌نمایش برش یا کوتاه شده، اندازه و تصویر بندانگشتی و مدت از خود ویدیوی نتیجه خوانده می‌شود تا حباب مثل فایل ارسالی باشد */
   if(!r.original){const q=await lkPoster(r.file||blob);if(q.thumb){thumb=q.thumb;w=q.w;h=q.h;dur=q.d||dur}}}
  if(onP)onP(1);x.w=w;x.h=h;x.d=dur;x.n=name;x.s=blob.size;return{blob,thumb}}
@@ -1864,7 +1888,7 @@ function lkPend(c,k,files,cap){
    /* مرحله ۲ بارگذاری | Step 2 Upload: حلقه دوباره از صفر شروع می شود و با پیشرفت واقعی آپلود پر می شود (ring restarts from 0 and follows the real upload) */
    if(LK_UPLOAD_URL){lkRing(d,x.id,"u",0);await lkUpload(res[i].blob,x.n,p=>lkRing(d,x.id,"u",p));lkRing(d,x.id,"u",1)}
    const g=cell();if(g)g.parentNode.classList.add("lkd")}}
-  catch(e){d.remove();toast("Send failed");return}
+  catch(e){d.remove();toast(/compress|timeout/.test(String(e&&e.message))?"Compression failed":"Send failed");return}
   for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}
    if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
@@ -1874,7 +1898,9 @@ function lkPend(c,k,files,cap){
 /* ارسال | Send Media: دکمه‌ی گیره چند فایل را می‌گیرد؛ عکس و ویدیو (تا ۱۰ تا در هر آلبوم) به‌صورت آلبوم و فایل‌ها (تا ۱۰ تا در هر بسته) به‌صورت یک بسته فرستاده می‌شوند؛ کارها یکی‌یکی انجام می‌شوند */
 /* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل تلگرام از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
 /* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
-async function lkSafe(f,x,onP){try{return await Promise.race([lkProcess(f,x,onP||(()=>{})),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),x.t==="video"?900000:45000))])}catch(e){x.n=f.name;x.s=f.size;return{blob:f,thumb:null}}}
+/* ارسال امن بدون فایل اصلی | Safe Step Without Original: دیگر با خطا فایل اصلی فرستاده نمی‌شود؛ خطا بالا می‌رود و حباب حذف می‌شود (errors propagate, the original is never sent) */
+Object.assign(FA,{"Compression failed":"فشرده‌سازی ناموفق بود؛ فایل ارسال نشد"});
+async function lkSafe(f,x,onP){return await Promise.race([lkProcess(f,x,onP||(()=>{})),new Promise((ok,no)=>setTimeout(()=>no(new Error("timeout")),x.t==="video"?1800000:180000))])}
 /* اندازه‌ی فیلم | Video Size First: عرض، ارتفاع و مدت فیلم قبل ساخت حباب خوانده می‌شود تا فیلم مثل عکس در کلاژ آلبوم با شکل درست بیاید */
 async function lkVDims(f){await new Promise(ok=>{const v=document.createElement("video"),u=URL.createObjectURL(f);let done=false;const fin=()=>{if(done)return;done=true;URL.revokeObjectURL(u);v.removeAttribute("src");ok()};v.preload="metadata";v.muted=true;v.onloadedmetadata=()=>{f.__w=v.videoWidth;f.__h=v.videoHeight;f.__d=v.duration;fin()};v.onerror=fin;v.src=u;setTimeout(fin,4000)})}
 async function lkDims(f){if(lkKind(f)==="video")return lkVDims(f);if(lkKind(f)!=="photo")return;try{let b;try{b=await createImageBitmap(f,{imageOrientation:"from-image"})}catch(e){b=await createImageBitmap(f)}f.__w=b.width;f.__h=b.height;if(b.close)b.close()}catch(e){}}
