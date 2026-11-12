@@ -1848,7 +1848,7 @@ function lkDlStart(cell,b,x){const id=x.id,dw=cell.querySelector(".lkdw"),bd=cel
  const rg=dw.querySelector(".lkrg"),up=p=>{if(LKD[id])LKD[id].p=p;rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));bd.textContent=lkSz((x.s||0)*p)+" / "+lkSz(x.s||0)+" · "+Math.round(p*100)+"%"};
  const iv=setInterval(()=>{if(!cell.isConnected){clearInterval(iv);delete LKD[id];return}const p=Math.min(1,(Date.now()-t0)/tot);up(p);if(p>=1){clearInterval(iv);delete LKD[id];lkDlDone(cell,b,x)}},100);LKD[id]={iv,p:0};up(0)}
 function lkDlTap(cell){const q=lkDlInfo(cell);if(!q)return;const {id,x}=q,dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(!dw||!bd)return;
- if(LKD[id]){clearInterval(LKD[id].iv);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkSz(x.s);return}
+ if(LKD[id]){clearInterval(LKD[id].iv);delete LKD[id];dw.classList.remove("go");dw.innerHTML=lkDlI;bd.textContent=lkSz(x.s);try{const sx=lkStreamX();if(sx&&sx.id===id&&LKV.v){LKV.v.pause();LKS.stall=0;lkVPlI()}}catch(_){}return}
  lkDlStart(cell,q.b,x)}
 /* پخش هم‌زمان با دانلود | Stream While Downloading: ویدیوی دانلودنشده با دکمه‌ی پخش باز می‌شود، دانلود هم‌زمان شروع می‌شود، فقط همان مقدار دانلودشده پخش می‌شود و روی نوار زمان یک نوار خاکستری روشن مقدار دانلودشده را نشان می‌دهد؛ اگر پخش به انتهای دانلودشده برسد می‌ایستد و با رسیدن داده ادامه می‌دهد (play button streams: download starts together, only the downloaded part plays, a lighter grey bar on the timeline shows what is downloaded, playback waits at the edge and resumes when more arrives) */
 const LKS={iv:0,stall:0};
@@ -1867,12 +1867,18 @@ function lkStream(cell){const q=lkDlInfo(cell);if(!q)return;if(!LKD[q.id])lkDlSt
 function lkDlDone(cell,b,x){(CFG.dl=CFG.dl||{})[x.id]=1;const cid=S.openId;if(cid)(CFG.media[cid]=CFG.media[cid]||[]).push({id:x.id,type:x.t==="video"?"video":"photo",name:x.n,size:x.s});saveCfg();
  cell.classList.remove("lkrm","vd");const dw=cell.querySelector(".lkdw"),bd=cell.querySelector(".lkdu[data-rs]");if(dw)dw.remove();if(bd)bd.remove();
  if(x.t==="video"&&x.d)cell.insertAdjacentHTML("beforeend",'<span class="lkdu">'+lkDur(x.d)+'</span>')}
-$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(c.classList.contains("vd")&&!e.target.closest(".lkdw"))lkStream(c);else lkDlTap(c)},true);
+$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".lkc.lkrm");if(!c)return;e.stopPropagation();e.preventDefault();if(c.classList.contains("vd")&&!e.target.closest(".lkdw"))lkStream(c);else if(!LKD[c.dataset.lkm]||e.target.closest(".lkdw"))lkDlTap(c)},true);
 /* نمایش دریافت رسانه | Demo Receive: چون سرور نیست، مخاطب بعد از ارسال رسانه‌ی ما، همان رسانه را با شناسه‌ی تازه و بدون دانلود خودکار برایمان می‌فرستد (no server: the contact sends the same media back as a not-yet-downloaded message so the receive flow can be tried) */
 async function lkEcho(c,it,res){if(!c||c.id===2)return;await new Promise(ok=>setTimeout(ok,1600));const nit=[];
  for(let i=0;i<it.length;i++){const x=it[i],nid=lkId();LKB[nid]=res[i].blob;try{await Promise.race([lkPut(nid,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}nit.push({id:nid,t:x.t,n:x.n,s:x.s,w:x.w,h:x.h,d:x.d,r:1})}
  const text=lkEnc({k:"album",it:nit}),now=lkNow();(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["ot",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;bumpChat(c);
  if(S.openId===c.id&&$("#chat").classList.contains("on"))addMsg("ot",text,now);else c.un=(c.un||0)+1;saveCfg();renderChats()}
+/* لغو آپلود یا دانلود | Cancel Transfer: لمس ✕ وسط یک رسانه فقط همان رسانه را لغو می‌کند؛ آپلود: همان رسانه از حباب برداشته می‌شود و فرستاده نمی‌شود (اگر همه لغو شوند حباب هم برداشته می‌شود)، دانلود: همان رسانه دانلودنشده می‌ماند (tapping the ✕ cancels only that item: an upload is removed from the bubble and never sent; a download stops and the item stays not downloaded) */
+const LKCX={};
+$("#msgs").addEventListener("click",e=>{const c=e.target.closest(".b.pend .lkc[data-lkm],.b.pend .lkfr");if(!c)return;e.stopPropagation();e.preventDefault();
+ const id=c.dataset.lkm||(c.querySelector("[data-dl]")||{dataset:{}}).dataset.dl,q=LKCX[id];if(!q||q.c)return;q.c=1;q.rej&&q.rej(new Error("cancelled"));
+ const b=c.closest(".b"),r=c.parentNode;c.remove();if(r&&r.classList&&r.classList.contains("lkr")&&!r.querySelector(".lkc"))r.remove();
+ if(b&&!b.querySelector(".lkc,.lkfr"))b.remove()},true);
 /* حباب با کپشن | Bubble With Caption: بدنه‌ی رسانه و زیرش کپشن در یک حباب (مثل LINK) */
 function lkMsgHtml(t){const o=lkDec(t);if(!o)return fwBody(t);return lkMsgBody(o)+(o.cap?'<div class="lkcap" dir="auto">'+esc(o.cap)+'</div>':'')}
 /* بدنه‌ی رسانه | Media Body: فقط عکس‌ها یا فایل‌ها بدون کپشن */
@@ -1919,24 +1925,25 @@ async function lkProcess(f,x,onP){
 /* حباب در حال ارسال | Pending Bubble (با کپشن | with caption) */
 function lkPend(c,k,files,cap){
  const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:f.__d||0}));
- it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i])});
+ it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i]);const q=LKCX[x.id]={c:0};q.p=new Promise((_,rej)=>{q.rej=rej});q.p.catch(()=>{})});
  const d=addMsg("me",lkEnc({k,it,pend:1,cap:cap||undefined}),lkNow(),0);d.classList.add("pend");d.querySelectorAll(".lkpg .lksp,.lkdl .lksp").forEach(e=>{e.outerHTML=lkRingH});
  return async()=>{
   const res=[];
-  try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] .lkpg'),isF=x.t==="file";
+  try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] .lkpg'),isF=x.t==="file";try{if(LKCX[x.id].c)throw new Error("cancelled");
    /* حلقه و درصد واقعی | Real Ratio Ring: یک حلقه‌ی سفید (برای ویدیو فقط عدد درصد)؛ سهم فشرده‌سازی از زمان واقعی آن و سهم آپلود از حجم فایل با سرعت ۵۰۰ کیلوبایت بر ثانیه حساب می‌شود و همیشه فقط جلو می‌رود (compression share from its measured time, upload share from size at 500 KB/s; never goes back) */
    const t0=Date.now(),tu0=lkEstSize(files[i],x)/LK_UPS;let tc=lkCGuess(files[i],x),last=0;const ring=v=>{last=Math.max(last,Math.min(1,v));lkRing(d,x.id,"u",last)};if(!isF)ring(0);
-   res.push(await lkSafe(files[i],x,p=>{if(!isF){if(p>.05)tc=(Date.now()-t0)/1000/p;ring(p*lkFr(tc,tu0))}}));const tcA=(Date.now()-t0)/1000,base=Math.max(last,lkFr(tcA,res[i].blob.size/LK_UPS));ring(base);
+   res.push(await Promise.race([lkSafe(files[i],x,p=>{if(!isF){if(p>.05)tc=(Date.now()-t0)/1000/p;ring(p*lkFr(tc,tu0))}}),LKCX[x.id].p]));const tcA=(Date.now()-t0)/1000,base=Math.max(last,lkFr(tcA,res[i].blob.size/LK_UPS));ring(base);
    /* ادامه‌ی حلقه | Ring Continues: حلقه از جایی که فشرده‌سازی تمام شد ادامه می‌دهد و با پیشرفت واقعی آپلود تا ۱۰۰ پر می‌شود (the ring continues from where compression ended) */
-   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */ring(base);if(LK_UPLOAD_URL){await lkUpload(res[i].blob,x.n,p=>ring(base+(1-base)*p))}else{LKB[x.id]=res[i].blob;await new Promise(ok=>setTimeout(ok,350));try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}ring(1);
-   const g=cell();if(g)g.parentNode.classList.add("lkd")}}
+   /* مرحله آپلود | Upload Step: با سرور متصل، پیشرفت واقعی آپلود؛ بدون سرور، ذخیرهٔ واقعی فایل روی دستگاه انجام می‌شود و حلقه می‌چرخد تا تمام شود (with a server: real upload progress; without: the file is really saved on the device while the ring spins) */ring(base);if(LK_UPLOAD_URL){await Promise.race([lkUpload(res[i].blob,x.n,p=>ring(base+(1-base)*p)),LKCX[x.id].p])}else{LKB[x.id]=res[i].blob;await Promise.race([new Promise(ok=>setTimeout(ok,350)),LKCX[x.id].p]);if(LKCX[x.id].c)throw new Error("cancelled");try{await Promise.race([lkPut(x.id,{blob:res[i].blob,thumb:res[i].thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}ring(1);
+   const g=cell();if(g)g.parentNode.classList.add("lkd")}catch(e){if(LKCX[x.id].c){res[i]=null;x.cx=1;delete LKB[x.id];lkDrop([x.id])}else throw e}}}
   catch(e){d.remove();const em=String(e&&e.message||e);toast(/compress|timeout/.test(em)?"Compression failed":"Send failed");/* علت خطا | Error Detail: علت واقعی فشرده‌سازی زیر پیام نشان داده می‌شود و ۹ ثانیه می‌ماند تا خوانده شود (the real compress reason is shown in the toast for 9 seconds) */if(/compress/.test(em)){const tt=$("#toast");tt.textContent+=" ["+em.replace(/^compress failed: /,"").slice(0,160)+"]";clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}return}
-  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
+  const kept=it.filter(x=>!x.cx);if(!kept.length){d.remove();return}
+  for(let i=0;i<it.length;i++){const x=it[i],r=res[i];if(!r||x.cx)continue;LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
    if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
-  const text=lkEnc({k,it,cap:cap||undefined}),now=lkNow();
+  const text=lkEnc({k,it:kept,cap:cap||undefined}),now=lkNow();
   (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();
-  if(d.isConnected){d.classList.remove("pend");d.dataset.t=text;const b=d.querySelector(".lkbody");if(b)b.outerHTML=lkMsgBody(lkDec(text));lkHydrate(d)}if(k==="album")lkEcho(c,it,res)}}
+  if(d.isConnected){d.classList.remove("pend");d.dataset.t=text;const b=d.querySelector(".lkbody");if(b)b.outerHTML=lkMsgBody(lkDec(text));lkHydrate(d)}if(k==="album")lkEcho(c,kept,it.map((x,i)=>res[i]).filter(Boolean))}}
 /* ارسال | Send Media: دکمه‌ی گیره چند فایل را می‌گیرد؛ عکس و ویدیو (تا ۱۰ تا در هر آلبوم) به‌صورت آلبوم و فایل‌ها (تا ۱۰ تا در هر بسته) به‌صورت یک بسته فرستاده می‌شوند؛ کارها یکی‌یکی انجام می‌شوند */
 /* اندازه‌ی واقعی عکس | Photo Size First: قبل ساخت حباب، عرض و ارتفاع هر عکس خوانده می‌شود تا آلبوم مثل LINK از همان اول با شکل درست بیاید و بعد از ارسال پرش نکند */
 /* ارسال امن هر عکس | Safe Photo Step: اگر یک عکس خراب شود یا بیش از ۴۵ ثانیه طول بکشد، همان عکس بدون تغییر فرستاده می‌شود تا آلبوم و آلبوم‌های بعدی ناقص نمانند */
@@ -1993,7 +2000,7 @@ function mpvMuteUi(i){$("#mpMute").innerHTML=MPV.mute[i]?MPI.off:MPI.on}
 /* رفتن به صفحه | Go To Item: صفحه‌ی i را نشان می‌دهد و شماره‌ها، کیفیت، نوار برش و صدا را برای همان فایل تنظیم می‌کند */
 function mpvGo(i,a){const n=MPV.f.length;i=mClamp(i,0,n-1);mpvStop();MPV.i=i;mpvPos(a,0);
  const f=MPV.f[i],vd=lkKind(f)==="video";$("#mpv").classList.toggle("vid",vd);
- $("#mpIdx").textContent=i+1;$("#mpN").textContent=n;$("#mpN").classList.toggle("v",vd);
+ $("#mpIdx").textContent=MPV.sel[i]?MPV.sel.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=MPV.sel.filter(Boolean).length;$("#mpN").classList.toggle("v",vd);
  $("#mpQ").textContent=mpvQv(i);
  if(vd){mpvDur(i);const t=MPV.rec[i].trim;mpvSel(i);$("#mpPh").style.left=(t?t.start/(f.__d||1)*100:0)+"%";mpvPaint(i);if(!MPV.th[i]){MPV.th[i]=[];mpvThumbs(i,MPV.tok)}mpvMuteUi(i);const v=mpvV();if(v)v.muted=!!MPV.mute[i]}}
 /* بستن پیش‌نمایش | Close Preview: صفحه را می‌بندد و پخش و فایل‌های موقت را پاک می‌کند */
@@ -2027,14 +2034,12 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
  mpeInit();
  $("#mpBack").onclick=mpvClose;
  /* حذف از انتخاب | Deselect: لمس نشان شماره، فایل فعلی را از انتخاب خارج می‌کند؛ اگر چیزی نماند پیش‌نمایش بسته می‌شود */
- $("#mpIdx").onclick=()=>{const i=MPV.i,n=MPV.f.length;if(n<=1){mpvClose();return}mpvStop();MPV.tok++;URL.revokeObjectURL(MPV.u[i]);
-  [MPV.f,MPV.rec,MPV.u,MPV.mute].forEach(a=>a.splice(i,1));MPV.th.splice(i,1);MPV.th=Array.from(MPV.th,a=>a&&a.filter(Boolean).length===14?a:undefined);
-  $("#mpTr").children[i].remove();mpvGo(Math.min(i,n-2),0)};
+ $("#mpIdx").onclick=()=>{const i=MPV.i,s=MPV.sel;if(s[i]&&s.filter(Boolean).length<=1)return;s[i]=!s[i];$("#mpIdx").textContent=s[i]?s.slice(0,i+1).filter(Boolean).length:"";$("#mpN").textContent=s.filter(Boolean).length};
  $("#mpMute").onclick=()=>{MPV.mute[MPV.i]=!MPV.mute[MPV.i];mpvMuteUi(MPV.i);const v=mpvV();if(v)v.muted=!!MPV.mute[MPV.i]};
  /* ارسال از پیش‌نمایش | Send From Preview: برش‌های واقعی را روی فایل می‌گذارد، صفحه را می‌بندد، آلبوم را می‌فرستد و شرح را پیام جدا بعدش می‌فرستد */
- $("#mpSend").onclick=async()=>{const F=MPV.f.slice(),cap=$("#mpCap").value.trim();
+ $("#mpSend").onclick=async()=>{const S=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!S.length)return;const L=S.filter(i=>lkKind(MPV.f[i])==="video"&&mpvQv(i)!=="Original");if(L.length&&!(await mpAsk("ارسال با این کیفیت ممکن است زمان‌بر باشد، به دلیل فشرده‌سازی. ادامه می‌دهید؟")))L.forEach(i=>MPV.rec[i].q="Original");const F=S.map(i=>MPV.f[i]),cap=$("#mpCap").value.trim();
   /* دستورکار هر فایل | Per-file Recipe: برش، تنظیم رنگ، چرخش، آینه و کوتاه‌کردن هر فایل را به دستورکار سیستم رسانه تبدیل می‌کند، کیفیت را می‌گذارد و اندازه‌ی حباب را با شکل جدید هماهنگ می‌کند */
-  F.forEach((f,i)=>{const r=MPV.rec[i],t=r.trim,vd=lkKind(f)==="video",tr2=vd&&t&&(t.start>.05||t.end<(f.__d||0)-.05)?{start:t.start,end:t.end}:null,rec=mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip,trim:tr2});
+  F.forEach((f,k)=>{const i=S[k],r=MPV.rec[i],t=r.trim,vd=lkKind(f)==="video",tr2=vd&&t&&(t.start>.05||t.end<(f.__d||0)-.05)?{start:t.start,end:t.end}:null,rec=mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip,trim:tr2});
    f.__rec=mPlain(rec)?null:rec;f.__q=mpvQv(i);
    if(f.__rec){let w=f.__w||1,h=f.__h||1;if((rec.rotate||0)%180)[w,h]=[h,w];if(rec.crop){w*=rec.crop.w;h*=rec.crop.h}f.__w=w;f.__h=h}});
   /* کپشن داخل حباب | Inline Caption: کپشن دیگر پیام جدا نیست و با عکس یا ویدیو در یک حباب می‌رود */mpvClose();await lkSend(F,cap)};
@@ -2113,7 +2118,7 @@ async function bgPreview(file,cb){
 /* سقف کیفیت ویدیو | Video Quality Cap: بالاترین گزینه دقیقاً اندازه‌ی خود ویدیو (بعد از برش) است؛ ویدیوی ۷۲۰ هرگز ۱۰۸۰ نشان نمی‌دهد (top option is the video's own size after crop; a 720 video never offers 1080) */
 function mpvQs(i){const f=MPV.f[i];if(lkKind(f)!=="video")return["SD","HD"];const r=(MPV.rec&&MPV.rec[i])||{},cr=r.crop||{w:1,h:1};let w=(f.__w||0)*(cr.w||1),h=(f.__h||0)*(cr.h||1);let s=(w&&h)?Math.min(w,h):720;s=Math.min(1080,Math.max(240,2*Math.round(s/2)));const a=MP.videoChat.heights.filter(x=>x<=s+2);if(s-(a[a.length-1]||0)>24)a.push(s);/* گزینه اصلی | Original Option: آخرین گزینه‌ی کیفیت ویدیو؛ یعنی بدون فشرده‌سازی و بدون تغییر اندازه (last video quality choice: no compression, no resize) */a.push("Original");return a}
 /* کیفیت فعلی | Current Quality: کیفیت انتخاب‌شده، یا پیش‌فرض (عکس SD و ویدیو ۷۲۰ یا بالاترین ممکن) */
-function mpvQv(i){const f=MPV.f[i],q=MPV.rec[i].q,a=mpvQs(i);if(q&&a.includes(q))return q;return lkKind(f)==="video"?(a.includes(720)?720:a[a.length-2]):"SD"}
+function mpvQv(i){const f=MPV.f[i],q=MPV.rec[i].q,a=mpvQs(i);if(q&&a.includes(q))return q;return lkKind(f)==="video"?"Original":"SD"}
 /* نسبت‌های برش | Crop Ratios: آزاد، اصلی (نسبت خود تصویر) و نسبت‌های رایج */
 const MPCH=[["Free",null],["Original","o"],["Square",1],["3:4",3/4],["4:3",4/3],["9:16",9/16],["16:9",16/9]];
 /* وضعیت ویرایشگر | Editor State: شماره‌ی فایل، چرخش، آینه، قاب برش (کسر ۰ تا ۱ روی تصویر چرخیده)، نسبت و اندازه‌ی قاب */
@@ -2209,8 +2214,10 @@ function lkLoad(n){if(!document.getElementById("lkLoadCss")){const s=document.cr
  const show=()=>{fl.style.width=p+"%";lab.textContent=tr("Preparing media...")+" "+Math.round(p)+"%"};show();
  const tk=setInterval(()=>{if(p<cap){p+=(cap-p)*.08;show()}},100);
  return{set(k){cap=k>=n?100:Math.min(99,(k+.9)/n*100);p=Math.max(p,k/n*100);show()},end(){clearInterval(tk);setTimeout(()=>e.remove(),150)}}}
+/* تایید کیفیت | Quality Confirm: پیام کوتاه با دو دکمه Yes و No؛ Yes یعنی با کیفیت انتخابی و No یعنی اصلی */
+function mpAsk(t){return new Promise(ok=>{const b=document.createElement("div");b.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";b.innerHTML='<div style="background:#1c1c1e;color:#fff;border-radius:14px;padding:18px;width:min(86vw,300px);text-align:center;font-size:15px"><div data-q style="margin-bottom:16px"></div><div style="display:flex;gap:10px"><button data-a="0" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2c2c2e;color:#fff;font-size:15px">No</button><button data-a="1" style="flex:1;padding:10px;border:0;border-radius:10px;background:#2f8fff;color:#fff;font-size:15px">Yes</button></div></div>';b.querySelector("[data-q]").textContent=t;b.onclick=e=>{const x=e.target.closest("button");if(!x)return;b.remove();ok(x.dataset.a==="1")};document.body.appendChild(b)})}
 async function mpvOpen(files){if(!files.length)return;const c=CHATS.find(x=>x.id===S.openId);const lp=lkLoad(files.length);try{let n=0;await Promise.all(files.map(f=>lkDims(f).finally(()=>lp.set(++n))))}catch(e){lp.end();throw e}const o=mpvEl();MPV.u.forEach(u=>URL.revokeObjectURL(u));
- Object.assign(MPV,{f:files,i:0,rec:files.map(()=>({})),th:[],mute:[],tok:MPV.tok+1,to:c?c.n:""});MPV.u=files.map(f=>URL.createObjectURL(f));
+ Object.assign(MPV,{f:files,i:0,rec:files.map(()=>({})),th:[],mute:[],sel:files.map(()=>true),tok:MPV.tok+1,to:c?c.n:""});MPV.u=files.map(f=>URL.createObjectURL(f));
  $("#mpTo").textContent="↑ "+tr(MPV.to);$("#mpCap").value="";$("#mpCap").placeholder=tr("Add a caption...");
  $("#mpTr").innerHTML=files.map((f,i)=>{const vd=lkKind(f)==="video",p=(f.__h||1)>(f.__w||1);return `<div class="mps${p?" pt":""}">${vd?`<video src="${MPV.u[i]}" playsinline webkit-playsinline preload="auto"></video><div class="mpp">${MPI.play}</div>`:`<img src="${MPV.u[i]}">`}<canvas class="mpc"></canvas></div>`}).join("");
  /* بازرسم هنگام آماده‌شدن | Redraw On Ready: وقتی عکس یا فریم ویدیو آماده شد، نتیجه‌ی ویرایش دوباره روی بوم کشیده می‌شود */
