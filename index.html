@@ -355,10 +355,6 @@ html.light .fwh{background:rgba(0,0,0,.06)}
 .lkrg[data-ph="u"] svg{animation:lkspin 1s linear infinite}
 @keyframes lkspin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
 .lkc.lkd .lkpg .lkrg svg{display:none}
-/* عدد درصد ویدیو | Video Percent CSS: عدد درصد وسط ویدیوی در حال ارسال؛ مدت و حجم تا پایان ارسال پنهان است (percent in the middle; duration and size are hidden until sent) */
-.lkpg.lkvp::after{display:none}
-.lkpc{font-weight:700;font-size:15px;background:rgba(0,0,0,.45);border-radius:16px;padding:6px 12px;color:#fff;min-width:44px;text-align:center;box-sizing:border-box;direction:ltr}
-.pend .lkdu{display:none}
 .lkdl .lkrg{width:30px;height:30px}
 .lkf{display:flex;flex-direction:column;gap:8px;min-width:230px;padding:4px 6px 0}
 .lkfr{display:flex;align-items:center;gap:10px}
@@ -1818,7 +1814,7 @@ function lkMsgPlain(t){const o=lkDec(t);if(!o)return t;const n=o.it.length,a=o.i
 /* ظاهر پیام رسانه | Media Bubble: عکس و ویدیو به‌صورت آلبوم ردیفی مثل تلگرام (تا ۱۰ تا)، فایل‌ها به‌صورت یک بسته که هر کدام دکمه‌ی دانلود جدا دارد */
 /* چیدمان تلگرامی ۳ و ۴ عکس | Telegram Mosaic: اگر عکس اول عمودی باشد، آن بزرگ در سمت چپ می‌ایستد و بقیه زیر هم در ستون راست می‌آیند؛ در غیر این صورت چیدمان ردیفی قبلی می‌ماند */
 function lkTele(o){const it=o.it,n=it.length;if(o.k==="files"||n<3||n>4)return null;const f=it[0];if(!((f.w||1)/(f.h||1)<1))return null;
- const cell=(x,i,st)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+i+'" style="'+st+'"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>';
+ const cell=(x,i,st)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+i+'" style="'+st+'"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':'')):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>';
  const H=Math.round(mClamp(168/((f.w||1)/(f.h||1)),250,340));
  let h='<div class="lkbody lka" style="flex-direction:row;height:'+H+'px">'+cell(f,0,'width:168px;flex:none')+'<div class="lkr" style="flex-direction:column;flex:1 1 0;height:100%;width:auto">';
  for(let i=1;i<n;i++)h+=cell(it[i],i,'flex:1 1 0;width:100%');
@@ -1835,7 +1831,7 @@ const lkDlI='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke=
 const lkDur=s=>{s=Math.round(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 /* حجم خوانا | Readable Size: زیر ۱ مگابایت کیلوبایت، از ۱۰۰۰ مگابایت به بالا گیگابایت، بقیه مگابایت (under 1 MB in KB, from 1000 MB in GB, else MB) */
 const lkSz=b=>b<1e6?Math.max(1,Math.round(b/1e3))+" KB":b<1e9?(b/1e6).toFixed(1)+" MB":(b/1e9).toFixed(2)+" GB";
-/* مدت و حجم ویدیو | Video Info: متن روی ویدیوی ارسال‌شده؛ مدت و بعد حجم (text on a sent video: duration then size) */
+/* مدت و حجم ویدیو | Video Info: برچسب گوشه‌ی بالا-چپ ویدیو؛ در حین ارسال همان‌جا درصد نوشته می‌شود و بعد از ارسال همان‌جا مدت و بعد حجم (top-left badge: percent while sending, then duration and size) */
 const lkVInfo=x=>[x.d?lkDur(x.d):"",x.s?lkSz(x.s):""].filter(Boolean).join(" · ");
 /* حباب با کپشن | Bubble With Caption: بدنه‌ی رسانه و زیرش کپشن در یک حباب (مثل تلگرام) */
 function lkMsgHtml(t){const o=lkDec(t);if(!o)return fwBody(t);return lkMsgBody(o)+(o.cap?'<div class="lkcap" dir="auto">'+esc(o.cap)+'</div>':'')}
@@ -1844,7 +1840,7 @@ function lkMsgBody(o){
  if(o.k==="files")return '<div class="lkbody lkf">'+o.it.map(x=>'<div class="lkfr"><div class="lkfi">'+esc((x.n.split(".").pop()||"file").slice(0,4).toUpperCase())+'</div><div class="lkft"><b dir="auto">'+esc(x.n)+'</b><span>'+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+(o.pend?'<i class="lksp"></i>':lkDlI)+'</div></div>').join("")+'</div>';
  const lkT=lkTele(o);if(lkT)return lkT;const rows=lkSplit(o.it);let i=0,W=0,h='<div class="lkbody lka">';
  rows.forEach(n=>{const sg=rows.length===1&&n===1,r=o.it.slice(i,i+n),a=r.map(x=>mClamp((x.w||1)/(x.h||1),sg?.5:.7,1.7)),rh=Math.min(250/a.reduce((p,q)=>p+q,0),sg?320:200);if(sg)W=Math.round(rh*a[0]);
-  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':''):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
+  h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+(x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>'+(o.pend?'<span class="lkdu" data-pc="1">0%</span>':((x.d||x.s)?'<span class="lkdu">'+lkVInfo(x)+'</span>':'')):'')+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
  return (W?h.replace('lkbody lka"','lkbody lka" style="width:'+W+'px"'):h)+'</div>'}
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
 async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),b=r&&(r.thumb||(r.blob&&r.blob.type.startsWith("image/")?r.blob:null));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
@@ -1854,7 +1850,7 @@ async function lkSave(id,name){let b=LKB[id];if(!b){try{const r=await lkGet(id);
 const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 /* حلقه پیشرفت | Progress Ring: بعد از زدن ارسال روی هر عکس و ویدیو یک حلقه می آید. مرحله ۱: حلقه سبز همزمان با فشرده سازی و تغییر فرمت از ۰ تا ۱۰۰ پر می شود. مرحله ۲: دوباره از صفر با پیشرفت واقعی بارگذاری روی سرور پر می شود (after Send each photo/video gets a ring: step 1 green fills 0-100 in sync with compression and format change; step 2 restarts from 0 and follows the real upload progress to the server) */
 const lkRingH='<i class="lkrg" data-ph="c" style="--p:0"><svg viewBox="0 0 44 44"><circle class="t" cx="22" cy="22" r="19"/><circle class="f" cx="22" cy="22" r="19" pathLength="100"/></svg></i>';
-function lkRing(d,id,ph,p){const pc=d.querySelector('[data-lkm="'+id+'"] .lkpc');if(pc)pc.textContent=Math.round(Math.max(0,Math.min(1,p))*100)+"%";const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(ph==="u"?.08:0,Math.min(1,p))*100))}
+function lkRing(d,id,ph,p){const pc=d.querySelector('[data-lkm="'+id+'"] .lkdu[data-pc]');if(pc)pc.textContent=Math.round(Math.max(0,Math.min(1,p))*100)+"%";const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(ph==="u"?.08:0,Math.min(1,p))*100))}
 /* سرعت فرضی آپلود | Assumed Upload Speed: برای تقسیم حلقه و درصد بین فشرده‌سازی و آپلود، سرعت آپلود ۵۰۰ کیلوبایت بر ثانیه فرض می‌شود (upload speed is assumed to be 500 KB/s) */
 const LK_UPS=500*1024;
 /* کسر زمان | Time Fraction: سهم زمانِ a از کل زمان a و b؛ برای تقسیم واقعی درصد بین فشرده‌سازی و آپلود (share of a in a+b) */
@@ -1884,7 +1880,7 @@ async function lkProcess(f,x,onP){
 function lkPend(c,k,files,cap){
  const it=files.map(f=>({id:lkId(),t:lkKind(f),n:f.name,s:f.size,w:f.__w||1,h:f.__h||1,d:f.__d||0}));
  it.forEach((x,i)=>{LKB[x.id]=files[i];if(x.t==="photo")LKU[x.id]=URL.createObjectURL(files[i])});
- const d=addMsg("me",lkEnc({k,it,pend:1,cap:cap||undefined}),lkNow(),0);d.classList.add("pend");/* درصد ویدیو | Video Percent: روی هر ویدیوی در حال ارسال به جای حلقه فقط یک عدد درصد می‌آید (each pending video shows only a percent number) */d.querySelectorAll(".lkc").forEach(c=>{const g=c.querySelector(".lkpg");if(g&&c.querySelector(".lkpl")){g.classList.add("lkvp");g.innerHTML='<b class="lkpc">0%</b>'}});d.querySelectorAll(".lkpg .lksp,.lkdl .lksp").forEach(e=>{e.outerHTML=lkRingH});
+ const d=addMsg("me",lkEnc({k,it,pend:1,cap:cap||undefined}),lkNow(),0);d.classList.add("pend");d.querySelectorAll(".lkpg .lksp,.lkdl .lksp").forEach(e=>{e.outerHTML=lkRingH});
  return async()=>{
   const res=[];
   try{for(let i=0;i<files.length;i++){const x=it[i],cell=()=>d.querySelector('[data-lkm="'+x.id+'"] .lkpg'),isF=x.t==="file";
