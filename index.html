@@ -103,6 +103,11 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* ردیف هماهنگ | Unified Row: ردیف چت‌ها و مخاطبین هم‌اندازه؛ ارتفاع ۷۳، آواتار ۶۰ دقیقاً وسط (same size for chats & contacts: height 73px, 60px avatar, vertically centered) */
 #clist .row,#ctlist .row:not(.blueRow){height:73px;padding:0 14px}
 #clist .av,#ctlist .av{width:60px;height:60px;font-size:24px}
+/* عکس پروفایل داخل صفحه گفتگو | Avatars Inside Chat Page: قطر ۱۵ درصد بزرگ‌تر؛ عکس بالای گفتگو ۴۰ به ۴۶ و عکس فرستنده کنار حباب گروه ۳۰ به ۳۴.۵ (diameter +15%: header photo 40 to 46, group sender photo 30 to 34.5) */
+#chat #cav{width:46px;height:46px;font-size:18.4px}
+.b.ot.gp{margin-left:42.5px}
+.b.ot.gp .gsa{left:-42.5px;width:34.5px;height:34.5px}
+.b.ot.gp .gsa .av{width:34.5px;height:34.5px;font-size:16.1px}
 /* متن ردیف | Row Text: نام و پیش‌نمایش زیر هم، چپ‌چین و وسط‌چین عمودی (name above preview, left aligned, vertically centered) */
 #clist .mid,#ctlist .mid{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:0;margin:0;direction:ltr;text-align:left}
 /* ستون ساعت | Meta Column: سه خط ۲۰ پیکسلی هم‌راستا با متن؛ ساعت هم‌تراز نام، نشان خوانده‌نشده هم‌تراز خط وسط (3 lines of 20px aligned with text: time on the name line, badge on the middle line) */
@@ -3749,7 +3754,7 @@ new MutationObserver(()=>{if(!cur)return;const vo=document.querySelector('#msgs 
 let vKeep=0;
 function vList(cid){const els=S.openId===cid?[...document.querySelectorAll("#msgs .lkvo")]:[];if(els.length)return els.map(el=>({id:el.dataset.vid,d:el.dataset.d,me:((el.closest(".b")||{dataset:{}}).dataset.w)==="me",el}));const c=CHATS.find(x=>x.id===cid),o=[];if(!c)return o;chatMsgs(c).forEach(m=>{const k=lkDec(m[1]);if(k&&k.k==="voice"){const x=k.it[0];o.push({id:x.id,d:x.d,me:m[0]==="me"})}});return o}
 function vPrefetch(){if(!cur)return;const L=vList(cur.cid),i=L.findIndex(x=>x.id===cur.id);if(i<0)return;L.slice(i+1,i+3).forEach(x=>{if(!LKB[x.id])lkGet(x.id).then(r=>{if(r&&r.blob&&!LKB[x.id])LKB[x.id]=r.blob}).catch(()=>{})})}
-async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vList(cid),cn=(CHATS.find(c=>c.id===cid)||{}).n||cur.name;let i=L.findIndex(x=>x.id===id);if(i<0||i>=L.length-1){/* پایان ویس بدون مخفی شدن نوار | End Keeps Voice Bar: بعد از پایان آخرین ویس نوار باقی می‌ماند و به ابتدای ویس برمی‌گردد (after the last voice ends the bar stays and rewinds to the start) */try{cur.a.currentTime=0}catch(_){}vNowSync();return}
+async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vList(cid),cn=(CHATS.find(c=>c.id===cid)||{}).n||cur.name;let i=L.findIndex(x=>x.id===id);if(i<0||i>=L.length-1){/* پایان آخرین ویس | Last Voice Ends: بعد از پایان آخرین ویس گفتگو، پخش کامل متوقف و نوار ویس زیر پروفایل حذف می‌شود (after the last voice of the chat ends, playback fully stops and the voice bar under the header is removed) */vKeep=0;stopCur();vNowSync();return}
  vKeep=1;stopCur();
  for(i++;i<L.length;i++){const x=L[i];let vo=x.el&&x.el.isConnected?x.el:null;if(!vo){vo=document.createElement("div");vo.className="lkvo";vo.dataset.vid=x.id;vo.dataset.d=x.d}
   await playVo(vo,{cid,name:x.me?tr("You"):cn});if(cur)break}
