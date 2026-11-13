@@ -3613,8 +3613,8 @@ vn.querySelector("small").textContent=tr("Voice message");
 function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
 function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)"}
 function vNowTick(){if(!cur)return;const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
-function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vn.querySelector(".vnl").style.width="0";return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
-vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){vSpd=vSpd===1?1.5:vSpd===1.5?2:1;cur.a.playbackRate=vSpd;const b=vn.querySelector(".vns");b.textContent=(vSpd===1.5?"1.5":vSpd)+"X";b.classList.toggle("f",vSpd>1)}});
+function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vSpdClose();vn.querySelector(".vnl").style.width="0";return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
+vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){if(vLP){vLP=0;return}if($("#vnsp")){vSpdClose();return}vSetSpd(vSpd<1?1:vSpd===1?1.5:vSpd===1.5?2:1)}});
 /* نگه‌داشتن ویس بین صفحه‌ها | Keep Voice Across Screens: با عوض شدن صفحه نوار به صفحه‌ی جدید می‌رود؛ وقتی گفتگو دوباره باز می‌شود حباب ویس درحال‌پخش دوباره به صدا وصل می‌شود (the bar follows the visible screen; when the chat is reopened the playing bubble is reconnected to the audio) */
 let vRaf=0;const vSoon=()=>{if(vRaf)return;vRaf=requestAnimationFrame(()=>{vRaf=0;vNowPlace()})};
 new MutationObserver(vSoon).observe($("#app"),{attributes:true,attributeFilter:["class"],subtree:true});
@@ -3637,6 +3637,19 @@ vn.addEventListener("click",e=>{if(e.target.closest(".vnm"))vNowGo()});
 $("#app").addEventListener("scroll",vSoon,true);
 /* قطع پخش هنگام ضبط | Stop Playback On Record: با شروع ضبط ویس (یا ادامه‌ی ضبط) همه‌ی ویس‌های درحال‌پخش و نوار پخش قطع می‌شود (starting or resuming a voice recording stops every playing voice and hides the player bar) */
 function vStopAll(){stopCur();document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})}
+/* منوی سرعت مثل تلگرام | Telegram Speed Menu: نگه‌داشتن روی دکمه‌ی سرعت یک نوار زیر آن باز می‌کند: ۰.۲۵، ۰.۵، ۰.۷۵، ۱، ۱.۵ و ۲ برابر؛ انتخاب یکی سرعت را عوض می‌کند و منو بسته می‌شود (long-press on the speed button opens a strip under it with 0.25x, 0.5x, 0.75x, 1x, 1.5x and 2x; choosing one sets the speed and closes the menu) */
+let vLP=0,vLT=0;
+(function(){const s=document.createElement("style");s.textContent=`#vnsp{position:absolute;z-index:61;min-width:132px;box-sizing:border-box;padding:4px 0;background:var(--card2,#2c2c2e);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.45);color:var(--txt);font-size:15px}
+#vnsp div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 16px;cursor:pointer}
+#vnsp div.on{color:var(--blue);font-weight:600}`;document.head.appendChild(s)})();
+function vSetSpd(v){vSpd=v;if(cur)cur.a.playbackRate=v;const b=vn.querySelector(".vns");b.textContent=v+"X";b.classList.toggle("f",v!==1);vSpdClose()}
+function vSpdClose(){const m=$("#vnsp");if(m)m.remove()}
+function vSpdOpen(){vSpdClose();const m=document.createElement("div");m.id="vnsp";[2,1.5,1,.75,.5,.25].forEach(v=>{const r=document.createElement("div");r.dataset.v=v;if(v===vSpd)r.className="on";r.innerHTML="<span>"+v+"x</span><span>"+(v===vSpd?"\u2713":"")+"</span>";m.append(r)});
+ const app=$("#app"),ar=app.getBoundingClientRect(),br=vn.getBoundingClientRect(),sr=vn.querySelector(".vns").getBoundingClientRect();m.style.top=(br.bottom-ar.top+6)+"px";m.style.right=(ar.right-sr.right)+"px";app.append(m)}
+vn.addEventListener("pointerdown",e=>{if(!e.target.closest(".vns"))return;clearTimeout(vLT);vLP=0;vLT=setTimeout(()=>{vLP=1;vSpdOpen()},380)});
+["pointerup","pointercancel","pointerleave"].forEach(t=>vn.addEventListener(t,()=>clearTimeout(vLT)));
+document.addEventListener("click",e=>{const r=e.target.closest("#vnsp div");if(r){vSetSpd(+r.dataset.v);return}},true);
+document.addEventListener("pointerdown",e=>{if(!e.target.closest("#vnsp")&&!e.target.closest(".vns"))vSpdClose()},true);
 /* ارسال | Send Voice */
 async function sendVoice(res,wf){
  if(!res||!res.blob||res.duration<.5){toast("Hold to record voice message");return}
