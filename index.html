@@ -1732,7 +1732,7 @@ function lkMode(m){if(LK_MODE===m)return;
  LK_CK.forEach(k=>delete CFG[k]);
  try{Object.assign(CFG,JSON.parse(localStorage.getItem("lk_ck_"+m))||{})}catch(e){}
  /* مقدار پیش‌فرض | Default Values: بعد از پاک شدن تنظیمات حالت قبل، فهرست‌های خالی دوباره ساخته می‌شوند تا خطای includes نیاید (empty lists restored after the mode switch) */
- CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];
+ CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];/* مقدار پیش‌فرض صف زمان‌بندی | Default Schedule Queue: بعد از عوض شدن حالت، لیست پیام‌های زمان‌بندی‌شده دوباره خالی ساخته می‌شود؛ بدون آن grow خطا می‌داد و ارسال به سرور هرگز اجرا نمی‌شد (restores CFG.sched after the mode switch; without it grow threw and the real send never ran) */CFG.sched=CFG.sched||[];
  LK_MODE=m;
  if(m==="demo"){CHATS=JSON.parse(JSON.stringify(LK_SNAP.c));PEOPLE=JSON.parse(JSON.stringify(LK_SNAP.p))}
  else{CHATS=[{id:2,n:"Saved Messages",m:"",tm:"",ty:"pv",pin:1,t:0,un:0,mute:0,on:0,col:"#3a9bff"}];PEOPLE=[]}
