@@ -1313,21 +1313,29 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 /* ===== اتصال سرور | Server Link (Appwrite): مرحله ۱ فقط ثبت‌نام و ورود با ایمیل و رمز؛ پیام‌رسانی بعداً می‌آید ===== */
 /* ورود و ثبت‌نام | Auth Layer: ساخت حساب، ورود، نگه‌داشتن نشست بعد از رفرش و خروج با نشست رسمی Appwrite؛ رمز عبور هیچ‌جا ذخیره نمی‌شود و هیچ کلید مخفی در برنامه نیست (official Appwrite session; no password stored, no secret key) */
 const LKA=(()=>{
- const EP="https://fra.cloud.appwrite.io/v1",PJ="6aecbdce0036439c36ca";
- let ok=false,cl,ac;
- try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);ok=true}catch(e){}
+ const EP="https://fra.cloud.appwrite.io/v1",PJ="6aecbdce0036439c36ca",DBID="link";
+ let ok=false,cl,ac,db;
+ try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);db=new A.TablesDB(cl);ok=true}catch(e){}
  /* نام نمایشی | Display Name: بخش قبل از @ ایمیل؛ مثل ali123@gmail.com ← ali123 (the part before @) */
  const uname=e=>String(e||"").split("@")[0];
- const pack=u=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:n,username:n.toLowerCase()}};
+ const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:n,username:(p&&p.username)||n.toLowerCase()}};
+ /* پروفایل کاربر | User Profile Row: برای هر کاربر یک ردیف در جدول users ساخته می‌شود (یوزرنیم = بخش قبل از @؛ اگر تکراری بود چند رقم اضافه می‌شود) تا دیگران بتوانند او را جستجو کنند؛ اگر جدول هنوز ساخته نشده باشد ورود را خراب نمی‌کند (creates the searchable users row; never blocks login) */
+ async function prof(u,fn,ln){
+  try{return await db.getRow({databaseId:DBID,tableId:"users",rowId:u.$id})}catch(e){}
+  const A=window.Appwrite,base=(uname(u.email).toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,24))||"user";
+  for(let i=0;i<6;i++){const un=i?base+(1000+Math.floor(Math.random()*9000)):base;
+   try{return await db.createRow({databaseId:DBID,tableId:"users",rowId:u.$id,data:{username:un,usernameLower:un.toLowerCase(),firstName:String(fn||"").slice(0,64),lastName:String(ln||"").slice(0,64),email:String(u.email||"").toLowerCase().slice(0,255),lastSeen:new Date().toISOString()},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(u.$id)),A.Permission.delete(A.Role.user(u.$id))]})}catch(e){if(e.code!==409)return null}}
+  return null}
+ const safeProf=async(u,fn,ln)=>{try{return await prof(u,fn,ln)}catch(e){return null}};
  /* ثبت‌نام و ورود | Sign Up / Log In: اگر ثبت‌نام باشد اول حساب ساخته می‌شود، بعد نشست ساخته می‌شود (create account then session) */
- async function auth(signup,email,pw){
+ async function auth(signup,email,pw,fn,ln){
   if(!ok)throw new Error("کتابخانه‌ی سرور بارگیری نشد");
   if(signup)await ac.create({userId:window.Appwrite.ID.unique(),email:email,password:pw,name:uname(email)});
   try{await ac.deleteSession({sessionId:"current"})}catch(e){}
   await ac.createEmailPasswordSession({email:email,password:pw});
-  return pack(await ac.get())}
+  const u=await ac.get();return pack(u,await safeProf(u,fn,ln))}
  /* بازیابی نشست | Session Check: هنگام شروع، اگر نشست فعال بود کاربر را برمی‌گرداند وگرنه null (returns the user if a session is active) */
- async function restore(){if(!ok)return null;try{return pack(await ac.get())}catch(e){return null}}
+ async function restore(){if(!ok)return null;let u;try{u=await ac.get()}catch(e){return null}return pack(u,await safeProf(u))}
  /* خروج | Sign Out: نشست فعلی را در سرور می‌بندد و ردپای نشست را از حافظه پاک می‌کند (closes the session) */
  const out=()=>{const rm=()=>{try{localStorage.removeItem("cookieFallback")}catch(e){}};if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
  /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
@@ -1341,9 +1349,21 @@ const LKA=(()=>{
   if(!navigator.onLine||c===0||/fetch|network|load failed|cors/i.test(m))return"اتصال به سرور برقرار نشد؛ اینترنت را بررسی کنید";
   if(/بارگیری/.test(m))return m;
   return"خطایی رخ داد؛ دوباره تلاش کنید"};
- /* بخش‌های بعدی | Later Stages: جستجو، پیام و دریافت زنده در مرحله‌های بعد نوشته می‌شوند؛ فعلاً خالی هستند تا بقیه‌ی برنامه خطا ندهد (empty placeholders for the next stages) */
+ /* جستجوی کاربر | User Search: با یوزرنیم یا ایمیل (جیمیل)؛ اول کسانی که اسمشان با نوشته شروع می‌شود، نزدیک‌ترین (کمترین اختلاف طول) اول، بعد کسانی که نوشته در میانه‌ی اسمشان است؛ خود کاربر نمایش داده نمی‌شود (prefix matches first, closest length first, then contains, self hidden) */
+ async function search(q){q=String(q||"").trim().toLowerCase().replace(/^@/,"");if(!ok||q.length<2)return[];const Q=window.Appwrite.Query;
+  let rows=[];
+  /* جستجوی سریع | Fast Prefix Search: با ایندکس یوزرنیم و ایمیل (uses the indexes) */
+  try{const r=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.or([Q.startsWith("usernameLower",q),Q.startsWith("email",q)]),Q.limit(25)]});rows=r.rows||[]}catch(e){rows=null}
+  /* جستجوی کمکی | Fallback Search: اگر ایندکس نبود یا چیزی پیدا نشد، ۲۰۰ کاربر را می‌گیرد و در برنامه می‌گردد؛ این‌جا «شامل بودن» هم حساب می‌شود (if no index or nothing found, fetch 200 users and match inside the app, also matches the middle of the name) */
+  if(rows===null||!rows.length){try{const a=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.limit(200)]});rows=(a.rows||[]).filter(x=>String(x.usernameLower||"").includes(q)||String(x.email||"").toLowerCase().includes(q))}catch(e){if(rows===null)throw e;rows=[]}}
+  const sc=x=>{const un=String(x.usernameLower||""),em=String(x.email||"").toLowerCase();
+   if(un===q||em===q)return -1;
+   const d=Math.min(un.startsWith(q)?un.length-q.length:1e3,em.startsWith(q)?em.length-q.length:1e3);
+   return d<1e3?d:1e3+Math.min(un.length,em.length)};
+  return rows.filter(x=>!(S.user&&x.$id===S.user.id)).map(x=>({id:x.$id,username:x.username,email:x.email,photo:"",name:((x.firstName||"")+" "+(x.lastName||"")).trim()||x.username,score:sc(x)})).sort((a,b)=>a.score-b.score).slice(0,25)}
+ /* بخش‌های بعدی | Later Stages:  پیام و دریافت زنده در مرحله‌های بعد نوشته می‌شوند؛ فعلاً خالی هستند تا بقیه‌ی برنامه خطا ندهد (empty placeholders for the next stages) */
  const off=()=>Promise.reject(new Error("هنوز فعال نشده"));
- return{auth,restore,out,search:()=>Promise.resolve([]),msg,send:off,history:()=>Promise.resolve(null),chats:()=>Promise.resolve([]),user:off,listen:()=>null,recent:()=>Promise.resolve([]),live:()=>false,db:()=>null,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,send:off,history:()=>Promise.resolve(null),chats:()=>Promise.resolve([]),user:off,listen:()=>null,recent:()=>Promise.resolve([]),live:()=>false,db:()=>null,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1657,7 +1677,7 @@ $("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("اتصال اینت�
  if(S.signup&&p!==$("#pw2").value){toast("رمز عبور و تکرار آن یکسان نیستند");return}
  const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;/* نام وارد‌شده | Entered Name: اگر در ثبت‌نام اسم نوشته شده باشد همان نمایش داده می‌شود، وگرنه بخش قبل از @ ایمیل (typed first name, else email prefix) */const fn=S.signup?$("#nm").value.trim():"";
  /* فرستادن به سرور | Send To Server: ثبت‌نام یا ورود؛ بعد از موفقیت فیلدهای رمز خالی می‌شوند تا رمز جایی نماند (fields are cleared on success) */
- LKA.auth(S.signup,e,p).then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username};toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>delete b.dataset.busy)};
+ LKA.auth(S.signup,e,p,fn,S.signup?$("#nm2").value.trim():"").then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username};toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>delete b.dataset.busy)};
 /* جداسازی داده نمایشی | Demo Data Split: محتوای نمایشی (چت‌ها، مخاطبین و پیام‌ها) فقط با دکمه‌ی «ورود نمایشی» می‌آید؛ ورود و ثبت‌نام واقعی با لیست خالی شروع می‌شود و دادهٔ هر حالت جدا نگه‌داشته می‌شود */
 const LK_SNAP={c:JSON.parse(JSON.stringify(CHATS)),p:JSON.parse(JSON.stringify(PEOPLE))};
 const LK_CK=["sent","cleared","media","sched","blocked","hid","saved","dlp","hidden","pins","dl","cperm","cadm","gperm","gone","order","cedit","folders"];
