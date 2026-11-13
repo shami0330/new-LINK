@@ -170,7 +170,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
 /* حباب گروه | Group Bubble Style: جای آواتار سمت چپ، نام فرستنده بالای متن (room for avatar on the left, sender name above text) */
 .b.ot.gp{margin-left:38px;overflow:visible}
-.b.ot.gp .gsn{font-size:13px;font-weight:600;line-height:1.2;margin:0 0 3px;direction:ltr;text-align:left;white-space:nowrap}
+.b.ot.gp .gsn{font-size:13px;font-weight:600;line-height:1.2;margin:0 0 3px;direction:ltr;text-align:left;white-space:nowrap;display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .b.ot.gp .gsa{position:absolute;left:-38px;bottom:0;width:30px;height:30px}
 .b.ot.gp .gsa .av{width:30px;height:30px;font-size:14px;margin:0}
 .b small{display:block;text-align:right;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
@@ -822,7 +822,7 @@ html.light #login .pf{color:#000}
 #fmenu{position:absolute;left:12px;right:12px;z-index:60;background:var(--card);border-radius:16px;overflow:hidden;max-height:0;opacity:0;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);transition:max-height .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
 #fmenu.on{max-height:220px;opacity:1;pointer-events:auto}
 /* آکاردئون ویرایش درجا | Inline Edit Accordion: وقتی بخش ویرایش باز است کادر بلندتر می‌شود و قابل اسکرول است (taller and scrollable while editing) */
-#fmenu.on.ed{max-height:min(72vh,540px);overflow-y:auto}
+#fmenu.on.ed{max-height:min(72vh,540px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 #fmenu .fed{padding:4px 10px 12px;border-bottom:.5px solid var(--line)}
 #fmenu .fed .card{margin-top:8px}
 #fmenu .fed .hd{margin-top:10px}
@@ -1183,7 +1183,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <div class="top"><div class="pill" id="feX"><i data-ic="close" data-s="20"></i></div><div class="title" id="fe_title" data-t="New Folder">New Folder</div><div class="pill" id="feOk" style="background:var(--blue)"><i data-ic="check" data-s="22"></i></div></div>
   <div class="body">
     <div id="fe_custom"><div class="card" style="margin-top:14px"><input class="fld" id="fe_name" dir="auto" data-p="Folder Name" placeholder="Folder Name" autocomplete="off" autocorrect="off" spellcheck="false" ></div>
-      <div class="hd" data-t="Quick Add">Quick Add</div><div class="card"><div class="item" data-qa="gp" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Groups">Add All Groups</span></div><div class="item" data-qa="ch" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Channels">Add All Channels</span></div><div class="item" data-qa="pv" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Personal Chats">Add All Personal Chats</span></div></div>
+      <div class="hd" data-t="Quick Add">Quick Add</div><div class="card"><div class="item" data-qa="gp"><span data-t="Add All Groups">Add All Groups</span><span class="sw"></span></div><div class="item" data-qa="ch"><span data-t="Add All Channels">Add All Channels</span><span class="sw"></span></div><div class="item" data-qa="pv"><span data-t="Add All Personal Chats">Add All Personal Chats</span><span class="sw"></span></div></div>
       <div class="hd" data-t="Chats">Chats</div><div class="card"><input class="fld" id="fe_search" dir="auto" data-p="Search Chats" placeholder="Search Chats" autocomplete="off" autocorrect="off" spellcheck="false"></div><div class="card" id="feSrcAll" style="display:none;margin-top:10px"><div class="item" style="color:var(--blue)"><i data-ic="plus" data-s="20"></i><span data-t="Add All Results">Add All Results</span></div></div><div class="card" id="feChats" style="margin-top:10px"></div></div>
     <div id="fe_info" style="display:none"><div class="cap" data-t="This folder fills automatically with its chat type.">This folder fills automatically with its chat type.</div></div>
     <div class="card" style="margin-top:20px"><div class="item" id="feDel" style="color:var(--red);justify-content:center" data-t="Delete Folder">Delete Folder</div></div>
@@ -1254,7 +1254,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 
 <script>
 /* اندازه‌ی هدر | Header Height Meter: ارتفاع هدر و نوار پین را اندازه می‌گیرد و به لیست پیام می‌دهد تا پیام‌ها از زیر آن‌ها شروع شوند و دیده شوند (measures header + pin bar height for the messages list) */
-(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}var vn2=ch.querySelector(':scope>#vnow.on');if(vn2&&vn2.offsetHeight){h=Math.max(h,vn2.getBoundingClientRect().bottom-r.top+4)}if(h>0)ch.style.setProperty('--hh',Math.round(h)+'px')}if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
+(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}ch.querySelectorAll(':scope>#vnow.on,:scope>#vpark.on').forEach(function(x){if(!x.offsetHeight)return;var bt=x.getBoundingClientRect().top-r.top+(x.id==='vnow'&&x.classList.contains('vex')?38:x.offsetHeight);h=Math.max(h,bt+4)});if(h>0)ch.style.setProperty('--hh',Math.round(h)+'px')}window.lkChatFit=fit;if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
 </script>
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
 <div id="tabbar" style="display:none">
@@ -1744,7 +1744,7 @@ function linkHdr(list,hdr,bar){list.addEventListener("scroll",()=>{const y=Math.
 linkHdr($("#clist"),$("#hdrChats"),$("#sbChats"));linkHdr($("#ctlist"),$("#hdrContacts"),$("#sbContacts"));
 /* فاصله بالای لیست | List Top Padding: برابر ارتفاع سربرگ تا لیست زیر آن شروع شود (list starts right below header) */
 /* جای نوار وایس در لیست | Voice Bar Gap: وقتی نوار پخش وایس روی صفحه لیست است، به فاصله بالای لیست جای نوار اضافه می شود تا روی اولین گفتگو نیفتد؛ با محو شدن نوار فاصله به حالت اول برمیگردد */
-function padLists(){const v=document.getElementById("vnow");[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{const e=v&&v.classList.contains("on")&&v.parentNode&&v.parentNode.contains($(l))?(v.classList.contains("vex")?38:v.offsetHeight)+8:0;$(l).style.paddingTop=($(h).offsetHeight+e)+"px"})}
+function padLists(){const v=document.getElementById("vnow");[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{const e=v&&v.classList.contains("on")&&v.parentNode&&v.parentNode.contains($(l))?(v.classList.contains("vex")?38:v.offsetHeight)+8:0;/* جای نوار پارک‌شده | Parked Bar Gap: اگر نوار پارک‌شده نمایان است لیست به اندازه ارتفاع آن پایین‌تر می‌رود */const pk=document.getElementById("vpark"),pe=(pk&&pk.classList.contains("on")&&pk.style.display!=="none"&&pk.parentNode&&pk.parentNode.contains($(l)))?(e?44:46):0;$(l).style.paddingTop=($(h).offsetHeight+e+pe)+"px"})}
 
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
@@ -1834,7 +1834,7 @@ const CFG=(()=>{try{return JSON.parse(localStorage.getItem("lk_cfg"))||{}}catch(
 CFG.theme=CFG.theme||"link";if(CFG.theme==="dark"||CFG.theme==="light"){CFG.night=CFG.theme==="dark";CFG.theme="link"}if(typeof CFG.night!=="boolean")CFG.night=!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);CFG.accent=CFG.accent||"#e11d48";CFG.lang=CFG.lang||"en";
 CFG.priv=Object.assign({email:"Nobody",seen:"Everybody",photo:"Everybody",bio:"Everybody",bday:"My Contacts",groups:"Everybody"},CFG.priv||{});
 CFG.data=Object.assign({photo:true,video:false,file:false,lowcalls:false},CFG.data||{});
-CFG.saved=CFG.saved||[];CFG.extra=CFG.extra||{};CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.bg=CFG.bg||{t:"preset",id:"link"};
+CFG.saved=CFG.saved||[];CFG.extra=CFG.extra||{};CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.dn=CFG.dn||{};CFG.dx=CFG.dx||{};CFG.bg=CFG.bg||{t:"preset",id:"link"};
 /* پیش‌فرض تم لینک | Link Theme Default Migration: یک بار برای همه، تم لینک و پس‌زمینه‌ی لینک و رنگ قرمز-صورتی لوگو را پیش‌فرض می‌کند؛ بعد از آن انتخاب‌های کاربر دست‌نخورده می‌ماند */
 if(CFG.lkv!==1){CFG.lkv=1;CFG.theme="link";CFG.accent="#e11d48";CFG.bg={t:"preset",id:"link"}}
 const saveCfg=()=>{try{localStorage.setItem("lk_cfg",JSON.stringify(CFG))}catch(e){}};
@@ -1914,14 +1914,14 @@ const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 let FE=null;
 /* تب‌ها | All Tabs: «همه» + پوشه‌های آماده‌ی نمایش‌داده‌شده + پوشه‌های ساخته‌شده توسط کاربر */
 /* ترتیب پوشه‌ها | Folder Order: پوشه‌ها طبق ترتیب ذخیره‌شده‌ی CFG.order چیده می‌شوند و «All» همیشه اول می‌ماند (folders follow saved CFG.order, All stays first) */
-function allTabs(){const R=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,""])],O=CFG.order||[],ix=k=>{const i=O.indexOf(k);return i<0?1e6:i};return [["all","All",""],...R.map((t,n)=>[t,n]).sort((a,b)=>ix(a[0][0])-ix(b[0][0])||a[1]-b[1]).map(x=>x[0])]}
+function allTabs(){const R=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],CFG.dn[t[0]]||t[1],t[2]]),...CFG.folders.map(f=>["f_"+f.id,f.name,""])],O=CFG.order||[],ix=k=>{const i=O.indexOf(k);return i<0?1e6:i};return [["all","All",""],...R.map((t,n)=>[t,n]).sort((a,b)=>ix(a[0][0])-ix(b[0][0])||a[1]-b[1]).map(x=>x[0])]}
 /* عضویت در پوشه | In Folder: آیا این گفتگو داخل این پوشه است؟ */
-function inFolder(c,k){if(k==="all")return true;if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);return !!f&&f.chats.includes(c.id)}return c.ty===k||(CFG.extra[k]||[]).includes(c.id)}
+function inFolder(c,k){if(k==="all")return true;if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);return !!f&&f.chats.includes(c.id)}return (c.ty===k&&!(CFG.dx[k]||[]).includes(c.id))||(CFG.extra[k]||[]).includes(c.id)}
 /* لیست پوشه‌ها | Folder List: پوشه‌های شما و پوشه‌های پیشنهادی (حذف‌شده‌ها) */
 function renderFolders(){
- const own=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),t[2],CHATS.filter(x=>inFolder(x,t[0])).length]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),"folder",CHATS.filter(x=>f.chats.includes(x.id)).length])];
+ const own=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],dName(t[0]),t[2],CHATS.filter(x=>inFolder(x,t[0])).length]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),"folder",CHATS.filter(x=>f.chats.includes(x.id)).length])];
  $("#fldList").innerHTML=own.map(([k,l,i,n])=>`<div class="item" data-fk="${k}"><div class="ic" style="background:#2f8fff">${ic(i,18)}</div><span>${l}</span><span class="rr"><span class="v">${n}</span><span data-fd="${k}" style="color:var(--red);display:flex;padding:4px">${ic("trash",19)}</span><i class="chev"></i></span></div>`).join("")||`<div class="item" style="color:var(--sub)">${tr("No folders")}</div>`;
- $("#fldRec").innerHTML=DEF_TABS.filter(t=>CFG.hidden.includes(t[0])).map(t=>`<div class="item" data-fr="${t[0]}"><div class="ic" style="background:#2f8fff">${ic(t[2],18)}</div><span>${tr(DEF_NAME[t[0]])}</span><span class="rr" style="color:var(--blue)">${tr("Add")}</span></div>`).join("");
+ $("#fldRec").innerHTML=DEF_TABS.filter(t=>CFG.hidden.includes(t[0])).map(t=>`<div class="item" data-fr="${t[0]}"><div class="ic" style="background:#2f8fff">${ic(t[2],18)}</div><span>${dName(t[0])}</span><span class="rr" style="color:var(--blue)">${tr("Add")}</span></div>`).join("");
  $("#fldRecW").style.display=CFG.hidden.length?"":"none";
  $$("[data-fk]").forEach(e=>e.onclick=()=>openFolder(e.dataset.fk));
  $$("[data-fd]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const k=e.dataset.fd;askConfirm("Delete this folder?","Delete Folder",()=>{
@@ -1929,25 +1929,26 @@ function renderFolders(){
  $$("[data-fr]").forEach(e=>e.onclick=()=>{CFG.hidden=CFG.hidden.filter(x=>x!==e.dataset.fr);saveCfg();renderFolders();renderChats()})}
 /* باز کردن پوشه | Open Folder: صفحه‌ی ساخت یا ویرایش پوشه */
 function openFolder(k){const isNew=k==="new",def=!isNew&&!k.startsWith("f_"),f=isNew?null:CFG.folders.find(x=>"f_"+x.id===k);
- FE={id:f?f.id:null,k,def,chats:new Set(f?f.chats:[])};
+ FE={id:f?f.id:null,k,def,chats:new Set(f?f.chats:def?CHATS.filter(x=>inFolder(x,k)).map(x=>x.id):[])};
  const t=isNew?"New Folder":"Edit Folder";$("#fe_title").dataset.t=t;$("#fe_title").textContent=tr(t);
- $("#fe_custom").style.display=def?"none":"";$("#fe_info").style.display=def?"":"none";$("#feOk").style.visibility=def?"hidden":"visible";
- $("#feDel").parentNode.style.display=isNew?"none":"";$("#fe_name").value=f?f.name:"";$("#fe_search").value="";renderFeChats();openSub("fedit")}
+ $("#fe_custom").style.display="";$("#fe_info").style.display="none";$("#feOk").style.visibility="visible";
+ $("#feDel").parentNode.style.display=isNew?"none":"";$("#fe_name").value=f?f.name:def?lkFName(k):"";$("#fe_search").value="";renderFeChats();openSub("fedit")}
 /* گفتگوهای پوشه | Folder Chats: همه‌ی گفتگوها با سوییچ برای قرار دادن داخل پوشه */
 /* جستجوی گفتگوهای پوشه | Folder Chat Search: لیست گفتگوها را بر اساس متن جستجو فیلتر می‌کند (بدون تفاوت حروف بزرگ و کوچک، ی/ک عربی هم مساوی فارسی است) */
 const feNorm=s=>String(s).toLowerCase().replace(/ي/g,"ی").replace(/ك/g,"ک");
 function feList(){const q=feNorm($("#fe_search").value.trim());return q?CHATS.filter(c=>feNorm(c.n).includes(q)):CHATS}
-function renderFeChats(){$("#feSrcAll").style.display=$("#fe_search").value.trim()?"":"none";$("#feChats").innerHTML=feList().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${FE.chats.has(c.id)?" on":""}"></span></div>`).join("");
- $$("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc;FE.chats.has(id)?FE.chats.delete(id):FE.chats.add(id);e.querySelector(".sw").classList.toggle("on",FE.chats.has(id))})}
+function feQa(){$$("[data-qa]").forEach(e=>{const l=CHATS.filter(x=>x.ty===e.dataset.qa);e.querySelector(".sw").classList.toggle("on",l.length>0&&l.every(x=>FE.chats.has(x.id)))})}
+function renderFeChats(){feQa();$("#feSrcAll").style.display=$("#fe_search").value.trim()?"":"none";$("#feChats").innerHTML=feList().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${FE.chats.has(c.id)?" on":""}"></span></div>`).join("");
+ $$("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc;FE.chats.has(id)?FE.chats.delete(id):FE.chats.add(id);e.querySelector(".sw").classList.toggle("on",FE.chats.has(id));feQa()})}
 $("#fNew").onclick=()=>openFolder("new");$("#feX").onclick=closeSub;
 /* رویدادهای جستجو | Search Events: با هر حرفی که نوشته می‌شود نتیجه‌ها به‌روز می‌شوند (تیک‌های قبلی می‌مانند)؛ «افزودن همه نتایج» همه‌ی نتایج نمایش‌داده‌شده را تیک می‌زند */
 Object.assign(FA,{"Search Chats":"جستجوی گفتگوها","Add All Results":"افزودن همه نتایج"});
 $("#fe_search").oninput=renderFeChats;
 $("#feSrcAll").onclick=()=>{feList().forEach(c=>FE.chats.add(c.id));renderFeChats()};
-$$("[data-qa]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.qa).forEach(x=>FE.chats.add(x.id));renderFeChats()});
+$$("[data-qa]").forEach(e=>e.onclick=()=>{const l=CHATS.filter(x=>x.ty===e.dataset.qa),on=!(l.length>0&&l.every(x=>FE.chats.has(x.id)));l.forEach(x=>on?FE.chats.add(x.id):FE.chats.delete(x.id));renderFeChats()});
 /* ذخیره پوشه | Save Folder */
 $("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){toast(tr("Folder name can't be empty"));return}
- const f=CFG.folders.find(x=>x.id===FE.id);if(f){f.name=name;f.chats=[...FE.chats]}else CFG.folders.push({id:Date.now().toString(36),name,chats:[...FE.chats]});
+ const f=CFG.folders.find(x=>x.id===FE.id);if(FE.def){CFG.dn[FE.k]=name;CHATS.forEach(c=>lkFSet(FE.k,c.id,FE.chats.has(c.id)))}else if(f){f.name=name;f.chats=[...FE.chats]}else CFG.folders.push({id:Date.now().toString(36),name,chats:[...FE.chats]});
  saveCfg();renderFolders();renderChats();closeSub()};
 /* حذف پوشه | Delete Folder: پوشه‌ی ساخته‌شده پاک می‌شود، پوشه‌ی آماده مخفی می‌شود (و در پیشنهادی‌ها می‌ماند) */
 $("#feDel").onclick=()=>askConfirm("Delete this folder?","Delete Folder",()=>{
@@ -1978,28 +1979,40 @@ function lkFolderMoveOn(k){S.mv=k;$("#tabs").classList.add("mv");renderTabs();co
  b.querySelector("[data-a=done]").onclick=lkFolderClose}
 /* جابجایی پوشه | Shift Folder: پوشه‌ی در حال کشیدن را جای پوشه‌ی دیگر می‌گذارد و ترتیب را ذخیره می‌کند («All» ثابت می‌ماند) */
 function lkFolderShift(to){const K=allTabs().map(x=>x[0]).filter(x=>x!=="all"),a=K.indexOf(S.mv),b=K.indexOf(to);if(a<0||b<0||a===b)return;K.splice(a,1);K.splice(b,0,S.mv);CFG.order=K;saveCfg();renderTabs()}
-/* ویرایش درجا | Inline Edit: با زدن «ویرایش گفتگوها و نام» همان‌جا زیر ردیف، آکاردئون باز می‌شود (تغییر نام، افزودن سریع، جستجو و افزودن یا کم کردن گفتگوها) و هر تغییر همان لحظه ذخیره می‌شود؛ زدن دوباره آن را می‌بندد */
+/* کمک‌های پوشه | Folder Helpers: خواندن و نوشتن نام و عضویت برای همه‌ی پوشه‌ها، آماده یا ساخته‌شده (name and membership for every folder, default or custom) */
+function lkFGet(k){return k.startsWith("f_")?CFG.folders.find(x=>"f_"+x.id===k):null}
+function lkFName(k){const f=lkFGet(k);return f?f.name:(CFG.dn[k]||tr(DEF_NAME[k]))}
+function dName(k){return esc(lkFName(k))}
+function lkFSet(k,id,on){const f=lkFGet(k);if(f){const i=f.chats.indexOf(id);if(on&&i<0)f.chats.push(id);if(!on&&i>=0)f.chats.splice(i,1);return}
+ const c=CHATS.find(x=>x.id===id);if(!c)return;
+ const add=(o,v)=>{const l=o[k]=o[k]||[];if(!l.includes(v))l.push(v)},del=(o,v)=>{o[k]=(o[k]||[]).filter(x=>x!==v)};
+ if(c.ty===k){on?del(CFG.dx,id):add(CFG.dx,id)}else{on?add(CFG.extra,id):del(CFG.extra,id)}}
+/* ویرایش درجا | Inline Edit: با زدن «ویرایش گفتگوها و نام» همان‌جا زیر ردیف، آکاردئون برای همه‌ی پوشه‌ها باز می‌شود (تغییر نام، افزودن سریع، جستجو و افزودن یا کم کردن گفتگوها) و هر تغییر همان لحظه ذخیره می‌شود؛ زدن دوباره آن را می‌بندد */
 function lkFolderEditToggle(k){const b=$("#fmenu"),r=b.querySelector("[data-a=edit]");let p=b.querySelector(".fed");
- if(p){p.remove();b.classList.remove("ed");return}
- const f=k.startsWith("f_")?CFG.folders.find(x=>"f_"+x.id===k):null;
+ if(p){p.remove();b.classList.remove("ed");b.style.maxHeight="";return}
  p=document.createElement("div");p.className="fed";
- if(!f){p.innerHTML=`<div class="cap">${tr("This folder fills automatically with its chat type.")}</div>`;r.after(p);b.classList.add("ed");return}
  p.innerHTML=`<div class="card"><input class="fld" id="fm_name" dir="auto" placeholder="${tr("Folder Name")}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
- <div class="hd">${tr("Quick Add")}</div><div class="card"><div class="item" data-q2="gp" style="color:var(--blue)"><span>${tr("Add All Groups")}</span></div><div class="item" data-q2="ch" style="color:var(--blue)"><span>${tr("Add All Channels")}</span></div><div class="item" data-q2="pv" style="color:var(--blue)"><span>${tr("Add All Personal Chats")}</span></div></div>
+ <div class="hd">${tr("Quick Add")}</div><div class="card"><div class="item" data-q2="gp"><span>${tr("Add All Groups")}</span><span class="sw"></span></div><div class="item" data-q2="ch"><span>${tr("Add All Channels")}</span><span class="sw"></span></div><div class="item" data-q2="pv"><span>${tr("Add All Personal Chats")}</span><span class="sw"></span></div></div>
  <div class="hd">${tr("Chats")}</div><div class="card"><input class="fld" id="fm_search" dir="auto" placeholder="${tr("Search Chats")}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
  <div class="card" id="fm_all" style="display:none"><div class="item" style="color:var(--blue)"><span>${tr("Add All Results")}</span></div></div><div class="card" id="fm_chats"></div>`;
- r.after(p);b.classList.add("ed");
- const nm=p.querySelector("#fm_name"),sr=p.querySelector("#fm_search"),L=p.querySelector("#fm_chats"),A=p.querySelector("#fm_all");nm.value=f.name;
+ r.after(p);b.classList.add("ed");lkFolderFit();
+ const nm=p.querySelector("#fm_name"),sr=p.querySelector("#fm_search"),L=p.querySelector("#fm_chats"),A=p.querySelector("#fm_all");nm.value=lkFName(k);
  const sv=()=>{saveCfg();renderFolders();renderChats()};
  const list=()=>{const q=feNorm(sr.value.trim());return q?CHATS.filter(c=>feNorm(c.n).includes(q)):CHATS};
- const draw=()=>{A.style.display=sr.value.trim()?"":"none";
-  L.innerHTML=list().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${f.chats.includes(c.id)?" on":""}"></span></div>`).join("");
-  L.querySelectorAll("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc,i=f.chats.indexOf(id);if(i<0)f.chats.push(id);else f.chats.splice(i,1);e.querySelector(".sw").classList.toggle("on",i<0);sv()})};
- nm.oninput=()=>{const v=nm.value.trim();if(!v)return;f.name=v;saveCfg();renderTabs();renderFolders()};
+ const qaOn=t=>{const l=CHATS.filter(x=>x.ty===t);return l.length>0&&l.every(x=>lkFHas(k,x.id))};
+ const qaSync=()=>p.querySelectorAll("[data-q2]").forEach(e=>e.querySelector(".sw").classList.toggle("on",qaOn(e.dataset.q2)));
+ const draw=()=>{A.style.display=sr.value.trim()?"":"none";qaSync();
+  L.innerHTML=list().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${lkFHas(k,c.id)?" on":""}"></span></div>`).join("");
+  L.querySelectorAll("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc,on=!lkFHas(k,id);lkFSet(k,id,on);e.querySelector(".sw").classList.toggle("on",on);qaSync();sv()})};
+ nm.oninput=()=>{const v=nm.value.trim();if(!v)return;if(k.startsWith("f_"))lkFGet(k).name=v;else CFG.dn[k]=v;saveCfg();renderTabs();renderFolders()};
  sr.oninput=draw;
- A.onclick=()=>{list().forEach(c=>{if(!f.chats.includes(c.id))f.chats.push(c.id)});draw();sv()};
- p.querySelectorAll("[data-q2]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.q2).forEach(x=>{if(!f.chats.includes(x.id))f.chats.push(x.id)});draw();sv()});
+ A.onclick=()=>{list().forEach(c=>lkFSet(k,c.id,true));draw();sv()};
+ p.querySelectorAll("[data-q2]").forEach(e=>e.onclick=()=>{const t=e.dataset.q2,on=!qaOn(t);CHATS.filter(x=>x.ty===t).forEach(x=>lkFSet(k,x.id,on));draw();sv()});
  draw()}
+/* جا دادن آکاردئون | Fit Accordion: ارتفاع آکاردئون ویرایش را به فضای خالی بین نوار پوشه‌ها و نوار پایین محدود می‌کند تا زیر نوار پایین نرود و داخلش اسکرول شود، «حذف پوشه» همیشه قابل دیدن است (limit height to free space above the bottom bar so it scrolls inside) */
+function lkFolderFit(){const b=$("#fmenu");if(!b||!b.classList.contains("ed"))return;const w=b.closest(".wrap"),pb=parseFloat(getComputedStyle($("#clist")).paddingBottom)||107;b.style.maxHeight=Math.max(150,w.clientHeight-b.offsetTop-pb-8)+"px"}
+addEventListener("resize",lkFolderFit);
+function lkFHas(k,id){const c=CHATS.find(x=>x.id===id);return !!c&&inFolder(c,k)}
 /* حذف پوشه از نوار | Delete Folder From Bar: پوشه‌ی ساخته‌شده پاک و پوشه‌ی آماده مخفی می‌شود (مثل صفحه‌ی ویرایش پوشه) */
 function lkFolderDel(k){if(k.startsWith("f_"))CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);saveCfg();renderFolders();renderChats()}
 /* لمس نوار پوشه | Folder Bar Touch: نگه‌داشتن ۴۵۰ میلی‌ثانیه روی پوشه (به جز «All») آکاردئون را باز می‌کند؛ در حالت جابجایی کشیدن پوشه ترتیب را عوض می‌کند؛ لمس بیرون آکاردئون را می‌بندد */
@@ -2835,7 +2848,7 @@ function showPeek(c,bottomY){$("#pk_n").textContent=c.n;$("#pk_s").textContent=c
  const p=$("#peek"),m=$("#peekMsgs");m.style.background=bgCss();const ph=peekHtml(c);m.innerHTML=ph?`<div id="peekIn">${ph}</div>`:`<div style="margin:auto;color:var(--sub);padding:10px 12px">${tr("No messages yet")}</div>`;p.style.top="";p.style.bottom=(innerHeight-bottomY)+"px";/* اندازه نسخه دقیق | Exact Copy Size: عرض گفتگوی اصلی را به پیام‌ها می‌دهد و با zoom به عرض پنجره‌ی پیش‌نمایش می‌رساند (gives messages the real chat width, then zooms down to the peek width) */p.style.display="flex";{const pi=$("#peekIn"),W=p.parentNode.clientWidth;if(pi&&W){pi.style.width=W+"px";pi.style.zoom=m.clientWidth/W}}p.style.top=`calc(env(safe-area-inset-top) + 56px + ${p.offsetHeight*.1}px)`;m.querySelectorAll(".b").forEach(b=>{if(b.querySelector("[data-lkm]"))lkHydrate(b)});m.scrollTop=1e9}
 /* افزودن به پوشه | Add To Folder: کادر دوم سمت چپ منو با لیست همه‌ی پوشه‌ها (شخصی، گروه، کانال و پوشه‌های ساخته‌شده)؛ انتخاب = نمایش گفتگو در آن پوشه بدون حذف از پوشه‌ی فعلی؛ آخر لیست «ساخت پوشه‌ی جدید» */
 function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
- const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],tr(DEF_NAME[t[0]]),inFolder(c,t[0]),c.ty===t[0]]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
+ const rows=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])).map(t=>[t[0],dName(t[0]),inFolder(c,t[0]),false]),...CFG.folders.map(f=>["f_"+f.id,esc(f.name),f.chats.includes(c.id),false])];
  m2.innerHTML=rows.map(([k,l,on])=>`<div data-k="${k}"><span>${l}</span>${on?ic("check",20):""}</div>`).join("")+`<div data-new="1" style="color:var(--blue)"><span>${tr("Create New Folder")}</span>${ic("plus",20)}</div>`;
  /* هم‌ترازی دقیق | Exact Alignment: بالای زیرمنو دقیقاً هم‌تراز بالای ردیف «Add to Folder» (بدون انیمیشن مقیاس تا فاصله نیفتد) (sub-tab top = Add to Folder row top, measured by layout not transform) */
  m.classList.remove("al-bot");m.classList.add("al-top");m2.className="up";m2.style.display="block";const rt=$("#menu").offsetTop+$("#menu [data-i='0']").offsetTop;m2.style.maxHeight=Math.max(120,innerHeight-rt-30)+"px";m2.style.top=rt+"px";
@@ -2843,7 +2856,7 @@ function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
   if(d.dataset.new){closeMenu();openFolder("new");FE.chats.add(c.id);renderFeChats();return}
   const k=d.dataset.k;
   if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);f.chats=f.chats.includes(c.id)?f.chats.filter(x=>x!==c.id):[...f.chats,c.id]}
-  else{if(c.ty===k)return;const a=CFG.extra[k]=CFG.extra[k]||[];CFG.extra[k]=a.includes(c.id)?a.filter(x=>x!==c.id):[...a,c.id]}
+  else lkFSet(k,c.id,!inFolder(c,k))
   saveCfg();closeMenu();renderChats()})}
 /* حذف گفتگو | Delete Menu: زیرمنوی چسبیده به «Delete» با دو گزینه، حذف برای خودم یا برای هر دو (sub-tab attached to Delete: for me / for both) */
 function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove("al-top");m.classList.add("al-bot");m2.className="dn";
@@ -3716,7 +3729,7 @@ vn.querySelector("small").textContent=tr("Voice message");
 #vnow .vnm{flex:1;min-width:0;text-align:center;line-height:1.15}
 #vnow .vnn{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #vnow small{display:block;font-size:12px;color:var(--sub)}
-#vnow .vns{min-width:34px;height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:2px dashed var(--sub);border-bottom:2px dashed var(--sub);font-size:13px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
+#vnow .vns{min-width:26px;height:18px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed var(--sub);border-bottom:1.5px dashed var(--sub);font-size:11px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
 #vnow .vns.f{color:var(--blue);border-color:var(--blue)}
 #vnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}
 /* نرم شدن جابجایی لیست | Smooth List Shift: جابجایی گفتگوها هنگام آمدن و رفتن نوار نرم است */
@@ -3757,7 +3770,7 @@ function vxList(){if(!mu||!vip||!vn.classList.contains("vls"))return;const L=muC
 function vxTog(){if(!vip)vxMake();vn.style.transition="";vn.classList.toggle("vex");vxProg()}
 document.addEventListener("pointerdown",e=>{if(vn.classList.contains("vex")&&!vn.contains(e.target))vxTog()},true);
 function vxSeekInit(){const sk=vip.querySelector(".msk"),go=()=>{const a=vxAud();if(!a)return;const D=vxDur(a);if(D>0)a.currentTime=sk.value/1000*D;sk.style.setProperty("--p",(sk.value/10)+"%")};sk.addEventListener("pointerdown",e=>{vxDr=1;e.stopPropagation()});sk.addEventListener("input",go);["pointerup","pointercancel","change"].forEach(t=>sk.addEventListener(t,()=>{vxDr=0}))}
-vn.addEventListener("click",e=>{if(!cur)return;const a=e.target.closest(".vxb");if(a){const k=a.dataset.a;if(k==="prev")vSwitch(-1);else if(k==="next")vSwitch(1);else if(k==="play"){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(k==="stop")stopCur();else if(k==="chat")vNowGo();return}if(!vn.classList.contains("vex")&&!e.target.closest(".vnp,.vnx,.vns,.mbr"))vxTog()});
+vn.addEventListener("click",e=>{if(!cur)return;const a=e.target.closest(".vxb");if(a){const k=a.dataset.a;if(k==="prev")vSwitch(-1);else if(k==="next")vSwitch(1);else if(k==="play"){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(k==="stop")stopCur();else if(k==="chat")vNowGo();return}if(vn.classList.contains("vex")){/* بستن با لمس | Close On Tap: در حالت باز، لمس هر جای پلیر به غیر از نوار تایملاین و دکمه‌ها آن را جمع می‌کند (tap anywhere except timeline and buttons collapses it) */if(!e.target.closest(".mbr,.vxl")){const mb=vn.querySelector(".mbr"),by=mb?mb.getBoundingClientRect().top:1e9;if(e.clientY<by)vxTog()}return}if(!e.target.closest(".vnp,.vnx,.vns,.mbr"))vxTog()});
 /* کشیدن نوار به چپ و راست | Swipe Bar Next Prev: کشیدن نوار پخش به چپ = فایل بعدی، به راست = فایل قبلی همان گفتگو (swipe the player bar left for next, right for previous in the same chat) */
 let vSx=null,vSy=0;
 vn.addEventListener("touchstart",e=>{if(e.target.closest(".mbr")){vSx=null;return}vSx=e.touches[0].clientX;vSy=e.touches[0].clientY},{passive:true});
@@ -3769,14 +3782,19 @@ $("#app").addEventListener("scroll",vSoon,true);
 function vStopAll(){stopCur();document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})}
 /* منوی سرعت مثل تلگرام | Telegram Speed Menu: نگه‌داشتن روی دکمه‌ی سرعت یک نوار زیر آن باز می‌کند: ۰.۲۵، ۰.۵، ۰.۷۵، ۱، ۱.۲۵، ۱.۵ و ۲ برابر؛ انتخاب یکی سرعت را عوض می‌کند و منو بسته می‌شود (long-press on the speed button opens a strip under it with 0.25x, 0.5x, 0.75x, 1x, 1.25x, 1.5x and 2x; choosing one sets the speed and closes the menu) */
 let vLP=0,vLT=0;
-(function(){const s=document.createElement("style");s.textContent=`#vnsp{position:absolute;z-index:61;min-width:132px;box-sizing:border-box;padding:4px 0;background:var(--card2,#2c2c2e);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.45);color:var(--txt);font-size:15px}
+(function(){const s=document.createElement("style");s.textContent=`#vnsp{position:absolute;z-index:61;width:112px;box-sizing:border-box;padding:6px 12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card2,#2c2c2e);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.45);color:var(--txt);font-size:12px;font-weight:700}#vnsp input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;margin:0;background:transparent;touch-action:none;cursor:pointer}#vnsp input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:rgba(128,128,128,.4)}#vnsp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;background:var(--blue);border:0}#vnsp input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba(128,128,128,.4)}#vnsp input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--blue);border:0}
 #vnsp div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 16px;cursor:pointer}
 #vnsp div.on{color:var(--blue);font-weight:600}
 /* جلوگیری از منوی سیستم | No System Callout: نگه داشتن دکمه سرعت منوی انتخاب متن iOS را باز نکند تا منوی سرعت دیده شود */
 #vnow .vns{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}`;document.head.appendChild(s)})();
 function vSetSpd(v){vSpd=v;if(cur)cur.a.playbackRate=v;const b=vn.querySelector(".vns");b.textContent=v+"X";b.classList.toggle("f",v!==1);vSpdClose()}
 function vSpdClose(){const m=$("#vnsp");if(m)m.remove()}
-function vSpdOpen(){vSpdClose();const m=document.createElement("div");m.id="vnsp";/* گزینه های سرعت | Speed Options: افزوده شدن ۱.۲۵ بین ۱ و ۱.۵ */[2,1.5,1.25,1,.75,.5,.25].forEach(v=>{const r=document.createElement("div");r.dataset.v=v;if(v===vSpd)r.className="on";r.innerHTML="<span>"+v+"x</span><span>"+(v===vSpd?"\u2713":"")+"</span>";m.append(r)});
+function vSpdOpen(){vSpdClose();const m=document.createElement("div");m.id="vnsp";
+ /* اسلایدر سرعت | Speed Slider: اسلایدر افقی کوچک با هفت پله (۰.۲۵ تا ۲) و برچسب مقدار؛ تغییر سرعت هم‌زمان با کشیدن اعمال می‌شود و منو با لمس بیرون بسته می‌شود (small horizontal slider, 7 steps, live change, closes on outside tap) */
+ const SP=[.25,.5,.75,1,1.25,1.5,2],lb=document.createElement("span"),rg=document.createElement("input");rg.type="range";rg.min=0;rg.max=SP.length-1;rg.step=1;
+ let ix=SP.indexOf(vSpd);if(ix<0)ix=SP.reduce((b,x,i)=>Math.abs(x-vSpd)<Math.abs(SP[b]-vSpd)?i:b,0);rg.value=ix;lb.textContent=SP[ix]+"x";
+ rg.oninput=()=>{const v=SP[+rg.value];lb.textContent=v+"x";vSpd=v;if(cur)cur.a.playbackRate=v;const b=vn.querySelector(".vns");b.textContent=v+"X";b.classList.toggle("f",v!==1)};
+ m.append(lb,rg);
  const app=$("#app"),ar=app.getBoundingClientRect(),br=vn.getBoundingClientRect(),sr=vn.querySelector(".vns").getBoundingClientRect();m.style.top=(br.bottom-ar.top+6)+"px";m.style.right=(ar.right-sr.right)+"px";app.append(m)}
 vn.addEventListener("pointerdown",e=>{if(!e.target.closest(".vns"))return;clearTimeout(vLT);vLP=0;vLT=setTimeout(()=>{vLP=1;vSpdOpen()},380)});
 ["pointerup","pointercancel","pointerleave"].forEach(t=>vn.addEventListener(t,()=>clearTimeout(vLT)));
@@ -3956,8 +3974,48 @@ async function muProbe(el){el.dataset.pb=1;const id=el.dataset.mid;let b=LKB[id]
 /* نگهبان پلیرها | Player Watcher: پلیر تازه که آمد اطلاعاتش خوانده می‌شود؛ اگر پلیرِ آهنگِ در حال پخش از صفحه رفت (مثلاً گفتگو عوض شد) آهنگ قطع می‌شود (reads info of new players; stops the music if its player leaves the screen, e.g. chat changed) */
 let muRaf=0;new MutationObserver(()=>{if(muRaf)return;muRaf=requestAnimationFrame(()=>{muRaf=0;muGroup();document.querySelectorAll("#msgs .lkmu:not([data-pb])").forEach(muProbe)})}).observe($("#msgs"),{childList:true,subtree:true});
 /* اتصال به ویس | Voice Link: پخش ویس یا شروع ضبط، موزیک را قطع می‌کند (playing a voice or starting a recording stops the music) */
-const _muPv=playVo;playVo=function(vo,ex){muStop();return _muPv(vo,ex)};
+const _muPv=playVo;playVo=function(vo,ex){/* مکث موزیک | Pause Music: با پخش ویس موزیک فقط مکث می‌شود و پلیرش باز می‌ماند (music only pauses, its player stays loaded) */if(mu){try{mu.a.pause()}catch(e){}}return _muPv(vo,ex)};
 const _muVs=vStopAll;vStopAll=function(){muStop();_muVs()};
+/* نوار پارک‌شده | Parked Bar: وقتی ویس و موزیک هم‌زمان پخش شوند مورد قبلی متوقف می‌شود و نوارش زیر نوار فعال می‌ماند؛ با زدن پلی از همان جا ادامه می‌دهد و با کشیدن به چپ و راست یا دکمه بستن پاک می‌شود (when a voice and a track overlap, the earlier one stops and its bar stays under the active bar; tap play to resume from the same spot, swipe sideways or tap close to clear) */
+let park=null,vpEl=null;
+(function(){const s=document.createElement('style');s.textContent='#vpark{position:absolute;left:12px;right:12px;height:38px;display:none;align-items:center;gap:6px;box-sizing:border-box;padding:0 8px;background:var(--card);border-radius:19px;z-index:59;touch-action:pan-y;user-select:none;-webkit-user-select:none}#vpark.on{display:flex}#vpark .vpp,#vpark .vpx{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}#vpark .vpm{flex:1;min-width:0;text-align:center;line-height:1.15}#vpark .vpm b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#vpark .vpm small{display:block;font-size:12px;color:var(--sub)}';document.head.appendChild(s)})();
+function vpClear(){park=null;if(vpEl){vpEl.classList.remove('on');vpEl.style.transform='';vpEl.style.opacity='';vpEl.style.transition=''}if(typeof padLists==='function')padLists();if(cur||mu)vNowPlace();if(window.lkChatFit)lkChatFit()}
+function vpDismiss(){const p=park;vpClear();if(p&&p.k==='m'&&p.live&&mu&&mu.id===p.id)muStop()}
+function vpMake(){if(vpEl)return;vpEl=document.createElement('div');vpEl.id='vpark';vpEl.innerHTML='<div class="vpp"></div><div class="vpm"><b></b><small></small></div><div class="vpx">'+ic('close',18)+'</div>';
+ vpEl.querySelector('.vpp').onclick=()=>vpResume();vpEl.querySelector('.vpx').onclick=()=>vpDismiss();
+ let x0=null,dx=0,mv=0;
+ vpEl.addEventListener('pointerdown',e=>{if(e.target.closest('.vpp,.vpx'))return;x0=e.clientX;dx=0;try{vpEl.setPointerCapture(e.pointerId)}catch(_){}});
+ vpEl.addEventListener('pointermove',e=>{if(x0===null)return;dx=e.clientX-x0;if(Math.abs(dx)>8)mv=1;vpEl.style.transition='none';vpEl.style.transform='translateX('+dx+'px)';vpEl.style.opacity=String(Math.max(.2,1-Math.abs(dx)/220))});
+ const end=()=>{if(x0===null)return;x0=null;vpEl.style.transition='transform .2s,opacity .2s';if(Math.abs(dx)>80){vpEl.style.transform='translateX('+(dx<0?-110:110)+'%)';vpEl.style.opacity='0';setTimeout(vpDismiss,180)}else{vpEl.style.transform='';vpEl.style.opacity=''}};
+ vpEl.addEventListener('pointerup',end);vpEl.addEventListener('pointercancel',end);vpEl.addEventListener('click',e=>{if(e.target.closest('.vpp,.vpx'))return;if(mv){mv=0;return}vpOpen()})}
+function vpPlace(){if(!park||!vpEl)return;const subs=[...document.querySelectorAll('.sub.on')],_cp=document.getElementById('cp');if(_cp&&_cp.classList.contains('on'))subs.push(_cp);const ch=document.getElementById('chat'),scr=subs[subs.length-1]||(ch.classList.contains('on')?ch:document.querySelector('.screen.on:not(#login)'));if(!scr)return;if(vpEl.parentNode!==scr)scr.appendChild(vpEl);
+ const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(':scope>.top,:scope>.pinbar,:scope>.cpbar,:scope .hdr>.tabs,:scope .hdr>.search').forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});
+ const vOn=vn.classList.contains('on')&&vn.parentNode===scr,vex=vn.classList.contains('vex'),sw=!!(vOn&&cur&&park.k==='m'),tp0=b?(b+4):0,base=b?tp0+'px':'calc(env(safe-area-inset-top,0px) + 4px)';
+ /* ترتیب نوارها | Bar Order: نوار موزیک همیشه بالا و نوار ویس همیشه پایین (music bar always on top, voice bar always below) */
+ if(sw){vpEl.style.top=base;vn.style.top=b?(tp0+44)+'px':'calc(env(safe-area-inset-top,0px) + 48px)'}
+ else{if(vOn)vn.style.top=base;vpEl.style.top=vOn?(b?(tp0+vn.offsetHeight+6)+'px':'calc(env(safe-area-inset-top,0px) + '+(vn.offsetHeight+10)+'px)'):base}
+ vpEl.style.display=(vOn&&vex&&!sw)?'none':'';vpEl.classList.add('on');if(typeof padLists==='function')padLists();if(window.lkChatFit)lkChatFit()}
+function vpShow(p){park=p;vpMake();vpEl.querySelector('.vpp').innerHTML=ic('play',20);vpEl.querySelector('.vpm b').textContent=p.title||'';vpEl.querySelector('.vpm small').textContent=p.sub||'';vpEl.style.transform='';vpEl.style.opacity='';vpPlace()}
+function vpParkVo(){if(!cur)return;const d=(cur.vo&&cur.vo.dataset&&cur.vo.dataset.d)||cur.D||0;vpShow({k:'v',id:cur.id,cid:cur.cid,name:cur.name,t:cur.a.currentTime||0,d,title:cur.name,sub:tr('Voice message')})}
+function vpParkMu(){if(!mu)return;const m=META[mu.id]||{},D=(isFinite(mu.a.duration)&&mu.a.duration)||MD[mu.id]||0;vpShow({k:'m',live:1,id:mu.id,name:mu.name,t:mu.a.currentTime||0,D,title:m.t||muNm(mu.name),sub:m.a||tr('Music')})}
+async function vpResume(){const p=park;if(!p)return;vpClear();
+ if(p.k==='m'){if(mu&&mu.id===p.id){if(cur){vpParkVo();stopCur()}try{mu.a.play().catch(()=>{})}catch(e){}}else muPlay(p.id,p.name,p.D?Math.min(.999,p.t/p.D):0)}
+ else{let vo=document.querySelector('#msgs .lkvo[data-vid="'+p.id+'"]');if(!vo){vo=document.createElement('div');vo.className='lkvo';vo.dataset.vid=p.id;vo.dataset.d=p.d}
+  await playVo(vo,{cid:p.cid,name:p.name});if(cur&&cur.id===p.id){try{cur.a.currentTime=p.t}catch(e){}}}}
+/* باز کردن پلیر نوار پارک‌شده | Open Parked Player: لمس وسط نوار پارک‌شده آن را به نوار اصلی تبدیل و پلیرش را باز می‌کند (بدون پخش)؛ مورد فعال قبلی مکث و پارک می‌شود (tap the middle of the parked bar to make it the main bar with its player open, paused; the previously active one is paused and parked) */
+async function vpOpen(){const p=park;if(!p)return;vpClear();
+ if(p.k==='m'){if(mu&&mu.id===p.id){if(cur){vpParkVo();stopCur()}muBar();setTimeout(()=>{if(vn.classList.contains('on')&&!vn.classList.contains('vex'))vxTog()},40)}else muPlay(p.id,p.name,p.D?Math.min(.999,p.t/p.D):0)}
+ else{if(mu){vpParkMu();try{mu.a.pause()}catch(e){}}
+  let vo=document.querySelector('#msgs .lkvo[data-vid="'+p.id+'"]');if(!vo){vo=document.createElement('div');vo.className='lkvo';vo.dataset.vid=p.id;vo.dataset.d=p.d}
+  await playVo(vo,{cid:p.cid,name:p.name});if(cur&&cur.id===p.id){try{cur.a.currentTime=p.t;cur.a.pause()}catch(e){}}
+  setTimeout(()=>{if(cur&&!vn.classList.contains('vex'))vxTog()},40)}}
+const _pkPv=playVo;playVo=function(vo,ex){const id=vo&&vo.dataset&&vo.dataset.vid;if(park&&park.k==='v'&&park.id===id)vpClear();if(mu&&!(cur&&cur.id===id))vpParkMu();return _pkPv(vo,ex)};
+const _pkMp=muPlay;muPlay=function(id,name,f){if(park&&park.k==='m'&&park.id===id)vpClear();if(cur){vpParkVo();stopCur()}return _pkMp(id,name,f)};
+const _pkPl=vNowPlace;vNowPlace=function(){const r=_pkPl.apply(this,arguments);vpPlace();if(window.lkChatFit)lkChatFit();return r};
+new MutationObserver(()=>{if(park)vpPlace();else if(window.lkChatFit){lkChatFit();setTimeout(lkChatFit,460)}}).observe(vn,{attributes:true,attributeFilter:['class']});
+addEventListener('resize',()=>{if(park)vpPlace()});
+/* بازگشت نوار موزیک | Music Bar Back: وقتی ویس تمام یا بسته شد اگر موزیک مکث‌شده هنوز باز است نوارش دوباره بالا می‌آید؛ و وقتی ویس پخش می‌شود حالت موزیک از نوار اصلی پاک می‌شود (when the voice ends or is closed, a paused loaded track shows its bar again; while a voice plays the music look is removed from the main bar) */
+const _pkSy=vNowSync;vNowSync=function(){const r=_pkSy.apply(this,arguments);if(cur){vn.classList.remove('mu','vls')}else if(mu&&!vKeep){if(park&&park.k==='m')vpClear();muBar()}return r};
 /* نوار پخش موزیک | Music Player Bar: مثل نوار ویس زیر بالای صفحه می‌آید؛ مکث/پخش، نام آهنگ و خواننده، بستن، خط پیشرفت؛ بدون دکمه سرعت؛ با کشیدن به راست یا چپ قطع می‌شود (same bar as the voice one under the header: play/pause, title and artist, close, progress line; no speed button; swipe sideways to stop) */
 Object.assign(FA,{"Music":"موزیک","Go to chat":"رفتن به گفتگو","No next track":"آهنگ بعدیی نیست","No previous track":"آهنگ قبلیی نیست","No next voice":"ویس بعدیی نیست","No previous voice":"ویس قبلیی نیست"});
 (function(){const s=document.createElement("style");s.textContent=`#vnow.mu .vns{display:none}#vnow.mu{touch-action:pan-y}`;document.head.appendChild(s)})();
@@ -3983,7 +4041,7 @@ let muSw=0,muSx=0,muDx=0,muDr=0;
 function muHasStep(k){if(!mu)return false;const L=muCur(),i=L.findIndex(x=>x.id===mu.id);return i>=0&&!!L[i+k]}
 function muJump(k){if(!mu)return;const L=muCur(),i=L.findIndex(x=>x.id===mu.id),x=i<0?null:L[i+k];if(x)muPlay(x.id,x.n);else toast(tr(k>0?"No next track":"No previous track"))}
 /* vxTog is defined with the voice bar above */
-vn.addEventListener("click",e=>{if(cur||!mu)return;if(muSw){muSw=0;return}const rw=e.target.closest(".vxr");if(rw){muPlay(rw.dataset.id,rw.dataset.n);return}const xb=e.target.closest(".vxb");if(xb){const k=xb.dataset.a;if(k==="mode")muMdCycle();else if(k==="list"){vn.classList.toggle("vls");vip.querySelector(".vxl")._k="";vxList();vxProg()}else if(k==="prev")muStep(-1);else if(k==="next")muStep(1);else if(k==="play"){const a=mu.a;if(a.paused)a.play().catch(()=>{});else a.pause()}else if(k==="stop")muStop();else if(k==="chat")muGo();return}if(e.target.closest(".vnx"))muStop();else if(e.target.closest(".vnp")){const a=mu.a;if(a.paused)a.play().catch(()=>{});else a.pause()}else if(!vn.classList.contains("vex")&&!e.target.closest(".vns,.mbr"))vxTog()});
+vn.addEventListener("click",e=>{if(cur||!mu)return;if(muSw){muSw=0;return}const rw=e.target.closest(".vxr");if(rw){muPlay(rw.dataset.id,rw.dataset.n);return}const xb=e.target.closest(".vxb");if(xb){const k=xb.dataset.a;if(k==="mode")muMdCycle();else if(k==="list"){vn.classList.toggle("vls");vip.querySelector(".vxl")._k="";vxList();vxProg()}else if(k==="prev")muStep(-1);else if(k==="next")muStep(1);else if(k==="play"){const a=mu.a;if(a.paused)a.play().catch(()=>{});else a.pause()}else if(k==="stop")muStop();else if(k==="chat")muGo();return}if(e.target.closest(".vnx"))muStop();else if(e.target.closest(".vnp")){const a=mu.a;if(a.paused)a.play().catch(()=>{});else a.pause()}else if(!vn.classList.contains("vex")&&!e.target.closest(".vns,.mbr"))vxTog();else if(vn.classList.contains("vex")&&!e.target.closest(".mbr,.vxl")){/* بستن با لمس | Close On Tap: در پلیر موزیک هم لمس بالای نوار تایملاین آکاردئون را می‌بندد و تایملاین و هر چیز زیرش باز می‌ماند (tap above the timeline collapses; timeline and everything below it stays open) */const mb=vn.querySelector(".mbr"),by=mb?mb.getBoundingClientRect().top:1e9;if(e.clientY<by)vxTog()}});
 vn.addEventListener("pointerdown",e=>{if(cur||!mu||e.target.closest(".vnx,.vnp,.vxb,.mbr,.vxl"))return;muSw=0;muDr=1;muSx=e.clientX;muDx=0});
 document.addEventListener("pointermove",e=>{if(!muDr)return;muDx=e.clientX-muSx;if(Math.abs(muDx)>8){const ok=muHasStep(muDx<0?1:-1),vd=ok?muDx:Math.sign(muDx)*Math.min(Math.abs(muDx)*.3,24);vn.style.transition="none";vn.style.transform="translateX("+vd+"px)";vn.style.opacity=ok?String(Math.max(.2,1-Math.abs(muDx)/220)):""}});
 const muSwEnd=()=>{if(!muDr)return;muDr=0;if(Math.abs(muDx)>8)muSw=1;vn.style.transition="transform .2s,opacity .2s";if(Math.abs(muDx)>80&&muHasStep(muDx<0?1:-1)){const k=muDx<0?1:-1,s=muDx<0?-1:1;vn.style.transform="translateX("+(s*110)+"%)";vn.style.opacity="0";setTimeout(()=>{muJump(k);vn.style.transition="none";vn.style.transform="translateX("+(-s*110)+"%)";void vn.offsetWidth;vn.style.transition="transform .22s,opacity .22s";vn.style.transform="";vn.style.opacity=""},160)}else{vn.style.transform="";vn.style.opacity=""}};
