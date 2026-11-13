@@ -1385,6 +1385,13 @@ const LKA=(()=>{
     try{r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.equal("chatId",cid),Q.orderAsc("$createdAt"),Q.limit(200)]})}
     catch(e){const a=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.orderDesc("$createdAt"),Q.limit(500)]});r={rows:(a.rows||[]).filter(x=>x.chatId===cid).slice(0,200).reverse()}}
    return(r.rows||[]).map(mapMsg).filter(m=>m.kind==="text")}
+  /* دیده‌شدن | Seen Marker: یک ردیف ثابت برای هر نفر در هر چت (kind=seen) که زمان آخرین باز بودن چت را نگه می‌دارد؛ طرف مقابل از روی آن تیک دوم را می‌زند (one fixed row per user per chat holding the last time the chat was viewed) */
+  const seenId=(cid,u)=>h32("seen"+cid+u);
+  async function markSeen(me,other){const A=window.Appwrite,cid=chatIdOf(me,other),id=seenId(cid,me),t=new Date().toISOString();
+   try{await db.updateRow({databaseId:DBID,tableId:"messages",rowId:id,data:{text:t}})}
+   catch(e){if(e.code!==404)throw e;try{await db.createRow({databaseId:DBID,tableId:"messages",rowId:id,data:{chatId:cid,senderId:me,kind:"seen",text:t},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.user(me))]})}catch(e2){if(e2.code!==409)throw e2}}}
+  /* دیده‌شدن طرف مقابل | Peer Seen: زمان آخرین باری که طرف مقابل این چت را دیده (0 یعنی هنوز ندیده) (when the other person last viewed this chat) */
+  async function peerSeen(me,other){if(!ok)return 0;try{const r=await db.getRow({databaseId:DBID,tableId:"messages",rowId:seenId(chatIdOf(me,other),other)});return Date.parse(r.text)||0}catch(e){return 0}}
   /* فهرست چت‌ها | My Chats: چت‌های دو نفره من با نام طرف مقابل و آخرین پیام (private chats with the other person's name and last message) */
   async function chats(me){if(!ok)return[];const Q=window.Appwrite.Query;
    const r=await db.listRows({databaseId:DBID,tableId:"chats",queries:[Q.orderDesc("$updatedAt"),Q.limit(100)]});
@@ -1395,7 +1402,7 @@ const LKA=(()=>{
   /* پروفایل کاربر | User Profile: نام و یوزرنیم یک کاربر با آی‌دی (name and username by id) */
   async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username}}
   /* دریافت زنده | Live Receive: هر پیام تازه‌ای که برای من ساخته شود همان لحظه می‌رسد (new messages arrive instantly) */
-  const listen=(me,cb)=>{if(!ok)return null;try{return cl.subscribe(["tablesdb."+DBID+".tables.messages.rows","databases."+DBID+".collections.messages.documents"],ev=>{try{if(!(ev.events||[]).some(e=>/\.create$/.test(e)))return;const p=ev.payload||{};if(p.senderId===me)return;cb(mapMsg(p))}catch(e){}})}catch(e){return null}};
+  const listen=(me,cb)=>{if(!ok)return null;try{return cl.subscribe(["tablesdb."+DBID+".tables.messages.rows","databases."+DBID+".collections.messages.documents"],ev=>{try{const p=ev.payload||{};if(!(ev.events||[]).some(e=>/\.create$/.test(e)||(p.kind==="seen"&&/\.update$/.test(e))))return;if(p.senderId===me)return;cb(mapMsg(p))}catch(e){}})}catch(e){return null}};
   /* آخرین پیام‌ها | Recent Messages: ۵۰ پیام تازه‌ای که من اجازه‌ی دیدنشان را دارم، بدون نیاز به ایندکس؛ برای دریافت مطمئن حتی اگر دریافت زنده کار نکند (latest 50 messages, no index needed) */
   async function recent(){if(!ok)return[];const Q=window.Appwrite.Query;
    const r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.orderDesc("$createdAt"),Q.limit(50)]});
@@ -1408,7 +1415,7 @@ const LKA=(()=>{
  async function check(){if(!ok)return["کتابخانه‌ی سرور بارگیری نشد"];const bad=[],Q=window.Appwrite.Query;
   for(const t of["users","chats","messages"]){try{await db.listRows({databaseId:DBID,tableId:t,queries:[Q.limit(1)]})}catch(e){bad.push(t+" "+(e.code||"")+" "+String((e&&e.message)||"").slice(0,70))}}
   return bad}
- return{auth,restore,out,search,msg,send,history,chats,user,listen,recent,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,send,history,markSeen,peerSeen,chats,user,listen,recent,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1788,24 +1795,39 @@ const lkCid=u=>1000+(parseInt(String(u).slice(-6),16)||0);
 const lkHM=t=>new Date(t).toTimeString().slice(0,5);
 const lkAgo=t=>{const d=new Date(t),n=new Date();return Math.max(0,Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5))};
 /* رکورد پیام | Message Record: پیام سرور به قالب حباب برنامه [کی، متن، ساعت، روز، ویرایش، پاسخ] (server message to bubble record) */
-const lkRec=m=>[m.from===S.user.id?"me":"ot",m.text,lkHM(m.at),lkAgo(m.at),0,null];
+/* بسته‌بندی پاسخ | Reply Wrap: وقتی پیام جواب یک پیام دیگر است، مشخصات پیام اصلی با یک نشانهٔ نامرئی ابتدای متنی که به سرور می‌رود می‌چسبد تا طرف مقابل هم حالت ریپلای را ببیند (the quoted message info is glued in front of the text sent to the server) */
+const lkRpEnc=(v,rp)=>{if(!rp)return v;const o={w:rp.w,t:String(rp.t||"").slice(0,100),r:lkDec(rp.r)?"":String(rp.r||"").slice(0,300)};return"\u2063\u2063"+encodeURIComponent(JSON.stringify(o))+"\u2063\u2063"+v};
+/* باز کردن پاسخ | Reply Unwrap: متن سرور را به «متن اصلی» و «مشخصات پاسخ» جدا می‌کند؛ نام و سمت نقل‌قول از دید خودم ساخته می‌شود (splits server text into body and quote, seen from my side) */
+function lkRpDec(text,from,c){const m=/^\u2063\u2063([^\u2063]*)\u2063\u2063/.exec(text||"");if(!m)return{t:text,rp:null};let o;try{o=JSON.parse(decodeURIComponent(m[1]))}catch(e){return{t:text.slice(m[0].length),rp:null}}
+ const mine=from===S.user.id,authorMe=mine?o.w==="me":o.w==="ot";
+ return{t:text.slice(m[0].length),rp:{id:"",n:authorMe?"You":(c&&c.n)||"User",t:o.r?fwBody(o.r):o.t,r:o.r,w:authorMe?"me":"ot"}}}
+const lkRec=(m,c)=>{const d=lkRpDec(m.text,m.from,c);return[m.from===S.user.id?"me":"ot",d.t,lkHM(m.at),lkAgo(m.at),0,d.rp,Date.parse(m.at)||0]};
 /* چت محلی | Local Chat: چت کاربر مقابل را در لیست پیدا می‌کند و اگر نبود می‌سازد (find or create the chat row in the list) */
 function lkChatOf(uid,name,un){let c=CHATS.find(x=>x.uid===uid);if(!c){c={id:lkCid(uid),n:name||un||"User",m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(un||name||uid),uid:uid,uname:un};CHATS.push(c)}return c}
 /* بارگیری گفتگو | Load Chat: پیام‌های سرور این گفتگو را می‌گیرد و اگر چیزی عوض شده بود صفحه را تازه می‌کند (fetch server messages, redraw if changed) */
 function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
- LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const old=(CFG.sent[c.id]||[]).length;CFG.sent[c.id]=L.map(lkRec);saveCfg();lkSyncPreview(c);
+ LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const old=(CFG.sent[c.id]||[]).length;CFG.sent[c.id]=L.map(m=>lkRec(m,c));saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&L.length!==old){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}
-  renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
+  lkTicks(c);lkMarkSeen(c);renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
+/* تیک دوم واقعی | Real Double Tick: ✓ یعنی به سرور رسیده، ✓✓ فقط وقتی طرف مقابل بعد از آن پیام چت را دیده؛ هم حباب‌ها و هم لیست چت‌ها را به‌روز می‌کند (one tick = delivered, two = the other person viewed the chat after that message) */
+function lkTicks(c){if(!c||!c.uid||LK_MODE!=="real")return;const L=chatMsgs(c);let last=0;L.forEach(r=>{if(r[0]==="me"&&r[6]>last)last=r[6]});c.sl=last>0&&(c.sn||0)>=last;
+ if(S.openId===c.id){const bs=[...document.querySelectorAll("#msgs .b")];if(bs.length===L.length)bs.forEach((b,i)=>{if(L[i][0]!=="me")return;const t=b.querySelector(".tick");if(t)t.innerHTML=ic(L[i][6]&&(c.sn||0)>=L[i][6]?"t2":"t1",15)})}
+ renderChats()}
+/* پرسیدن دیده‌شدن | Pull Peer Seen: از سرور می‌پرسد طرف مقابل کی آخرین بار چت را دیده و تیک‌ها را تازه می‌کند (asks the server when the other person last saw the chat) */
+function lkSeenPull(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)return;LKA.peerSeen(S.user.id,c.uid).then(t=>{if(t>(c.sn||0)){c.sn=t;lkTicks(c)}})}
+/* ثبت دیدن | Mark Seen: وقتی چت باز و صفحه دیده می‌شود و پیام تازه‌ای از طرف مقابل هست، زمان دیدن را روی سرور می‌نویسد (writes the view time when the chat is open on screen and has a new incoming message) */
+function lkMarkSeen(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||document.hidden||S.openId!==c.id||!$("#chat").classList.contains("on"))return;let at=0;chatMsgs(c).forEach(r=>{if(r[0]==="ot"&&r[6]>at)at=r[6]});if(!at||at<=(c.mk||0))return;c.mk=at;LKA.markSeen(S.user.id,c.uid).catch(()=>{c.mk=0})}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){const c=CHATS.find(x=>x.id===S.openId);if(c)lkMarkSeen(c)}});
 /* قلاب باز شدن گفتگو | Open Hook: بعد از باز شدن هر گفتگوی واقعی پیام‌های سرور هم گرفته می‌شود (after opening a real chat, load its server messages) */
-{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id)}catch(e){}return r}}
+{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id);const c=CHATS.find(x=>x.id===id);lkSeenPull(c);setTimeout(()=>{lkTicks(c);lkMarkSeen(c)},300)}catch(e){}return r}}
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
-function lkReal(c,v){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
+function lkReal(c,v,rp){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
  c.lks=(c.lks||0)+1;lkSyncPreview(c);bumpChat(c);saveCfg();renderChats();
- LKA.send(S.user.id,c.uid,v).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
+ LKA.send(S.user.id,c.uid,lkRpEnc(v,rp)).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);const L=CFG.sent[c.id]||[];for(let i=L.length-1;i>=0;i--)if(L[i][0]==="me"){if(!L[i][6])L[i][6]=Date.parse(m.at)||0;break}lkTicks(c)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
-function lkIn(m){if(!S.user||!m||m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
- const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m));
-  if(S.openId===c.id&&$("#chat").classList.contains("on"))addMsg("ot",m.text,lkHM(m.at),0);else c.un=(c.un||0)+1;
+function lkIn(m){if(!S.user||!m)return;if(m.kind==="seen"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from),t=Date.parse(m.text)||0;if(c&&t>(c.sn||0)){c.sn=t;lkTicks(c)}}return}if(m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
+ const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m,c));
+  if(S.openId===c.id&&$("#chat").classList.contains("on")){{const d=lkRpDec(m.text,m.from,c);addMsg("ot",d.t,lkHM(m.at),0,d.rp)}lkMarkSeen(c)}else c.un=(c.un||0)+1;
   lkSyncPreview(c);bumpChat(c);saveCfg();renderChats()};
  const c=CHATS.find(x=>x.uid===m.from);if(c)go(c);else LKA.user(m.from).then(u=>go(lkChatOf(u.id,u.name,u.username))).catch(er=>{/* پروفایل فرستنده نیامد | Sender Profile Missing: پیام گم نمی‌شود و با اسم «User» نشان داده می‌شود و خطا دیده می‌شود (message is kept, error shown) */lkErr(er);go(lkChatOf(m.from,"User",""))})}
 /* بررسی دوره‌ای | Fallback Poll: هر ۱۵ ثانیه اگر صفحه باز باشد چت‌ها را چک می‌کند تا اگر دریافت زنده قطع شد پیامی گم نشود (every 15s safety check) */
@@ -1814,6 +1836,7 @@ function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)retu
  /* نگهبان اتصال زنده | Live Watchdog: اگر سوکت دریافت زنده بسته بود، بعد از ۲ بررسی دوباره وصلش می‌کند؛ اگر وصل نشد یک بار خبر می‌دهد (reconnects the live socket, warns once) */
  if(LKA.live())LKC.dead=0;else{LKC.dead=(LKC.dead||0)+1;if(LKC.dead===2)lkRevive();if(LKC.dead===6)lkErr({message:"Live connection is offline"})}
  LKA.recent().then(a=>{LKC.srv=1;lkConnUpdate();a.forEach(lkIn)}).catch(lkErr);
+ /* تازه‌سازی دیده‌شدن | Seen Refresh: برای چت‌هایی که آخرین پیامشان از من است و هنوز دیده نشده، وضعیت دیده‌شدن را دوباره می‌پرسد (re-asks for chats whose last message is mine and unseen) */CHATS.filter(x=>x.uid&&x.t===2&&!x.sl).slice(0,8).forEach(lkSeenPull);
  LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
 /* خودآزمایی | Self Check: بعد از ورود یک بار می‌خواند و دریافت زنده را می‌سنجد؛ اگر چیزی خراب بود با پیام فارسی و کد خطا می‌گوید کدام بخش مشکل دارد (one-time check after login, tells which part fails) */
 function lkDiag(){const me=S.user&&S.user.id;if(!me)return;const say=(t,e)=>toast("⚠ "+t+((e&&(e.code||e.message))?" ("+(e.code||"")+" "+String(e.message||"").slice(0,70)+")":""));
@@ -1826,7 +1849,7 @@ function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)re
  LKC.un=LKA.listen(S.user.id,lkIn);
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=r.last;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});renderChats()}).catch(lkErr);
+ LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=lkRpDec(r.last,r.lastSender,c).t;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
  LKC.tm=setInterval(lkPoll,5000);lkDiag();
   /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
   LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
@@ -1861,7 +1884,7 @@ function renderChats(){renderTabs();/* قلاب میوت | Mute Hook: بعد ا�
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on,"",c.photo)}
   <div class="mid"><div class="n">${c.n}${vb(c,15)}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${lkPrevIc(c.ty==="gp"?c.s:c.m)}</div><div class="m">${lkPrevIc(c.ty==="gp"?c.m:"")}</div></div>
-  <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2?"t2":"t1",16)}</span>`:""}${c.tm}</div>
+  <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2&&!(c.uid&&LK_MODE==="real"&&!c.sl)?"t2":"t1",16)}</span>`:""}${c.tm}</div>
   <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
  $$("#clist .row").forEach(bindRow);padLists()}
 /* لمس ردیف | Row Touch: کلیک=باز کردن/انتخاب، نگه‌داشتن=منو (tap open/select, long-press menu) */
@@ -1932,7 +1955,7 @@ const FWR=/^\u21aa([^\u2063]*)\u2063([\s\S]*)$/;
 const fwBody=t=>{const m=FWR.exec(t);return lkMsgPlain(m?m[2]:t)};
 const fwHead=t=>{const m=FWR.exec(t);return m?`<div class="fwh"><span class="fwt">${tr("Forwarded from")}</span><div class="fwn">${av(m[1],colOf(m[1]),0)}<span>${esc(m[1])}</span></div></div>`:""};
 /* نمایش پیام | Add Message: پارامتر آخر ed یعنی پیام ویرایش شده و کنار ساعت «ویرایش شده» می‌آید */
-function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${lkPrevIc(esc(rp.t))}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic("t2",15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* اتصال نقل‌قول به پیام اصلی | Attach Quote Source: متن خام و فرستنده پیام اصلی روی نقل‌قول گذاشته می‌شود (puts the raw text and sender of the original on the quote) */if(rp&&rp.r){const _q=d.querySelector(".q");if(_q){_q._r=rp.r;_q._w=rp.w}}/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
+function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${lkPrevIc(esc(rp.t))}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic((()=>{const q=host?null:CHATS.find(x=>x.id===S.openId);return q&&q.uid&&LK_MODE==="real"?"t1":"t2"})(),15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* اتصال نقل‌قول به پیام اصلی | Attach Quote Source: متن خام و فرستنده پیام اصلی روی نقل‌قول گذاشته می‌شود (puts the raw text and sender of the original on the quote) */if(rp&&rp.r){const _q=d.querySelector(".q");if(_q){_q._r=rp.r;_q._w=rp.w}}/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
 /* تزئین حباب گروه | Group Bubble Decor: فرستنده از روی اعضای گروه ثابت انتخاب می‌شود؛ نام فقط اول هر دسته و آواتار فقط آخر هر دسته می‌ماند مثل LINK (stable sender from members; name on first of run, avatar on last of run) */
 function gpDecor(d,gc){const c=gc||CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="gp")return;let ms=(c.members||[]).filter(x=>x!=="You");if(!ms.length&&c.s&&c.s!=="You")ms=[c.s];if(!ms.length)return;const key=d.dataset.t+"|"+d.dataset.tm;const sn=(window.DSN&&window.DSN[key])||ms[[...key].reduce((a,ch)=>a+ch.charCodeAt(0),0)%ms.length];d.dataset.sn=sn;d.classList.add("gp");const pv=d.previousElementSibling,same=pv&&pv.classList.contains("b")&&pv.classList.contains("gp")&&pv.dataset.sn===sn;if(!same){const h=document.createElement("div");h.className="gsn";h.style.color=colOf(sn);h.textContent=sn;d.prepend(h)}else{const o=pv.querySelector(":scope>.gsa");if(o)o.remove()}const a=document.createElement("div");a.className="gsa";a.innerHTML=av(sn,colOf(sn),0);d.append(a)}
 /* باز شدن پروفایل از آواتار | Avatar Opens Profile: لمس آواتار فرستنده در گروه، گفتگوی او را باز می‌کند و صفحه پروفایلش را نشان می‌دهد (tap on a group sender avatar opens that person's chat and shows their profile) */
@@ -1950,7 +1973,7 @@ document.addEventListener("click",e=>{const a=e.target.closest("#msgs .gsa");if(
 /* ارسال | Send Message: متن را می‌فرستد و پاسخ نمایشی می‌دهد (send + demo reply) */
 function send(){const v=$("#mi").value.trim();/* ویرایش شرح خالی | Empty Caption Edit: در ویرایش رسانه، شرح خالی هم مجاز است (حذف شرح) */if(!v&&!(window.lkEdMed&&window.lkEdMed()))return;/* قلاب ویرایش | Edit Hook: اگر در حال ویرایش پیام هستیم، متن جدید جای متن قبلی می‌نشیند و پیام تازه فرستاده نمی‌شود (while editing, the new text replaces the old one instead of sending a new message) */if(window.lkEdSend&&window.lkEdSend(v))return;const now=new Date().toTimeString().slice(0,5);/* نگه‌داشتن پاسخ برای ذخیره | Keep Reply For Saving: پاسخ قبل از پاک شدن نوار در rp0 نگه داشته می‌شود تا همراه پیام ذخیره شود */const rp0=S.reply;addMsg("me",v,now,0,rp0);clearReply();$("#mi").value="";grow();updSend();
  const c=CHATS.find(x=>x.id===S.openId);c.m=v;if(c.ty==="gp")c.s="You";c.tm=now;c.t=2;c.pin=c.pin;CHATS=[c,...CHATS.filter(x=>x!==c)];
- if(c.id===2){/* ذخیره پیام همراه پاسخ | Save Message With Reply: پاسخ در خانه‌ی ششم رکورد پیام ذخیره می‌شود (reply is stored as the 6th item of the message record) */CFG.saved.push(["me",v,now,0,0,rp0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0,0,rp0]);saveCfg();/* قلاب ارسال واقعی | Real Send Hook: در چت واقعی پیام به سرور می‌رود و پاسخ نمایشی ساخته نمی‌شود */if(lkReal(c,v)||LK_MODE==="real")/* بدون پاسخ ساختگی | No Fake Reply: در حالت واقعی هیچ پاسخ نمایشی ساخته نمی‌شود */return;setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);/* همگام‌سازی بعد از دریافت | Sync After Receive: جواب دریافتی هم پیش‌نمایش لیست را عوض می‌کند */lkSyncPreview(c);/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();renderChats()},900)}}
+ if(c.id===2){/* ذخیره پیام همراه پاسخ | Save Message With Reply: پاسخ در خانه‌ی ششم رکورد پیام ذخیره می‌شود (reply is stored as the 6th item of the message record) */CFG.saved.push(["me",v,now,0,0,rp0]);saveCfg()}else{(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(["me",v,now,0,0,rp0]);saveCfg();/* قلاب ارسال واقعی | Real Send Hook: در چت واقعی پیام به سرور می‌رود و پاسخ نمایشی ساخته نمی‌شود */if(lkReal(c,v,rp0)||LK_MODE==="real")/* بدون پاسخ ساختگی | No Fake Reply: در حالت واقعی هیچ پاسخ نمایشی ساخته نمی‌شود */return;setTimeout(()=>{addMsg("ot","👍",now);CFG.sent[c.id].push(["ot","👍",now,0]);/* همگام‌سازی بعد از دریافت | Sync After Receive: جواب دریافتی هم پیش‌نمایش لیست را عوض می‌کند */lkSyncPreview(c);/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();renderChats()},900)}}
 /* دکمه ویس/ویدیو/ارسال | Voice-Video-Send Button: خالی = ویس یا ویدیو مسیج (با هر کلیک عوض می‌شود)، با متن = ارسال (empty: tap toggles voice/video, with text: send) */
 function updSend(){S.rec=S.rec||"voice";const has=!!$("#mi").value.trim()||!!(window.lkEdMed&&window.lkEdMed());const sb=$("#send"),k=has?"send":S.rec==="voice"?"mic":"video";sb.classList.toggle("send",has);const oldSv=sb._k!==undefined&&sb._k!==k?sb.querySelector("svg"):null,oldC=oldSv?oldSv.cloneNode(true):null;sb.innerHTML=ic(k,20);if(oldC){oldC.classList.add("vold");sb.appendChild(oldC);setTimeout(()=>{try{oldC.remove()}catch(_){}},200)}if(!document.getElementById("vswapcss")){const st=document.createElement("style");st.id="vswapcss";st.textContent="@keyframes vswap{from{opacity:0;transform:scale(.55) rotate(-25deg)}to{opacity:1;transform:none}}@keyframes vgone{from{opacity:1;transform:none}to{opacity:0;transform:scale(.5) rotate(40deg)}}#send{position:relative}#send svg.vsw{animation:vswap .18s cubic-bezier(.2,.8,.3,1)}#send svg.vold{position:absolute;left:50%;top:50%;margin:-10px 0 0 -10px;width:20px;height:20px;pointer-events:none;animation:vgone .18s ease forwards}#send{transition:background-color .16s ease,color .16s ease}";document.head.appendChild(st)}if(sb._k!==undefined&&sb._k!==k){const sv=sb.querySelector("svg");if(sv)sv.classList.add("vsw")}sb._k=k}
 $("#send").onclick=()=>{if(S.sendHold){S.sendHold=false;return}if($("#mi").value.trim())send();else{S.rec=S.rec==="voice"?"video":"voice";updSend()}};
