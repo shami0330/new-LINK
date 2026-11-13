@@ -3718,7 +3718,7 @@ const _plain=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="voi
 const setPB=(vo,p)=>{const b=vo.querySelector(".vpb");if(b)b.innerHTML=ic(p?"pause":"play",18)};
 function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}vNowSync()}
 async function playVo(vo,ex){const id=vo.dataset.vid;if(cur&&cur.id===id){cur.vo=vo;if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}/* واکنش فوری ویس | Instant Voice Toggle: بعد از مکث یا پخش بلافاصله دکمه‌ها و نوار به‌روز می‌شوند و منتظر رویداد نمی‌مانند (buttons and bar update at once, not waiting for the audio event) */vNowSync();return}
- stopCur();let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
+ stopCur();/* توقف ویدیو مسیج | Halt Video Message: شروع یک ویس، ویدیو مسیجِ در حال پخش را می‌بندد (starting a voice closes a playing video message) */try{window.vmHalt&&window.vmHalt()}catch(e){}let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("File removed from cache");return}
  const a=new Audio(URL.createObjectURL(b)),D=+vo.dataset.d;a.playbackRate=vSpd;cur={a,vo,id,D,cid:(ex&&ex.cid)||S.openId,name:(ex&&ex.name)||vNowName(vo)};vKeep=0;vPrefetch();
  a.ontimeupdate=vNowTick;a.onplay=a.onpause=vNowSync;
@@ -3753,12 +3753,22 @@ new MutationObserver(()=>{if(!cur)return;const vo=document.querySelector('#msgs 
 /* پخش پشت‌سرهم | Serial Voice Play: وقتی یک ویس تمام شود ویس بعدیِ همان گفتگو (از هر دو طرف، تا جدیدترین) خودکار پخش می‌شود؛ وایس‌های بعدی هم‌زمان با پخش از قبل باز و دانلود می‌شوند (when a voice ends, the next voice of the same chat, mine or theirs, plays automatically up to the newest; the next voices are opened and downloaded ahead while one plays) */
 let vKeep=0;
 function vList(cid){const els=S.openId===cid?[...document.querySelectorAll("#msgs .lkvo")]:[];if(els.length)return els.map(el=>({id:el.dataset.vid,d:el.dataset.d,me:((el.closest(".b")||{dataset:{}}).dataset.w)==="me",el}));const c=CHATS.find(x=>x.id===cid),o=[];if(!c)return o;chatMsgs(c).forEach(m=>{const k=lkDec(m[1]);if(k&&k.k==="voice"){const x=k.it[0];o.push({id:x.id,d:x.d,me:m[0]==="me"})}});return o}
+/* لیست ویس و ویدیو مسیج | Voice And Video List: فهرست همه‌ی ویس‌ها و ویدیو مسیج‌های گفتگو به ترتیب پیام‌ها، برای پخش پشت‌سرهم (فقط برای پخش سریالی؛ دکمه‌های قبلی و بعدی نوار ویس همان فهرست ویس‌ها را می‌خوانند) */
+function vListAll(cid){const els=S.openId===cid?[...document.querySelectorAll("#msgs .lkvo,#msgs .lkvm")]:[];if(els.length)return els.map(el=>({id:el.dataset.vid,d:el.dataset.d,vm:el.classList.contains("lkvm"),me:((el.closest(".b")||{dataset:{}}).dataset.w)==="me",el}));const c=CHATS.find(x=>x.id===cid),o=[];if(!c)return o;chatMsgs(c).forEach(m=>{const k=lkDec(m[1]);if(k&&(k.k==="voice"||k.k==="vmsg")){const x=k.it[0];o.push({id:x.id,d:x.d,vm:k.k==="vmsg",me:m[0]==="me"})}});return o}
 function vPrefetch(){if(!cur)return;const L=vList(cur.cid),i=L.findIndex(x=>x.id===cur.id);if(i<0)return;L.slice(i+1,i+3).forEach(x=>{if(!LKB[x.id])lkGet(x.id).then(r=>{if(r&&r.blob&&!LKB[x.id])LKB[x.id]=r.blob}).catch(()=>{})})}
-async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vList(cid),cn=(CHATS.find(c=>c.id===cid)||{}).n||cur.name;let i=L.findIndex(x=>x.id===id);if(i<0||i>=L.length-1){/* پایان آخرین ویس | Last Voice Ends: بعد از پایان آخرین ویس گفتگو، پخش کامل متوقف و نوار ویس زیر پروفایل حذف می‌شود (after the last voice of the chat ends, playback fully stops and the voice bar under the header is removed) */vKeep=0;stopCur();vNowSync();return}
+async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vListAll(cid),cn=(CHATS.find(c=>c.id===cid)||{}).n||cur.name;let i=L.findIndex(x=>x.id===id);if(i<0||i>=L.length-1){/* پایان آخرین ویس | Last Voice Ends: بعد از پایان آخرین ویس گفتگو، پخش کامل متوقف و نوار ویس زیر پروفایل حذف می‌شود (after the last voice of the chat ends, playback fully stops and the voice bar under the header is removed) */vKeep=0;stopCur();vNowSync();return}
  vKeep=1;stopCur();
- for(i++;i<L.length;i++){const x=L[i];let vo=x.el&&x.el.isConnected?x.el:null;if(!vo){vo=document.createElement("div");vo.className="lkvo";vo.dataset.vid=x.id;vo.dataset.d=x.d}
+ for(i++;i<L.length;i++){const x=L[i];/* ویدیو مسیج بعدی | Next Is Video Message: اگر پیام بعدی ویدیو مسیج بود همان پخش می‌شود و ادامه‌ی زنجیره با پایان آن انجام می‌شود (if the next one is a video message it plays, and the chain continues when it ends) */if(x.vm){const ve=x.el&&x.el.isConnected?x.el:null;if(!ve)continue;vKeep=0;vNowSync();window.vmPlayEl(ve);return}let vo=x.el&&x.el.isConnected?x.el:null;if(!vo){vo=document.createElement("div");vo.className="lkvo";vo.dataset.vid=x.id;vo.dataset.d=x.d}
   await playVo(vo,{cid,name:x.me?tr("You"):cn});if(cur)break}
  vKeep=0;if(!cur)vNowSync()}
+/* ادامه بعد از ویدیو مسیج | Continue After Video Message: وقتی یک ویدیو مسیج تمام شود، پیام بعدی گفتگو (ویس یا ویدیو مسیج) خودکار پخش می‌شود؛ ویدیو مسیج آن را صدا می‌زند */
+window.vSerialNext=async function(cid,id){const L=vListAll(cid),cn=(CHATS.find(c=>c.id===cid)||{}).n||"";let i=L.findIndex(x=>x.id===id);if(i<0||i>=L.length-1)return;vKeep=1;
+ for(i++;i<L.length;i++){const x=L[i];if(x.vm){const ve=x.el&&x.el.isConnected?x.el:null;if(!ve)continue;vKeep=0;vNowSync();window.vmPlayEl(ve);return}
+  let vo=x.el&&x.el.isConnected?x.el:null;if(!vo){vo=document.createElement("div");vo.className="lkvo";vo.dataset.vid=x.id;vo.dataset.d=x.d}
+  await playVo(vo,{cid,name:x.me?tr("You"):cn});if(cur)break}
+ vKeep=0;if(!cur)vNowSync()};
+/* توقف ویس برای ویدیو | Stop Voice For Video: وقتی ویدیو مسیج پخش می‌شود ویس در حال پخش را کامل می‌بندد */
+window.vStopVoice=function(){vKeep=0;stopCur()};
 /* رفتن به ویس | Jump To Playing Voice: زدن روی وسط نوار، گفتگویی که ویس در آن پخش می‌شود را باز می‌کند و روی حباب همان ویس اسکرول می‌کند (tapping the middle of the bar opens the chat of the playing voice and scrolls to its bubble) */
 function vNowGo(){if(!cur)return;const cid=cur.cid,id=cur.id,find=()=>document.querySelector('#msgs .lkvo[data-vid="'+id+'"]');
  /* بازگشت به گفتگوی قبلی | Return To Previous Chat: وقتی از داخل یک گفتگو روی نوار وایس می زنیم و وارد گفتگوی وایس می شویم، گفتگوی قبلی در پشته S.backStack ذخیره می شود تا دکمه بازگشت به همان برگردد */{const on=$("#chat").classList.contains("on"),prev=S.openId;if(!(prev===cid&&on)){openChat(cid);if(on&&prev!==cid)(S.backStack=S.backStack||[]).push(prev)}}
@@ -4227,7 +4237,15 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 .lkvm.pl:not(.pz) .vmx{opacity:0;pointer-events:none}
 .lkvm .vmt{position:absolute;left:10px;bottom:8px;background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:1px 8px;border-radius:10px;display:flex;align-items:center;gap:4px}
 .lkvm .vmu{width:6px;height:6px;border-radius:50%;background:#fff}
-.b.mm:has(.lkvm){padding:0;background:none!important;box-shadow:none;overflow:visible;position:relative;border-radius:0}
+/* حذف کادر دور ویدیو مسیج | Remove Video Message Frame: حاشیه و سایه و هایلایت مربعی حباب پیام برای ویدیو مسیج برداشته می‌شود تا فقط دایره دیده شود (removes the square border, shadow and highlight of the bubble so only the circle shows) */
+.b.mm:has(.lkvm){padding:0;background:none!important;box-shadow:none!important;border:none!important;outline:none;overflow:visible;position:relative;border-radius:0}
+.b.mm.hl:has(.lkvm){box-shadow:none!important}
+/* مخفی کردن اسم فرستنده در ویدیو مسیج | Hide Sender Name On Video Message: اسم فرستنده بالای دایره در گروه نمایش داده نمی‌شود (the sender name above the circle is not shown) */
+.b.mm:has(.lkvm) .gsn{display:none!important}
+/* گرد ماندن ویدیو مسیج در منو و پیش‌نمایش | Round Video In Menu And Preview: در نسخه‌ی کپیشده‌ی پیام (منوی نگه‌داشتن و پیش‌نمایش ارسال) ویدیو جای اندازه‌ی اصلی‌اش نمی‌ماند و تمام دایره را پر می‌کند و با دایره بریده می‌شود (in the cloned message the video fills the whole circle and is clipped round) */
+#mmenu .bb .lkvm .vmc,.pbub .lkvm .vmc{position:absolute;inset:0;border-radius:50%;overflow:hidden;clip-path:circle(50% at 50% 50%);-webkit-clip-path:circle(50% at 50% 50%);background:#111}
+#mmenu .bb .lkvm .vmc video,.pbub .lkvm .vmc video{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover;display:block}
+#mmenu .bb .lkvm,.pbub .lkvm{width:min(62vw,240px);aspect-ratio:1;border-radius:50%}
 .b.mm:has(.lkvm) small{position:absolute;right:10px;bottom:8px;z-index:6;padding:1px 8px;background:rgba(0,0,0,.45);color:#fff!important;border-radius:10px;margin:0;display:flex;align-items:center;gap:3px}
 .b.mm:has(.lkvm) small .tick{color:#fff!important}
 /* ظاهر دایره، نوار پخش و دایره‌ی شناور | Video Message Look, Player Bar And Floating Circle: دایره هنگام پخش داخل خود گفتگو بزرگ می‌شود (نه روی پیام‌ها)؛ نوار پخش بالای گفتگو؛ دایره‌ی کوچک شناور وقتی پیام از دید می‌رود */
@@ -4468,7 +4486,7 @@ async function vmUrl(id){if(VMU[id])return VMU[id];let b=LKB[id];if(!b){try{cons
 /* آماده‌سازی حباب | Attach Video: عنصر ویدیو فقط وقتی حباب دیده شود ساخته می‌شود */
 async function vmAttach(el){if(el._v)return;if(!el._ld)el._ld=(async()=>{const u=await vmUrl(el.dataset.vid);if(!u){el.classList.add("vx");return}
  const v=document.createElement("video");v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;el.querySelector(".vmc").append(v);el._v=v;
- v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>vmStop(el))})();await el._ld}
+ v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>{const cid=S.openId,id=el.dataset.vid;vmStop(el);/* ادامه‌ی زنجیره | Continue Chain: بعد از پایان ویدیو مسیج، پیام بعدی (ویس یا ویدیو مسیج) پخش می‌شود (after a video message ends, the next message plays) */if(window.vSerialNext)window.vSerialNext(cid,id)})})();await el._ld}
 /* پایان پخش | Stop Playback: دایره به حالت اول برمی‌گردد؛ بی‌صدا و تکراری می‌چرخد و حلقه و زمان صفر می‌شود */
 function vmStop(el){if(!el)return;if(VM.cur===el){VM.cur=null;vmBarHide();vmDockOff()}el.classList.remove("pl","pz");const v=el._v;if(v){v.playbackRate=1;v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
  const c=el.querySelector(".vmg circle");if(c)c.style.strokeDashoffset="305.4";const d=el.querySelector(".vmd");if(d)d.textContent=fd(+el.dataset.d)}
@@ -4477,9 +4495,11 @@ function vmLoop(){const el=VM.cur;if(!el)return;const v=el._v;if(v)vmSync(el,v);
 /* لمس دایره | Tap Circle: بار اول با صدا از اول پخش می‌شود و بزرگ می‌شود؛ لمس دوباره مکث؛ دوباره ادامه */
 async function vmTap(el){await vmAttach(el);const v=el._v;if(!v){toast("Video removed from cache");return}
  if(VM.cur===el){if(v.paused)v.play().catch(()=>{});else v.pause();return}
- vmStop(VM.cur);document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
+ vmStop(VM.cur);try{window.vStopVoice&&window.vStopVoice()}catch(_){}document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
  VM.cur=el;el.classList.add("pl");el.classList.remove("pz");vmBarShow();vmFit(el);v.loop=false;v.muted=false;try{v.currentTime=0}catch(_){}
  try{await v.play()}catch(e){v.muted=true;v.play().catch(()=>{})}vmLoop()}
+/* دسترسی از بیرون | Video Message Hooks: ویس برای پخش پشت‌سرهم، ویدیو مسیج را از اینجا پخش یا متوقف می‌کند */
+window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkvm");if(!el||chat.classList.contains("sel"))return;e.stopPropagation();e.preventDefault();vmTap(el)},true);
 /* پخش بی‌صدا در دید | Muted Autoplay In View: دایره‌های دیده‌شده بی‌صدا و تکراری می‌چرخند و وقتی از دید رفتند می‌ایستند (مثل تلگرام) */
@@ -4803,6 +4823,13 @@ const VI=["dm_m1","dm_m2","dm_m3"];
 try{const c=cv(480,270),x=c.getContext("2d"),draw=t=>{const g=x.createLinearGradient(0,0,480,270);g.addColorStop(0,"hsl("+(210+t*30)+" 70% 45%)");g.addColorStop(1,"hsl("+(280+t*30)+" 60% 30%)");x.fillStyle=g;x.fillRect(0,0,480,270);x.fillStyle="rgba(255,255,255,.9)";x.beginPath();x.arc(80+t*110,135+Math.sin(t*3)*40,34,0,7);x.fill();x.font="bold 30px sans-serif";x.fillText("Link Messenger",110,60)};draw(0);const pb=DB(c.toDataURL("image/jpeg",.8),"image/jpeg");VI.forEach(id=>{LKU[id]=URL.createObjectURL(pb);SZ[id]=250000});
  const mt=window.MediaRecorder&&c.captureStream?["video/mp4","video/webm;codecs=vp8","video/webm"].find(m=>MediaRecorder.isTypeSupported(m)):null;
  if(mt){const r=new MediaRecorder(c.captureStream(20),{mimeType:mt}),ch=[];r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};r.onstop=()=>{const b=new Blob(ch,{type:mt.split(";")[0]});VI.forEach(id=>{LKB[id]=b;SZ[id]=b.size;try{const q=lkPut(id,{blob:b,thumb:pb});if(q&&q.catch)q.catch(()=>{})}catch(e){}})};const t0=performance.now();r.start();const iv=setInterval(()=>{const t=(performance.now()-t0)/1000;draw(t);if(t>3){clearInterval(iv);try{r.stop()}catch(e){}}},50)}}catch(e){}
+/* ویدیو مسیج نمایشی | Demo Video Messages: برای هر گفتگو یک ویدیو مسیج آزمایشی (دایره‌ی ۳ ثانیه‌ای)؛ در گفتگوهای زوج از طرف من (راست) و در بقیه از طرف مخاطب (چپ) تا هر دو سمت تست شوند */
+const VMI=[3,4,5,6,7,8,9,10,11,12,13].map(n=>"dm_vm"+n);
+try{const c=cv(384,384),x=c.getContext("2d"),draw=t=>{const g=x.createLinearGradient(0,0,384,384);g.addColorStop(0,"hsl("+(20+t*40)+" 75% 55%)");g.addColorStop(1,"hsl("+(300+t*40)+" 60% 35%)");x.fillStyle=g;x.fillRect(0,0,384,384);x.fillStyle="rgba(255,255,255,.92)";x.beginPath();x.arc(192+Math.sin(t*2.5)*90,192+Math.cos(t*2.5)*60,44,0,7);x.fill();x.font="bold 26px sans-serif";x.textAlign="center";x.fillText("Video Message",192,70)};draw(0);const pb=DB(c.toDataURL("image/jpeg",.8),"image/jpeg");
+ const mt=window.MediaRecorder&&c.captureStream?["video/mp4","video/webm;codecs=vp8","video/webm"].find(m=>MediaRecorder.isTypeSupported(m)):null;
+ if(mt){const r=new MediaRecorder(c.captureStream(20),{mimeType:mt}),ch=[];r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};r.onstop=()=>{const b=new Blob(ch,{type:mt.split(";")[0]});VMI.forEach(id=>{LKB[id]=b;SZ[id]=b.size;try{const q=lkPut(id,{blob:b,thumb:pb});if(q&&q.catch)q.catch(()=>{})}catch(e){}})};const t0=performance.now();r.start();const iv=setInterval(()=>{const t=(performance.now()-t0)/1000;draw(t);if(t>3){clearInterval(iv);try{r.stop()}catch(e){}}},50)}}catch(e){}
+/* افزودن به گفتگوها | Add Demo Video Message: ویدیو مسیج را قبل از آخرین پیام هر گفتگو می‌گذارد تا پیش‌نمایش لیست چت‌ها عوض نشود */
+const addVM=(c,L)=>{if(!c||!L||!L.length)return;const id="dm_vm"+c.id;if(!VMI.includes(id))return;const prev=L[Math.max(0,L.length-2)],f=L.find(m=>m.w==="ot"&&m.who),mine=c.id%2===0;L.splice(L.length-1,0,T(mine?"me":"ot",mine?"":(f?f.who:""),lkEnc({k:"vmsg",it:[{id,t:"vmsg",n:"video-message.mp4",s:SZ[id]||150000,d:3,w:384,h:384}]}),prev.tm,prev.n))};
 /* ساخت پیام‌ها | Message Builders */
 const ph=(id,n)=>({id,t:"photo",n,s:SZ[id]||90000,w:640,h:420}),vd=id=>({id,t:"video",n:"clip.mp4",s:SZ[id]||250000,w:480,h:270,d:3}),vo=id=>({id,t:"voice",n:"voice.wav",s:SZ[id]||60000,d:DUR[id]||4,wf:WF[id]||[]}),fl=(id,n)=>({id,n,s:SZ[id]||100000});
 const AL=(it,cap)=>lkEnc({k:"album",it,cap}),FL=(id,n)=>lkEnc({k:"files",it:[fl(id,n)]}),VC=id=>lkEnc({k:"voice",it:[vo(id)]});
@@ -4821,7 +4848,7 @@ const D=c=>{const N=(w,who,txt,tm,n,o)=>T(w,who,txt,tm,n,o);
  case 12:{const a=N("ot","",AL([ph("dm_p7","announcement.jpg")],"اطلاعیه: برنامه‌ی انتشار نسخه‌ی جدید به شرح تصویر است."),"18:00",1);return[a,N("ot","",VC("dm_v5"),"18:30",1),N("ot","",FL("dm_a4","Calm-Melody.wav"),"19:00",1),N("ot","","نسخه‌ی جدید لینک به‌زودی منتشر می‌شود.","20:30",0,{re:a})]}
  case 13:{const a=N("ot","Ailin",AL([ph("dm_p4","progress.jpg")],"همکاران گرامی؛ گزارش پیشرفت پروژه به شرح تصویر پیوست است."),"09:00",1),b=N("ot","Melika",AL([vd("dm_m3")],"ویدیوی کوتاه معرفی نسخه‌ی آزمایشی"),"09:40",1),e=N("ot","Saman",FL("dm_a2","Meeting-Audio.wav"),"19:30",0);return[a,N("ot","Saman","گزارش را بررسی کردم؛ پیشرفت پروژه مطابق برنامه است.","09:20",1,{re:a}),b,N("ot","Roj","ویدیو بسیار گویا بود. سپاسگزارم.","09:50",1,{re:b}),N("me","","با تشکر از همه‌ی همکاران؛ گزارش تأیید شد.","10:10",1,{re:a}),e,N("ot","Ailin",VC("dm_v1"),"19:45",0),N("ot","Melika","فایل صوتی جلسه دریافت شد و بررسی خواهد شد.","20:10",0,{re:e}),N("ot","Ailin","تصمیم نهایی تأیید شد. از همکاری همه‌ی اعضا سپاسگزارم.","20:45",0)]}
  }return null};
-window.demoMsgs=c=>{const L=D(c);if(!L)return null;const out=[];L.forEach(m=>{const tup=[m.w,m.txt,m.tm,m.n,0];if(m.re){const q=m.re;tup[5]={id:"",n:q.w==="me"?"You":(q.who||c.n),t:lkMsgPlain(q.txt),r:q.txt,w:q.w}}out.push(tup);if(m.w==="ot"&&m.who)DSN[m.txt+"|"+m.tm]=m.who});return out};
+window.demoMsgs=c=>{const L=D(c);if(!L)return null;addVM(c,L);const out=[];L.forEach(m=>{const tup=[m.w,m.txt,m.tm,m.n,0];if(m.re){const q=m.re;tup[5]={id:"",n:q.w==="me"?"You":(q.who||c.n),t:lkMsgPlain(q.txt),r:q.txt,w:q.w}}out.push(tup);if(m.w==="ot"&&m.who)DSN[m.txt+"|"+m.tm]=m.who});return out};
 /* پیش‌نمایش رسمی لیست | Formal List Previews */
 try{const P={3:"به لینک مسنجر خوش آمدید.",4:"گزارش هفتگی ارسال شد.",6:"با سپاس؛ جلسه را تأیید می‌کنم.",7:"مستندات درخواستی ارسال می‌شود.",8:"امتحان فردا ساعت ۸ صبح برگزار می‌شود.",9:"برنامه‌ی شام امشب چیست؟",10:"نسخه‌ی ۰٫۱ لینک منتشر شد.",11:"گوشی جدید امروز رونمایی شد.",12:"نسخه‌ی جدید لینک به‌زودی منتشر می‌شود.",13:"تصمیم نهایی تأیید شد. از همکاری همه‌ی اعضا سپاسگزارم."};CHATS.forEach(c=>{if(P[c.id])c.m=P[c.id]})}catch(e){}
 })();
