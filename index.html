@@ -176,7 +176,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 
 /* صفحه چت | Chat Page: سربرگ، پیام‌ها و نوار ورودی (header, messages, input) */
 .msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--chatbg)}
-.b{position:relative;touch-action:pan-y;max-width:78%;padding:7px 11px;border-radius:18px;font-size:15px;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
+.b{position:relative;touch-action:pan-y;max-width:78%;padding:7px 11px;border-radius:18px;/* اندازه‌ی نوشته‌ی پیام | Message Text Size: متن پیام‌ها ۱۵ درصد بزرگ‌تر شد (۱۵ ← ۱۷.۲۵) */font-size:17.25px;/* ضخامت نوشته‌ی پیام | Message Text Weight: متن پیام‌ها ۵ درصد بولدتر شد (۴۰۰ ← ۴۲۰) */font-weight:420;line-height:1.35;white-space:pre-wrap;animation:pop .15s}
 .b.me{align-self:flex-end;background:var(--bubOut);border-bottom-right-radius:5px}
 .b.ot{align-self:flex-start;background:var(--bubIn);border-bottom-left-radius:5px}
 /* حباب گروه | Group Bubble Style: جای آواتار سمت چپ، نام فرستنده بالای متن (room for avatar on the left, sender name above text) */
