@@ -526,8 +526,9 @@ html.light #shov .shcap{background:rgba(235,235,240,.85)}
 #mmenu .rxb span{padding:2px 5px}
 #mmenu .rxb .more{width:34px;height:34px;border-radius:50%;background:rgba(120,120,128,.5);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;margin-left:4px}
 #mmenu .mm{position:absolute;width:240px;background:var(--menu);border-radius:18px;overflow:hidden}
-#mmenu .mm div{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:17px;color:var(--txt)}
-#mmenu .mm div.rd{color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)}
+/* ردیف‌های منو، بدون نسخه‌ی کپی پیام | Menu Rows Without Message Clone: استایل ردیف‌های منو (فاصله و فونت بزرگ) به div های داخل نسخه‌ی کپی‌شده‌ی پیام هم می‌رسید و زمان و دایره را بزرگ می‌کرد؛ حالا فقط برای خود منو اعمال می‌شود (menu row styles no longer leak into the cloned message, so the time badge and circle keep their chat size) */
+#mmenu .mm:not(.bb) div{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:17px;color:var(--txt)}
+#mmenu .mm:not(.bb) div.rd{color:var(--red);border-bottom:6px solid rgba(0,0,0,.3)}
 #mmenu .bb{position:absolute;margin:0!important;max-width:none!important;transform:none!important}
 .rxn{display:inline-block;background:rgba(255,255,255,.18);border-radius:12px;padding:1px 7px;margin:4px 4px 0 0;font-size:15px}
 /* پیش‌نمایش ارسال، چیدمان | Send Preview Layout: صفحه‌ی سیاه تمام‌صفحه با سربرگ (نام گفتگو و نشان شماره‌ی آبی) و ناحیه‌ی رسانه */
@@ -3716,7 +3717,7 @@ const barsH=a=>a.map(h=>'<i style="height:'+Math.max(12,h)*.26+'px"></i>').join(
 const _body=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="voice"){const x=o.it[0];return '<div class="lkvo" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vpb">'+ic("play",18)+'</div><div class="vcol"><div class="vwf">'+barsH(x.wf||[])+'</div><span class="vdu">'+fd(x.d)+'</span></div></div>'}return _body(o)};
 const _plain=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="voice")return "🎤 "+tr("Voice message")+" "+fd(o.it[0].d);return _plain(t)};
 const setPB=(vo,p)=>{const b=vo.querySelector(".vpb");if(b)b.innerHTML=ic(p?"pause":"play",18)};
-function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}vNowSync()}
+function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(window.vmReset)window.vmReset(vo);if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}vNowSync()}
 async function playVo(vo,ex){const id=vo.dataset.vid;if(cur&&cur.id===id){cur.vo=vo;if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}/* واکنش فوری ویس | Instant Voice Toggle: بعد از مکث یا پخش بلافاصله دکمه‌ها و نوار به‌روز می‌شوند و منتظر رویداد نمی‌مانند (buttons and bar update at once, not waiting for the audio event) */vNowSync();return}
  stopCur();/* توقف ویدیو مسیج | Halt Video Message: شروع یک ویس، ویدیو مسیجِ در حال پخش را می‌بندد (starting a voice closes a playing video message) */try{window.vmHalt&&window.vmHalt()}catch(e){}let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("File removed from cache");return}
@@ -3744,12 +3745,12 @@ vn.querySelector("small").textContent=tr("Voice message");
 function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
 function vNowPlace(){if(!cur&&!mu)return;const subs=[...document.querySelectorAll(".sub.on")],_cp=document.getElementById("cp");if(_cp&&_cp.classList.contains("on"))subs.push(_cp);const ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope>.cpbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)";/* بروزرسانی جای خالی لیست | Refresh List Gap: بعد از هر جابجایی نوار، فاصله لیست دوباره حساب می شود (recalc list gap after the bar moves) */if(typeof padLists==="function")padLists()}
 function vNowTick(){if(!cur)return;vxProg();const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
-function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vn.classList.remove("vex");vSpdClose();vn.querySelector(".vnl").style.width="0";/* برگشت گفتگوها | Chats Back: با بسته شدن نوار گفتگوها سر جای اول برمیگردند (chats return to their place) */if(typeof padLists==="function")padLists();return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);{const xp=vn.querySelector(".vxb[data-a=play]");if(xp)xp.innerHTML=ic(cur.a.paused?"play":"pause",30)}vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
+function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vn.classList.remove("vex");vSpdClose();vn.querySelector(".vnl").style.width="0";/* برگشت گفتگوها | Chats Back: با بسته شدن نوار گفتگوها سر جای اول برمیگردند (chats return to their place) */if(typeof padLists==="function")padLists();return}vn.classList.add("on");vn.querySelector("small").textContent=tr(cur.vm?"Video message":"Voice message");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);{const xp=vn.querySelector(".vxb[data-a=play]");if(xp)xp.innerHTML=ic(cur.a.paused?"play":"pause",30)}vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
 vn.addEventListener("click",e=>{if(!cur)return;/* نشانه دکمه نوار | Bar Button Mark: اگر لمس روی پلی/بستن/سرعت باشد علامت می‌زنیم تا نوار باز نشود (the tap is marked as a button tap so the bar does not expand) */if(e.target.closest(".vnp,.vnx,.vns"))e.vnHandled=1;if(e.target.closest(".vnx")){/* بستن مستقل | Independent Close: بستن نوار ویس فقط همان نوار و پلیر را پاک می‌کند و موزیک را به جای آن نمی‌آورد یا قطع نمی‌کند (closing the voice bar removes only that bar and player; the music one is left alone and does not take its place) */window.vXOnly=1;try{stopCur()}finally{window.vXOnly=0}}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause();/* به‌روزرسانی فوری | Instant Refresh (refresh the bar right now) */vNowSync()}else if(e.target.closest(".vns")){if(vLP){vLP=0;return}if($("#vnsp")){vSpdClose();return}/* چرخش سرعت با تک لمس | Tap Speed Cycle: با ۱.۲۵ هم درست می چرخد */vSetSpd(vSpd<1?1:vSpd<1.5?1.5:vSpd<2?2:1)}});
 /* نگه‌داشتن ویس بین صفحه‌ها | Keep Voice Across Screens: با عوض شدن صفحه نوار به صفحه‌ی جدید می‌رود؛ وقتی گفتگو دوباره باز می‌شود حباب ویس درحال‌پخش دوباره به صدا وصل می‌شود (the bar follows the visible screen; when the chat is reopened the playing bubble is reconnected to the audio) */
 let vRaf=0;const vSoon=()=>{if(vRaf)return;vRaf=requestAnimationFrame(()=>{vRaf=0;vNowPlace()})};
 new MutationObserver(vSoon).observe($("#app"),{attributes:true,attributeFilter:["class"],subtree:true});
-new MutationObserver(()=>{if(!cur)return;const vo=document.querySelector('#msgs .lkvo[data-vid="'+cur.id+'"]');if(vo&&vo!==cur.vo){cur.vo=vo;setPB(vo,!cur.a.paused);vNowTick()}}).observe($("#msgs"),{childList:true,subtree:true});
+new MutationObserver(()=>{if(!cur)return;const vo=document.querySelector('#msgs .lkvo[data-vid="'+cur.id+'"],#msgs .lkvm[data-vid="'+cur.id+'"]');if(vo&&vo!==cur.vo){cur.vo=vo;setPB(vo,!cur.a.paused);if(cur.vm&&window.vmReconnect)window.vmReconnect(vo);vNowTick()}}).observe($("#msgs"),{childList:true,subtree:true});
 /* پخش پشت‌سرهم | Serial Voice Play: وقتی یک ویس تمام شود ویس بعدیِ همان گفتگو (از هر دو طرف، تا جدیدترین) خودکار پخش می‌شود؛ وایس‌های بعدی هم‌زمان با پخش از قبل باز و دانلود می‌شوند (when a voice ends, the next voice of the same chat, mine or theirs, plays automatically up to the newest; the next voices are opened and downloaded ahead while one plays) */
 let vKeep=0;
 function vList(cid){const els=S.openId===cid?[...document.querySelectorAll("#msgs .lkvo")]:[];if(els.length)return els.map(el=>({id:el.dataset.vid,d:el.dataset.d,me:((el.closest(".b")||{dataset:{}}).dataset.w)==="me",el}));const c=CHATS.find(x=>x.id===cid),o=[];if(!c)return o;chatMsgs(c).forEach(m=>{const k=lkDec(m[1]);if(k&&k.k==="voice"){const x=k.it[0];o.push({id:x.id,d:x.d,me:m[0]==="me"})}});return o}
@@ -4021,7 +4022,7 @@ function vpPlace(){if(!park||!vpEl)return;const subs=[...document.querySelectorA
  else{if(vOn)vn.style.top=base;vpEl.style.top=vOn?(b?(tp0+vn.offsetHeight+6)+'px':'calc(env(safe-area-inset-top,0px) + '+(vn.offsetHeight+10)+'px)'):base}
  vpEl.style.display=(vOn&&vex&&!sw)?'none':'';vpEl.classList.add('on');if(typeof padLists==='function')padLists();if(window.lkChatFit)lkChatFit()}
 function vpShow(p){park=p;vpMake();vpEl.querySelector('.vpp').innerHTML=ic('play',20);vpEl.querySelector('.vpm b').textContent=p.title||'';vpEl.querySelector('.vpm small').textContent=p.sub||'';vpEl.style.transform='';vpEl.style.opacity='';vpPlace()}
-function vpParkVo(){if(!cur)return;const d=(cur.vo&&cur.vo.dataset&&cur.vo.dataset.d)||cur.D||0;vpShow({k:'v',id:cur.id,cid:cur.cid,name:cur.name,t:cur.a.currentTime||0,d,title:cur.name,sub:tr('Voice message')})}
+function vpParkVo(){if(!cur||cur.vm)return;const d=(cur.vo&&cur.vo.dataset&&cur.vo.dataset.d)||cur.D||0;vpShow({k:'v',id:cur.id,cid:cur.cid,name:cur.name,t:cur.a.currentTime||0,d,title:cur.name,sub:tr('Voice message')})}
 function vpParkMu(){if(!mu)return;const m=META[mu.id]||{},D=(isFinite(mu.a.duration)&&mu.a.duration)||MD[mu.id]||0;vpShow({k:'m',live:1,id:mu.id,name:mu.name,t:mu.a.currentTime||0,D,title:m.t||muNm(mu.name),sub:m.a||tr('Music')})}
 async function vpResume(){const p=park;if(!p)return;vpClear();
  if(p.k==='m'){if(mu&&mu.id===p.id){if(cur){vpParkVo();stopCur()}try{mu.a.play().catch(()=>{})}catch(e){}}else muPlay(p.id,p.name,p.D?Math.min(.999,p.t/p.D):0)}
@@ -4263,6 +4264,7 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 #vmnow small{display:block;font-size:12px;color:var(--sub)}
 #vmnow .vns{min-width:26px;height:18px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed var(--sub);border-bottom:1.5px dashed var(--sub);font-size:11px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
 #vmnow .vns.f{color:var(--blue);border-color:var(--blue)}
+#vmnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}
 #vmfloat{position:absolute;right:10px;width:132px;height:132px;border-radius:50%;overflow:hidden;display:none;z-index:59;background:#111;box-shadow:0 4px 16px rgba(0,0,0,.45);opacity:0;transform:scale(.5);transition:opacity .25s,transform .25s cubic-bezier(.2,.8,.3,1);cursor:pointer}
 #vmfloat.on{display:block}
 #vmfloat.sh{opacity:1;transform:scale(1)}
@@ -4453,10 +4455,10 @@ const _plainVm=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="v
 const VM={cur:null},VMU={};
 /* ---- نوار پخش و دایره‌ی شناور | Player Bar And Floating Circle ---- */
 /* ساخت نوار پخش | Build Player Bar: نوار بالای گفتگو با دکمه‌ی مکث، نام، سرعت و بستن؛ مثل تلگرام وقتی ویدیو مسیج پخش می‌شود */
-const VMB=document.createElement("div");VMB.id="vmnow";VMB.innerHTML='<div class="vnp"></div><div class="vnm"><b class="vnn"></b><small></small></div><div class="vns">1X</div><div class="vnx">'+ic("close",18)+'</div>';$("#chat").appendChild(VMB);
+const VMB=document.createElement("div");VMB.id="vmnow";VMB.innerHTML='<div class="vnp"></div><div class="vnm"><b class="vnn"></b><small></small></div><div class="vns">1X</div><div class="vnx">'+ic("close",18)+'</div><i class="vnl"></i>';$("#chat").appendChild(VMB);
 const VMR=[1,1.5,2];let vmRi=0,vmTm=0,vmFt=0;
 /* نمایش و پنهان کردن نوار | Show Hide Bar: نوار زیر هدر می‌نشیند و پیام‌ها از زیر آن رد می‌شوند؛ با پایان پخش آرام محو می‌شود */
-function vmBarShow(){clearTimeout(vmTm);vmRi=0;VMB._pz=null;const s=VMB.querySelector(".vns");s.textContent="1X";s.classList.remove("f");VMB.querySelector(".vnn").textContent=($("#cname")||{}).textContent||"";VMB.querySelector("small").textContent=tr("Video message");
+function vmBarShow(){clearTimeout(vmTm);vmRi=0;VMB.querySelector(".vnl").style.width="0";VMB._pz=null;const s=VMB.querySelector(".vns");s.textContent="1X";s.classList.remove("f");VMB.querySelector(".vnn").textContent=($("#cname")||{}).textContent||"";VMB.querySelector("small").textContent=tr("Video message");
  const hh=parseFloat($("#chat").style.getPropertyValue("--hh"))||0;VMB.style.top=(hh+4)+"px";VMB.classList.add("on");void VMB.offsetWidth;VMB.classList.add("sh");if(window.lkChatFit)lkChatFit()}
 function vmBarHide(){VMB.classList.remove("sh");clearTimeout(vmTm);vmTm=setTimeout(()=>{if(!VM.cur){VMB.classList.remove("on");if(window.lkChatFit)lkChatFit()}},260)}
 /* دکمه‌های نوار | Bar Buttons: مکث و ادامه، تغییر سرعت (۱ و ۱.۵ و ۲)، و بستن */
@@ -4468,7 +4470,7 @@ const VMF=document.createElement("div");VMF.id="vmfloat";VMF.innerHTML='<video m
 VMF.onclick=()=>{if(VM.cur)VM.cur.scrollIntoView({block:"center",behavior:"smooth"})};
 function vmDockOff(){if(!VMF.classList.contains("on"))return;VMF.classList.remove("sh");const f=VMF.querySelector("video");clearTimeout(vmFt);vmFt=setTimeout(()=>{if(!VMF.classList.contains("sh")){VMF.classList.remove("on");try{f.pause()}catch(_){}}},260)}
 /* هماهنگی هر فریم | Frame Sync: آیکون مکث نوار، نشان دادن یا پنهان کردن دایره‌ی شناور، و هماهنگ نگه داشتن تصویر آن با ویدیوی اصلی */
-function vmSync(el,v){const pz=v.paused;if(VMB._pz!==pz){VMB._pz=pz;VMB.querySelector(".vnp").innerHTML=ic(pz?"play":"pause",20)}
+function vmSync(el,v){const pz=v.paused;if(v.duration)VMB.querySelector(".vnl").style.width=(v.currentTime/v.duration*100)+"%";if(VMB._pz!==pz){VMB._pz=pz;VMB.querySelector(".vnp").innerHTML=ic(pz?"play":"pause",20)}
  const ch=$("#chat"),cs=ch.style,hh=parseFloat(cs.getPropertyValue("--hh"))||0,bh=parseFloat(cs.getPropertyValue("--bh"))||0,cr=ch.getBoundingClientRect(),ib=ch.querySelector(".inbar").getBoundingClientRect(),r=el.getBoundingClientRect();
  const up=r.bottom<cr.top+hh+bh+4,dn=r.top>ib.top-4;
  if(!up&&!dn){vmDockOff();return}
@@ -4480,24 +4482,46 @@ function vmSync(el,v){const pz=v.paused;if(VMB._pz!==pz){VMB._pz=pz;VMB.querySel
 /* در دید نگه داشتن | Keep In View: هنگام بزرگ شدن دایره، گفتگو خودکار جابه‌جا می‌شود تا دایره زیر نوار بالا و بالای نوار پیام کامل دیده شود */
 function vmFit(el){const t0=performance.now();(function st(){if(VM.cur!==el)return;const ch=$("#chat"),cs=ch.style,top=ch.getBoundingClientRect().top+(parseFloat(cs.getPropertyValue("--hh"))||0)+(parseFloat(cs.getPropertyValue("--bh"))||0)+6,bot=ch.querySelector(".inbar").getBoundingClientRect().top-6,r=el.getBoundingClientRect();let d=0;if(r.bottom>bot)d=r.bottom-bot;if(r.top-d<top)d=r.top-top;if(Math.abs(d)>1)$("#msgs").scrollTop+=d;if(performance.now()-t0<450)requestAnimationFrame(st)})()}
 /* خروج از گفتگو | Leave Chat: با دکمه‌ی برگشت، پخش ویدیو مسیج متوقف می‌شود */
-$("#back").addEventListener("click",()=>{if(VM.cur)vmStop(VM.cur)});
+$("#back").addEventListener("click",()=>{try{vmDockOff()}catch(_){}});
 /* آدرس ویدیو | Video URL: فایل را از حافظه‌ی موقت یا انبار می‌گیرد و آدرس قابل پخش می‌سازد */
 async function vmUrl(id){if(VMU[id])return VMU[id];let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return null;return VMU[id]=URL.createObjectURL(b)}
 /* آماده‌سازی حباب | Attach Video: عنصر ویدیو فقط وقتی حباب دیده شود ساخته می‌شود */
 async function vmAttach(el){if(el._v)return;if(!el._ld)el._ld=(async()=>{const u=await vmUrl(el.dataset.vid);if(!u){el.classList.add("vx");return}
  const v=document.createElement("video");v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;el.querySelector(".vmc").append(v);el._v=v;
- v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>{const cid=S.openId,id=el.dataset.vid;vmStop(el);/* ادامه‌ی زنجیره | Continue Chain: بعد از پایان ویدیو مسیج، پیام بعدی (ویس یا ویدیو مسیج) پخش می‌شود (after a video message ends, the next message plays) */if(window.vSerialNext)window.vSerialNext(cid,id)})})();await el._ld}
-/* پایان پخش | Stop Playback: دایره به حالت اول برمی‌گردد؛ بی‌صدا و تکراری می‌چرخد و حلقه و زمان صفر می‌شود */
-function vmStop(el){if(!el)return;if(VM.cur===el){VM.cur=null;vmBarHide();vmDockOff()}el.classList.remove("pl","pz");const v=el._v;if(v){v.playbackRate=1;v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
+ v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>{if(cur&&cur.vm)return;const cid=S.openId,id=el.dataset.vid;vmStop(el);/* ادامه‌ی زنجیره | Continue Chain: بعد از پایان ویدیو مسیج، پیام بعدی (ویس یا ویدیو مسیج) پخش می‌شود (after a video message ends, the next message plays) */if(window.vSerialNext)window.vSerialNext(cid,id)})})();await el._ld}
+/* ===== ویدیو مسیج با پلیر ویس | Video Message Uses Voice Player =====
+توضیح ساده | Simple note: ویدیو مسیج دیگر پلیر و نوار جدا ندارد؛ مثل ویس از همان پلیر (cur) و همان نوار (#vnow) استفاده می‌کند. فقط صدا از یک Audio جدا پخش می‌شود و تصویر دایره‌ای با آن هماهنگ است. با رفتن از چت هم پخش و نوار می‌مانند.
+(Video message no longer has its own player or bar; like voice it uses the shared player (cur) and bar (#vnow). The sound plays from a separate Audio and the round picture follows it. Playback and the bar stay when you leave the chat.) */
+/* بازگردانی دایره | Reset Circle: دایره به حالت اول برمی‌گردد؛ بی‌صدا و تکراری می‌چرخد و حلقه و زمان صفر می‌شود */
+function vmReset(el){if(!el||!el.classList||!el.classList.contains("lkvm"))return;if(VM.cur===el){VM.cur=null;vmDockOff()}el.classList.remove("pl","pz");const v=el._v;if(v){v.playbackRate=1;v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
  const c=el.querySelector(".vmg circle");if(c)c.style.strokeDashoffset="305.4";const d=el.querySelector(".vmd");if(d)d.textContent=fd(+el.dataset.d)}
-/* حلقه‌ی پیشرفت | Progress Loop: هنگام پخش، حلقه‌ی دور دایره پر می‌شود و زمان باقی‌مانده کم می‌شود */
-function vmLoop(){const el=VM.cur;if(!el)return;const v=el._v;if(v)vmSync(el,v);if(v&&!v.paused){const d=+el.dataset.d||v.duration||1,p=Math.min(1,v.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-v.currentTime));const u=el.querySelector(".vmu");if(u&&v.currentTime>.3)u.remove()}requestAnimationFrame(vmLoop)}
-/* لمس دایره | Tap Circle: بار اول با صدا از اول پخش می‌شود و بزرگ می‌شود؛ لمس دوباره مکث؛ دوباره ادامه */
-async function vmTap(el){await vmAttach(el);const v=el._v;if(!v){toast("Video removed from cache");return}
- if(VM.cur===el){if(v.paused)v.play().catch(()=>{});else v.pause();return}
- vmStop(VM.cur);try{window.vStopVoice&&window.vStopVoice()}catch(_){}document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
- VM.cur=el;el.classList.add("pl");el.classList.remove("pz");vmBarShow();vmFit(el);v.loop=false;v.muted=false;try{v.currentTime=0}catch(_){}
- try{await v.play()}catch(e){v.muted=true;v.play().catch(()=>{})}vmLoop()}
+window.vmReset=vmReset;
+/* توقف | Stop: اگر همین ویدیو مسیج در پلیر مشترک است، پلیر را می‌بندد */
+function vmStop(el){if(!el)return;if(cur&&cur.vm&&cur.vo===el){vKeep=0;stopCur();return}vmReset(el)}
+/* حلقه‌ی هماهنگی | Sync Loop: تصویر دایره را با صدای پلیر مشترک (cur.a) هماهنگ نگه می‌دارد و حلقه و زمان را به‌روز می‌کند */
+let vmRaf=0;
+function vmLoop(){const el=VM.cur;if(!el||!cur||!cur.vm||cur.vo!==el)return;if(!el.isConnected){VM.cur=null;vmDockOff();return}
+ const a=cur.a,v=el._v;
+ if(v){if(a.paused){if(!v.paused)v.pause()}else{if(v.paused)v.play().catch(()=>{});if(v.playbackRate!==a.playbackRate)v.playbackRate=a.playbackRate;if(Math.abs(v.currentTime-a.currentTime)>.35){try{v.currentTime=a.currentTime}catch(_){}}}vmSync(el,v)}
+ el.classList.toggle("pz",a.paused);
+ const d=+el.dataset.d||a.duration||1,p=Math.min(1,a.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-a.currentTime));const u=el.querySelector(".vmu");if(u&&a.currentTime>.3)u.remove();
+ vmRaf=requestAnimationFrame(vmLoop)}
+/* نمایش روی حباب | Show On Bubble: دایره بزرگ می‌شود و با پلیر هماهنگ می‌شود */
+function vmVisual(el){VM.cur=el;el.classList.add("pl");el.classList.toggle("pz",!!(cur&&cur.a.paused));const v=el._v;if(v){v.loop=false;v.muted=true;try{v.currentTime=cur?cur.a.currentTime:0}catch(_){}}vmFit(el);cancelAnimationFrame(vmRaf);vmRaf=requestAnimationFrame(vmLoop)}
+/* وصل شدن دوباره | Reconnect: وقتی گفتگو دوباره باز می‌شود، دایره‌ی در حال پخش دوباره به پلیر وصل می‌شود */
+window.vmReconnect=function(el){vmAttach(el).then(()=>{if(cur&&cur.vm&&cur.vo===el)vmVisual(el)})};
+/* لمس دایره | Tap Circle: مثل ویس؛ بار اول شروع، بعد مکث و ادامه */
+async function vmTap(el){const id=el.dataset.vid;
+ if(cur&&cur.id===id){cur.vo=el;if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause();vNowSync();return}
+ await vmAttach(el);if(!el._v){toast("Video removed from cache");return}
+ try{window.vStopVoice&&window.vStopVoice()}catch(_){}stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
+ let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
+ if(!b){toast("Video removed from cache");return}
+ const a=new Audio(URL.createObjectURL(b)),D=+el.dataset.d;a.playbackRate=vSpd;
+ cur={a,vo:el,id,D,vm:true,cid:S.openId,name:vNowName(el)};vKeep=0;
+ a.ontimeupdate=vNowTick;a.onplay=a.onpause=vNowSync;a.onended=vEnded;
+ vmVisual(el);
+ try{vNowSync();await a.play()}catch(e){toast("Cannot play this video");stopCur()}}
 /* دسترسی از بیرون | Video Message Hooks: ویس برای پخش پشت‌سرهم، ویدیو مسیج را از اینجا پخش یا متوقف می‌کند */
 window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
