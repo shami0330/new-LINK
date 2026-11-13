@@ -1283,8 +1283,8 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
     <div class="card">
       <div class="cpr"><div><small>mobile</small><div class="bl" id="cp_ph"></div></div></div>
       <div class="cpr"><div><small>username</small><div class="bl" id="cp_un"></div></div><i data-ic="grid" data-s="20" style="color:var(--blue)"></i></div>
-      <div class="cpr"><div><small>birthday</small><div>4 Aug</div></div></div>
-      <div class="cpr"><div><small>bio</small><div>39</div></div></div>
+      <div class="cpr" id="cp_bdr"><div><small>birthday</small><div>4 Aug</div></div></div>
+      <div class="cpr" id="cp_bir"><div><small>bio</small><div>39</div></div></div>
     </div>
     <div class="cptw"><div id="cptabs"></div></div>
     <div id="cpbody"></div>
@@ -1821,6 +1821,8 @@ function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c
  LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const old=(CFG.sent[c.id]||[]).length;CFG.sent[c.id]=L.map(m=>lkRec(m,c));saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&L.length!==old){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}
   lkTicks(c);lkMarkSeen(c);renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
+/* رفتن گفتگو | Chat Gone: گفتگویی که طرف مقابل برای هر دو حذف کرده؛ اگر باز باشد بسته می‌شود و از فهرست و حافظه می‌رود (a chat deleted for both by the other person: closed if open, removed from the list) */
+function lkGone(c){if(!c)return;if(S.openId===c.id&&$("#chat").classList.contains("on")){try{$("#back").click()}catch(e){}}CHATS=CHATS.filter(x=>x!==c);delete CFG.sent[c.id];if(CFG.cleared)delete CFG.cleared[c.id];saveCfg();renderChats()}
 /* ساخت دوباره گفتگو | Rebuild Chat: اگر این گفتگو باز است، پیام‌هایش را از نو روی صفحه می‌چیند (redraws the open chat) */
 function lkRebuild(c){if(S.openId===c.id&&$("#chat").classList.contains("on")){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}}
 /* حذف دوطرفه پیام | Delete Messages For Both: پیام از سرور پاک می‌شود؛ اگر سرور اجازه ندهد (پیام‌های قدیمی) نشانهٔ «حذف‌شده» می‌گذارد؛ در هر دو حالت طرف مقابل همان لحظه می‌بیند (message is deleted from the server, or hidden by a tombstone if the server refuses) */
@@ -1845,7 +1847,7 @@ function lkReal(c,v,rp){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return 
  LKA.send(S.user.id,c.uid,lkRpEnc(v,rp)).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);const L=CFG.sent[c.id]||[];for(let i=L.length-1;i>=0;i--)if(L[i][0]==="me"){if(!L[i][6])L[i][6]=Date.parse(m.at)||0;L[i][7]=m.id;break}lkTicks(c)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
 function lkIn(m){if(!S.user||!m)return;if(m.kind==="del"||m.kind==="dl"){const mid=m.kind==="dl"?m.text:m.id;if(m.kind==="dl"&&m.from===S.user.id)return;CHATS.forEach(c=>{const L=CFG.sent[c.id]||[],i=L.findIndex(r=>r[7]===mid);if(i>=0){L.splice(i,1);saveCfg();lkSyncPreview(c);lkRebuild(c);renderChats()}});return}
- if(m.kind==="clr"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from);if(c&&(CFG.sent[c.id]||[]).length||c&&/\|del$/.test(m.text||"")){CFG.sent[c.id]=[];c.m="";c.un=0;saveCfg();lkRebuild(c);if(/\|del$/.test(m.text||"")){CHATS=CHATS.filter(x=>x!==c);delete CFG.sent[c.id]}renderChats()}}return}
+ if(m.kind==="clr"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from);if(c&&/\|del$/.test(m.text||""))lkGone(c);else if(c&&(CFG.sent[c.id]||[]).length){CFG.sent[c.id]=[];c.m="";c.un=0;saveCfg();lkRebuild(c);renderChats()}}return}
  if(m.kind==="seen"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from),t=Date.parse(m.text)||0;if(c&&t>(c.sn||0)){c.sn=t;lkTicks(c)}}return}if(m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
  const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m,c));
   if(S.openId===c.id&&$("#chat").classList.contains("on")){{const d=lkRpDec(m.text,m.from,c);addMsg("ot",d.t,lkHM(m.at),0,d.rp)}lkMarkSeen(c)}else c.un=(c.un||0)+1;
@@ -1859,7 +1861,7 @@ function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)retu
  LKA.recent().then(a=>{LKC.srv=1;lkConnUpdate();a.forEach(lkIn)}).catch(lkErr);
  /* تازه‌سازی گفتگوی باز | Open Chat Refresh: پیام‌های حذف‌شده یا پاک‌شده توسط طرف مقابل هم از گفتگوی باز می‌رود (picks up deletes and clears by the other person) */{const oc=CHATS.find(x=>x.id===S.openId);if(oc&&oc.uid&&$("#chat").classList.contains("on"))lkChatLoad(oc.id)}
  /* تازه‌سازی دیده‌شدن | Seen Refresh: برای چت‌هایی که آخرین پیامشان از من است و هنوز دیده نشده، وضعیت دیده‌شدن را دوباره می‌پرسد (re-asks for chats whose last message is mine and unseen) */CHATS.filter(x=>x.uid&&x.t===2&&!x.sl).slice(0,8).forEach(lkSeenPull);
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
+ LKA.chats(S.user.id).then(rs=>{/* حذف دوطرفه در زمان اجرا | Live Gone Check: چتی که قبلاً روی سرور بوده و حالا در فهرست سرور نیست، یعنی طرف مقابل آن را حذف کرده (a chat that was on the server but is no longer listed was deleted by the other person) */if(rs.length<100)CHATS.filter(x=>x.uid&&x.inSrv&&!rs.some(r=>r.uid===x.uid)).forEach(lkGone);rs.forEach(r=>{const c0=CHATS.find(x=>x.uid===r.uid);if(c0)c0.inSrv=1});rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
 /* خودآزمایی | Self Check: بعد از ورود یک بار می‌خواند و دریافت زنده را می‌سنجد؛ اگر چیزی خراب بود با پیام فارسی و کد خطا می‌گوید کدام بخش مشکل دارد (one-time check after login, tells which part fails) */
 function lkDiag(){const me=S.user&&S.user.id;if(!me)return;const say=(t,e)=>toast("⚠ "+t+((e&&(e.code||e.message))?" ("+(e.code||"")+" "+String(e.message||"").slice(0,70)+")":""));
  LKA.recent().catch(e=>say("خواندن پیام‌ها از سرور خطا داد",e));
@@ -1871,7 +1873,7 @@ function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)re
  LKC.un=LKA.listen(S.user.id,lkIn);
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=lkRpDec(r.last,r.lastSender,c).t;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS=CHATS.filter(x=>!x.uid||rs.some(r=>r.uid===x.uid)||!(CFG.sent[x.id]||[]).length);renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
+ LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=lkRpDec(r.last,r.lastSender,c).t;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS.filter(x=>x.uid&&!rs.some(r=>r.uid===x.uid)&&(CFG.sent[x.id]||[]).length).forEach(lkGone);rs.forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c)c.inSrv=1});renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
  LKC.tm=setInterval(lkPoll,5000);lkDiag();
   /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
   LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
@@ -3301,7 +3303,7 @@ const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Musi
 /* باز کردن پروفایل | Open Profile: با لمس کپسول بالای گفتگو (tap on the chat header capsule) */
 function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.n;
  $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_n").insertAdjacentHTML("beforeend",vb(c,22));$("#cp_mn").insertAdjacentHTML("beforeend",vb(c,14));$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;/* قلاب میوت | Mute Hook */lkMuteIcons();
- $("#cp_ph").textContent="+98 901 720 6536";$("#cp_un").textContent="@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");
+ /* بدون شماره و نام کاربری ساختگی | No Fake Contact Info: در چت واقعی شمارهٔ نمایشی پنهان و نام کاربری واقعی نشان داده می‌شود (real chat hides the demo phone and shows the real username) */const _real=!!(c.uid&&LK_MODE==="real");$("#cp_ph").textContent=_real?"":"+98 901 720 6536";{const r=$("#cp_ph").closest(".cpr");if(r)r.style.display=_real?"none":""}["#cp_bdr","#cp_bir"].forEach(q=>{const e=$(q);if(e)e.style.display=_real?"none":""});$("#cp_un").textContent="@"+(_real?(c.uname||""):(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user"));
  paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();cpMuteSync();$("#cp").classList.add("on")}
 $("#chat .top .title").onclick=openCP;$("#cav").onclick=openCP;
 $("#cpBack").onclick=()=>{stopPl();$("#cp").classList.remove("on")};
@@ -3330,7 +3332,7 @@ function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"S
   src.forEach(m=>{const w=m[0],t=m[1],day=dayLabel(m[3]||0),d=w==="me"?"s":"r",o=lkDec(t);
    if(o&&o.it){if(o.k==="files")o.it.forEach(x=>(/\.(mp3|m4a|wav|ogg|aac|flac|opus)$/i.test(x.n||"")?R.music:R.files).push([x,day,d]));else if(o.k==="voice")o.it.forEach(x=>R.voice.push([x,day,d]));else o.it.forEach((x,i)=>{if(x.t!=="voice"&&x.t!=="vmsg")R.med.push([x,t,i,[w==="me"?(S.user?S.user.name:"You"):c.n,(day==="Today"?"today":day)+" at "+m[2]]])})}
    else if(!o){const body=fwBody(t);(body.match(/(https?:\/\/|www\.)[^\s<>"]+/gi)||[]).forEach(u=>R.links.push([u,day]));if(w==="me")R.saved.push([body,day])}});return((sa&&sa.length)||R.med.length||R.files.length||R.music.length||R.voice.length||R.links.length)?R:null}
- cpBody=function(){const c=CHATS.find(x=>x.id===S.openId),R=c&&cpReal(c);if(!R)return demo();
+ /* بدون داده نمایشی | No Demo Data: در چت واقعی اگر چیزی رد و بدل نشده باشد، تب‌ها خالی می‌مانند و داده‌ی نمایشی نشان داده نمی‌شود (real chats show empty tabs instead of demo items) */cpBody=function(){const c=CHATS.find(x=>x.id===S.openId);let R=c&&cpReal(c);if(!R&&c&&c.uid&&LK_MODE==="real")R={med:[],files:[],music:[],voice:[],links:[],saved:[]};if(!R)return demo();
   const b=$("#cpbody"),k=CP.tab,dir=d=>d==="s"?"Sent":"Received",em='<div style="padding:40px 20px;text-align:center;opacity:.5">—</div>';let h="";
   if(k==="media")h=R.med.length?'<div class="mgrid">'+R.med.map((q,i)=>`<div class="mt" data-lkm="${q[0].id}" data-mi="${i}" style="background:#222;overflow:hidden"><img alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">${q[0].t==="video"&&q[0].d?`<span class="dur">${fd(q[0].d)}</span>`:""}</div>`).join("")+"</div>":em;
   else if(k==="files")h=R.files.map(([x,day,d])=>`<div class="lrow lfx" data-id="${x.id}" data-n="${esc(x.n||"")}" style="cursor:pointer"><div class="fic">${ic("file",22)}</div><div class="lt"><b dir="auto">${esc(x.n)}</b><small>${fmtSize(x.s)} · ${day}</small></div><small>${dir(d)}</small></div>`).join("")||em;
