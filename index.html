@@ -2145,7 +2145,7 @@ function lkMsgBody(o){
   h+='<div class="lkr" style="height:'+Math.round(rh)+'px">'+r.map((x,j)=>'<div class="lkc'+(lkRm(x)?' lkrm'+(x.t==='video'?' vd':''):'')+'" data-lkm="'+x.id+'" data-i="'+(i+j)+'" style="flex:'+(a[j]/a.reduce((p,q)=>p+q,0)).toFixed(4)+' 1 0"><img alt="">'+lkCellIn(x,o)+(o.pend?'<span class="lkpg"><i class="lksp"></i></span>':'')+'</div>').join("")+'</div>';i+=n});
  return (W?h.replace('lkbody lka"','lkbody lka" style="width:'+W+'px"'):h)+'</div>'}
 /* پر کردن پیش‌نمایش‌ها | Fill Thumbnails: عکس کوچک هر خانه را از حافظه‌ی موقت یا انبار می‌گیرد؛ اگر نبود (کش پاک شده) علامت سطل زباله نشان می‌دهد */
-async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),rm=e.classList.contains("lkrm"),isI=r&&r.blob&&r.blob.type.startsWith("image/"),b=r&&(rm?r.thumb:(r.th2?(isI?r.blob:r.th2):(r.thumb||(isI?r.blob:null))));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
+async function lkHydrate(d){for(const e of d.querySelectorAll("[data-lkm]")){const id=e.dataset.lkm;let u=LKU[id];if(!u){try{const r=await lkGet(id),rm=e.classList.contains("lkrm"),isI=r&&r.blob&&r.blob.type.startsWith("image/"),b=r&&(rm?r.thumb:(r.th2?(isI?r.blob:r.th2):(isI?r.blob:(r.thumb||null))));if(b)u=LKU[id]=URL.createObjectURL(b)}catch(x){}}const im=e.querySelector("img");if(u&&im)im.src=u;else if(!d.classList.contains("pend"))e.classList.add("lkx")}}
 /* ذخیره روی دستگاه | Download File: فایل را از انبار برمی‌دارد و دانلود می‌کند */
 const LKF={};
 function lkFileDl(dl){const id=dl.dataset.dl,n=dl.dataset.n;if(LKF[id]){clearInterval(LKF[id]);delete LKF[id];dl.innerHTML=lkDlI;return}
@@ -2202,7 +2202,7 @@ function lkPend(c,k,files,cap){
   catch(e){/* پایان با خطا | Done On Error: ارسال از فهرست در حال انجام خارج می‌شود */P.done=1;d.remove();const em=String(e&&e.message||e);toast(/compress|timeout/.test(em)?"Compression failed":"Send failed");/* علت خطا | Error Detail: علت واقعی فشرده‌سازی زیر پیام نشان داده می‌شود و ۹ ثانیه می‌ماند تا خوانده شود (the real compress reason is shown in the toast for 9 seconds) */if(/compress/.test(em)){const tt=$("#toast");tt.textContent+=" ["+em.replace(/^compress failed: /,"").slice(0,160)+"]";clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}return}
   const kept=it.filter(x=>!x.cx);if(!kept.length){/* پایان با لغو همه | Done On Cancel All: لغو همه‌ی فایل‌ها ارسال را از فهرست خارج می‌کند */P.done=1;d.remove();return}
   for(let i=0;i<it.length;i++){const x=it[i],r=res[i];if(!r||x.cx)continue;LKB[x.id]=r.blob;if(LK_UPLOAD_URL){try{await Promise.race([lkPut(x.id,{blob:r.blob,thumb:r.thumb}),new Promise(ok=>setTimeout(ok,8000))])}catch(e){}}
-   if(r.thumb){if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(r.thumb)}
+   if(r.thumb){const _tb=(x.t==="photo"&&r.blob)?r.blob:r.thumb;if(LKU[x.id])URL.revokeObjectURL(LKU[x.id]);LKU[x.id]=URL.createObjectURL(_tb)}
    (CFG.media[c.id]=CFG.media[c.id]||[]).push({id:x.id,type:mediaType(files[i]),name:x.n,size:x.s})}
   const text=lkEnc({k,it:kept,cap:cap||undefined}),now=lkNow();
   (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);c.m=lkMsgPlain(text);c.tm=now;/* بالا آوردن چت | Bump Chat: بعد از ارسال، گفتگو می‌رود بالای لیست (بعد از پین‌ها) */bumpChat(c);saveCfg();
@@ -4869,7 +4869,7 @@ try{const c=cv(384,384),x=c.getContext("2d"),draw=t=>{const g=x.createLinearGrad
 /* افزودن به گفتگوها | Add Demo Video Message: ویدیو مسیج را قبل از آخرین پیام هر گفتگو می‌گذارد تا پیش‌نمایش لیست چت‌ها عوض نشود */
 const addVM=(c,L)=>{if(!c||!L||!L.length)return;const id="dm_vm"+c.id;if(!VMI.includes(id))return;const prev=L[Math.max(0,L.length-2)],f=L.find(m=>m.w==="ot"&&m.who),mine=c.id%2===0;L.splice(L.length-1,0,T(mine?"me":"ot",mine?"":(f?f.who:""),lkEnc({k:"vmsg",it:[{id,t:"vmsg",n:"video-message.mp4",s:SZ[id]||150000,d:3,w:384,h:384}]}),prev.tm,prev.n))};
 /* ساخت پیام‌ها | Message Builders */
-const ph=(id,n)=>({id,t:"photo",n,s:SZ[id]||90000,w:640,h:420}),vd=id=>({id,t:"video",n:"clip.mp4",s:SZ[id]||250000,w:480,h:270,d:3}),vo=id=>({id,t:"voice",n:"voice.wav",s:SZ[id]||60000,d:DUR[id]||4,wf:WF[id]||[]}),fl=(id,n)=>({id,n,s:SZ[id]||100000});
+const ph=(id,n)=>({id,t:"photo",n,s:SZ[id]||90000,w:640,h:420,r:1}),vd=id=>({id,t:"video",n:"clip.mp4",s:SZ[id]||250000,w:480,h:270,d:3,r:1}),vo=id=>({id,t:"voice",n:"voice.wav",s:SZ[id]||60000,d:DUR[id]||4,wf:WF[id]||[]}),fl=(id,n)=>({id,n,s:SZ[id]||100000});
 const AL=(it,cap)=>lkEnc({k:"album",it,cap}),FL=(id,n)=>lkEnc({k:"files",it:[fl(id,n)]}),VC=id=>lkEnc({k:"voice",it:[vo(id)]});
 const T=(w,who,txt,tm,n,o)=>Object.assign({w,who,txt,tm,n},o||{});
 const D=c=>{const N=(w,who,txt,tm,n,o)=>T(w,who,txt,tm,n,o);
