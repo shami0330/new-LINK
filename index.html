@@ -3738,7 +3738,7 @@ Object.assign(FA,{"Download":"دانلود","Reply":"پاسخ","Copy":"کپی","
   const bar=document.createElement("div");bar.className="rxb";const mm=document.createElement("div");mm.className="mm";
   let ex=false;const drawBar=()=>{bar.innerHTML=(ex?E1.concat(E2):E1).map(e=>`<span>${e}</span>`).join("")+`<div class="more">${ex?"⌃":"⌄"}</div>`;bar.querySelectorAll("span").forEach(sp=>sp.onclick=ev=>{ev.stopPropagation();let c=b.querySelector(".rxn");if(c&&c.textContent===sp.textContent)c.remove();else{if(!c){c=document.createElement("span");c.className="rxn";b.append(c)}c.textContent=sp.textContent}close()});bar.querySelector(".more").onclick=ev=>{ev.stopPropagation();ex=!ex;drawBar();place()}};
   mm.innerHTML=it.map(x=>`<div data-i="${x[2]}" class="${x[2]===4?"rd":""}">${ic(x[1],22)}<span>${tr(x[0])}</span></div>`).join("");
-  mm.querySelectorAll("[data-i]").forEach(d=>d.onclick=ev=>{ev.stopPropagation();const i=+d.dataset.i;close();if(i===9)window.lkEdStart(b);else if(i===10){/* دانلود از منو | Menu Download: همه‌ی فایل‌ها و آهنگ‌های همین پیام ذخیره می‌شوند (saves every file and track of this message) */const seen={};b.querySelectorAll(".lkdl[data-dl]").forEach(d=>{if(seen[d.dataset.dl])return;seen[d.dataset.dl]=1;lkSave(d.dataset.dl,d.dataset.n)})}else if(i<5)act(i,b);else if(window.lkSelStart)window.lkSelStart(b)});
+  mm.querySelectorAll("[data-i]").forEach(d=>d.onclick=ev=>{ev.stopPropagation();const i=+d.dataset.i;/* قلاب حذف کنار دکمه | Delete Popup Hook: با زدن Delete به جای برگه‌ی پایین، پنجره‌ی کوچک «برای من / برای هر دو» کنار همان دکمه باز می‌شود (Delete opens the small popup beside the button) */if(i===4){lkDelPop(d,[["me","Delete for me"],["both","Delete for both",1]],mode=>{close();act(4,b);const q=$("#fwdov [data-d=\""+mode+"\"]");if(q)q.click()});return}close();if(i===9)window.lkEdStart(b);else if(i===10){/* دانلود از منو | Menu Download: همه‌ی فایل‌ها و آهنگ‌های همین پیام ذخیره می‌شوند (saves every file and track of this message) */const seen={};b.querySelectorAll(".lkdl[data-dl]").forEach(d=>{if(seen[d.dataset.dl])return;seen[d.dataset.dl]=1;lkSave(d.dataset.dl,d.dataset.n)})}else if(i<5)act(i,b);else if(window.lkSelStart)window.lkSelStart(b)});
   ov.append(bar);if(!b.querySelector('[data-lkm],.lkfr'))ov.append(cl);ov.append(mm);
   function place(){const bw=bar.offsetWidth,bh=bar.offsetHeight,mh=mm.offsetHeight,vh=Math.min(o.height,innerHeight-o.top),vw=Math.min(o.width,innerWidth-o.left);/* فقط بخش دیده‌شده | Visible Part Only: ارتفاع و عرض را فقط تا لبه‌ی واقعی صفحه نمایش حساب می‌کند تا منو بیرون نزند (height and width are measured only up to the real display edge) */cl.style.maxHeight="";cl.style.overflow="";let top=r.top-o.top,rt=top-bh-8,mt=top+r.height+8;
    const maxB=vh-24-(env0());if(mt+mh>maxB){const d=mt+mh-maxB;top-=d;rt-=d;mt-=d}if(rt<60){const d=60-rt;top+=d;rt+=d;mt+=d}/* حباب بلند | Tall Bubble: اگر حباب همراه منو جا نمی‌شود، منو پایین صفحه می‌ماند و حباب کوتاه و بریده می‌شود (a bubble too tall to fit keeps the menu on screen and is clipped) */if(mt+mh>maxB){rt=60;top=rt+bh+8;mt=maxB-mh;cl.style.maxHeight=Math.max(40,mt-8-top)+"px";cl.style.overflow="hidden"}
@@ -3750,6 +3750,17 @@ Object.assign(FA,{"Download":"دانلود","Reply":"پاسخ","Copy":"کپی","
  M.addEventListener("mousedown",e=>{const b=e.target.closest(".b");if(!b)return;stop();tm=setTimeout(()=>open(b),450)});
  M.addEventListener("touchmove",e=>{if(Math.abs(e.touches[0].clientX-x0)>8||Math.abs(e.touches[0].clientY-y0)>8)stop()},{passive:true});
  ["touchend","touchcancel","mouseup","mouseleave"].forEach(ev=>M.addEventListener(ev,stop,{passive:true}))})();
+/* پنجره‌ی حذف کنار دکمه | Delete Popup: پنجره‌ی کوچکی با دو گزینه‌ی «حذف برای من» و «حذف برای هر دو» که کنار دکمه‌ی حذف باز می‌شود؛ اگر کنارش جا نبود زیر یا بالای آن می‌آید و با لمس بیرونش بسته می‌شود (small window with the two delete options, opens beside the delete button; falls back to below/above; closes on outside tap) */
+function lkDelPop(a,rows,cb){const old=$("#lkdp");if(old)old.remove();
+ const p=document.createElement("div");p.id="lkdp";p.style.cssText="position:fixed;z-index:300;min-width:190px;border-radius:14px;overflow:hidden;background:var(--menu);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 30px rgba(0,0,0,.45);font-size:16px;text-align:center;color:var(--txt)";
+ p.innerHTML=rows.map((r,i)=>`<div data-d="${r[0]}" style="padding:13px 16px;cursor:pointer;${i?"border-top:.5px solid var(--line);":""}${r[2]?"color:var(--red);":""}">${tr(r[1])}</div>`).join("");
+ $("#app").append(p);
+ const r=a.getBoundingClientRect(),W=p.offsetWidth,H=p.offsetHeight,vw=innerWidth,vh=innerHeight,m=8;let x,y=Math.max(m,Math.min(r.top,vh-H-m));
+ if(r.right+m+W<=vw-m)x=r.right+m;else if(r.left-m-W>=m)x=r.left-m-W;else{x=Math.max(m,Math.min(r.right-W,vw-W-m));y=r.bottom+4+H<=vh-m?r.bottom+4:Math.max(m,r.top-H-4)}
+ p.style.left=x+"px";p.style.top=y+"px";
+ const off=e=>{if(p.contains(e.target))return;p.remove();document.removeEventListener("pointerdown",off,true)};setTimeout(()=>document.addEventListener("pointerdown",off,true),0);
+ ["pointerdown","touchstart","mousedown"].forEach(ev=>p.addEventListener(ev,e=>e.stopPropagation()));
+ p.onclick=e=>{const d=e.target.closest("[data-d]");if(!d)return;e.stopPropagation();p.remove();document.removeEventListener("pointerdown",off,true);cb(d.dataset.d)}}
 /* ---- ویرایش پیام | Edit Message ---- */
 /* ویرایش پیام | Edit Message: با زدن Edit در منوی پیام، متن پیام خودم در کادر نوشتن می‌آید و بالای کادر نوار «ویرایش پیام» دیده می‌شود؛ با دکمه‌ی ارسال، متن جدید جای متن قبلی می‌نشیند و ذخیره می‌شود؛ بستن نوار ویرایش را لغو می‌کند (Edit puts my message text in the input with an edit bar above it; send replaces the old text and saves; closing the bar cancels) */
 (function(){
@@ -3881,7 +3892,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
   saveCfg();/* همگام‌سازی بعد از حذف | Sync After Delete: بعد از حذف چند پیام، پیش‌نمایش با آخرین پیام باقی‌مانده یکی می‌شود */lkSyncPreview(id);renderChats();toast(tr('Deleted'))}
  /* دکمه‌ها | Buttons */
  $('#selCan').onclick=exit;
- $('#selDel').onclick=()=>{if(count())ask([['me','Delete for me'],['both','Delete for both',1]],doDelete)};
+ /* حذف کنار دکمه | Delete Beside Button: در حالت انتخاب هم گزینه‌های حذف کنار دکمه‌ی Delete باز می‌شوند (in select mode the options open beside the Delete button) */$('#selDel').onclick=()=>{if(count())lkDelPop($('#selDel'),[['me','Delete for me'],['both','Delete for both',1]],doDelete)};
  $('#selClr').onclick=()=>ask([['me','Clear for me'],['both','Clear for both',1]],mode=>{
   const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;exit();if(mode==='both')lkClearBoth(c);
   CFG.cleared=CFG.cleared||{};CFG.cleared[id]=1;CFG.sent[id]=[];c.m='';saveCfg();S.lastD=null;M.innerHTML='';toast(tr('History cleared'));renderChats()});
