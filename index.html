@@ -1328,7 +1328,10 @@ const LKA=(()=>{
  async function restore(){if(!ok)return null;try{const u=await ac.get();return pack(u,await prof(u))}catch(e){return null}}
  /* جستجوی کاربر | User Search: پیشوند یوزرنیم یا ایمیل؛ نزدیک‌ترین (کمترین اختلاف طول) اول، خود کاربر حذف می‌شود */
  async function search(q){q=String(q||"").trim().toLowerCase().replace(/^@/,"");if(!ok||q.length<2)return[];const Q=window.Appwrite.Query;
-  const r=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.or([Q.startsWith("usernameLower",q),Q.startsWith("email",q)]),Q.limit(25)]});
+  let r;
+   /* جستجوی بدون ایندکس | No-Index Search: اگر سرور ایندکس یوزرنیم و ایمیل نداشت، ۲۰۰ کاربر را می‌گیرد و در برنامه فیلتر می‌کند (fallback filter inside the app) */
+   try{r=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.or([Q.startsWith("usernameLower",q),Q.startsWith("email",q)]),Q.limit(25)]})}
+   catch(e){const a=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.limit(200)]});r={rows:(a.rows||[]).filter(x=>String(x.usernameLower||"").startsWith(q)||String(x.email||"").toLowerCase().startsWith(q)).slice(0,25)}}
   return(r.rows||[]).filter(x=>!(S.user&&x.$id===S.user.id)).map(x=>({id:x.$id,username:x.username,email:x.email,photo:x.avatarId,name:((x.firstName||"")+" "+(x.lastName||"")).trim()||x.username,score:(x.usernameLower===q||x.email===q)?-1:Math.abs((x.usernameLower||"").length-q.length)})).sort((a,b)=>a.score-b.score)}
  const out=()=>{if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{})};
  const msg=e=>{const c=e&&e.code;if(c===409)return"This email is already registered";if(c===401)return"Wrong email or password";if(c===429)return"Too many attempts, try later";if(!navigator.onLine||c===0||/fetch|network|load failed/i.test(String(e&&e.message)))return"Cannot reach server";return String((e&&e.message)||"Error").slice(0,90)};
@@ -1366,8 +1369,14 @@ const LKA=(()=>{
   /* پروفایل کاربر | User Profile: نام و یوزرنیم یک کاربر با آی‌دی (name and username by id) */
   async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username}}
   /* دریافت زنده | Live Receive: هر پیام تازه‌ای که برای من ساخته شود همان لحظه می‌رسد (new messages arrive instantly) */
-  const listen=(me,cb)=>{if(!ok)return null;try{return cl.subscribe("tablesdb."+DBID+".tables.messages.rows",ev=>{try{if(!(ev.events||[]).some(e=>/\.create$/.test(e)))return;const p=ev.payload||{};if(p.senderId===me)return;cb(mapMsg(p))}catch(e){}})}catch(e){return null}};
-  return{auth,restore,out,search,msg,send,history,chats,user,listen,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+  const listen=(me,cb)=>{if(!ok)return null;try{return cl.subscribe(["tablesdb."+DBID+".tables.messages.rows","databases."+DBID+".collections.messages.documents"],ev=>{try{if(!(ev.events||[]).some(e=>/\.create$/.test(e)))return;const p=ev.payload||{};if(p.senderId===me)return;cb(mapMsg(p))}catch(e){}})}catch(e){return null}};
+  /* آخرین پیام‌ها | Recent Messages: ۵۰ پیام تازه‌ای که من اجازه‌ی دیدنشان را دارم، بدون نیاز به ایندکس؛ برای دریافت مطمئن حتی اگر دریافت زنده کار نکند (latest 50 messages, no index needed) */
+  async function recent(){if(!ok)return[];const Q=window.Appwrite.Query;
+   const r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.orderDesc("$createdAt"),Q.limit(50)]});
+   return(r.rows||[]).map(mapMsg).filter(m=>m.kind==="text").reverse()}
+  /* وضعیت اتصال زنده | Live Status: آیا سوکت دریافت زنده الان باز است؟ (is the live socket open right now) */
+  const live=()=>{try{const s=cl&&cl.realtime&&cl.realtime.socket;return!!s&&s.readyState===1}catch(e){return false}};
+  return{auth,restore,out,search,msg,send,history,chats,user,listen,recent,live,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1693,7 +1702,7 @@ function lkGS(){const q=$("#q").value.trim(),old=$("#lkgs");if(old)old.remove();
  if(LK_MODE!=="real"||!S.user||!S.user.id||q.replace(/^@/,"").length<2){LKGS.q="";LKGS.seq++;return}
  if(!LKGS.fa){LKGS.fa=1;Object.assign(FA,{"Search results":"نتایج جستجو","Show more":"نمایش بیشتر","No users found":"کاربری پیدا نشد"})}
  if(LKGS.q!==q){LKGS.q=q;LKGS.res=[];LKGS.done=0;LKGS.more=0;clearTimeout(LKGS.t);const my=++LKGS.seq;
-  LKGS.t=setTimeout(()=>LKA.search(q).then(r=>{if(my!==LKGS.seq)return;LKGS.res=r;LKGS.done=1;lkGS()}).catch(()=>{if(my===LKGS.seq){LKGS.done=1;lkGS()}}),300)}
+  LKGS.t=setTimeout(()=>LKA.search(q).then(r=>{if(my!==LKGS.seq)return;LKGS.res=r;LKGS.done=1;lkGS()}).catch(er=>{lkErr(er);if(my===LKGS.seq){LKGS.done=1;lkGS()}}),300)}
  const R=LKGS.res,n=LKGS.more?R.length:Math.min(3,R.length);let h='<div id="lkgs"><div style="padding:10px 16px 4px;font-size:13px;opacity:.6">'+esc(tr("Search results"))+'</div>';
  if(LKGS.done&&!R.length)h+='<div style="padding:10px 16px;font-size:14px;opacity:.6">'+esc(tr("No users found"))+'</div>';
  h+=R.slice(0,n).map((u,i)=>'<div class="row" data-gi="'+i+'">'+av(u.name,colOf(u.username||u.name),0,"","")+'<div class="mid"><div class="n">'+esc(u.name)+'</div><div class="m">@'+esc(u.username||"")+'</div></div></div>').join("");
@@ -1720,6 +1729,16 @@ $("#lgdemo").onclick=()=>{DEMO=true;try{$("#lbtn").onclick()}finally{DEMO=false}
 /* ---- ۳.۴ب چت واقعی | 3.4b Real Chat (Server) ---- */
 /* وضعیت چت واقعی | Real Chat State: شنونده زنده، زمان‌سنج بررسی و آی‌دی پیام‌های دیده‌شده (live listener, poll timer, seen message ids) */
 const LKC={un:null,tm:0,seen:{}};
+/* نمایش خطای سرور | Show Server Error: خطای سرور را با کد نشان می‌دهد (حداکثر هر ۸ ثانیه یک بار) تا علت مشخص شود (shows the server error code, at most once per 8s) */
+/* وصل دوباره | Live Reconnect: دریافت زنده را از نو راه می‌اندازد و پیام‌های جامانده را می‌گیرد؛ وقتی برنامه از پس‌زمینه برمی‌گردد یا اینترنت وصل می‌شود هم خودکار اجرا می‌شود (restart live receive and catch up) */
+function lkRevive(){if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=LKA.listen(S.user.id,lkIn);LKA.recent().then(a=>a.forEach(lkIn)).catch(lkErr)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)lkRevive()});window.addEventListener("online",lkRevive);window.addEventListener("pageshow",lkRevive);
+/* وضعیت واقعی اتصال | Real Connection State: وصل یعنی اینترنت هست، سرور جواب می‌دهد و دریافت زنده باز است؛ اگر هرکدام قطع باشد زنجیر بالای صفحه از هم جدا می‌شود (connected = internet + server + live socket) */
+function lkConnOk(){if(!navigator.onLine)return false;if(LK_MODE!=="real"||!S.user||!S.user.id)return true;return LKC.srv!==0&&LKA.live()}
+function lkConnUpdate(){try{setLinkConn(lkConnOk())}catch(e){}}
+/* خطای شبکه | Network Failure: اگر خطا از جنس قطع بودن اینترنت یا خراب بودن سرور باشد، زنجیر فوراً جدا می‌شود و با اولین پاسخ درست دوباره وصل می‌شود (a network or server-down error splits the chain at once) */
+function lkNetFail(er){const c=er&&er.code;if(!c||c>=500){LKC.srv=0;lkConnUpdate()}}
+let LKE=0;function lkErr(er){lkNetFail(er);if(Date.now()-LKE<8000)return;LKE=Date.now();toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90))}
 /* شناسه عددی چت | Local Chat Id: از ۶ حرف آخر آی‌دی کاربر مقابل، همیشه ثابت می‌ماند (stable number from the other user's id) */
 const lkCid=u=>1000+(parseInt(String(u).slice(-6),16)||0);
 /* ساعت و روز | Time And Day: ساعت ۲۴ ساعته و تعداد روزهای گذشته از زمان سرور (HH:MM and days ago) */
@@ -1733,13 +1752,13 @@ function lkChatOf(uid,name,un){let c=CHATS.find(x=>x.uid===uid);if(!c){c={id:lkC
 function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
  LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const old=(CFG.sent[c.id]||[]).length;CFG.sent[c.id]=L.map(lkRec);saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&L.length!==old){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}
-  renderChats()}).catch(()=>{c.lkb=0})}
+  renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
 /* قلاب باز شدن گفتگو | Open Hook: بعد از باز شدن هر گفتگوی واقعی پیام‌های سرور هم گرفته می‌شود (after opening a real chat, load its server messages) */
 {const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id)}catch(e){}return r}}
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
 function lkReal(c,v){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
  c.lks=(c.lks||0)+1;lkSyncPreview(c);bumpChat(c);saveCfg();renderChats();
- LKA.send(S.user.id,c.uid,v).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0)}).catch(er=>toast(((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,80))).finally(()=>{c.lks--});return true}
+ LKA.send(S.user.id,c.uid,v).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0)}).catch(er=>{lkNetFail(er);toast(((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,80))}).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
 function lkIn(m){if(!S.user||!m||m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
  const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m));
@@ -1748,14 +1767,22 @@ function lkIn(m){if(!S.user||!m||m.from===S.user.id||LKC.seen[m.id]||m.kind!=="t
  const c=CHATS.find(x=>x.uid===m.from);if(c)go(c);else LKA.user(m.from).then(u=>go(lkChatOf(u.id,u.name,u.username))).catch(()=>{})}
 /* بررسی دوره‌ای | Fallback Poll: هر ۱۵ ثانیه اگر صفحه باز باشد چت‌ها را چک می‌کند تا اگر دریافت زنده قطع شد پیامی گم نشود (every 15s safety check) */
 function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)return;
+ /* دریافت مستقیم | Direct Fetch: هر بار پیام‌های تازه را مستقیم از جدول پیام‌ها می‌گیرد و مثل دریافت زنده نشان می‌دهد؛ به ایندکس و به‌روزرسانی چت وابسته نیست (new messages fetched straight from the table) */
+ /* نگهبان اتصال زنده | Live Watchdog: اگر سوکت دریافت زنده بسته بود، بعد از ۲ بررسی دوباره وصلش می‌کند؛ اگر وصل نشد یک بار خبر می‌دهد (reconnects the live socket, warns once) */
+ if(LKA.live())LKC.dead=0;else{LKC.dead=(LKC.dead||0)+1;if(LKC.dead===2)lkRevive();if(LKC.dead===6)lkErr({message:"Live connection is offline"})}
+ LKA.recent().then(a=>{LKC.srv=1;lkConnUpdate();a.forEach(lkIn)}).catch(lkErr);
  LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(()=>{})}
 /* شروع | Start: بعد از ورود، چت‌های سرور را می‌آورد و دریافت زنده و بررسی دوره‌ای را روشن می‌کند (load chats, start live receive) */
 function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;
  LKC.un=LKA.listen(S.user.id,lkIn);
+  /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
+  LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
  LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=r.last;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});renderChats()}).catch(()=>{});
- LKC.tm=setInterval(lkPoll,15000)}
+ LKC.tm=setInterval(lkPoll,5000);
+  /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
+  LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
 /* توقف | Stop: دریافت زنده و زمان‌سنج را خاموش می‌کند؛ با خروج (w) چت‌ها و پیام‌های ذخیره‌شده‌ی سرور هم از گوشی پاک می‌شود (stop; on logout also wipe cached server chats) */
-function lkStop(w){clearInterval(LKC.tm);try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=null;if(w&&LK_MODE==="real"){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}}
+function lkStop(w){clearInterval(LKC.tm);clearInterval(LKC.cn);try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=null;if(w&&LK_MODE==="real"){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}}
 
 /* ---- ۳.۵ لیست چت‌ها | 3.5 Chat List ---- */
 /* تب‌ها | Render Tabs: همه/PV/Gap/Channel با شمارنده (folders with unread counters) */
@@ -3147,10 +3174,10 @@ $$("[data-ic]").forEach(e=>e.innerHTML=ic(e.dataset.ic,e.dataset.s||22));updSend
 /* وضعیت اتصال | Connection State: setLinkConn(true) یعنی وصل است و زنجیر کنار عنوان چت‌ها بسته می‌ماند؛ setLinkConn(false) یعنی هنوز وصل نشده و دو حلقه نرم تلاش می‌کنند بچسبند ولی نمی‌شود (کد سرور بعداً همین تابع را صدا می‌زند) */
 function setLinkConn(on){const e=$("#lkConn");if(!e)return;const was=e.classList.contains("lk-on");e.classList.toggle("lk-on",!!on);e.classList.toggle("lk-try",!on);if(on&&!was){e.classList.add("lk-snap");setTimeout(()=>e.classList.remove("lk-snap"),600)}}
 /* اتصال اول | First Connect: اولین بار که صفحه‌ی چت‌ها باز می‌شود حدود ۳ ثانیه در حال اتصال است و بعد اگر اینترنت هست وصل می‌شود (نسخه‌ی نمایشی سرور ندارد) */
-function lkConnFirst(){if(lkConnFirst.d)return;lkConnFirst.d=1;setLinkConn(false);setTimeout(()=>setLinkConn(navigator.onLine),3000)}
+function lkConnFirst(){if(lkConnFirst.d)return;lkConnFirst.d=1;setLinkConn(false);setTimeout(()=>setLinkConn(lkConnOk()),3000)}
 /* قطع و وصل اینترنت | Network Events: با قطع شدن اینترنت دوباره در حال اتصال می‌شود و با برگشتن، بعد از کمی صبر وصل می‌شود */
 window.addEventListener("offline",()=>setLinkConn(false));
-window.addEventListener("online",()=>setTimeout(()=>setLinkConn(navigator.onLine),900));
+window.addEventListener("online",()=>setTimeout(()=>setLinkConn(lkConnOk()),900));
 
 /* ---- پروفایل دو مرحله‌ای | Two-stage Profile ---- */
 /* مرحله ۱ | Stage 1 – Big Avatar: کشیدن صفحه تنظیمات به پایین آواتار را همراه انگشت بزرگ می‌کند؛ با رها کردن بعد از ۶۰ پیکسل بزرگ می‌ماند و با کشیدن به بالا یا اسکرول جمع می‌شود (pull-down grows the avatar live; release past 60px keeps it big; swipe up or scroll collapses) */
