@@ -1736,7 +1736,7 @@ function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
 function lkReal(c,v){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
  c.lks=(c.lks||0)+1;lkSyncPreview(c);bumpChat(c);saveCfg();renderChats();
- LKA.send(S.user.id,c.uid,v).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0)}).catch(er=>toast(LKA.msg(er))).finally(()=>{c.lks--});return true}
+ LKA.send(S.user.id,c.uid,v).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0)}).catch(er=>toast(((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,80))).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
 function lkIn(m){if(!S.user||!m||m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
  const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m));
