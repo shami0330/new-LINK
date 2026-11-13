@@ -1259,7 +1259,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 
 <script>
 /* اندازه‌ی هدر | Header Height Meter: ارتفاع هدر و نوار پین را اندازه می‌گیرد و به لیست پیام می‌دهد تا پیام‌ها از زیر آن‌ها شروع شوند و دیده شوند (measures header + pin bar height for the messages list) */
-(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}var hb=h;/* ارتفاع نوارهای پلیر | Player Bars Height: ارتفاع نوارهای ویس و موزیک جدا از هدر حساب می‌شود (--bh) تا فاصله بالای پیام‌ها بیشتر شود و اولین پیام زیر نوارها بیفتد (the heights of the voice and music bars are measured apart from the header as --bh so the top gap of the messages grows and the first message sits below the bars) */ch.querySelectorAll(':scope>#vnow.on,:scope>#vpark.on').forEach(function(x){if(!x.offsetHeight)return;var bt=x.getBoundingClientRect().top-r.top+(x.id==='vnow'&&x.classList.contains('vex')?38:x.offsetHeight);hb=Math.max(hb,bt+4)});if(h>0){ch.style.setProperty('--hh',Math.round(h)+'px');ch.style.setProperty('--bh',Math.round(Math.max(0,hb-h))+'px')}}window.lkChatFit=fit;if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
+(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}var hb=h;/* ارتفاع نوارهای پلیر | Player Bars Height: ارتفاع نوارهای ویس و موزیک جدا از هدر حساب می‌شود (--bh) تا فاصله بالای پیام‌ها بیشتر شود و اولین پیام زیر نوارها بیفتد (the heights of the voice and music bars are measured apart from the header as --bh so the top gap of the messages grows and the first message sits below the bars) */ch.querySelectorAll(':scope>#vnow.on,:scope>#vpark.on,:scope>#vmnow.on').forEach(function(x){if(!x.offsetHeight)return;var bt=x.getBoundingClientRect().top-r.top+(x.id==='vnow'&&x.classList.contains('vex')?38:x.offsetHeight);hb=Math.max(hb,bt+4)});if(h>0){ch.style.setProperty('--hh',Math.round(h)+'px');ch.style.setProperty('--bh',Math.round(Math.max(0,hb-h))+'px')}}window.lkChatFit=fit;if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
 </script>
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
 <div id="tabbar" style="display:none">
@@ -4212,8 +4212,8 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 #vmrec .vmlk{position:absolute;width:44px;height:72px;border-radius:22px;background:rgba(255,255,255,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 #vmrec .vmlk.pz{height:44px;border-radius:50%;cursor:pointer}
 #vmrec .vmbtn{position:absolute;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .2s cubic-bezier(.2,.8,.3,1)}
-.lkvm{position:relative;width:min(62vw,240px);aspect-ratio:1;border-radius:50%;cursor:pointer;transition:transform .28s cubic-bezier(.2,.8,.3,1);transform-origin:50% 100%;z-index:1;-webkit-tap-highlight-color:transparent}
-.lkvm.pl{transform:scale(1.32);z-index:5}
+.lkvm{position:relative;width:min(62vw,240px);aspect-ratio:1;border-radius:50%;cursor:pointer;transition:width .3s cubic-bezier(.2,.8,.3,1);z-index:auto;-webkit-tap-highlight-color:transparent}
+.lkvm.pl{width:min(calc(100vw - 32px),420px)}
 .lkvm .vmc{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#111}
 .lkvm .vmc video{width:100%;height:100%;object-fit:cover;display:block}
 .lkvm .vmg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none}
@@ -4227,7 +4227,28 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 .lkvm .vmu{width:6px;height:6px;border-radius:50%;background:#fff}
 .b.mm:has(.lkvm){padding:0;background:none!important;box-shadow:none;overflow:visible;position:relative;border-radius:0}
 .b.mm:has(.lkvm) small{position:absolute;right:10px;bottom:8px;z-index:6;padding:1px 8px;background:rgba(0,0,0,.45);color:#fff!important;border-radius:10px;margin:0;display:flex;align-items:center;gap:3px}
-.b.mm:has(.lkvm) small .tick{color:#fff!important}`;document.head.appendChild(s)})();
+.b.mm:has(.lkvm) small .tick{color:#fff!important}
+/* ظاهر دایره، نوار پخش و دایره‌ی شناور | Video Message Look, Player Bar And Floating Circle: دایره هنگام پخش داخل خود گفتگو بزرگ می‌شود (نه روی پیام‌ها)؛ نوار پخش بالای گفتگو؛ دایره‌ی کوچک شناور وقتی پیام از دید می‌رود */
+.lkvm .vmx{top:auto;bottom:12px;width:24px;height:24px;margin:0 0 0 -12px;background:rgba(0,0,0,.35)}
+.lkvm .vmx svg{width:13px;height:13px}
+.lkvm.pz .vmx{top:50%;bottom:auto;width:46px;height:46px;margin:-23px 0 0 -23px;background:rgba(0,0,0,.45)}
+.lkvm.pz .vmx svg{width:22px;height:22px}
+.lkvm.pl .vmg circle{stroke-width:2.4;opacity:1}
+#vmnow{position:absolute;left:12px;right:12px;height:38px;display:none;align-items:center;gap:6px;box-sizing:border-box;padding:0 8px;background:var(--card);border-radius:19px;z-index:60;overflow:hidden;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:0;transition:opacity .25s}
+#vmnow.on{display:flex}
+#vmnow.sh{opacity:1}
+#vmnow .vnp,#vmnow .vnx{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+#vmnow .vnm{flex:1;min-width:0;text-align:center;line-height:1.15}
+#vmnow .vnn{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#vmnow small{display:block;font-size:12px;color:var(--sub)}
+#vmnow .vns{min-width:26px;height:18px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed var(--sub);border-bottom:1.5px dashed var(--sub);font-size:11px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
+#vmnow .vns.f{color:var(--blue);border-color:var(--blue)}
+#vmfloat{position:absolute;right:10px;width:132px;height:132px;border-radius:50%;overflow:hidden;display:none;z-index:59;background:#111;box-shadow:0 4px 16px rgba(0,0,0,.45);opacity:0;transform:scale(.5);transition:opacity .25s,transform .25s cubic-bezier(.2,.8,.3,1);cursor:pointer}
+#vmfloat.on{display:block}
+#vmfloat.sh{opacity:1;transform:scale(1)}
+#vmfloat video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#vmfloat svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none}
+#vmfloat circle{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round}`;document.head.appendChild(s)})();
 
 /* ---- ضبط | Recording ---- */
 /* موتور ضبط | Video Recorder Engine: دوربین و میکروفن را باز می‌کند؛ تصویر را مربع و با اندازه‌ی MP.videoMsg روی بوم می‌کشد و همراه صدای خام (بدون حذف نویز، بدون اکو‌گیری، بدون تقویت خودکار) ضبط می‌کند. مکث، ادامه، تعویض دوربین و فلش را هم دارد. برمی‌گرداند {v,stop,cancel,pause,resume,flip,torch,seconds} (opens camera and mic, draws a square frame at the MP.videoMsg size and records it with raw audio (no noise suppression, echo cancel or auto gain); supports pause, resume, camera switch and flash) */
@@ -4410,6 +4431,36 @@ const _bodyVm=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="vmsg"){const x=o.it[0
 /* متن لیست چت | Chat List Text: پیش‌نمایش پیام در لیست چت‌ها */
 const _plainVm=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="vmsg")return "🎥 "+tr("Video message")+" "+fd(o.it[0].d);return _plainVm(t)};
 const VM={cur:null},VMU={};
+/* ---- نوار پخش و دایره‌ی شناور | Player Bar And Floating Circle ---- */
+/* ساخت نوار پخش | Build Player Bar: نوار بالای گفتگو با دکمه‌ی مکث، نام، سرعت و بستن؛ مثل تلگرام وقتی ویدیو مسیج پخش می‌شود */
+const VMB=document.createElement("div");VMB.id="vmnow";VMB.innerHTML='<div class="vnp"></div><div class="vnm"><b class="vnn"></b><small></small></div><div class="vns">1X</div><div class="vnx">'+ic("close",18)+'</div>';$("#chat").appendChild(VMB);
+const VMR=[1,1.5,2];let vmRi=0,vmTm=0,vmFt=0;
+/* نمایش و پنهان کردن نوار | Show Hide Bar: نوار زیر هدر می‌نشیند و پیام‌ها از زیر آن رد می‌شوند؛ با پایان پخش آرام محو می‌شود */
+function vmBarShow(){clearTimeout(vmTm);vmRi=0;VMB._pz=null;const s=VMB.querySelector(".vns");s.textContent="1X";s.classList.remove("f");VMB.querySelector(".vnn").textContent=($("#cname")||{}).textContent||"";VMB.querySelector("small").textContent=tr("Video message");
+ const hh=parseFloat($("#chat").style.getPropertyValue("--hh"))||0;VMB.style.top=(hh+4)+"px";VMB.classList.add("on");void VMB.offsetWidth;VMB.classList.add("sh");if(window.lkChatFit)lkChatFit()}
+function vmBarHide(){VMB.classList.remove("sh");clearTimeout(vmTm);vmTm=setTimeout(()=>{if(!VM.cur){VMB.classList.remove("on");if(window.lkChatFit)lkChatFit()}},260)}
+/* دکمه‌های نوار | Bar Buttons: مکث و ادامه، تغییر سرعت (۱ و ۱.۵ و ۲)، و بستن */
+VMB.querySelector(".vnp").onclick=()=>{const v=VM.cur&&VM.cur._v;if(!v)return;if(v.paused)v.play().catch(()=>{});else v.pause()};
+VMB.querySelector(".vns").onclick=()=>{const v=VM.cur&&VM.cur._v;if(!v)return;vmRi=(vmRi+1)%VMR.length;v.playbackRate=VMR[vmRi];const s=VMB.querySelector(".vns");s.textContent=VMR[vmRi]+"X";s.classList.toggle("f",vmRi>0)};
+VMB.querySelector(".vnx").onclick=()=>vmStop(VM.cur);
+/* ساخت دایره‌ی شناور | Build Floating Circle: وقتی حباب پخش‌شونده از صفحه بیرون می‌رود، یک دایره‌ی کوچک بالا یا پایین سمت راست می‌ماند؛ لمس آن تو را به پیام برمی‌گرداند */
+const VMF=document.createElement("div");VMF.id="vmfloat";VMF.innerHTML='<video muted playsinline></video><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.6" stroke-dasharray="305.4" stroke-dashoffset="305.4"/></svg>';$("#chat").appendChild(VMF);
+VMF.onclick=()=>{if(VM.cur)VM.cur.scrollIntoView({block:"center",behavior:"smooth"})};
+function vmDockOff(){if(!VMF.classList.contains("on"))return;VMF.classList.remove("sh");const f=VMF.querySelector("video");clearTimeout(vmFt);vmFt=setTimeout(()=>{if(!VMF.classList.contains("sh")){VMF.classList.remove("on");try{f.pause()}catch(_){}}},260)}
+/* هماهنگی هر فریم | Frame Sync: آیکون مکث نوار، نشان دادن یا پنهان کردن دایره‌ی شناور، و هماهنگ نگه داشتن تصویر آن با ویدیوی اصلی */
+function vmSync(el,v){const pz=v.paused;if(VMB._pz!==pz){VMB._pz=pz;VMB.querySelector(".vnp").innerHTML=ic(pz?"play":"pause",20)}
+ const ch=$("#chat"),cs=ch.style,hh=parseFloat(cs.getPropertyValue("--hh"))||0,bh=parseFloat(cs.getPropertyValue("--bh"))||0,cr=ch.getBoundingClientRect(),ib=ch.querySelector(".inbar").getBoundingClientRect(),r=el.getBoundingClientRect();
+ const up=r.bottom<cr.top+hh+bh+4,dn=r.top>ib.top-4;
+ if(!up&&!dn){vmDockOff();return}
+ if(up){VMF.style.top=(hh+bh+2)+"px";VMF.style.bottom="auto"}else{VMF.style.top="auto";VMF.style.bottom=(cr.bottom-ib.top+8)+"px"}
+ const f=VMF.querySelector("video");
+ if(!VMF.classList.contains("on")){clearTimeout(vmFt);f.src=v.currentSrc||v.src;VMF.classList.add("on");void VMF.offsetWidth;VMF.classList.add("sh")}else VMF.classList.add("sh");
+ f.playbackRate=v.playbackRate;if(f.readyState>1&&Math.abs(f.currentTime-v.currentTime)>.3)f.currentTime=v.currentTime;if(v.paused){if(!f.paused)f.pause()}else if(f.paused)f.play().catch(()=>{});
+ VMF.querySelector("circle").style.strokeDashoffset=el.querySelector(".vmg circle").style.strokeDashoffset}
+/* در دید نگه داشتن | Keep In View: هنگام بزرگ شدن دایره، گفتگو خودکار جابه‌جا می‌شود تا دایره زیر نوار بالا و بالای نوار پیام کامل دیده شود */
+function vmFit(el){const t0=performance.now();(function st(){if(VM.cur!==el)return;const ch=$("#chat"),cs=ch.style,top=ch.getBoundingClientRect().top+(parseFloat(cs.getPropertyValue("--hh"))||0)+(parseFloat(cs.getPropertyValue("--bh"))||0)+6,bot=ch.querySelector(".inbar").getBoundingClientRect().top-6,r=el.getBoundingClientRect();let d=0;if(r.bottom>bot)d=r.bottom-bot;if(r.top-d<top)d=r.top-top;if(Math.abs(d)>1)$("#msgs").scrollTop+=d;if(performance.now()-t0<450)requestAnimationFrame(st)})()}
+/* خروج از گفتگو | Leave Chat: با دکمه‌ی برگشت، پخش ویدیو مسیج متوقف می‌شود */
+$("#back").addEventListener("click",()=>{if(VM.cur)vmStop(VM.cur)});
 /* آدرس ویدیو | Video URL: فایل را از حافظه‌ی موقت یا انبار می‌گیرد و آدرس قابل پخش می‌سازد */
 async function vmUrl(id){if(VMU[id])return VMU[id];let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return null;return VMU[id]=URL.createObjectURL(b)}
 /* آماده‌سازی حباب | Attach Video: عنصر ویدیو فقط وقتی حباب دیده شود ساخته می‌شود */
@@ -4417,15 +4468,15 @@ async function vmAttach(el){if(el._v)return;if(!el._ld)el._ld=(async()=>{const u
  const v=document.createElement("video");v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;el.querySelector(".vmc").append(v);el._v=v;
  v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>vmStop(el))})();await el._ld}
 /* پایان پخش | Stop Playback: دایره به حالت اول برمی‌گردد؛ بی‌صدا و تکراری می‌چرخد و حلقه و زمان صفر می‌شود */
-function vmStop(el){if(!el)return;if(VM.cur===el)VM.cur=null;el.classList.remove("pl","pz");const v=el._v;if(v){v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
+function vmStop(el){if(!el)return;if(VM.cur===el){VM.cur=null;vmBarHide();vmDockOff()}el.classList.remove("pl","pz");const v=el._v;if(v){v.playbackRate=1;v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
  const c=el.querySelector(".vmg circle");if(c)c.style.strokeDashoffset="305.4";const d=el.querySelector(".vmd");if(d)d.textContent=fd(+el.dataset.d)}
 /* حلقه‌ی پیشرفت | Progress Loop: هنگام پخش، حلقه‌ی دور دایره پر می‌شود و زمان باقی‌مانده کم می‌شود */
-function vmLoop(){const el=VM.cur;if(!el)return;const v=el._v;if(v&&!v.paused){const d=+el.dataset.d||v.duration||1,p=Math.min(1,v.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-v.currentTime));const u=el.querySelector(".vmu");if(u&&v.currentTime>.3)u.remove()}requestAnimationFrame(vmLoop)}
+function vmLoop(){const el=VM.cur;if(!el)return;const v=el._v;if(v)vmSync(el,v);if(v&&!v.paused){const d=+el.dataset.d||v.duration||1,p=Math.min(1,v.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-v.currentTime));const u=el.querySelector(".vmu");if(u&&v.currentTime>.3)u.remove()}requestAnimationFrame(vmLoop)}
 /* لمس دایره | Tap Circle: بار اول با صدا از اول پخش می‌شود و بزرگ می‌شود؛ لمس دوباره مکث؛ دوباره ادامه */
 async function vmTap(el){await vmAttach(el);const v=el._v;if(!v){toast("Video removed from cache");return}
  if(VM.cur===el){if(v.paused)v.play().catch(()=>{});else v.pause();return}
  vmStop(VM.cur);document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
- VM.cur=el;el.classList.add("pl");el.classList.remove("pz");v.loop=false;v.muted=false;try{v.currentTime=0}catch(_){}
+ VM.cur=el;el.classList.add("pl");el.classList.remove("pz");vmBarShow();vmFit(el);v.loop=false;v.muted=false;try{v.currentTime=0}catch(_){}
  try{await v.play()}catch(e){v.muted=true;v.play().catch(()=>{})}vmLoop()}
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkvm");if(!el||chat.classList.contains("sel"))return;e.stopPropagation();e.preventDefault();vmTap(el)},true);
