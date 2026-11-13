@@ -3262,7 +3262,7 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
   else if(i===3){fwd(b)}
   else if(i===4){let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}
    o.innerHTML=`<div class="mn" style="width:calc(100% - 24px)"><div data-d="me">${tr("Delete for me")}</div><div data-d="both" style="color:var(--red)">${tr("Delete for both")}</div></div>`;o.classList.add("on");
-   o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg();/* همگام‌سازی بعد از حذف | Sync After Delete: بعد از حذف یک پیام، پیش‌نمایش با آخرین پیام باقی‌مانده یکی می‌شود */lkSyncPreview(id);renderChats()}}}
+   o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;{const el=b.querySelector(".lkmu");if(el&&window.lkMuDel&&window.lkMuDel(b,el.dataset.mid)){saveCfg();lkSyncPreview(id);renderChats();return}}CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg();/* همگام‌سازی بعد از حذف | Sync After Delete: بعد از حذف یک پیام، پیش‌نمایش با آخرین پیام باقی‌مانده یکی می‌شود */lkSyncPreview(id);renderChats()}}}
  function open(b){const r=b.getBoundingClientRect(),me=b.classList.contains("me"),pinned=pinsOf(S.openId).includes(b.dataset.t);
   /* گزینه‌ی ویرایش | Edit Item: فقط برای پیام متنی خودم زیر کپی می‌آید؛ عدد سوم هر گزینه شماره‌ی کار آن است (shown under Copy only for my own text messages; the third number is the action id) */const it=[["Reply","reply",0],["Copy","copy",1]].concat(window.lkEdCan&&window.lkEdCan(b)?[["Edit","pen",9]]:[],[[pinned?"Unpin":"Pin","pin",2],["Forward","fwd",3],["Delete","trash",4],["Select","check",5]]);
   ov.classList.add("on");const o=ov.getBoundingClientRect(),cl=b.cloneNode(true);cl.querySelectorAll(".ri").forEach(x=>x.remove());cl.classList.remove("hl");cl.classList.add("bb");cl.style.left=(r.left-o.left)+"px";cl.style.top=(r.top-o.top)+"px";cl.style.width=r.width+"px";
@@ -3364,13 +3364,21 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  window.lkSelStart=function(b){
   if(SEL.on)return;SEL.on=true;SEL.m.clear();SEL.i.clear();
   $('#selClr').textContent=tr('Clear Chat');$('#selCan').textContent=tr('Cancel');
-  C.classList.add('sel');
+  C.classList.add('sel');muSwap(true);
   M.querySelectorAll('.b').forEach(x=>{if(x.classList.contains('pend'))return;
    const c=document.createElement('i');c.className='selc';c.innerHTML=CK;c._b=x;M.appendChild(c);
    itEls(x).forEach(e=>{const p=document.createElement('i');p.className='selp';p.innerHTML=CK;p._b=x;p._id=idOf(e);e.appendChild(p)})});
   place();if(b)toggleMsg(b);else paint()};
- function exit(){if(!SEL.on)return;SEL.on=false;SEL.m.clear();SEL.i.clear();C.classList.remove('sel');M.querySelectorAll('.selc,.selp').forEach(x=>x.remove())}
+ /* حالت انتخاب برای موزیک | Select Mode For Music: موقع انتخاب، پلیرها مثل بقیه فایل‌ها حباب می‌شوند تا هر فایل تک‌تک قابل انتخاب باشد و بعد از خروج پلیر برمی‌گردد (in select mode players become normal file bubbles so each file can be picked, and come back after exit) */
+ const muSwap=on=>{if(on)M.querySelectorAll('.musub').forEach(x=>x.classList.remove('musub'));window.lkNoMu=on?1:0;M.querySelectorAll('.b').forEach(x=>{if(on?!x.querySelector('.lkmu'):!x._mu)return;const bs=x.querySelectorAll('.lkbody');if(!bs.length)return;bs.forEach((e,i)=>{if(i)e.remove()});bs[0].outerHTML=lkMsgHtml(x.dataset.t);x._mu=on?1:0;if(x.querySelector('[data-lkm]'))lkHydrate(x)});window.lkNoMu=0};
+ function exit(){if(!SEL.on)return;SEL.on=false;SEL.m.clear();SEL.i.clear();C.classList.remove('sel');M.querySelectorAll('.selc,.selp').forEach(x=>x.remove());muSwap(false)}
  window.lkSelEnd=exit;
+ /* حذف موزیک پلیر | Delete Player Track: با نگه داشتن روی پلیر و زدن حذف، فقط همان آهنگی که در پلیر است پاک می‌شود؛ اگر تنها فایل پیام باشد کل پیام حذف می‌شود (long-press + delete removes only the track shown in the player; if it is the only file of its message the whole message goes) */
+ window.lkMuDel=function(b,mid){const id=S.openId;let ow=b;if(muIsAu(b)&&!muSub(b))ow=muRun(b).find(q=>{const k=lkDec(q.dataset.t);return k&&k.it&&k.it.some(x=>x.id===mid)})||b;
+  const k=lkDec(ow.dataset.t);if(!k||k.k!=='files'||!k.it.some(x=>x.id===mid))return false;
+  if(mu&&mu.id===mid)muStop();
+  if(k.it.length>1){cut(ow,new Set([mid]));return true}
+  CFG.hid=CFG.hid||{};const hid=CFG.hid[id]=CFG.hid[id]||[];const sm=ow.querySelector('small');hid.push(ow.dataset.t+'|'+(sm&&sm.firstChild?sm.firstChild.textContent.trim():''));const pv=ow.previousElementSibling,nx=ow.nextElementSibling;ow.remove();if(pv&&pv.classList.contains('dsep')&&(!nx||nx.classList.contains('dsep')))pv.remove();return true};
  new MutationObserver(()=>{if(SEL.on&&!C.classList.contains('on'))exit()}).observe(C,{attributes:true,attributeFilter:['class']});
  addEventListener('resize',()=>{if(SEL.on)place()});
  /* لمس‌ها | Taps: در حالت انتخاب، لمس و نگه‌داشتن و باز شدن عکس غیرفعال است و لمس فقط انتخاب می‌کند */
@@ -3624,7 +3632,7 @@ vn.querySelector("small").textContent=tr("Voice message");
 /* نرم شدن جابجایی لیست | Smooth List Shift: جابجایی گفتگوها هنگام آمدن و رفتن نوار نرم است */
 #clist,#ctlist{transition:padding-top .2s ease}`;document.head.appendChild(s)})();
 function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
-function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)";/* بروزرسانی جای خالی لیست | Refresh List Gap: بعد از هر جابجایی نوار، فاصله لیست دوباره حساب می شود (recalc list gap after the bar moves) */if(typeof padLists==="function")padLists()}
+function vNowPlace(){if(!cur&&!mu)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)";/* بروزرسانی جای خالی لیست | Refresh List Gap: بعد از هر جابجایی نوار، فاصله لیست دوباره حساب می شود (recalc list gap after the bar moves) */if(typeof padLists==="function")padLists()}
 function vNowTick(){if(!cur)return;const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
 function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vSpdClose();vn.querySelector(".vnl").style.width="0";/* برگشت گفتگوها | Chats Back: با بسته شدن نوار گفتگوها سر جای اول برمیگردند (chats return to their place) */if(typeof padLists==="function")padLists();return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
 vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){if(vLP){vLP=0;return}if($("#vnsp")){vSpdClose();return}/* چرخش سرعت با تک لمس | Tap Speed Cycle: با ۱.۲۵ هم درست می چرخد */vSetSpd(vSpd<1?1:vSpd<1.5?1.5:vSpd<2?2:1)}});
@@ -3669,8 +3677,9 @@ document.addEventListener("pointerdown",e=>{if(!e.target.closest("#vnsp")&&!e.ta
 Object.assign(FA,{"Music in this chat":"موزیک‌های این گفتگو"});
 /* ظاهر پلیر | Player Style: خود حباب پیام به رنگ عکس آلبوم درمی‌آید و اندازه‌ی آن جمع‌وجور است (the message bubble itself takes the cover's color and stays compact) */
 (function(){const s=document.createElement("style");s.textContent=`
-.b.mm:has(.lkmu){padding:0;background:linear-gradient(100deg,rgb(var(--ic,60,24,18)) 0%,#140a0a 100%)!important;color:#fff}
-.b.mm:has(.lkmu) small{color:rgba(255,255,255,.55)!important;padding:0 14px 6px}
+.b.mm:has(.lkmu){padding:0;background:var(--bubIn)!important;color:var(--txt)!important}
+.b.mm:has(.lkmu).me{background:var(--bubOut)!important}
+.b.mm:has(.lkmu) small{color:var(--smalltx)!important;padding:0 14px 6px}
 .lkmu{direction:ltr;display:flex;flex-direction:column;gap:2px;min-width:272px;padding:12px 14px 0;white-space:normal;color:#fff}
 .lkmu .mt1{display:flex;align-items:center;gap:12px;height:60px}
 .lkmu .mcv{width:60px;height:60px;border-radius:9px;background:#2a2a2c center/cover;flex:none;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);cursor:pointer}
@@ -3702,7 +3711,20 @@ Object.assign(FA,{"Music in this chat":"موزیک‌های این گفتگو"})
 .lkmu .mr.on{background:rgba(255,255,255,.14)}
 .lkmu .mri{width:18px;display:flex;justify-content:center;flex:none}
 .lkmu .mrn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lkmu .mrd{font-size:12px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}`;document.head.appendChild(s)})();
+.lkmu .mrd{font-size:12px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}
+/* رنگ هماهنگ با تم | Theme Colors: متن و نوار پلیر از رنگ‌های تم می‌آید نه سفید ثابت (text and bar follow the theme, not fixed white) */
+.lkmu{color:var(--txt)}
+.lkmu .mcv{color:var(--sub)}
+.lkmu .mta,.lkmu .mbr,.lkmu .mls,.lkmu .mah,.lkmu .mrd{color:var(--sub)}
+.lkmu.open .mls{color:var(--txt)}
+.lkmu input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to right,var(--blue) var(--p,0%),var(--line) var(--p,0%))}
+.lkmu input[type=range]::-moz-range-track{background:var(--line)}
+.lkmu input[type=range]::-moz-range-progress{background:var(--blue)}
+.lkmu .mr.on{background:rgba(128,128,128,.18)}
+.b.musub{display:none!important}
+/* عرض ثابت پلیر | Fixed Player Width: عرض حباب پلیر همیشه یکی است و با طول نام آهنگ، باز شدن فهرست یا پخش تغییر نمی‌کند (the player bubble width is always the same and never changes with title length, the list opening or playback) */
+.b.mm:has(.lkmu){width:min(300px,80vw);max-width:100%;box-sizing:border-box}
+.lkmu{width:100%;min-width:0;box-sizing:border-box}`;document.head.appendChild(s)})();
 /* داده پلیر | Music Data: پسوندهای صوتی، مدت و اطلاعات هر آهنگ و آهنگ در حال پخش (audio extensions, duration and tags of each track and the playing track) */
 const MUR=/\.(mp3|m4a|wav|ogg|oga|aac|flac|opus|wma|weba)$/i,MUMIME={mp3:"audio/mpeg",m4a:"audio/mp4",wav:"audio/wav",ogg:"audio/ogg",oga:"audio/ogg",aac:"audio/aac",flac:"audio/flac",opus:"audio/ogg",weba:"audio/webm"};
 const muMime=n=>MUMIME[(n.split(".").pop()||"").toLowerCase()]||"audio/mpeg";
@@ -3719,9 +3741,15 @@ const MUS={
  ls:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
  nt:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>'};
 /* ساخت پلیر | Build Player: HTML پلیرِ یک فایل صوتی؛ دکمه‌ی دانلود قبلی بالا سمت راست می‌ماند (HTML of the player of one audio file; the old download button stays at the top right) */
-const muHtml=x=>'<div class="lkbody lkmu" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><div class="mt1"><div class="mcv nc">'+MUS.nt+'</div><div class="mtx"><div class="mtt" dir="auto">'+esc(muNm(x.n))+'</div><div class="mta" dir="auto"></div></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><div class="mbr"><span class="mcu">0:00</span><input class="msk" type="range" min="0" max="1000" value="0"><span class="mre">'+(MD[x.id]?"-"+mf(MD[x.id]):"-0:00")+'</span></div><div class="mk"><div></div><div class="mpv dis">'+MUS.pv+'</div><div class="mpp">'+MUS.pl+'</div><div class="mnx dis">'+MUS.nx+'</div><div class="mls">'+MUS.ls+'</div></div><div class="mac"><div class="mai"><div class="mli"></div></div></div></div>';
+/* آلبوم صوتی | Audio Album: فایل‌های صوتی یک پیام (the audio files of one message) */const muIsAu=b=>{if(!b||!b.classList||!b.classList.contains("b")||b.classList.contains("pend"))return false;const k=lkDec(b.dataset.t);return !!(k&&k.k==="files"&&k.it.length&&k.it.every(x=>MUR.test(x.n||"")))};
+const muSub=b=>{const p=b.previousElementSibling;return muIsAu(b)&&muIsAu(p)&&p.dataset.w===b.dataset.w};
+const muRun=b=>{const r=[b];let n=b.nextElementSibling;while(n&&muIsAu(n)&&n.dataset.w===b.dataset.w){r.push(n);n=n.nextElementSibling}return r};
+/* پیام‌های صوتی پشت سر هم | Consecutive Audio Messages: فقط اولین پیام پلیر می‌ماند و بقیه پیام‌ها پنهان و داخل فهرست آکاردئونی همان پلیر می‌آیند (only the first message keeps the player; the following ones are hidden and listed in its accordion) */
+const muAlb=b=>{if(!b)return[];const bs=muIsAu(b)&&!muSub(b)?muRun(b):[b];return bs.flatMap(q=>{const k=lkDec(q.dataset.t);return k&&k.k==="files"?k.it.filter(x=>MUR.test(x.n||"")).map(x=>({id:x.id,n:x.n})):[]})};
+function muGroup(){if(document.querySelector("#chat.sel"))return;document.querySelectorAll("#msgs .b").forEach(b=>{if(!muIsAu(b)){b.classList.remove("musub");return}const sub=muSub(b);b.classList.toggle("musub",sub);if(!sub){const el=b.querySelector(".lkmu");if(el){const n=muAlb(b).length;if(n>1)el.dataset.al=n;else delete el.dataset.al}}})}const muHas=id=>[...document.querySelectorAll("#msgs .lkmu")].some(el=>el.dataset.mid===id||(el.dataset.al&&muAlb(el.closest(".b")).some(x=>x.id===id)));
+const muHtml=(x,al)=>'<div class="lkbody lkmu" data-mid="'+x.id+'"'+(al>1?' data-al="'+al+'"':'')+' data-n="'+esc(x.n)+'"><div class="mt1"><div class="mcv nc">'+MUS.nt+'</div><div class="mtx"><div class="mtt" dir="auto">'+esc(muNm(x.n))+'</div><div class="mta" dir="auto"></div></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><div class="mbr"><span class="mcu">0:00</span><input class="msk" type="range" min="0" max="1000" value="0"><span class="mre">'+(MD[x.id]?"-"+mf(MD[x.id]):"-0:00")+'</span></div><div class="mk"><div></div><div class="mpv dis">'+MUS.pv+'</div><div class="mpp">'+MUS.pl+'</div><div class="mnx dis">'+MUS.nx+'</div><div class="mls">'+MUS.ls+'</div></div><div class="mac"><div class="mai"><div class="mli"></div></div></div></div>';
 /* جایگزینی حباب فایل | Hook Files Bubble: فایل‌های صوتی پلیر می‌گیرند و بقیه‌ی فایل‌ها مثل قبل می‌مانند؛ در حال ارسال همان ظاهر قبلی (audio files get the player, other files stay as before; while sending the old look stays) */
-const _bodyMu=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="files"&&!o.pend&&o.it.some(x=>MUR.test(x.n||""))){const ot=o.it.filter(x=>!MUR.test(x.n||""));return o.it.filter(x=>MUR.test(x.n||"")).map(muHtml).join("")+(ot.length?_bodyMu(Object.assign({},o,{it:ot})):"")}return _bodyMu(o)};
+const _bodyMu=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="files"&&!o.pend&&!window.lkNoMu&&o.it.some(x=>MUR.test(x.n||""))){const ot=o.it.filter(x=>!MUR.test(x.n||""));/* فقط اولین فایل پلیر است و بقیه داخل فهرست بازشونده | Only first file is the player, the rest live in the accordion */return (a=>muHtml(a[0],a.length))(o.it.filter(x=>MUR.test(x.n||"")))+(ot.length?_bodyMu(Object.assign({},o,{it:ot})):"")}return _bodyMu(o)};
 /* فهرست موزیک‌های گفتگو | Chat Music List: همه‌ی فایل‌های صوتی (بدون ویس) گفتگوی باز به ترتیب ارسال (all non-voice audio files of the open chat in order) */
 function muList(){const o=[],seen={};document.querySelectorAll("#msgs .b:not(.pend)").forEach(b=>{const k=lkDec(b.dataset.t);if(k&&k.k==="files")k.it.forEach(x=>{if(MUR.test(x.n||"")&&!seen[x.id]){seen[x.id]=1;o.push({id:x.id,n:x.n})}})});return o}
 /* خواندن اطلاعات آهنگ | Read Song Tags: از برچسب ID3 فایل mp3 نام آهنگ، خواننده و عکس آلبوم خوانده می‌شود و از عکس رنگ زمینه‌ی جزیره ساخته می‌شود؛ اگر نبود از نام فایل استفاده می‌شود (reads title, artist and cover from the ID3 tag of an mp3 and picks the island color from the cover; falls back to the file name) */
@@ -3743,30 +3771,30 @@ async function muMeta(id,b){if(META[id])return META[id];const m=META[id]={t:"",a
  }catch(e){}
  return m}
 /* ردیف‌های فهرست | List Rows: موزیک‌های گفتگو داخل بخش بازشونده‌ی همین پلیر (the chat's music inside the expandable part of this player) */
-function muFill(el){const L=muList();el.querySelector(".mli").innerHTML='<div class="mah">'+tr("Music in this chat")+' · '+L.length+'</div>'+L.map(x=>'<div class="mr" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><span class="mri"></span><span class="mrn" dir="auto">'+esc((META[x.id]&&META[x.id].t)||muNm(x.n))+'</span><span class="mrd"></span></div>').join("");muUi()}
+function muFill(el){const L=el.dataset.al?muAlb(el.closest(".b")):muList();el.querySelector(".mli").innerHTML='<div class="mah">'+tr("Music in this chat")+' · '+L.length+'</div>'+L.map(x=>'<div class="mr" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><span class="mri"></span><span class="mrn" dir="auto">'+esc((META[x.id]&&META[x.id].t)||muNm(x.n))+'</span><span class="mrd"></span></div>').join("");muUi()}
 /* بروزرسانی ظاهر | Refresh Player UI: همه‌ی پلیرهای گفتگو با صدا هماهنگ می‌شوند (نام، عکس، رنگ، آیکن پخش، نوار و زمان، قبلی/بعدی، ردیف‌های فهرست) (every player of the chat is synced with the audio) */
-function muUi(){const d=mu&&mu.a,pl=!!d&&!d.paused,L=muList(),ci=mu?L.findIndex(x=>x.id===mu.id):-1,st=(e,t)=>{if(e.textContent!==t)e.textContent=t};
- document.querySelectorAll("#msgs .lkmu").forEach(el=>{const id=el.dataset.mid,on=!!mu&&mu.id===id,m=META[id]||{},b=el.closest(".b");
+function muUi(){const d=mu&&mu.a,pl=!!d&&!d.paused,L=muCur(),ci=mu?L.findIndex(x=>x.id===mu.id):-1,st=(e,t)=>{if(e.textContent!==t)e.textContent=t};
+ document.querySelectorAll("#msgs .lkmu").forEach(el=>{const b=el.closest(".b"),al=el.dataset.al?muAlb(b):null,cu=al&&mu&&al.find(x=>x.id===mu.id),id=cu?cu.id:el.dataset.mid,on=!!mu&&mu.id===id,m=META[id]||{};if(cu&&el.dataset.mid!==id){el.dataset.mid=id;el.dataset.n=cu.n;const dl=el.querySelector(".lkdl");if(dl){dl.dataset.dl=id;dl.dataset.n=cu.n}}
   const D=on&&isFinite(d.duration)&&d.duration>0?d.duration:(MD[id]||0),T=on?d.currentTime:0;
-  st(el.querySelector(".mtt"),m.t||muNm(el.dataset.n));st(el.querySelector(".mta"),m.a||(b&&b.dataset.w==="me"?tr("You"):(($("#cname")||{}).textContent||"")));
+  st(el.querySelector(".mtt"),m.t||muNm(el.dataset.n));st(el.querySelector(".mta"),m.a||"");
   const cv=el.querySelector(".mcv"),u=m.img||"";if(cv.dataset.u!==u){cv.dataset.u=u;cv.style.backgroundImage=u?'url("'+u+'")':"";cv.classList.toggle("nc",!u)}
   if(b&&b.dataset.c!==(m.col||"")){b.dataset.c=m.col||"";if(m.col)b.style.setProperty("--ic",m.col);else b.style.removeProperty("--ic")}
   const pp=el.querySelector(".mpp"),w=on&&pl?"pa":"pl";if(pp.dataset.s!==w){pp.dataset.s=w;pp.innerHTML=MUS[w]}
   const sk=el.querySelector(".msk");if(!(muDrag&&on))sk.value=D?Math.round(Math.min(1,T/D)*1000):0;sk.style.setProperty("--p",(sk.value/10)+"%");
   st(el.querySelector(".mcu"),mf(T));st(el.querySelector(".mre"),D?"-"+mf(D-T):"-0:00");
-  el.querySelector(".mpv").classList.toggle("dis",!on||ci<=0);el.querySelector(".mnx").classList.toggle("dis",!on||ci<0||ci>=L.length-1);
+  el.querySelector(".mpv").classList.toggle("dis",!on||(ci<=0&&!(d.currentTime>2)));el.querySelector(".mnx").classList.toggle("dis",!on||ci<0||ci>=L.length-1);
   el.querySelectorAll(".mr").forEach(r=>{const o=!!mu&&mu.id===r.dataset.mid,ri=r.querySelector(".mri"),k=o&&pl?"pas":"pls";r.classList.toggle("on",o);if(ri.dataset.s!==k){ri.dataset.s=k;ri.innerHTML=MUS[k]}const dd=o&&D?D:MD[r.dataset.mid];st(r.querySelector(".mrd"),dd?mf(dd):"");const t=(META[r.dataset.mid]||{}).t;if(t)st(r.querySelector(".mrn"),t)})})}
 /* توقف | Stop Music: آهنگ قطع می‌شود و نوار زمان به صفر برمی‌گردد (music stops and the timeline returns to zero) */
 function muStop(){if(mu){const a=mu.a;mu=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}}muUi()}
 /* پخش | Play Music: پخش یا مکث یک آهنگ؛ شروع آهنگ تازه ویس یا آهنگ قبلی را قطع می‌کند؛ f جای شروع (۰ تا ۱) است (play or pause one track; starting a track stops any voice or other track; f is the start position 0..1) */
 async function muPlay(id,name,f){
  if(mu&&mu.id===id){if(mu.a.paused)mu.a.play().catch(()=>{});else mu.a.pause();muUi();return}
- if(muBusy===id)return;muBusy=id;
+ if(muBusy===id)return;muBusy=id;const keepL=mu&&mu.L,keepC=mu&&mu.c;
  try{muStop();try{stopCur()}catch(e){}
   let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
   if(!b){toast("File removed from cache");return}
   if(!b.type)b=new Blob([b],{type:muMime(name||"")});
-  const a=new Audio(URL.createObjectURL(b));mu={a,id,name};
+  const a=new Audio(URL.createObjectURL(b));mu={a,id,name,L:(()=>{const L0=muList();return L0.some(x=>x.id===id)?L0:(keepL||L0)})(),c:(()=>muList().some(x=>x.id===id)?S.openId:(keepC!=null?keepC:S.openId))()};
   a.ontimeupdate=muUi;a.onplay=a.onpause=muUi;a.onended=muEnded;
   a.onloadedmetadata=()=>{if(isFinite(a.duration))MD[id]=a.duration;muUi()};
   muMeta(id,b).then(muUi);
@@ -3774,9 +3802,11 @@ async function muPlay(id,name,f){
   if(f!=null&&MD[id])a.currentTime=f*MD[id];
   muUi()}finally{muBusy=null}}
 /* پایان آهنگ | Track Ended: بعد از تمام شدن، آهنگ بعدیِ گفتگو خودکار پخش می‌شود (the next track of the chat plays automatically) */
-function muEnded(){if(!mu)return;const L=muList(),i=L.findIndex(x=>x.id===mu.id),nx=i>=0?L[i+1]:null;if(nx)muPlay(nx.id,nx.n);else muStop()}
+/* فهرست آهنگ در حال پخش | Playing List: اگر آهنگ از گفتگوی دیگری است، قبلی و بعدی از همان فهرست قبلی گرفته می‌شود و پخش با خروج از گفتگو قطع نمی‌شود (when the track is from another chat, next/prev come from its saved list, and leaving the chat does not stop playback) */
+const muCur=()=>{const L=muList();return mu&&mu.L&&!L.some(x=>x.id===mu.id)?mu.L:L};
+function muEnded(){if(!mu)return;const L=muCur(),i=L.findIndex(x=>x.id===mu.id),nx=i>=0?L[i+1]:null;if(nx)muPlay(nx.id,nx.n);else muStop()}
 /* قبلی و بعدی | Previous Next: رفتن به آهنگ قبلی یا بعدیِ همین گفتگو؛ اگر نبود کاری نمی‌کند (goes to the previous or next track of the chat; does nothing if there is none) */
-function muStep(k){if(!mu)return;const L=muList(),i=L.findIndex(x=>x.id===mu.id),x=i<0?null:L[i+k];if(x)muPlay(x.id,x.n)}
+function muStep(k){if(!mu)return;/* قبلی بعد از ۵ ثانیه | Previous After 5s: اگر بیش از ۵ ثانیه از آهنگ گذشته باشد، قبلی همان آهنگ را از اول پخش می‌کند (if more than 5 seconds have played, previous restarts the same track) */if(k<0&&mu.a.currentTime>2){mu.a.currentTime=0;if(mu.a.paused)mu.a.play().catch(()=>{});muUi();return}const L=muCur(),i=L.findIndex(x=>x.id===mu.id),x=i<0?null:L[i+k];if(x)muPlay(x.id,x.n)}
 /* لمس پلیر | Player Taps: پخش/مکث (دکمه، عکس یا نام)، قبلی، بعدی، باز و بسته شدن فهرست و پخش از ردیف فهرست؛ دکمه‌ی دانلود مثل قبل کار می‌کند (play/pause, previous, next, list toggle and play from a row; the download button works as before) */
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkmu");if(!el||e.target.closest(".lkdl"))return;e.stopPropagation();const t=e.target;if(t.closest(".msk"))return;e.preventDefault();
  const id=el.dataset.mid,r=t.closest(".mr");
@@ -3793,10 +3823,26 @@ $("#msgs").addEventListener("input",e=>{const sk=e.target.closest&&e.target.clos
 /* اطلاعات و مدت آهنگ | Track Info: برای هر پلیر تازه، مدت و اطلاعات آهنگ (نام، خواننده، عکس) بی‌صدا از فایل خوانده می‌شود تا قبل از پخش دیده شود (for each new player the duration and tags are read silently so they show before playing) */
 async function muProbe(el){el.dataset.pb=1;const id=el.dataset.mid;let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return;if(!b.type)b=new Blob([b],{type:muMime(el.dataset.n||"")});muMeta(id,b).then(muUi);if(MD[id]){muUi();return}const u=URL.createObjectURL(b),a=new Audio();a.preload="metadata";a.onloadedmetadata=()=>{if(isFinite(a.duration))MD[id]=a.duration;URL.revokeObjectURL(u);muUi()};a.onerror=()=>URL.revokeObjectURL(u);a.src=u}
 /* نگهبان پلیرها | Player Watcher: پلیر تازه که آمد اطلاعاتش خوانده می‌شود؛ اگر پلیرِ آهنگِ در حال پخش از صفحه رفت (مثلاً گفتگو عوض شد) آهنگ قطع می‌شود (reads info of new players; stops the music if its player leaves the screen, e.g. chat changed) */
-let muRaf=0;new MutationObserver(()=>{if(muRaf)return;muRaf=requestAnimationFrame(()=>{muRaf=0;if(mu&&!document.querySelector('#msgs .lkmu[data-mid="'+mu.id+'"]')){muStop();return}document.querySelectorAll("#msgs .lkmu:not([data-pb])").forEach(muProbe)})}).observe($("#msgs"),{childList:true,subtree:true});
+let muRaf=0;new MutationObserver(()=>{if(muRaf)return;muRaf=requestAnimationFrame(()=>{muRaf=0;muGroup();document.querySelectorAll("#msgs .lkmu:not([data-pb])").forEach(muProbe)})}).observe($("#msgs"),{childList:true,subtree:true});
 /* اتصال به ویس | Voice Link: پخش ویس یا شروع ضبط، موزیک را قطع می‌کند (playing a voice or starting a recording stops the music) */
 const _muPv=playVo;playVo=function(vo,ex){muStop();return _muPv(vo,ex)};
 const _muVs=vStopAll;vStopAll=function(){muStop();_muVs()};
+/* نوار پخش موزیک | Music Player Bar: مثل نوار ویس زیر بالای صفحه می‌آید؛ مکث/پخش، نام آهنگ و خواننده، بستن، خط پیشرفت؛ بدون دکمه سرعت؛ با کشیدن به راست یا چپ قطع می‌شود (same bar as the voice one under the header: play/pause, title and artist, close, progress line; no speed button; swipe sideways to stop) */
+Object.assign(FA,{"Music":"موزیک"});
+(function(){const s=document.createElement("style");s.textContent=`#vnow.mu .vns{display:none}#vnow.mu{touch-action:pan-y}`;document.head.appendChild(s)})();
+const muFind=id=>[...document.querySelectorAll("#msgs .lkmu")].find(el=>el.dataset.mid===id&&!el.closest(".musub"))||[...document.querySelectorAll("#msgs .lkmu[data-al]")].find(el=>muAlb(el.closest(".b")).some(x=>x.id===id));
+function muBar(){if(!mu){if(vn.classList.contains("mu")){vn.classList.remove("mu");vn.style.transform="";vn.style.opacity="";vn.style.transition="";vn.querySelector("small").textContent=tr("Voice message");if(!cur){vn.classList.remove("on");vn.querySelector(".vnl").style.width="0";if(typeof padLists==="function")padLists()}}return}
+ if(cur)return;const m=META[mu.id]||{},a=mu.a,D=(isFinite(a.duration)&&a.duration)||MD[mu.id]||1;
+ vn.classList.add("mu","on");vn.querySelector(".vnp").innerHTML=ic(a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=m.t||muNm(mu.name);vn.querySelector("small").textContent=m.a||tr("Music");vn.querySelector(".vnl").style.width=Math.min(100,a.currentTime/D*100)+"%";vNowPlace()}
+const _muUi=muUi;muUi=function(){_muUi.apply(this,arguments);muBar()};
+function muGo(){if(!mu)return;const cid=mu.c,id=mu.id;if(cid!=null){const on=$("#chat").classList.contains("on"),prev=S.openId;if(!(prev===cid&&on)){openChat(cid);if(on&&prev!==cid)(S.backStack=S.backStack||[]).push(prev)}}
+ let n=0;const t=setInterval(()=>{const el=muFind(id);if(el||++n>20){clearInterval(t);if(!el)return;const b=el.closest(".b")||el;b.scrollIntoView({block:"center",behavior:"smooth"});b.style.transition="filter .3s";b.style.filter="brightness(1.6)";setTimeout(()=>{b.style.filter=""},900)}},50)}
+let muSw=0,muSx=0,muDx=0,muDr=0;
+vn.addEventListener("click",e=>{if(cur||!mu)return;if(muSw){muSw=0;return}if(e.target.closest(".vnx"))muStop();else if(e.target.closest(".vnp")){const a=mu.a;if(a.paused)a.play().catch(()=>{});else a.pause()}else if(e.target.closest(".vnm"))muGo()});
+vn.addEventListener("pointerdown",e=>{if(cur||!mu||e.target.closest(".vnx,.vnp"))return;muSw=0;muDr=1;muSx=e.clientX;muDx=0});
+document.addEventListener("pointermove",e=>{if(!muDr)return;muDx=e.clientX-muSx;if(Math.abs(muDx)>8){vn.style.transition="none";vn.style.transform="translateX("+muDx+"px)";vn.style.opacity=String(Math.max(.2,1-Math.abs(muDx)/220))}});
+const muSwEnd=()=>{if(!muDr)return;muDr=0;if(Math.abs(muDx)>8)muSw=1;vn.style.transition="transform .2s,opacity .2s";if(Math.abs(muDx)>80){vn.style.transform="translateX("+(muDx>0?"110%":"-110%")+")";vn.style.opacity="0";setTimeout(muStop,180)}else{vn.style.transform="";vn.style.opacity=""}};
+["pointerup","pointercancel"].forEach(t=>document.addEventListener(t,muSwEnd));
 /* ارسال | Send Voice */
 async function sendVoice(res,wf){
  if(!res||!res.blob||res.duration<.5){toast("Hold to record voice message");return}
