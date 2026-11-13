@@ -821,6 +821,11 @@ html.light #login .pf{color:#000}
 /* آکاردئون پوشه | Folder Accordion: کادر بازشونده زیر نوار پوشه‌ها با نگه‌داشتن روی پوشه؛ ارتفاعش نرم از ۰ تا ۲۲۰ پیکسل باز می‌شود، پس‌زمینه‌ی کارت، گوشه‌ی گرد ۱۶، سایه (opens under the folder bar, height 0 to 220, card bg, radius 16) */
 #fmenu{position:absolute;left:12px;right:12px;z-index:60;background:var(--card);border-radius:16px;overflow:hidden;max-height:0;opacity:0;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);transition:max-height .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
 #fmenu.on{max-height:220px;opacity:1;pointer-events:auto}
+/* آکاردئون ویرایش درجا | Inline Edit Accordion: وقتی بخش ویرایش باز است کادر بلندتر می‌شود و قابل اسکرول است (taller and scrollable while editing) */
+#fmenu.on.ed{max-height:min(72vh,540px);overflow-y:auto}
+#fmenu .fed{padding:4px 10px 12px;border-bottom:.5px solid var(--line)}
+#fmenu .fed .card{margin-top:8px}
+#fmenu .fed .hd{margin-top:10px}
 /* ردیف آکاردئون | Accordion Row: هر گزینه یک ردیف با فاصله‌ی ۱۳ و ۱۴، متن ۱۵، خط جداکننده‌ی نازک؛ ردیف حذف قرمز است (row padding 13/14, font 15, thin divider, red for delete) */
 #fmenu .fr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;font-size:15px;color:var(--txt);border-bottom:.5px solid var(--line)}
 #fmenu .fr:last-child{border:0}
@@ -1964,7 +1969,7 @@ function lkFolderOpen(k){const T=$("#tabs"),b=lkFolderBox();FM.k=k;
  b.innerHTML=`<div class="fr" data-a="edit"><span>${tr("Edit Chats & Name")}</span>${ic("folder",18)}</div><div class="fr" data-a="move"><span>${tr("Move Folder")}</span>${ic("grid",18)}</div><div class="fr red" data-a="del"><span>${tr("Delete Folder")}</span>${ic("trash",18)}</div>`;
  b.style.top=(T.offsetTop+T.offsetHeight+4)+"px";b.getBoundingClientRect();b.classList.add("on");
  $$("#fmenu .fr").forEach(r=>r.onclick=()=>{const a=r.dataset.a;
-  if(a==="edit"){lkFolderClose();openFolder(k)}
+  if(a==="edit")lkFolderEditToggle(k)
   else if(a==="del"){lkFolderClose();askConfirm("Delete this folder?","Delete Folder",()=>lkFolderDel(k))}
   else if(a==="move")lkFolderMoveOn(k)})}
 /* روشن کردن جابجایی | Move Mode On: پوشه‌ی انتخابی قابل کشیدن می‌شود و آکاردئون فقط راهنما و دکمه‌ی «تمام» را نشان می‌دهد */
@@ -1973,6 +1978,28 @@ function lkFolderMoveOn(k){S.mv=k;$("#tabs").classList.add("mv");renderTabs();co
  b.querySelector("[data-a=done]").onclick=lkFolderClose}
 /* جابجایی پوشه | Shift Folder: پوشه‌ی در حال کشیدن را جای پوشه‌ی دیگر می‌گذارد و ترتیب را ذخیره می‌کند («All» ثابت می‌ماند) */
 function lkFolderShift(to){const K=allTabs().map(x=>x[0]).filter(x=>x!=="all"),a=K.indexOf(S.mv),b=K.indexOf(to);if(a<0||b<0||a===b)return;K.splice(a,1);K.splice(b,0,S.mv);CFG.order=K;saveCfg();renderTabs()}
+/* ویرایش درجا | Inline Edit: با زدن «ویرایش گفتگوها و نام» همان‌جا زیر ردیف، آکاردئون باز می‌شود (تغییر نام، افزودن سریع، جستجو و افزودن یا کم کردن گفتگوها) و هر تغییر همان لحظه ذخیره می‌شود؛ زدن دوباره آن را می‌بندد */
+function lkFolderEditToggle(k){const b=$("#fmenu"),r=b.querySelector("[data-a=edit]");let p=b.querySelector(".fed");
+ if(p){p.remove();b.classList.remove("ed");return}
+ const f=k.startsWith("f_")?CFG.folders.find(x=>"f_"+x.id===k):null;
+ p=document.createElement("div");p.className="fed";
+ if(!f){p.innerHTML=`<div class="cap">${tr("This folder fills automatically with its chat type.")}</div>`;r.after(p);b.classList.add("ed");return}
+ p.innerHTML=`<div class="card"><input class="fld" id="fm_name" dir="auto" placeholder="${tr("Folder Name")}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+ <div class="hd">${tr("Quick Add")}</div><div class="card"><div class="item" data-q2="gp" style="color:var(--blue)"><span>${tr("Add All Groups")}</span></div><div class="item" data-q2="ch" style="color:var(--blue)"><span>${tr("Add All Channels")}</span></div><div class="item" data-q2="pv" style="color:var(--blue)"><span>${tr("Add All Personal Chats")}</span></div></div>
+ <div class="hd">${tr("Chats")}</div><div class="card"><input class="fld" id="fm_search" dir="auto" placeholder="${tr("Search Chats")}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+ <div class="card" id="fm_all" style="display:none"><div class="item" style="color:var(--blue)"><span>${tr("Add All Results")}</span></div></div><div class="card" id="fm_chats"></div>`;
+ r.after(p);b.classList.add("ed");
+ const nm=p.querySelector("#fm_name"),sr=p.querySelector("#fm_search"),L=p.querySelector("#fm_chats"),A=p.querySelector("#fm_all");nm.value=f.name;
+ const sv=()=>{saveCfg();renderFolders();renderChats()};
+ const list=()=>{const q=feNorm(sr.value.trim());return q?CHATS.filter(c=>feNorm(c.n).includes(q)):CHATS};
+ const draw=()=>{A.style.display=sr.value.trim()?"":"none";
+  L.innerHTML=list().map(c=>`<div class="item" data-fc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="sw${f.chats.includes(c.id)?" on":""}"></span></div>`).join("");
+  L.querySelectorAll("[data-fc]").forEach(e=>e.onclick=()=>{const id=+e.dataset.fc,i=f.chats.indexOf(id);if(i<0)f.chats.push(id);else f.chats.splice(i,1);e.querySelector(".sw").classList.toggle("on",i<0);sv()})};
+ nm.oninput=()=>{const v=nm.value.trim();if(!v)return;f.name=v;saveCfg();renderTabs();renderFolders()};
+ sr.oninput=draw;
+ A.onclick=()=>{list().forEach(c=>{if(!f.chats.includes(c.id))f.chats.push(c.id)});draw();sv()};
+ p.querySelectorAll("[data-q2]").forEach(e=>e.onclick=()=>{CHATS.filter(x=>x.ty===e.dataset.q2).forEach(x=>{if(!f.chats.includes(x.id))f.chats.push(x.id)});draw();sv()});
+ draw()}
 /* حذف پوشه از نوار | Delete Folder From Bar: پوشه‌ی ساخته‌شده پاک و پوشه‌ی آماده مخفی می‌شود (مثل صفحه‌ی ویرایش پوشه) */
 function lkFolderDel(k){if(k.startsWith("f_"))CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);saveCfg();renderFolders();renderChats()}
 /* لمس نوار پوشه | Folder Bar Touch: نگه‌داشتن ۴۵۰ میلی‌ثانیه روی پوشه (به جز «All») آکاردئون را باز می‌کند؛ در حالت جابجایی کشیدن پوشه ترتیب را عوض می‌کند؛ لمس بیرون آکاردئون را می‌بندد */
@@ -4414,7 +4441,7 @@ function tabMenu(k){const isC=k.startsWith("f_"),fi=isC?CFG.folders.findIndex(x=
   else if(a==="del"){close();askConfirm("Delete this folder?","Delete Folder",()=>{if(isC)CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);if(S.folder===k)S.folder="all";done()})}
   else if(a==="ren"){o.innerHTML='<div class="mn"><div><input id="tmIn" dir="auto" maxlength="40" style="width:100%;box-sizing:border-box;border:0;outline:0;background:transparent;color:var(--txt);font:inherit" placeholder="'+esc(tr("Folder Name"))+'"></div><div data-d="ok" style="color:var(--blue);font-weight:600">'+tr("Done")+'</div></div>';const i=$("#tmIn");i.value=f.name;setTimeout(()=>{i.focus();i.select()},60);const ok=()=>{const v=i.value.trim();if(v){f.name=v;done()}close()};i.onkeydown=ev=>{if(ev.key==="Enter")ok()};o.onclick=ev=>{if(ev.target.closest('[data-d="ok"]'))ok();else if(ev.target===o)close()}}}}
 (function(){const B=document.getElementById("tabs");if(!B)return;let t=0,x0=0,y0=0,hit=0;const clr=()=>{clearTimeout(t);t=0};
-B.addEventListener("pointerdown",e=>{const tb=e.target.closest(".tab");clr();hit=0;if(!tb||tb.dataset.k==="all")return;x0=e.clientX;y0=e.clientY;t=setTimeout(()=>{t=0;hit=1;try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}try{tabMenu(tb.dataset.k)}catch(_){}setTimeout(()=>{hit=0},700)},450)});
+B.addEventListener("pointerdown",e=>{const tb=e.target.closest(".tab");clr();hit=0;if(!tb||tb.dataset.k==="all")return;x0=e.clientX;y0=e.clientY;t=setTimeout(()=>{t=0;hit=1;try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}setTimeout(()=>{hit=0},700)},450)});
 B.addEventListener("pointermove",e=>{if(t&&Math.hypot(e.clientX-x0,e.clientY-y0)>8)clr()});
 ["pointerup","pointercancel","pointerleave"].forEach(n=>B.addEventListener(n,clr));
 B.addEventListener("contextmenu",e=>e.preventDefault());
