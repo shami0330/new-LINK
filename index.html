@@ -1729,7 +1729,8 @@ const SH=50;
 function linkHdr(list,hdr,bar){list.addEventListener("scroll",()=>{const y=Math.max(0,Math.min(list.scrollTop,SH));hdr.style.transform=`translate3d(0,${-y}px,0)`;bar.style.opacity=1-y/SH},{passive:true})}
 linkHdr($("#clist"),$("#hdrChats"),$("#sbChats"));linkHdr($("#ctlist"),$("#hdrContacts"),$("#sbContacts"));
 /* فاصله بالای لیست | List Top Padding: برابر ارتفاع سربرگ تا لیست زیر آن شروع شود (list starts right below header) */
-function padLists(){[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{$(l).style.paddingTop=$(h).offsetHeight+"px"})}
+/* جای نوار وایس در لیست | Voice Bar Gap: وقتی نوار پخش وایس روی صفحه لیست است، به فاصله بالای لیست جای نوار اضافه می شود تا روی اولین گفتگو نیفتد؛ با محو شدن نوار فاصله به حالت اول برمیگردد */
+function padLists(){const v=document.getElementById("vnow");[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{const e=v&&v.classList.contains("on")&&v.parentNode&&v.parentNode.contains($(l))?v.offsetHeight+8:0;$(l).style.paddingTop=($(h).offsetHeight+e)+"px"})}
 
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
@@ -3609,12 +3610,14 @@ vn.querySelector("small").textContent=tr("Voice message");
 #vnow small{display:block;font-size:12px;color:var(--sub)}
 #vnow .vns{min-width:34px;height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:2px dashed var(--sub);border-bottom:2px dashed var(--sub);font-size:13px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
 #vnow .vns.f{color:var(--blue);border-color:var(--blue)}
-#vnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}`;document.head.appendChild(s)})();
+#vnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}
+/* نرم شدن جابجایی لیست | Smooth List Shift: جابجایی گفتگوها هنگام آمدن و رفتن نوار نرم است */
+#clist,#ctlist{transition:padding-top .2s ease}`;document.head.appendChild(s)})();
 function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
-function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)"}
+function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)";/* بروزرسانی جای خالی لیست | Refresh List Gap: بعد از هر جابجایی نوار، فاصله لیست دوباره حساب می شود (recalc list gap after the bar moves) */if(typeof padLists==="function")padLists()}
 function vNowTick(){if(!cur)return;const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
-function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vSpdClose();vn.querySelector(".vnl").style.width="0";return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
-vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){if(vLP){vLP=0;return}if($("#vnsp")){vSpdClose();return}vSetSpd(vSpd<1?1:vSpd===1?1.5:vSpd===1.5?2:1)}});
+function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vSpdClose();vn.querySelector(".vnl").style.width="0";/* برگشت گفتگوها | Chats Back: با بسته شدن نوار گفتگوها سر جای اول برمیگردند (chats return to their place) */if(typeof padLists==="function")padLists();return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
+vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){if(vLP){vLP=0;return}if($("#vnsp")){vSpdClose();return}/* چرخش سرعت با تک لمس | Tap Speed Cycle: با ۱.۲۵ هم درست می چرخد */vSetSpd(vSpd<1?1:vSpd<1.5?1.5:vSpd<2?2:1)}});
 /* نگه‌داشتن ویس بین صفحه‌ها | Keep Voice Across Screens: با عوض شدن صفحه نوار به صفحه‌ی جدید می‌رود؛ وقتی گفتگو دوباره باز می‌شود حباب ویس درحال‌پخش دوباره به صدا وصل می‌شود (the bar follows the visible screen; when the chat is reopened the playing bubble is reconnected to the audio) */
 let vRaf=0;const vSoon=()=>{if(vRaf)return;vRaf=requestAnimationFrame(()=>{vRaf=0;vNowPlace()})};
 new MutationObserver(vSoon).observe($("#app"),{attributes:true,attributeFilter:["class"],subtree:true});
@@ -3630,21 +3633,23 @@ async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vList(cid),
  vKeep=0;if(!cur)vNowSync()}
 /* رفتن به ویس | Jump To Playing Voice: زدن روی وسط نوار، گفتگویی که ویس در آن پخش می‌شود را باز می‌کند و روی حباب همان ویس اسکرول می‌کند (tapping the middle of the bar opens the chat of the playing voice and scrolls to its bubble) */
 function vNowGo(){if(!cur)return;const cid=cur.cid,id=cur.id,find=()=>document.querySelector('#msgs .lkvo[data-vid="'+id+'"]');
- if(!(S.openId===cid&&$("#chat").classList.contains("on")))openChat(cid);
+ /* بازگشت به گفتگوی قبلی | Return To Previous Chat: وقتی از داخل یک گفتگو روی نوار وایس می زنیم و وارد گفتگوی وایس می شویم، گفتگوی قبلی در پشته S.backStack ذخیره می شود تا دکمه بازگشت به همان برگردد */{const on=$("#chat").classList.contains("on"),prev=S.openId;if(!(prev===cid&&on)){openChat(cid);if(on&&prev!==cid)(S.backStack=S.backStack||[]).push(prev)}}
  let n=0;const t=setInterval(()=>{const el=find();if(el||++n>20){clearInterval(t);if(!el)return;const b=el.closest(".b")||el;b.scrollIntoView({block:"center",behavior:"smooth"});b.style.transition="filter .3s";b.style.filter="brightness(1.6)";setTimeout(()=>{b.style.filter=""},900)}},50)}
 vn.addEventListener("click",e=>{if(e.target.closest(".vnm"))vNowGo()});
 /* جای نوار بیرون از گفتگو | Bar Place Outside Chat: در صفحه‌های دیگر نوار ویس زیر نوار پوشه‌ها می‌آید، و اگر پوشه نبود زیر نوار جستجو؛ با اسکرول هم جایش دوباره حساب می‌شود (outside chats the bar sits under the folders bar, or under the search bar if there are no folders; its place is recalculated on scroll) */
 $("#app").addEventListener("scroll",vSoon,true);
 /* قطع پخش هنگام ضبط | Stop Playback On Record: با شروع ضبط ویس (یا ادامه‌ی ضبط) همه‌ی ویس‌های درحال‌پخش و نوار پخش قطع می‌شود (starting or resuming a voice recording stops every playing voice and hides the player bar) */
 function vStopAll(){stopCur();document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})}
-/* منوی سرعت مثل تلگرام | Telegram Speed Menu: نگه‌داشتن روی دکمه‌ی سرعت یک نوار زیر آن باز می‌کند: ۰.۲۵، ۰.۵، ۰.۷۵، ۱، ۱.۵ و ۲ برابر؛ انتخاب یکی سرعت را عوض می‌کند و منو بسته می‌شود (long-press on the speed button opens a strip under it with 0.25x, 0.5x, 0.75x, 1x, 1.5x and 2x; choosing one sets the speed and closes the menu) */
+/* منوی سرعت مثل تلگرام | Telegram Speed Menu: نگه‌داشتن روی دکمه‌ی سرعت یک نوار زیر آن باز می‌کند: ۰.۲۵، ۰.۵، ۰.۷۵، ۱، ۱.۲۵، ۱.۵ و ۲ برابر؛ انتخاب یکی سرعت را عوض می‌کند و منو بسته می‌شود (long-press on the speed button opens a strip under it with 0.25x, 0.5x, 0.75x, 1x, 1.25x, 1.5x and 2x; choosing one sets the speed and closes the menu) */
 let vLP=0,vLT=0;
 (function(){const s=document.createElement("style");s.textContent=`#vnsp{position:absolute;z-index:61;min-width:132px;box-sizing:border-box;padding:4px 0;background:var(--card2,#2c2c2e);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.45);color:var(--txt);font-size:15px}
 #vnsp div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 16px;cursor:pointer}
-#vnsp div.on{color:var(--blue);font-weight:600}`;document.head.appendChild(s)})();
+#vnsp div.on{color:var(--blue);font-weight:600}
+/* جلوگیری از منوی سیستم | No System Callout: نگه داشتن دکمه سرعت منوی انتخاب متن iOS را باز نکند تا منوی سرعت دیده شود */
+#vnow .vns{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}`;document.head.appendChild(s)})();
 function vSetSpd(v){vSpd=v;if(cur)cur.a.playbackRate=v;const b=vn.querySelector(".vns");b.textContent=v+"X";b.classList.toggle("f",v!==1);vSpdClose()}
 function vSpdClose(){const m=$("#vnsp");if(m)m.remove()}
-function vSpdOpen(){vSpdClose();const m=document.createElement("div");m.id="vnsp";[2,1.5,1,.75,.5,.25].forEach(v=>{const r=document.createElement("div");r.dataset.v=v;if(v===vSpd)r.className="on";r.innerHTML="<span>"+v+"x</span><span>"+(v===vSpd?"\u2713":"")+"</span>";m.append(r)});
+function vSpdOpen(){vSpdClose();const m=document.createElement("div");m.id="vnsp";/* گزینه های سرعت | Speed Options: افزوده شدن ۱.۲۵ بین ۱ و ۱.۵ */[2,1.5,1.25,1,.75,.5,.25].forEach(v=>{const r=document.createElement("div");r.dataset.v=v;if(v===vSpd)r.className="on";r.innerHTML="<span>"+v+"x</span><span>"+(v===vSpd?"\u2713":"")+"</span>";m.append(r)});
  const app=$("#app"),ar=app.getBoundingClientRect(),br=vn.getBoundingClientRect(),sr=vn.querySelector(".vns").getBoundingClientRect();m.style.top=(br.bottom-ar.top+6)+"px";m.style.right=(ar.right-sr.right)+"px";app.append(m)}
 vn.addEventListener("pointerdown",e=>{if(!e.target.closest(".vns"))return;clearTimeout(vLT);vLP=0;vLT=setTimeout(()=>{vLP=1;vSpdOpen()},380)});
 ["pointerup","pointercancel","pointerleave"].forEach(t=>vn.addEventListener(t,()=>clearTimeout(vLT)));
@@ -3735,9 +3740,9 @@ snd.addEventListener("pointerdown",async e=>{
 });
 snd.addEventListener("pointermove",e=>{const o=R;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?1:-1,sd=Math.max(0,-dx*sg);
  if(o.sl){o.sl.style.transform="translateX("+(dx*sg<0?dx:0)+"px)";o.sl.style.opacity=Math.max(0,1-sd/110)}
- {const tx=dx*sg<0?dx:0,ty=Math.max(-90,Math.min(0,dy));/* حرکت آزاد چپ و بالا | Free Left/Up Drag: دکمه تا قبل از قفل شدن هم‌زمان به چپ و بالا آزادانه حرکت می‌کند؛ بالا تا حد ۷۰ قفل، چپ تا حد ۹۰ لغو می‌شود (before locking the button moves freely left and up at once; past 70px up it locks, past 90px left it cancels) */snd.style.transition="none";snd.style.transform="translate("+tx+"px,"+ty+"px) scale(1.9)"}
+ {const tx=dx*sg<0?dx:0,ty=Math.max(-130,Math.min(0,dy));/* حرکت آزاد چپ و بالا | Free Left/Up Drag: دکمه تا قبل از قفل شدن هم‌زمان به چپ و بالا آزادانه حرکت می‌کند؛ بالا تا حد ۷۰ قفل، چپ تا حد ۹۰ لغو می‌شود (before locking the button moves freely left and up at once; past 70px up it locks, past 90px left it cancels) */snd.style.transition="none";snd.style.transform="translate("+tx+"px,"+ty+"px) scale(1.9)"}
  lk.style.transform="translateY("+Math.min(0,dy)+"px)";
- if(sd>90)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
+ /* آستانه قفل | Lock Threshold: برای قفل شدن ضبط باید دکمه را ۱۱۰ پیکسل به بالا بکشی (قبلاً ۷۰ بود) */if(sd>90)discard(o);else if(dy<-110){o.up=Date.now();lockRec(o)}});
 const up=e=>{const o=R;if(!o||e.pointerId!==o.pid)return;if(o.locked){o.pid=-1;S.sendHold=true;setTimeout(()=>S.sendHold=false,400);return}
  o.up=Date.now();if(!o.rec)return;if(!o.shown){o.done=1;o.rec.cancel().catch(()=>{});cleanup(o);return}
  S.sendHold=true;setTimeout(()=>S.sendHold=false,400);if(e.type==="pointercancel")discard(o);else finish(o)};
