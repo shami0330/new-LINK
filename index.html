@@ -3770,6 +3770,8 @@ window.vSerialNext=async function(cid,id){const L=vListAll(cid),cn=(CHATS.find(c
  vKeep=0;if(!cur)vNowSync()};
 /* توقف ویس برای ویدیو | Stop Voice For Video: وقتی ویدیو مسیج پخش می‌شود ویس در حال پخش را کامل می‌بندد */
 window.vStopVoice=function(){vKeep=0;stopCur()};
+/* پل پلیر مشترک | Shared Player Bridge: ویدیو مسیج در بخش جدا نوشته شده و به متغیرهای پلیر ویس دسترسی نداشت (برای همین پخش نمی‌شد)؛ این پل همان پلیر و نوار ویس را در اختیارش می‌گذارد (the video message lives in a separate block and could not see the voice player variables, so it never played; this bridge hands it the same player and bar) */
+window.vBridge={get cur(){return cur},set cur(x){cur=x},get vKeep(){return vKeep},set vKeep(x){vKeep=x},get vSpd(){return vSpd},stopCur:function(){return stopCur()},vNowSync:function(){return vNowSync()},vNowTick:function(){return vNowTick()},vNowName:function(el){return vNowName(el)},vEnded:function(){return vEnded()}};
 /* رفتن به ویس | Jump To Playing Voice: زدن روی وسط نوار، گفتگویی که ویس در آن پخش می‌شود را باز می‌کند و روی حباب همان ویس اسکرول می‌کند (tapping the middle of the bar opens the chat of the playing voice and scrolls to its bubble) */
 function vNowGo(){if(!cur)return;const cid=cur.cid,id=cur.id,find=()=>document.querySelector('#msgs .lkvo[data-vid="'+id+'"]');
  /* بازگشت به گفتگوی قبلی | Return To Previous Chat: وقتی از داخل یک گفتگو روی نوار وایس می زنیم و وارد گفتگوی وایس می شویم، گفتگوی قبلی در پشته S.backStack ذخیره می شود تا دکمه بازگشت به همان برگردد */{const on=$("#chat").classList.contains("on"),prev=S.openId;if(!(prev===cid&&on)){openChat(cid);if(on&&prev!==cid)(S.backStack=S.backStack||[]).push(prev)}}
@@ -4189,6 +4191,8 @@ setTimeout(()=>{try{mediaWarm("voice")}catch(e){}},3000);
 /* ===== ویدیو مسیج مثل تلگرام | Telegram-style Video Message: نگه‌دار = ضبط ویدیوی گرد، کشیدن به کنار = لغو، کشیدن به بالا = قفل، رها کردن = ارسال؛ بعد از ارسال داخل حباب گرد پخش می‌شود (hold to record a round video, slide aside to cancel, slide up to lock, release to send; plays inside a round bubble after sending) ===== */
 (function(){
 const chat=$("#chat"),snd=$("#send");
+/* پل پلیر | Player Link: ویدیو مسیج از طریق VB به همان پلیر و نوار ویس وصل می‌شود (the video message reaches the voice player and bar through VB) */
+const VB=window.vBridge;
 /* ترجمه‌ها | Translations: متن‌های تازه‌ی ویدیو مسیج به فارسی */
 Object.assign(FA,{"Video message":"پیام ویدیویی","Hold to record video message":"برای ضبط ویدیو نگه دارید","Camera or microphone access denied":"دسترسی به دوربین یا میکروفن رد شد","Flash not available":"فلش در دسترس نیست","Could not switch camera":"تعویض دوربین ممکن نشد","Video removed from cache":"ویدیو از حافظه پاک شده است"});
 /* زمان | Time Format: fT برای ضبط (دقیقه:ثانیه,صدم)، fd برای نمایش ساده، fc برای شمارش معکوس */
@@ -4488,7 +4492,7 @@ async function vmUrl(id){if(VMU[id])return VMU[id];let b=LKB[id];if(!b){try{cons
 /* آماده‌سازی حباب | Attach Video: عنصر ویدیو فقط وقتی حباب دیده شود ساخته می‌شود */
 async function vmAttach(el){if(el._v)return;if(!el._ld)el._ld=(async()=>{const u=await vmUrl(el.dataset.vid);if(!u){el.classList.add("vx");return}
  const v=document.createElement("video");v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;el.querySelector(".vmc").append(v);el._v=v;
- v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>{if(cur&&cur.vm)return;const cid=S.openId,id=el.dataset.vid;vmStop(el);/* ادامه‌ی زنجیره | Continue Chain: بعد از پایان ویدیو مسیج، پیام بعدی (ویس یا ویدیو مسیج) پخش می‌شود (after a video message ends, the next message plays) */if(window.vSerialNext)window.vSerialNext(cid,id)})})();await el._ld}
+ v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>{if(VB.cur&&VB.cur.vm)return;const cid=S.openId,id=el.dataset.vid;vmStop(el);/* ادامه‌ی زنجیره | Continue Chain: بعد از پایان ویدیو مسیج، پیام بعدی (ویس یا ویدیو مسیج) پخش می‌شود (after a video message ends, the next message plays) */if(window.vSerialNext)window.vSerialNext(cid,id)})})();await el._ld}
 /* ===== ویدیو مسیج با پلیر ویس | Video Message Uses Voice Player =====
 توضیح ساده | Simple note: ویدیو مسیج دیگر پلیر و نوار جدا ندارد؛ مثل ویس از همان پلیر (cur) و همان نوار (#vnow) استفاده می‌کند. فقط صدا از یک Audio جدا پخش می‌شود و تصویر دایره‌ای با آن هماهنگ است. با رفتن از چت هم پخش و نوار می‌مانند.
 (Video message no longer has its own player or bar; like voice it uses the shared player (cur) and bar (#vnow). The sound plays from a separate Audio and the round picture follows it. Playback and the bar stay when you leave the chat.) */
@@ -4497,31 +4501,31 @@ function vmReset(el){if(!el||!el.classList||!el.classList.contains("lkvm"))retur
  const c=el.querySelector(".vmg circle");if(c)c.style.strokeDashoffset="305.4";const d=el.querySelector(".vmd");if(d)d.textContent=fd(+el.dataset.d)}
 window.vmReset=vmReset;
 /* توقف | Stop: اگر همین ویدیو مسیج در پلیر مشترک است، پلیر را می‌بندد */
-function vmStop(el){if(!el)return;if(cur&&cur.vm&&cur.vo===el){vKeep=0;stopCur();return}vmReset(el)}
+function vmStop(el){if(!el)return;if(VB.cur&&VB.cur.vm&&VB.cur.vo===el){VB.vKeep=0;VB.stopCur();return}vmReset(el)}
 /* حلقه‌ی هماهنگی | Sync Loop: تصویر دایره را با صدای پلیر مشترک (cur.a) هماهنگ نگه می‌دارد و حلقه و زمان را به‌روز می‌کند */
 let vmRaf=0;
-function vmLoop(){const el=VM.cur;if(!el||!cur||!cur.vm||cur.vo!==el)return;if(!el.isConnected){VM.cur=null;vmDockOff();return}
- const a=cur.a,v=el._v;
+function vmLoop(){const el=VM.cur;if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return;if(!el.isConnected){VM.cur=null;vmDockOff();return}
+ const a=VB.cur.a,v=el._v;
  if(v){if(a.paused){if(!v.paused)v.pause()}else{if(v.paused)v.play().catch(()=>{});if(v.playbackRate!==a.playbackRate)v.playbackRate=a.playbackRate;if(Math.abs(v.currentTime-a.currentTime)>.35){try{v.currentTime=a.currentTime}catch(_){}}}vmSync(el,v)}
  el.classList.toggle("pz",a.paused);
  const d=+el.dataset.d||a.duration||1,p=Math.min(1,a.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-a.currentTime));const u=el.querySelector(".vmu");if(u&&a.currentTime>.3)u.remove();
  vmRaf=requestAnimationFrame(vmLoop)}
 /* نمایش روی حباب | Show On Bubble: دایره بزرگ می‌شود و با پلیر هماهنگ می‌شود */
-function vmVisual(el){VM.cur=el;el.classList.add("pl");el.classList.toggle("pz",!!(cur&&cur.a.paused));const v=el._v;if(v){v.loop=false;v.muted=true;try{v.currentTime=cur?cur.a.currentTime:0}catch(_){}}vmFit(el);cancelAnimationFrame(vmRaf);vmRaf=requestAnimationFrame(vmLoop)}
+function vmVisual(el){VM.cur=el;el.classList.add("pl");el.classList.toggle("pz",!!(VB.cur&&VB.cur.a.paused));const v=el._v;if(v){v.loop=false;v.muted=true;try{v.currentTime=VB.cur?VB.cur.a.currentTime:0}catch(_){}}vmFit(el);cancelAnimationFrame(vmRaf);vmRaf=requestAnimationFrame(vmLoop)}
 /* وصل شدن دوباره | Reconnect: وقتی گفتگو دوباره باز می‌شود، دایره‌ی در حال پخش دوباره به پلیر وصل می‌شود */
-window.vmReconnect=function(el){vmAttach(el).then(()=>{if(cur&&cur.vm&&cur.vo===el)vmVisual(el)})};
+window.vmReconnect=function(el){vmAttach(el).then(()=>{if(VB.cur&&VB.cur.vm&&VB.cur.vo===el)vmVisual(el)})};
 /* لمس دایره | Tap Circle: مثل ویس؛ بار اول شروع، بعد مکث و ادامه */
 async function vmTap(el){const id=el.dataset.vid;
- if(cur&&cur.id===id){cur.vo=el;if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause();vNowSync();return}
+ if(VB.cur&&VB.cur.id===id){VB.cur.vo=el;if(VB.cur.a.paused)VB.cur.a.play().catch(()=>{});else VB.cur.a.pause();VB.vNowSync();return}
  await vmAttach(el);if(!el._v){toast("Video removed from cache");return}
- try{window.vStopVoice&&window.vStopVoice()}catch(_){}stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
+ try{window.vStopVoice&&window.vStopVoice()}catch(_){}VB.stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
  let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("Video removed from cache");return}
- const a=new Audio(URL.createObjectURL(b)),D=+el.dataset.d;a.playbackRate=vSpd;
- cur={a,vo:el,id,D,vm:true,cid:S.openId,name:vNowName(el)};vKeep=0;
- a.ontimeupdate=vNowTick;a.onplay=a.onpause=vNowSync;a.onended=vEnded;
+ const a=new Audio(URL.createObjectURL(b)),D=+el.dataset.d;a.playbackRate=VB.vSpd;
+ VB.cur={a,vo:el,id,D,vm:true,cid:S.openId,name:VB.vNowName(el)};VB.vKeep=0;
+ a.ontimeupdate=VB.vNowTick;a.onplay=a.onpause=VB.vNowSync;a.onended=VB.vEnded;
  vmVisual(el);
- try{vNowSync();await a.play()}catch(e){toast("Cannot play this video");stopCur()}}
+ try{VB.vNowSync();await a.play()}catch(e){toast("Cannot play this video");VB.stopCur()}}
 /* دسترسی از بیرون | Video Message Hooks: ویس برای پخش پشت‌سرهم، ویدیو مسیج را از اینجا پخش یا متوقف می‌کند */
 window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
