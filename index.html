@@ -189,7 +189,7 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* جداکننده تاریخ | Date Separator: کپسول وسط بالای هر روز گفتگو (centered date capsule, sticky at top) */
 .b.sv{align-self:center;max-width:90%;background:var(--dsep);border:0;box-shadow:none;border-radius:12px;padding:3px 12px;font-size:13px;color:var(--txt);text-align:center;margin:4px 0}.b.sv::before,.b.sv::after{display:none}
 .dsep{align-self:center;position:sticky;top:4px;z-index:2;background:var(--dsep);border-radius:12px;padding:3px 12px;font-size:13px;color:var(--txt);margin:4px 0}
-.pinbar{margin:4px 12px;background:var(--card);border-radius:14px;padding:7px 12px;font-size:13px;display:flex;justify-content:space-between}
+.pinbar{margin:4px 12px;background:var(--card);border-radius:14px;padding:7.3px 12px;/* نوشته‌ی نوار پین | Pin Bar Text: نوشته‌ها ۱۵ درصد بزرگتر (۱۳px ← ۱۴.۹۵px) و در نتیجه ارتفاع نوار ۱۰ درصد بیشتر (۴۶px ← ۵۱px) */font-size:14.95px;display:flex;justify-content:space-between}
 .pinbar span{color:var(--blue);font-weight:600}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none}
@@ -2072,6 +2072,12 @@ linkHdr($("#clist"),$("#hdrChats"),$("#sbChats"));linkHdr($("#ctlist"),$("#hdrCo
 /* فاصله بالای لیست | List Top Padding: برابر ارتفاع سربرگ تا لیست زیر آن شروع شود (list starts right below header) */
 /* جای نوار وایس در لیست | Voice Bar Gap: وقتی نوار پخش وایس روی صفحه لیست است، به فاصله بالای لیست جای نوار اضافه می شود تا روی اولین گفتگو نیفتد؛ با محو شدن نوار فاصله به حالت اول برمیگردد */
 function padLists(){const v=document.getElementById("vnow");[["#clist","#hdrChats"],["#ctlist","#hdrContacts"]].forEach(([l,h])=>{const e=v&&v.classList.contains("on")&&v.parentNode&&v.parentNode.contains($(l))?(v.classList.contains("vex")?38:v.offsetHeight)+8:0;/* جای نوار پارک‌شده | Parked Bar Gap: اگر نوار پارک‌شده نمایان است لیست به اندازه ارتفاع آن پایین‌تر می‌رود */const pk=document.getElementById("vpark"),pe=(pk&&pk.classList.contains("on")&&pk.style.display!=="none"&&pk.parentNode&&pk.parentNode.contains($(l)))?(e?44:46):0;$(l).style.paddingTop=($(h).offsetHeight+e+pe)+"px"})}
+/* جای اسکرول لیست | List Scroll Room: اگر گفتگوها کم باشند و لیست جای اسکرول نداشته باشد، یک جای خالی پایین لیست اضافه می‌شود تا با کشیدن به بالا نوار جستجو بسته و با کشیدن به پایین باز شود (a short list gets extra empty room at the bottom so it can still scroll and close/open the search bar) */
+function lkListFit(){const l=$("#clist");if(!l||!l.clientHeight)return;l.style.paddingBottom="";const cs=getComputedStyle(l),k=l.lastElementChild,pb=parseFloat(cs.paddingBottom)||0,bot=k?k.offsetTop+k.offsetHeight:parseFloat(cs.paddingTop)||0,need=l.clientHeight+SH-(bot+pb);if(need>0)l.style.paddingBottom=(pb+need)+"px"}
+/* قلاب جای اسکرول | Scroll Room Hooks: بعد از هر ساختن لیست جای اسکرول دوباره تنظیم می‌شود و اگر با عوض شدن پوشه میزان اسکرول کم شده باشد به همان میزان قبلی برمی‌گردد تا وضعیت نوار جستجو عوض نشود (re-fit after every list build; restore the previous scroll so a folder change keeps the search bar state) */
+{const _pl=padLists;padLists=function(){const r=_pl.apply(this,arguments);try{lkListFit()}catch(e){}return r}}
+{const _rc3=renderChats;renderChats=function(){const l=$("#clist"),y=l?l.scrollTop:0;const r=_rc3.apply(this,arguments);try{lkListFit();if(l&&y>0&&l.scrollTop<y)l.scrollTop=y}catch(e){}return r}}
+window.addEventListener("resize",()=>{try{lkListFit()}catch(e){}});
 
 /* ---- ۳.۱۴ ثابت ماندن پس‌زمینه | 3.14 Fixed Background & No Zoom ---- */
 /* جلوگیری از زوم | Block Zoom: ژست‌های زوم و دابل‌تپ و منوی نگه‌داشتن غیرفعال (disable pinch, double-tap zoom, long-press menu) */
@@ -5016,7 +5022,7 @@ function lkIndSet(i,o){i.style.width=o.offsetWidth+"px";i.style.transform="trans
 function lkTabInd(){const B=$("#tabs"),old=$("#tabInd");if(old)old.remove();const o=$("#tabs .tab.on");
  if(!B||!o||!o.offsetWidth){if(B)B.classList.remove("ind");LKI=null;return}
  const i=document.createElement("i");i.id="tabInd";B.prepend(i);B.classList.add("ind");
- if(LKI&&LKI.x!==o.offsetLeft){i.style.transition="none";i.style.width=LKI.w+"px";i.style.transform="translateX("+LKI.x+"px)";i.getBoundingClientRect();i.style.transition=""}
+ /* نشانگر بدون پرش | Indicator No Jump: هر بار که تب‌ها دوباره ساخته می‌شوند (مثلاً با دریافت پیام) نشانگر از همان جای قبلیش شروع می‌شود و حرکت کوچک نمی‌کند (the indicator starts from its previous spot after every rebuild, so no small slide) */if(LKI){i.style.transition="none";i.style.width=LKI.w+"px";i.style.transform="translateX("+LKI.x+"px)";i.getBoundingClientRect();i.style.transition=""}
  lkIndSet(i,o)}
 /* اندازه‌ی نوار | Tab Bar Resize: وقتی نوار تازه دیده می‌شود یا اندازه‌اش عوض می‌شود (مثلاً چرخش گوشی) نشانگر بدون انیمیشن سر جای درست می‌نشیند */
 if(window.ResizeObserver)new ResizeObserver(()=>{const B=$("#tabs");if(!B)return;if(!B.classList.contains("ind"))return lkTabInd();
