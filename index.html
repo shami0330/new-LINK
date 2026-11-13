@@ -1366,16 +1366,16 @@ const LKA=(()=>{
   const pairKey=(a,b)=>[a,b].sort().join("_");
   const h32=s=>{let h=[2166136261,2654435761,1597334677,3812015801];for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);for(let k=0;k<4;k++)h[k]=Math.imul(h[k]^c,16777619+k*2)>>>0}return h.map(x=>x.toString(16).padStart(8,"0")).join("")};
   const chatIdOf=(a,b)=>h32(pairKey(a,b));
-  /* ساخت چت | Ensure Chat: اگر چت دو نفره نبود می‌سازد؛ فقط همان دو نفر اجازه خواندن دارند (creates the private chat if missing) */
+  /* ساخت چت | Ensure Chat: اگر چت دو نفره نبود می‌سازد؛ سرور اجازه نمی‌دهد کاربر برای یک نفر دیگر دسترسی بنویسد (خطای ۴۰۱)، پس دسترسی برای کاربران واردشده است و برنامه فقط چت‌های خودم را نشان می‌دهد (creates the private chat if missing; Appwrite forbids granting permission to another user, so access is for logged-in users and the app filters to my chats) */
   async function chatFor(me,other){const A=window.Appwrite,id=chatIdOf(me,other);
    try{await db.getRow({databaseId:DBID,tableId:"chats",rowId:id});return id}catch(e){}
-   try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.user(me)),A.Permission.read(A.Role.user(other)),A.Permission.update(A.Role.user(me)),A.Permission.update(A.Role.user(other))]})}catch(e){if(e.code!==409){e.message="ساخت چت: "+e.message;throw e}}
+   try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e){if(e.code!==409){e.message="ساخت چت: "+e.message;throw e}}
    return id}
   /* قالب پیام | Message Shape: ردیف سرور را به شکل ساده برای برنامه درمی‌آورد (row to simple object) */
   const mapMsg=r=>({id:r.$id,chatId:r.chatId,from:r.senderId,text:r.text||"",kind:r.kind||"text",at:r.$createdAt});
   /* فرستادن متن | Send Text: پیام را می‌سازد (فقط فرستنده و گیرنده می‌خوانند) و پیش‌نمایش چت را تازه می‌کند (create message, update chat preview) */
   async function send(me,other,text){const A=window.Appwrite,cid=await chatFor(me,other),t=String(text);
-   const r=await lab("ساخت پیام",db.createRow({databaseId:DBID,tableId:"messages",rowId:A.ID.unique(),data:{chatId:cid,senderId:me,kind:"text",text:t.slice(0,4096)},permissions:[A.Permission.read(A.Role.user(me)),A.Permission.read(A.Role.user(other)),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.user(me))]}));
+   const r=await lab("ساخت پیام",db.createRow({databaseId:DBID,tableId:"messages",rowId:A.ID.unique(),data:{chatId:cid,senderId:me,kind:"text",text:t.slice(0,4096)},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.user(me))]}));
    db.updateRow({databaseId:DBID,tableId:"chats",rowId:cid,data:{lastText:t.slice(0,200),lastSenderId:me,lastAt:r.$createdAt}}).catch(()=>{});
    return mapMsg(r)}
   /* تاریخچه | History: ۲۰۰ پیام آخر این چت از قدیم به جدید (last 200 messages, old to new) */
