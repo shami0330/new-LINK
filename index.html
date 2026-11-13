@@ -1374,7 +1374,7 @@ const MP={
  photoFile:{kind:"image",original:true},
  videoChat:{kind:"video",heights:[240,360,480,720,1080],bitrates:{240:4e5,360:7e5,480:12e5,720:25e5,1080:5e6}},
  videoFile:{kind:"video",original:true,vbr:8e6},
- videoMsg:{kind:"video",w:300,h:300,ratio:1,maxSec:60,vbr:8e5,abr:64e3},
+ videoMsg:{kind:"video",w:384,h:384,ratio:1,maxSec:60,vbr:1e6,abr:128e3},
  voice:{kind:"audio",abr:64e3},
  audioFile:{kind:"audio",original:true,abr:64e3},
  file:{kind:"file",original:true}
@@ -3043,7 +3043,7 @@ function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"S
  const fd=s=>Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
  function cpReal(c){const sa=c.id===2?CFG.saved:(CFG.sent&&CFG.sent[c.id]);const src=chatMsgs(c);const R={med:[],files:[],music:[],voice:[],links:[],saved:[]};
   src.forEach(m=>{const w=m[0],t=m[1],day=dayLabel(m[3]||0),d=w==="me"?"s":"r",o=lkDec(t);
-   if(o&&o.it){if(o.k==="files")o.it.forEach(x=>(/\.(mp3|m4a|wav|ogg|aac|flac|opus)$/i.test(x.n||"")?R.music:R.files).push([x,day,d]));else if(o.k==="voice")o.it.forEach(x=>R.voice.push([x,day,d]));else o.it.forEach((x,i)=>{if(x.t!=="voice")R.med.push([x,t,i,[w==="me"?(S.user?S.user.name:"You"):c.n,(day==="Today"?"today":day)+" at "+m[2]]])})}
+   if(o&&o.it){if(o.k==="files")o.it.forEach(x=>(/\.(mp3|m4a|wav|ogg|aac|flac|opus)$/i.test(x.n||"")?R.music:R.files).push([x,day,d]));else if(o.k==="voice")o.it.forEach(x=>R.voice.push([x,day,d]));else o.it.forEach((x,i)=>{if(x.t!=="voice"&&x.t!=="vmsg")R.med.push([x,t,i,[w==="me"?(S.user?S.user.name:"You"):c.n,(day==="Today"?"today":day)+" at "+m[2]]])})}
    else if(!o){const body=fwBody(t);(body.match(/(https?:\/\/|www\.)[^\s<>"]+/gi)||[]).forEach(u=>R.links.push([u,day]));if(w==="me")R.saved.push([body,day])}});return((sa&&sa.length)||R.med.length||R.files.length||R.music.length||R.voice.length||R.links.length)?R:null}
  cpBody=function(){const c=CHATS.find(x=>x.id===S.openId),R=c&&cpReal(c);if(!R)return demo();
   const b=$("#cpbody"),k=CP.tab,dir=d=>d==="s"?"Sent":"Received",em='<div style="padding:40px 20px;text-align:center;opacity:.5">—</div>';let h="";
@@ -4174,6 +4174,210 @@ const up=e=>{const o=R;if(!o||e.pointerId!==o.pid)return;if(o.locked){o.pid=-1;S
  S.sendHold=true;setTimeout(()=>S.sendHold=false,400);if(e.type==="pointercancel")discard(o);else finish(o)};
 snd.addEventListener("pointerup",up);snd.addEventListener("pointercancel",up);
 setTimeout(()=>{try{mediaWarm("voice")}catch(e){}},3000);
+})();
+/* ===== ویدیو مسیج مثل تلگرام | Telegram-style Video Message: نگه‌دار = ضبط ویدیوی گرد، کشیدن به کنار = لغو، کشیدن به بالا = قفل، رها کردن = ارسال؛ بعد از ارسال داخل حباب گرد پخش می‌شود (hold to record a round video, slide aside to cancel, slide up to lock, release to send; plays inside a round bubble after sending) ===== */
+(function(){
+const chat=$("#chat"),snd=$("#send");
+/* ترجمه‌ها | Translations: متن‌های تازه‌ی ویدیو مسیج به فارسی */
+Object.assign(FA,{"Video message":"پیام ویدیویی","Hold to record video message":"برای ضبط ویدیو نگه دارید","Camera or microphone access denied":"دسترسی به دوربین یا میکروفن رد شد","Flash not available":"فلش در دسترس نیست","Could not switch camera":"تعویض دوربین ممکن نشد","Video removed from cache":"ویدیو از حافظه پاک شده است"});
+/* زمان | Time Format: fT برای ضبط (دقیقه:ثانیه,صدم)، fd برای نمایش ساده، fc برای شمارش معکوس */
+const fT=s=>{const m=Math.floor(s/60),x=Math.floor(s%60),c=Math.floor((s%1)*100);return m+":"+String(x).padStart(2,"0")+","+String(c).padStart(2,"0")};
+const fd=s=>{s=Math.round(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+const fc=s=>{s=Math.ceil(s||0);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+/* آیکن‌ها | Icons: آیکن‌های کوچک این بخش (چرخش دوربین، فلش، بلندگوی خاموش، فلش بالا) */
+const SV=(p,z)=>'<svg viewBox="0 0 24 24" width="'+(z||20)+'" height="'+(z||20)+'" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 2.7 0 014.6-1.2M14.5 14.3a2.7 2.7 0 01-4.6 1.2"/><path d="M14.3 10v2.2h-2.2M9.7 17.3v-2.2h2.2"/>',20),
+ fl:SV('<path d="M13 2L5 13.5h6L10 22l9-12h-6z"/>',19),flo:SV('<path d="M13 2L5 13.5h6L10 22l9-12h-6z"/><path d="M3 3l18 18"/>',19),
+ spk:SV('<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/>',22),chev:SV('<path d="M6 15l6-6 6 6"/>',16)};
+/* ظاهر ویدیو مسیج | Video Message Look: صفحه‌ی ضبط تیره با دایره‌ی بزرگ و حلقه‌ی زمان، نوار پایین، و حباب گرد پیام با حلقه‌ی پیشرفت (dark record screen with big circle and time ring, bottom bar, and the round message bubble with progress ring) */
+(function(){const s=document.createElement("style");s.textContent=`
+#vmrec{position:absolute;inset:0;z-index:70;display:none;background:rgba(0,0,0,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;touch-action:none;-webkit-user-select:none;user-select:none;overflow:hidden}
+#vmrec.on{display:block}
+#vmrec .vmst{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 9vh);width:min(80vw,340px);aspect-ratio:1;transform:translateX(-50%)}
+#vmrec .vmpv{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#000}
+#vmrec .vmpv video{width:100%;height:100%;object-fit:cover;display:block}
+#vmrec .vmpv video.mir{transform:scaleX(-1)}
+#vmrec .vmrg{position:absolute;inset:-7px;width:calc(100% + 14px);height:calc(100% + 14px);transform:rotate(-90deg);pointer-events:none}
+#vmrec .vmrg circle{fill:none;stroke-width:1;stroke-linecap:round}
+#vmrec .vmrg .tk{stroke:rgba(255,255,255,.18)}
+#vmrec .vmrg .pg{stroke:#fff}
+#vmrec .vmib{position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer}
+#vmrec .vmib.off{opacity:.55}
+#vmrec .vmbar{position:absolute;height:44px;border-radius:22px;background:rgba(255,255,255,.12);display:flex;align-items:center;gap:10px;padding:0 16px;font-size:16px;box-sizing:border-box;white-space:nowrap;overflow:hidden}
+#vmrec .vmdot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;animation:vmbl 1s infinite}
+#vmrec.ps .vmdot{animation:none;opacity:.5}
+@keyframes vmbl{50%{opacity:.25}}
+#vmrec .vmsl{flex:1;text-align:center;opacity:.7;font-size:15px}
+#vmrec .vmcn{flex:1;text-align:center;color:var(--blue);font-size:16px;cursor:pointer}
+#vmrec .vmlk{position:absolute;width:44px;height:72px;border-radius:22px;background:rgba(255,255,255,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#vmrec .vmlk.pz{height:44px;border-radius:50%;cursor:pointer}
+#vmrec .vmbtn{position:absolute;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .2s cubic-bezier(.2,.8,.3,1)}
+.lkvm{position:relative;width:min(62vw,240px);aspect-ratio:1;border-radius:50%;cursor:pointer;transition:transform .28s cubic-bezier(.2,.8,.3,1);transform-origin:50% 100%;z-index:1;-webkit-tap-highlight-color:transparent}
+.lkvm.pl{transform:scale(1.32);z-index:5}
+.lkvm .vmc{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#111}
+.lkvm .vmc video{width:100%;height:100%;object-fit:cover;display:block}
+.lkvm .vmg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none}
+.lkvm .vmg circle{fill:none;stroke:#fff;stroke-width:1.4;stroke-linecap:round;opacity:.9}
+.lkvm .vmx{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.lkvm .vmx .vp{display:none}
+.lkvm.pz .vmx .vp{display:flex}
+.lkvm.pz .vmx .vo{display:none}
+.lkvm.pl:not(.pz) .vmx{opacity:0;pointer-events:none}
+.lkvm .vmt{position:absolute;left:10px;bottom:8px;background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:1px 8px;border-radius:10px;display:flex;align-items:center;gap:4px}
+.lkvm .vmu{width:6px;height:6px;border-radius:50%;background:#fff}
+.b.mm:has(.lkvm){padding:0;background:none!important;box-shadow:none;overflow:visible;position:relative;border-radius:0}
+.b.mm:has(.lkvm) small{position:absolute;right:10px;bottom:8px;z-index:6;padding:1px 8px;background:rgba(0,0,0,.45);color:#fff!important;border-radius:10px;margin:0;display:flex;align-items:center;gap:3px}
+.b.mm:has(.lkvm) small .tick{color:#fff!important}`;document.head.appendChild(s)})();
+
+/* ---- ضبط | Recording ---- */
+/* موتور ضبط | Video Recorder Engine: دوربین و میکروفن را باز می‌کند؛ تصویر را مربع و با اندازه‌ی MP.videoMsg روی بوم می‌کشد و همراه صدای خام (بدون حذف نویز، بدون اکو‌گیری، بدون تقویت خودکار) ضبط می‌کند. مکث، ادامه، تعویض دوربین و فلش را هم دارد. برمی‌گرداند {v,stop,cancel,pause,resume,flip,torch,seconds} (opens camera and mic, draws a square frame at the MP.videoMsg size and records it with raw audio (no noise suppression, echo cancel or auto gain); supports pause, resume, camera switch and flash) */
+async function vmRec(o){
+ const P=MP.videoMsg,vc=f=>({width:{ideal:640},height:{ideal:640},facingMode:{ideal:f}});
+ const st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,sampleRate:48000,echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:vc(o.facing)});
+ let vtr=st.getVideoTracks()[0];
+ const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}
+ const cv=document.createElement("canvas"),x=cv.getContext("2d");cv.width=P.w;cv.height=P.h;x.imageSmoothingQuality="high";
+ let off=false,raf=0;
+ const draw=()=>{if(off)return;const w=v.videoWidth,h=v.videoHeight;if(w&&h){const q=Math.min(w,h);x.drawImage(v,(w-q)/2,(h-q)/2,q,q,0,0,P.w,P.h)}raf=requestAnimationFrame(draw)};draw();
+ const out=cv.captureStream(30);st.getAudioTracks().forEach(t=>out.addTrack(t));
+ const mime=mPick(MIME_V),rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:P.vbr,audioBitsPerSecond:P.abr});
+ const parts=[],t0=Date.now();let acc=0,seg=Date.now(),cancelled=false,torch=false;
+ rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
+ const done=new Promise(ok=>{rc.onstop=ok}),end=()=>{if(rc.state!=="inactive"){if(seg){acc+=Date.now()-seg;seg=0}rc.stop()}};
+ rc.start(250);
+ const result=done.then(async()=>{off=true;cancelAnimationFrame(raf);v.srcObject=null;st.getTracks().forEach(t=>t.stop());try{vtr.stop()}catch(e){}if(cancelled)return null;const th=await new Promise(ok=>{try{cv.toBlob(ok,"image/jpeg",.75)}catch(e){ok(null)}});const m=rc.mimeType||mime,r=mResult(new Blob(parts,{type:m}),"video-message-"+t0,m,P.w,P.h,acc/1000);r.thumb=th;return r});
+ return{v,
+  stop:()=>{end();return result},cancel:()=>{cancelled=true;end();return result},
+  pause:()=>{if(rc.pause&&rc.state==="recording"){rc.pause();acc+=Date.now()-seg;seg=0}},
+  resume:()=>{if(rc.state==="paused"){rc.resume();seg=Date.now()}},
+  get paused(){return rc.state==="paused"},
+  get seconds(){return(acc+(seg?Date.now()-seg:0))/1000},
+  get canTorch(){try{return!!(vtr.getCapabilities&&vtr.getCapabilities().torch)}catch(e){return false}},
+  get torch(){return torch},
+  setTorch:async on=>{await vtr.applyConstraints({advanced:[{torch:!!on}]});torch=!!on},
+  flip:async()=>{const nf=o.facing==="user"?"environment":"user",ns=await navigator.mediaDevices.getUserMedia({video:vc(nf)}),old=vtr;vtr=ns.getVideoTracks()[0];torch=false;v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}try{old.stop()}catch(e){}o.facing=nf;return nf}}}
+
+/* ---- صفحه‌ی ضبط | Record Screen ---- */
+let V=null,UI=null;
+/* ساخت صفحه‌ی ضبط | Build Record Screen: فقط بار اول ساخته می‌شود و داخل گفتگو می‌نشیند */
+function recUI(){if(UI)return UI;const d=document.createElement("div");d.id="vmrec";
+ d.innerHTML='<div class="vmst"><div class="vmpv"></div><svg class="vmrg" viewBox="0 0 100 100"><circle class="tk" cx="50" cy="50" r="49"/><circle class="pg" cx="50" cy="50" r="49" stroke-dasharray="307.9" stroke-dashoffset="307.9"/></svg></div><div class="vmib vmfl">'+I.flip+'</div><div class="vmib vmfh">'+I.flo+'</div><div class="vmbar"></div><div class="vmlk"></div><div class="vmbtn"></div>';
+ chat.append(d);UI={d,pv:d.querySelector(".vmpv"),pg:d.querySelector(".pg"),fl:d.querySelector(".vmfl"),fh:d.querySelector(".vmfh"),bar:d.querySelector(".vmbar"),lk:d.querySelector(".vmlk"),btn:d.querySelector(".vmbtn")};
+ /* دکمه‌های صفحه‌ی ضبط | Record Screen Buttons: تعویض دوربین، فلش، مکث، ارسال و لغو بعد از قفل */
+ UI.fl.onclick=()=>{const o=V;if(!o||!o.rec)return;o.rec.flip().then(()=>{o.rec.v.classList.toggle("mir",o.facing==="user");recTorchLook(o)}).catch(()=>toast("Could not switch camera"))};
+ UI.fh.onclick=()=>{const o=V;if(!o||!o.rec)return;if(!o.rec.canTorch){toast("Flash not available");return}o.rec.setTorch(!o.rec.torch).then(()=>recTorchLook(o)).catch(()=>toast("Flash not available"))};
+ UI.lk.onclick=()=>{const o=V;if(o&&o.locked)recPause(o)};
+ UI.btn.onclick=()=>{const o=V;if(o&&o.locked)recFinish(o)};
+ d.addEventListener("click",e=>{if(e.target.closest(".vmcn")&&V)recDiscard(V)});
+ return UI}
+/* حالت فلش | Flash Look: آیکن فلش روشن یا خاموش یا غیرفعال (اگر دوربین فلش ندارد کم‌رنگ) */
+function recTorchLook(o){const r=o.rec;UI.fh.innerHTML=r.torch?I.fl:I.flo;UI.fh.classList.toggle("off",!r.canTorch)}
+/* جای دکمه‌ها | Place Buttons: نوار و دکمه‌ها را دقیقاً روی نوار پیام و دکمه‌ی ارسال می‌گذارد؛ در زبان راست‌به‌چپ آینه می‌شود */
+function recPlace(o){const cr=chat.getBoundingClientRect(),sr=snd.getBoundingClientRect(),right=sr.left-cr.left>cr.width/2;o.right=right;
+ const cx=sr.left-cr.left+sr.width/2,cy=sr.top-cr.top+sr.height/2;
+ UI.btn.style.left=(cx-28)+"px";UI.btn.style.top=(cy-28)+"px";UI.bar.style.top=(cy-22)+"px";
+ if(right){UI.bar.style.left="12px";UI.bar.style.right=(cr.width-cx+28+8)+"px"}else{UI.bar.style.right="12px";UI.bar.style.left=(cx+28+8)+"px"}
+ UI.lk.style.left=(cx-22)+"px";UI.lk.style.top=(cy-28-14-72)+"px";
+ const ty=(cy-22-12-38)+"px";UI.fl.style.top=ty;UI.fh.style.top=ty;
+ if(right){UI.fl.style.left="12px";UI.fh.style.left="58px";UI.fl.style.right=UI.fh.style.right=""}else{UI.fl.style.right="12px";UI.fh.style.right="58px";UI.fl.style.left=UI.fh.style.left=""}}
+/* نمایش ضبط | Show Recording: صفحه‌ی ضبط را باز می‌کند و زمان و حلقه را هر ۵۰ هزارم ثانیه تازه می‌کند؛ بعد از ۶۰ ثانیه خودکار می‌فرستد */
+function recShow(o){const u=recUI();o.shown=true;S.sendHold=true;
+ u.pv.innerHTML="";u.pv.append(o.rec.v);o.rec.v.classList.toggle("mir",o.facing==="user");o.rec.v.play().catch(()=>{});
+ u.bar.innerHTML='<i class="vmdot"></i><span class="vmt">0:00,00</span><span class="vmsl"></span>';
+ const sl=u.bar.querySelector(".vmsl");o.sl=sl;recPlace(o);sl.textContent=o.right?"‹ "+tr("Slide to cancel"):tr("Slide to cancel")+" ›";
+ u.lk.className="vmlk";u.lk.innerHTML=ic("lock",18)+I.chev;u.lk.style.transform="";
+ u.btn.innerHTML=ic("video",26);u.btn.style.transition="none";u.btn.style.transform="scale(1.5)";void u.btn.offsetWidth;u.btn.style.transition="";
+ u.pg.style.strokeDashoffset="307.9";u.d.classList.remove("ps");u.d.classList.add("on");recTorchLook(o);
+ try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+ const tk=u.bar.querySelector(".vmt");
+ o.iv=setInterval(()=>{const s=o.rec.seconds;tk.textContent=fT(s);u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,s/MP.videoMsg.maxSec))).toFixed(1);if(s>=MP.videoMsg.maxSec)recFinish(o)},50)}
+/* بستن صفحه | Hide Record Screen: صفحه را می‌بندد و همه‌چیز را به حالت اول برمی‌گرداند */
+function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps");UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
+/* قفل | Lock: با کشیدن به بالا ضبط قفل می‌شود؛ دکمه‌ی ارسال فلش می‌شود و بالای آن دکمه‌ی مکث می‌آید */
+function recLock(o){o.locked=true;const u=UI;u.btn.style.transition="";u.btn.style.transform="";u.btn.innerHTML=ic("send",24);
+ u.lk.className="vmlk pz";u.lk.style.transform="";u.lk.style.top=(parseFloat(u.btn.style.top)-14-44)+"px";u.lk.innerHTML=ic("pause",20);
+ const sl=u.bar.querySelector(".vmsl");if(sl){const c=document.createElement("span");c.className="vmcn";c.textContent=tr("Cancel");sl.replaceWith(c)}
+ try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
+/* مکث و ادامه | Pause / Resume: فقط بعد از قفل؛ زمان در مکث نمی‌شمارد */
+function recPause(o){const r=o.rec;if(r.paused){r.resume();UI.d.classList.remove("ps");UI.lk.innerHTML=ic("pause",20)}else{r.pause();UI.d.classList.add("ps");UI.lk.innerHTML='<i style="width:16px;height:16px;border-radius:50%;background:var(--red);display:block"></i>'}}
+/* لغو | Discard: ضبط دور ریخته می‌شود و هیچ‌چیز فرستاده نمی‌شود */
+async function recDiscard(o){if(o.done)return;o.done=1;clearInterval(o.iv);try{await o.rec.cancel()}catch(e){}recHide(o);try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}}
+/* پایان و ارسال | Finish And Send: ضبط تمام می‌شود و اگر دست‌کم نیم‌ثانیه بود فرستاده می‌شود */
+async function recFinish(o){if(o.done)return;o.done=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}recHide(o);if(!res||res.duration<.5){toast("Hold to record video message");return}await sendVM(res)}
+/* ارسال ویدیو مسیج | Send Video Message: فایل در حافظه ذخیره می‌شود و پیام با نوع vmsg به گفتگو اضافه می‌شود (مثل ارسال ویس) */
+async function sendVM(res){
+ const c=CHATS.find(x=>x.id===S.openId);if(!c)return;
+ const id=lkId();LKB[id]=res.blob;try{await Promise.race([lkPut(id,{blob:res.blob,thumb:res.thumb||undefined}),new Promise(ok=>setTimeout(ok,5000))])}catch(e){}
+ const it={id,t:"vmsg",n:res.name,s:res.size,d:Math.round(res.duration*10)/10,w:res.w,h:res.h};
+ CFG.media=CFG.media||{};(CFG.media[c.id]=CFG.media[c.id]||[]).push({id,type:"video",name:res.name,size:res.size});
+ const text=lkEnc({k:"vmsg",it:[it]}),now=lkNow();
+ (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);
+ c.m=lkMsgPlain(text);c.tm=now;bumpChat(c);saveCfg();
+ {const _L=c.id===2?CFG.saved:CFG.sent[c.id],_m=_L&&_L[_L.length-1];if(_m&&S.reply){_m[4]=0;_m[5]=S.reply;saveCfg()}}
+ addMsg("me",text,now,0,S.reply);if(typeof clearReply==="function")clearReply();try{renderChats()}catch(e){}
+ lkEchoK(c,"vmsg",[it],[{blob:res.blob,thumb:res.thumb||undefined}])}
+
+/* ---- لمس دکمه‌ی ارسال | Send Button Touch ---- */
+/* شروع نگه‌داشتن | Hold Start: فقط وقتی آیکن دکمه «ویدیو» است؛ بعد از ۲۲۰ هزارم ثانیه نگه‌داشتن دوربین باز می‌شود (یک ضربه‌ی کوتاه فقط بین ویس و ویدیو عوض می‌کند) */
+snd.addEventListener("pointerdown",e=>{
+ if(V||S.rec!=="video"||$("#mi").value.trim()||(window.lkEdMed&&window.lkEdMed()))return;
+ if(e.pointerType==="mouse"&&e.button!==0)return;
+ const o=V={sx:e.clientX,sy:e.clientY,pid:e.pointerId,t0:Date.now(),up:0,facing:"user"};
+ snd.style.touchAction="none";try{snd.setPointerCapture(e.pointerId)}catch(_){}
+ o.go=setTimeout(async()=>{if(o.up||o.done)return;o.starting=1;let r;
+  try{r=await vmRec(o)}catch(err){o.done=1;if(V===o)V=null;toast("Camera or microphone access denied");return}
+  o.rec=r;o.starting=0;
+  if(o.up&&!o.locked){o.done=1;try{await r.cancel()}catch(_){}if(V===o)V=null;return}
+  recShow(o)},220)});
+/* حرکت انگشت | Finger Move: دکمه همراه انگشت به چپ و بالا می‌رود؛ بیش از ۹۰ پیکسل کنار = لغو، بیش از ۱۱۰ پیکسل بالا = قفل */
+snd.addEventListener("pointermove",e=>{const o=V;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;
+ const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?1:-1,sd=Math.max(0,-dx*sg);
+ if(o.sl){o.sl.style.transform="translateX("+(dx*sg<0?dx:0)+"px)";o.sl.style.opacity=Math.max(0,1-sd/110)}
+ const tx=dx*sg<0?dx:0,ty=Math.max(-130,Math.min(0,dy));UI.btn.style.transition="none";UI.btn.style.transform="translate("+tx+"px,"+ty+"px) scale(1.5)";
+ UI.lk.style.transform="translateY("+Math.min(0,dy)+"px)";
+ if(sd>90)recDiscard(o);else if(dy<-110){o.up=Date.now();recLock(o)}});
+/* رها کردن | Finger Release: بعد از قفل چیزی نمی‌فرستد؛ بدون قفل ضبط را می‌فرستد */
+const vmUp=e=>{const o=V;if(!o||e.pointerId!==o.pid)return;
+ if(o.locked){o.pid=-1;S.sendHold=true;setTimeout(()=>{S.sendHold=false},400);return}
+ o.up=Date.now();clearTimeout(o.go);
+ if(!o.rec){if(!o.starting){o.done=1;V=null}return}
+ if(!o.shown)return;
+ S.sendHold=true;setTimeout(()=>{S.sendHold=false},400);
+ if(e.type==="pointercancel")recDiscard(o);else recFinish(o)};
+snd.addEventListener("pointerup",vmUp);snd.addEventListener("pointercancel",vmUp);
+
+/* ---- حباب و پخش | Bubble And Playback ---- */
+/* حباب گرد | Round Bubble: ویدیو مسیج داخل گفتگو یک دایره است با حلقه‌ی پیشرفت، زمان پایین و دکمه‌ی بلندگوی خاموش وسط (video message is a circle with progress ring, time pill and a muted-speaker button in the middle) */
+const _bodyVm=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="vmsg"){const x=o.it[0];return '<div class="lkvm" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vmc"></div><svg class="vmg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.6" stroke-dasharray="305.4" stroke-dashoffset="305.4"/></svg><div class="vmx"><span class="vo">'+I.spk+'</span><span class="vp">'+ic("pause",22)+'</span></div><div class="vmt"><span class="vmd">'+fd(x.d)+'</span><i class="vmu"></i></div></div>'}return _bodyVm(o)};
+/* متن لیست چت | Chat List Text: پیش‌نمایش پیام در لیست چت‌ها */
+const _plainVm=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="vmsg")return "🎥 "+tr("Video message")+" "+fd(o.it[0].d);return _plainVm(t)};
+const VM={cur:null},VMU={};
+/* آدرس ویدیو | Video URL: فایل را از حافظه‌ی موقت یا انبار می‌گیرد و آدرس قابل پخش می‌سازد */
+async function vmUrl(id){if(VMU[id])return VMU[id];let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return null;return VMU[id]=URL.createObjectURL(b)}
+/* آماده‌سازی حباب | Attach Video: عنصر ویدیو فقط وقتی حباب دیده شود ساخته می‌شود */
+async function vmAttach(el){if(el._v)return;if(!el._ld)el._ld=(async()=>{const u=await vmUrl(el.dataset.vid);if(!u){el.classList.add("vx");return}
+ const v=document.createElement("video");v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;el.querySelector(".vmc").append(v);el._v=v;
+ v.addEventListener("pause",()=>{if(VM.cur===el&&!v.ended)el.classList.add("pz")});v.addEventListener("play",()=>el.classList.remove("pz"));v.addEventListener("ended",()=>vmStop(el))})();await el._ld}
+/* پایان پخش | Stop Playback: دایره به حالت اول برمی‌گردد؛ بی‌صدا و تکراری می‌چرخد و حلقه و زمان صفر می‌شود */
+function vmStop(el){if(!el)return;if(VM.cur===el)VM.cur=null;el.classList.remove("pl","pz");const v=el._v;if(v){v.muted=true;v.loop=true;try{v.currentTime=0}catch(_){}v.play().catch(()=>{})}
+ const c=el.querySelector(".vmg circle");if(c)c.style.strokeDashoffset="305.4";const d=el.querySelector(".vmd");if(d)d.textContent=fd(+el.dataset.d)}
+/* حلقه‌ی پیشرفت | Progress Loop: هنگام پخش، حلقه‌ی دور دایره پر می‌شود و زمان باقی‌مانده کم می‌شود */
+function vmLoop(){const el=VM.cur;if(!el)return;const v=el._v;if(v&&!v.paused){const d=+el.dataset.d||v.duration||1,p=Math.min(1,v.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-v.currentTime));const u=el.querySelector(".vmu");if(u&&v.currentTime>.3)u.remove()}requestAnimationFrame(vmLoop)}
+/* لمس دایره | Tap Circle: بار اول با صدا از اول پخش می‌شود و بزرگ می‌شود؛ لمس دوباره مکث؛ دوباره ادامه */
+async function vmTap(el){await vmAttach(el);const v=el._v;if(!v){toast("Video removed from cache");return}
+ if(VM.cur===el){if(v.paused)v.play().catch(()=>{});else v.pause();return}
+ vmStop(VM.cur);document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
+ VM.cur=el;el.classList.add("pl");el.classList.remove("pz");v.loop=false;v.muted=false;try{v.currentTime=0}catch(_){}
+ try{await v.play()}catch(e){v.muted=true;v.play().catch(()=>{})}vmLoop()}
+/* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
+$("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkvm");if(!el||chat.classList.contains("sel"))return;e.stopPropagation();e.preventDefault();vmTap(el)},true);
+/* پخش بی‌صدا در دید | Muted Autoplay In View: دایره‌های دیده‌شده بی‌صدا و تکراری می‌چرخند و وقتی از دید رفتند می‌ایستند (مثل تلگرام) */
+const vmIO=new IntersectionObserver(es=>es.forEach(en=>{const el=en.target;el._vis=en.isIntersecting&&en.intersectionRatio>=.5;
+ if(el._vis)vmAttach(el).then(()=>{if(el._v&&el._vis&&!el.classList.contains("pl"))el._v.play().catch(()=>{})});
+ else if(el._v&&!el.classList.contains("pl"))el._v.pause()}),{threshold:[0,.5]});
+/* پیدا کردن دایره‌های تازه | Watch New Bubbles: هر حباب ویدیو مسیج تازه به ناظر دید داده می‌شود */
+const vmSee=n=>{if(n.nodeType!==1)return;(n.classList&&n.classList.contains("lkvm")?[n]:[...n.querySelectorAll(".lkvm")]).forEach(el=>{if(!el._o){el._o=1;vmIO.observe(el)}})};
+new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(vmSee))).observe($("#msgs"),{childList:true,subtree:true});vmSee($("#msgs"));
 })();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
