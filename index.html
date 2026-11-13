@@ -4266,9 +4266,9 @@ function recUI(){if(UI)return UI;const d=document.createElement("div");d.id="vmr
  /* دکمه‌های صفحه‌ی ضبط | Record Screen Buttons: تعویض دوربین، فلش، مکث، ارسال و لغو بعد از قفل */
  UI.fl.onclick=()=>{const o=V;if(!o||!o.rec)return;o.rec.flip().then(()=>{o.rec.v.classList.toggle("mir",o.facing==="user");recTorchLook(o)}).catch(()=>toast("Could not switch camera"))};
  UI.fh.onclick=()=>{const o=V;if(!o||!o.rec)return;if(!o.rec.canTorch){toast("Flash not available");return}o.rec.setTorch(!o.rec.torch).then(()=>recTorchLook(o)).catch(()=>toast("Flash not available"))};
- UI.lk.onclick=()=>{const o=V;if(o&&o.locked)recPause(o)};
+ UI.lk.onclick=()=>{const o=V;if(o&&o.locked)recStop(o)};
  UI.btn.onclick=()=>{const o=V;if(o&&o.locked)recFinish(o)};
- d.addEventListener("click",e=>{if(e.target.closest(".vmcn")&&V)recDiscard(V)});
+ d.addEventListener("click",e=>{if(e.target.closest(".vmcn,.vmtr")&&V)recDiscard(V)});
  return UI}
 /* حالت فلش | Flash Look: آیکن فلش روشن یا خاموش یا غیرفعال (اگر دوربین فلش ندارد کم‌رنگ) */
 function recTorchLook(o){const r=o.rec;UI.fh.innerHTML=r.torch?I.fl:I.flo;UI.fh.classList.toggle("off",!r.canTorch)}
@@ -4292,10 +4292,10 @@ function recShow(o){const u=recUI();o.shown=true;S.sendHold=true;
  const tk=u.bar.querySelector(".vmt");
  o.iv=setInterval(()=>{const s=o.rec.seconds;tk.textContent=fT(s);u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,s/MP.videoMsg.maxSec))).toFixed(1);if(s>=MP.videoMsg.maxSec)recFinish(o)},50)}
 /* بستن صفحه | Hide Record Screen: صفحه را می‌بندد و همه‌چیز را به حالت اول برمی‌گرداند */
-function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps");UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
+function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps","pv");recPvClean(o);UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
 /* قفل | Lock: با کشیدن به بالا ضبط قفل می‌شود؛ دکمه‌ی ارسال فلش می‌شود و بالای آن دکمه‌ی مکث می‌آید */
 function recLock(o){o.locked=true;const u=UI;u.btn.style.transition="";u.btn.style.transform="";u.btn.innerHTML=ic("send",24);
- u.lk.className="vmlk pz";u.lk.style.transform="";u.lk.style.top=(parseFloat(u.btn.style.top)-14-44)+"px";u.lk.innerHTML=ic("pause",20);
+ u.lk.className="vmlk pz";u.lk.style.transform="";u.lk.style.top=(parseFloat(u.btn.style.top)-14-44)+"px";u.lk.innerHTML='<i style="width:16px;height:16px;border-radius:4px;background:var(--red);display:block"></i>';
  const sl=u.bar.querySelector(".vmsl");if(sl){const c=document.createElement("span");c.className="vmcn";c.textContent=tr("Cancel");sl.replaceWith(c)}
  try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
 /* مکث و ادامه | Pause / Resume: فقط بعد از قفل؛ زمان در مکث نمی‌شمارد */
@@ -4303,7 +4303,65 @@ function recPause(o){const r=o.rec;if(r.paused){r.resume();UI.d.classList.remove
 /* لغو | Discard: ضبط دور ریخته می‌شود و هیچ‌چیز فرستاده نمی‌شود */
 async function recDiscard(o){if(o.done)return;o.done=1;clearInterval(o.iv);try{await o.rec.cancel()}catch(e){}recHide(o);try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}}
 /* پایان و ارسال | Finish And Send: ضبط تمام می‌شود و اگر دست‌کم نیم‌ثانیه بود فرستاده می‌شود */
-async function recFinish(o){if(o.done)return;o.done=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}recHide(o);if(!res||res.duration<.5){toast("Hold to record video message");return}await sendVM(res)}
+async function recFinish(o){if(o.done||o.busy)return;
+ /* مسیر پیش‌نمایش | Preview Path: اگر نوار تریم باز است، اول بخش انتخاب‌شده بریده می‌شود و بعد ارسال می‌شود */
+ if(o.pvRes){o.busy=1;let res=o.pvRes;const T=o.trm;
+  if(T&&(T.s>.01||T.e<.99)){const d=res.duration,t0=T.s*d,t1=T.e*d;let r2=null;try{r2=await Promise.race([mediaRun(res.file,{trim:{start:t0,end:t1}},"videoMsg"),new Promise(ok=>setTimeout(()=>ok(null),25000))])}catch(e){}
+   if(!(r2&&!r2.failed&&!r2.original&&r2.blob)){o.busy=0;toast("Could not trim video");return}
+   if(!r2.duration)r2.duration=t1-t0;r2.thumb=res.thumb;res=r2}
+  o.done=1;recHide(o);await sendVM(res);return}
+ o.done=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}recHide(o);if(!res||res.duration<.5){toast("Hold to record video message");return}await sendVM(res)}
+/* ---- توقف و تریم | Stop And Trim ---- */
+/* استایل تریم | Trim Style: ظاهر نوار تریم و دکمه‌ی سطل زباله مثل تلگرام (strip of frames, white handles, trash button) */
+(function(){const s=document.createElement("style");s.textContent=`#vmrec.pv .vmlk,#vmrec.pv .vmfl,#vmrec.pv .vmfh{display:none}
+#vmrec.pv .vmbar{padding:0 8px 0 5px;gap:8px}
+#vmrec .vmtr{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+#vmrec .vmtw{position:relative;flex:1;min-width:0;height:34px;touch-action:none}
+#vmrec .vmts{display:flex;height:100%;border-radius:8px;overflow:hidden;background:#333}
+#vmrec .vmts i{flex:1;background-size:cover;background-position:center}
+#vmrec .vmdm{position:absolute;top:0;bottom:0;background:rgba(0,0,0,.6);pointer-events:none}
+#vmrec .vmdm.l{left:0;border-radius:8px 0 0 8px}
+#vmrec .vmdm.r{right:0;border-radius:0 8px 8px 0}
+#vmrec .vmsel{position:absolute;top:-2px;bottom:-2px;border:2px solid #fff;border-radius:8px;pointer-events:none;box-sizing:border-box}
+#vmrec .vmth{position:absolute;top:-2px;bottom:-2px;width:22px;margin-left:-11px;touch-action:none;cursor:ew-resize;z-index:2}
+#vmrec .vmth:after{content:"";position:absolute;left:8px;right:8px;top:7px;bottom:7px;border-radius:2px;background:#fff}
+#vmrec.pv .vmbar .vmt{font-size:13px;flex:none;min-width:44px;text-align:right}`;document.head.appendChild(s)})();
+/* توقف ضبط | Stop Recording: دکمه‌ی توقف ضبط را تمام می‌کند و به‌جای ارسال، پیش‌نمایش با نوار تریم را نشان می‌دهد */
+async function recStop(o){if(o.done||o.prevBusy||o.pvRes)return;o.prevBusy=1;clearInterval(o.iv);let res=null;try{res=await o.rec.stop()}catch(e){}
+ if(o.done)return;
+ if(!res||res.duration<.5){o.done=1;recHide(o);toast("Hold to record video message");return}
+ o.pvRes=res;o.trm={s:0,e:1};recPreview(o)}
+/* ثابت‌کردن مدت ویدیو | Fix Video Duration: بعضی مرورگرها مدت فیلم ضبط‌شده را نمی‌دانند؛ این تابع مجبورشان می‌کند بفهمند */
+function vmFix(v){return new Promise(ok=>{const go=()=>{if(v.duration===Infinity){v.ontimeupdate=()=>{v.ontimeupdate=null;try{v.currentTime=0}catch(_){}ok()};try{v.currentTime=1e101}catch(_){ok()};setTimeout(ok,1500)}else ok()};if(v.readyState>=1)go();else{v.onloadedmetadata=go;v.onerror=()=>ok();setTimeout(ok,3000)}})}
+/* پیش‌نمایش ضبط | Record Preview: دایره‌ی ویدیو را در حلقه پخش می‌کند و نوار تریم را می‌سازد */
+function recPreview(o){const u=UI,res=o.pvRes,d=res.duration;u.d.classList.add("pv");u.d.classList.remove("ps");
+ o.pvU=URL.createObjectURL(res.blob);
+ const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.src=o.pvU;u.pv.innerHTML="";u.pv.append(v);o.pvVid=v;
+ u.bar.innerHTML='<i class="vmtr">'+ic("trash",20)+'</i><div class="vmtw"><div class="vmts">'+'<i></i>'.repeat(8)+'</div><b class="vmdm l"></b><b class="vmdm r"></b><b class="vmsel"></b><b class="vmth l"></b><b class="vmth r"></b></div><span class="vmt">'+fT(d)+'</span>';
+ recTrim(o);
+ vmFix(v).then(()=>{if(o.pvVid!==v)return;v.play().catch(()=>{});
+  const tick=()=>{if(o.pvVid!==v)return;const t=o.trm,s=t.s*d,e=t.e*d,ct=v.currentTime;
+   if(!o.drag&&(v.ended||ct>=e-.03||ct<s-.2)){try{v.currentTime=s}catch(_){}v.play().catch(()=>{})}
+   u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,Math.max(0,(ct-s)/Math.max(.1,e-s))))).toFixed(1);o.pvRaf=requestAnimationFrame(tick)};
+  tick()});
+ recThumbs(o,u.bar.querySelector(".vmts"))}
+/* عکس‌های نوار | Strip Thumbnails: از چند نقطه‌ی ویدیو عکس می‌گیرد و پشت نوار تریم می‌گذارد */
+async function recThumbs(o,strip){const d=o.pvRes.duration,v=document.createElement("video");v.muted=true;v.preload="auto";v.playsInline=true;v.src=o.pvU;await vmFix(v);
+ const c=document.createElement("canvas");c.width=64;c.height=64;const x=c.getContext("2d"),is=[...strip.children];
+ for(let k=0;k<is.length;k++){if(!o.pvVid)break;await new Promise(ok=>{v.onseeked=ok;try{v.currentTime=Math.min(d-.05,d*(k+.5)/is.length)}catch(_){ok()}setTimeout(ok,1200)});
+  const w=v.videoWidth,h=v.videoHeight;if(!w)continue;const q=Math.min(w,h);x.drawImage(v,(w-q)/2,(h-q)/2,q,q,0,0,64,64);is[k].style.backgroundImage="url("+c.toDataURL("image/jpeg",.6)+")"}}
+/* دسته‌های تریم | Trim Handles: کشیدن دسته‌های چپ و راست شروع و پایان ویدیو را عوض می‌کند و مدت جدید را نشان می‌دهد */
+function recTrim(o){const w=UI.bar.querySelector(".vmtw"),Q=w.querySelector(".vmsel"),L=w.querySelector(".vmth.l"),Rh=w.querySelector(".vmth.r"),DL=w.querySelector(".vmdm.l"),DR=w.querySelector(".vmdm.r"),lb=UI.bar.querySelector(".vmt"),d=o.pvRes.duration;
+ const draw=()=>{const t=o.trm;Q.style.left=t.s*100+"%";Q.style.width=(t.e-t.s)*100+"%";L.style.left=t.s*100+"%";Rh.style.left=t.e*100+"%";DL.style.width=t.s*100+"%";DR.style.width=(1-t.e)*100+"%";lb.textContent=fT((t.e-t.s)*d)};draw();
+ [[L,"s"],[Rh,"e"]].forEach(([h,k])=>{
+  h.addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();h.setPointerCapture(e.pointerId);h._d=1;o.drag=1;try{o.pvVid.pause()}catch(_){}});
+  h.addEventListener("pointermove",e=>{if(!h._d)return;const r=w.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),g=Math.min(.5,.6/Math.max(1,d));
+   if(k==="s")o.trm.s=Math.min(f,o.trm.e-g);else o.trm.e=Math.max(f,o.trm.s+g);
+   try{o.pvVid.currentTime=(k==="s"?o.trm.s:Math.max(o.trm.s,o.trm.e-.05/d))*d}catch(_){}draw()});
+  const up=()=>{if(!h._d)return;h._d=0;o.drag=0;try{o.pvVid.currentTime=o.trm.s*d;o.pvVid.play().catch(()=>{})}catch(_){}};
+  h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up)})}
+/* پاک‌کردن پیش‌نمایش | Preview Cleanup: پخش را قطع می‌کند و آدرس موقت ویدیو را آزاد می‌کند */
+function recPvClean(o){if(!o)return;cancelAnimationFrame(o.pvRaf);o.pvRaf=0;if(o.pvVid){try{o.pvVid.pause()}catch(_){}o.pvVid=null}if(o.pvU){try{URL.revokeObjectURL(o.pvU)}catch(_){}o.pvU=null}}
 /* ارسال ویدیو مسیج | Send Video Message: فایل در حافظه ذخیره می‌شود و پیام با نوع vmsg به گفتگو اضافه می‌شود (مثل ارسال ویس) */
 async function sendVM(res){
  const c=CHATS.find(x=>x.id===S.openId);if(!c)return;
