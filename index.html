@@ -2125,7 +2125,7 @@ async function lkDims(f){if(lkKind(f)==="video")return lkVDims(f);if(lkKind(f)!=
 async function lkSend(files,cap){const c=CHATS.find(x=>x.id===S.openId);if(!c||!files.length)return;/* ارسال بدون آماده‌سازی قبلی | Send Without Pre-work: بعد از زدن دکمه‌ی ارسال هیچ خواندن یا آماده‌سازی فایلی پیش از ساخت حباب انجام نمی‌شود؛ حباب با چرخان همان لحظه می‌آید و اندازه‌گیری، فشرده‌سازی و ساخت پیش‌نمایش داخل کار پس‌زمینه‌ی حباب (lkProcess) انجام می‌شود. اندازه‌ی عکس‌ها از پیش‌نمایش آماده است و دوباره خوانده نمی‌شود (no file reading or compression before the pending bubble appears; all prep runs inside the bubble's spinner job) */
  const med=files.filter(f=>lkKind(f)!=="file"),oth=files.filter(f=>lkKind(f)==="file"),jobs=[];
  for(let i=0;i<med.length;i+=10){jobs.push(lkPend(c,"album",med.slice(i,i+10),cap));cap=""}
- for(let i=0;i<oth.length;i+=10){jobs.push(lkPend(c,"files",oth.slice(i,i+10),cap));cap=""}
+ const aud=oth.filter(f=>(f.type||"").startsWith("audio/")),rest=oth.filter(f=>!(f.type||"").startsWith("audio/"));for(let i=0;i<aud.length;i+=10){jobs.push(lkPend(c,"files",aud.slice(i,i+10),cap));cap=""}for(let i=0;i<rest.length;i+=10){jobs.push(lkPend(c,"files",rest.slice(i,i+10),cap));cap=""}
  jobs.reduce((p,j)=>p.then(j).catch(()=>{toast("Send failed")}),Promise.resolve())}
 /* گیره، فقط عکس | Attach Photos Only: فعلاً با زدن گیره فقط عکس انتخاب می‌شود (چندتایی)؛ عکس‌ها از همان سیستم رسانه (mediaRun) رد می‌شوند، در آلبوم می‌آیند و هر عکس چرخان دایره‌ای جدا و بدون درصد دارد که با آماده‌شدن همان عکس برداشته می‌شود */
 /* منوی گیره | Attach Menu: با زدن گیره یک منوی کوچک با دو گزینه می‌آید؛ «رسانه» فقط عکس و ویدیو را باز می‌کند و به پیش‌نمایش می‌رود، «فایل» هر نوع فایلی را بدون تغییر و به‌صورت فایل می‌فرستد (tap the clip: choose Media or File; each picker only offers its own kind) */
@@ -3262,7 +3262,7 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
   else if(i===3){fwd(b)}
   else if(i===4){let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}
    o.innerHTML=`<div class="mn" style="width:calc(100% - 24px)"><div data-d="me">${tr("Delete for me")}</div><div data-d="both" style="color:var(--red)">${tr("Delete for both")}</div></div>`;o.classList.add("on");
-   o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;{const el=b.querySelector(".lkmu");if(el&&window.lkMuDel&&window.lkMuDel(b,el.dataset.mid)){saveCfg();lkSyncPreview(id);renderChats();return}}CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg();/* همگام‌سازی بعد از حذف | Sync After Delete: بعد از حذف یک پیام، پیش‌نمایش با آخرین پیام باقی‌مانده یکی می‌شود */lkSyncPreview(id);renderChats()}}}
+   o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(!d)return;{const el=b.querySelector(".lkmu");if(el&&window.lkMuDel&&window.lkMuDel(b,el.classList.contains("cl")?null:el.dataset.mid)){saveCfg();lkSyncPreview(id);renderChats();return}}CFG.hid=CFG.hid||{};(CFG.hid[id]=CFG.hid[id]||[]).push(key(b));const pv=b.previousElementSibling,nx=b.nextElementSibling;b.remove();if(pv&&pv.classList.contains("dsep")&&(!nx||nx.classList.contains("dsep")))pv.remove();saveCfg();/* همگام‌سازی بعد از حذف | Sync After Delete: بعد از حذف یک پیام، پیش‌نمایش با آخرین پیام باقی‌مانده یکی می‌شود */lkSyncPreview(id);renderChats()}}}
  function open(b){const r=b.getBoundingClientRect(),me=b.classList.contains("me"),pinned=pinsOf(S.openId).includes(b.dataset.t);
   /* گزینه‌ی ویرایش | Edit Item: فقط برای پیام متنی خودم زیر کپی می‌آید؛ عدد سوم هر گزینه شماره‌ی کار آن است (shown under Copy only for my own text messages; the third number is the action id) */const it=[["Reply","reply",0],["Copy","copy",1]].concat(window.lkEdCan&&window.lkEdCan(b)?[["Edit","pen",9]]:[],[[pinned?"Unpin":"Pin","pin",2],["Forward","fwd",3],["Delete","trash",4],["Select","check",5]]);
   ov.classList.add("on");const o=ov.getBoundingClientRect(),cl=b.cloneNode(true);cl.querySelectorAll(".ri").forEach(x=>x.remove());cl.classList.remove("hl");cl.classList.add("bb");cl.style.left=(r.left-o.left)+"px";cl.style.top=(r.top-o.top)+"px";cl.style.width=r.width+"px";
@@ -3374,9 +3374,9 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  function exit(){if(!SEL.on)return;SEL.on=false;SEL.m.clear();SEL.i.clear();C.classList.remove('sel');M.querySelectorAll('.selc,.selp').forEach(x=>x.remove());muSwap(false)}
  window.lkSelEnd=exit;
  /* حذف موزیک پلیر | Delete Player Track: با نگه داشتن روی پلیر و زدن حذف، فقط همان آهنگی که در پلیر است پاک می‌شود؛ اگر تنها فایل پیام باشد کل پیام حذف می‌شود (long-press + delete removes only the track shown in the player; if it is the only file of its message the whole message goes) */
- window.lkMuDel=function(b,mid){const id=S.openId;let ow=b;if(muIsAu(b)&&!muSub(b))ow=muRun(b).find(q=>{const k=lkDec(q.dataset.t);return k&&k.it&&k.it.some(x=>x.id===mid)})||b;
+ window.lkMuDel=function(b,mid){const A=window.lkMuApi;if(!A||!mid)return false;const id=S.openId;let ow=b;if(A.isAu(b)&&!A.sub(b))ow=A.run(b).find(q=>{const k=lkDec(q.dataset.t);return k&&k.it&&k.it.some(x=>x.id===mid)})||b;
   const k=lkDec(ow.dataset.t);if(!k||k.k!=='files'||!k.it.some(x=>x.id===mid))return false;
-  if(mu&&mu.id===mid)muStop();
+  if(A.cur()&&A.cur().id===mid)A.stop();
   if(k.it.length>1){cut(ow,new Set([mid]));return true}
   CFG.hid=CFG.hid||{};const hid=CFG.hid[id]=CFG.hid[id]||[];const sm=ow.querySelector('small');hid.push(ow.dataset.t+'|'+(sm&&sm.firstChild?sm.firstChild.textContent.trim():''));const pv=ow.previousElementSibling,nx=ow.nextElementSibling;ow.remove();if(pv&&pv.classList.contains('dsep')&&(!nx||nx.classList.contains('dsep')))pv.remove();return true};
  new MutationObserver(()=>{if(SEL.on&&!C.classList.contains('on'))exit()}).observe(C,{attributes:true,attributeFilter:['class']});
@@ -3724,7 +3724,22 @@ Object.assign(FA,{"Music in this chat":"موزیک‌های این گفتگو"})
 .b.musub{display:none!important}
 /* عرض ثابت پلیر | Fixed Player Width: عرض حباب پلیر همیشه یکی است و با طول نام آهنگ، باز شدن فهرست یا پخش تغییر نمی‌کند (the player bubble width is always the same and never changes with title length, the list opening or playback) */
 .b.mm:has(.lkmu){width:min(300px,80vw);max-width:100%;box-sizing:border-box}
-.lkmu{width:100%;min-width:0;box-sizing:border-box}`;document.head.appendChild(s)})();
+.lkmu{width:100%;min-width:0;box-sizing:border-box}
+/* شکل فایل و پلیر | File Look and Player Look: وقتی موزیک پخش نمی‌شود حباب دقیقاه مثل یک فایل معمولی دیده می‌شود (آیکن پخش، نام، حجم، دکمه دانلود)؛ با زدن پخش بلافاصله به پلیر تبدیل می‌شود و با توقف دوباره فایل می‌شود (when music is not playing the bubble looks exactly like a normal file; on play it turns into the player at once, and back to a file on pause) */
+.lkmu .mufv{display:none}
+.lkmu.cl .mufv{display:flex;flex-direction:column;gap:8px;min-width:230px;padding:4px 6px 0;animation:muIn .3s ease}
+.lkmu.cl .mt1,.lkmu.cl .mbr,.lkmu.cl .mk,.lkmu.cl .mac{display:none}
+.lkmu.cl{padding:0;min-width:0;width:100%}
+.b.mm:has(.lkmu.cl){padding:3px}
+/* عرض همه حباب‌های فایل | Same File Width: حباب پلیر، حباب موزیک در شکل فایل و حباب سایر فایل‌ها همگی همان عرض ثابت را دارند (player, music in file look and other files all share one fixed width) */
+.b.mm:has(.lkf){width:min(300px,80vw);max-width:100%;box-sizing:border-box}
+.b.mm:has(.lkmu.cl) small{padding:0 8px 2px}
+.lkmu .mufv .lkfi{cursor:pointer}
+.lkmu .mufv .lkfi svg{width:20px;height:20px}
+.lkmu:not(.cl) .mt1,.lkmu:not(.cl) .mbr,.lkmu:not(.cl) .mk{animation:muIn .4s cubic-bezier(.34,1.4,.64,1) both}
+.lkmu:not(.cl){animation:muPop .5s cubic-bezier(.34,1.4,.64,1)}
+@keyframes muIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes muPop{0%{transform:scale(.97)}55%{transform:scale(1.012)}100%{transform:scale(1)}}`;document.head.appendChild(s)})();
 /* داده پلیر | Music Data: پسوندهای صوتی، مدت و اطلاعات هر آهنگ و آهنگ در حال پخش (audio extensions, duration and tags of each track and the playing track) */
 const MUR=/\.(mp3|m4a|wav|ogg|oga|aac|flac|opus|wma|weba)$/i,MUMIME={mp3:"audio/mpeg",m4a:"audio/mp4",wav:"audio/wav",ogg:"audio/ogg",oga:"audio/ogg",aac:"audio/aac",flac:"audio/flac",opus:"audio/ogg",weba:"audio/webm"};
 const muMime=n=>MUMIME[(n.split(".").pop()||"").toLowerCase()]||"audio/mpeg";
@@ -3747,7 +3762,7 @@ const muRun=b=>{const r=[b];let n=b.nextElementSibling;while(n&&muIsAu(n)&&n.dat
 /* پیام‌های صوتی پشت سر هم | Consecutive Audio Messages: فقط اولین پیام پلیر می‌ماند و بقیه پیام‌ها پنهان و داخل فهرست آکاردئونی همان پلیر می‌آیند (only the first message keeps the player; the following ones are hidden and listed in its accordion) */
 const muAlb=b=>{if(!b)return[];const bs=muIsAu(b)&&!muSub(b)?muRun(b):[b];return bs.flatMap(q=>{const k=lkDec(q.dataset.t);return k&&k.k==="files"?k.it.filter(x=>MUR.test(x.n||"")).map(x=>({id:x.id,n:x.n})):[]})};
 function muGroup(){if(document.querySelector("#chat.sel"))return;document.querySelectorAll("#msgs .b").forEach(b=>{if(!muIsAu(b)){b.classList.remove("musub");return}const sub=muSub(b);b.classList.toggle("musub",sub);if(!sub){const el=b.querySelector(".lkmu");if(el){const n=muAlb(b).length;if(n>1)el.dataset.al=n;else delete el.dataset.al}}})}const muHas=id=>[...document.querySelectorAll("#msgs .lkmu")].some(el=>el.dataset.mid===id||(el.dataset.al&&muAlb(el.closest(".b")).some(x=>x.id===id)));
-const muHtml=(x,al)=>'<div class="lkbody lkmu" data-mid="'+x.id+'"'+(al>1?' data-al="'+al+'"':'')+' data-n="'+esc(x.n)+'"><div class="mt1"><div class="mcv nc">'+MUS.nt+'</div><div class="mtx"><div class="mtt" dir="auto">'+esc(muNm(x.n))+'</div><div class="mta" dir="auto"></div></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><div class="mbr"><span class="mcu">0:00</span><input class="msk" type="range" min="0" max="1000" value="0"><span class="mre">'+(MD[x.id]?"-"+mf(MD[x.id]):"-0:00")+'</span></div><div class="mk"><div></div><div class="mpv dis">'+MUS.pv+'</div><div class="mpp">'+MUS.pl+'</div><div class="mnx dis">'+MUS.nx+'</div><div class="mls">'+MUS.ls+'</div></div><div class="mac"><div class="mai"><div class="mli"></div></div></div></div>';
+const muHtml=(x,al)=>'<div class="lkbody lkmu cl" data-mid="'+x.id+'"'+(al>1?' data-al="'+al+'"':'')+' data-n="'+esc(x.n)+'"><div class="mt1"><div class="mcv nc">'+MUS.nt+'</div><div class="mtx"><div class="mtt" dir="auto">'+esc(muNm(x.n))+'</div><div class="mta" dir="auto"></div></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><div class="mbr"><span class="mcu">0:00</span><input class="msk" type="range" min="0" max="1000" value="0"><span class="mre">'+(MD[x.id]?"-"+mf(MD[x.id]):"-0:00")+'</span></div><div class="mk"><div></div><div class="mpv dis">'+MUS.pv+'</div><div class="mpp">'+MUS.pl+'</div><div class="mnx dis">'+MUS.nx+'</div><div class="mls">'+MUS.ls+'</div></div><div class="mac"><div class="mai"><div class="mli"></div></div></div><div class="mufv"></div></div>';
 /* جایگزینی حباب فایل | Hook Files Bubble: فایل‌های صوتی پلیر می‌گیرند و بقیه‌ی فایل‌ها مثل قبل می‌مانند؛ در حال ارسال همان ظاهر قبلی (audio files get the player, other files stay as before; while sending the old look stays) */
 const _bodyMu=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="files"&&!o.pend&&!window.lkNoMu&&o.it.some(x=>MUR.test(x.n||""))){const ot=o.it.filter(x=>!MUR.test(x.n||""));/* فقط اولین فایل پلیر است و بقیه داخل فهرست بازشونده | Only first file is the player, the rest live in the accordion */return (a=>muHtml(a[0],a.length))(o.it.filter(x=>MUR.test(x.n||"")))+(ot.length?_bodyMu(Object.assign({},o,{it:ot})):"")}return _bodyMu(o)};
 /* فهرست موزیک‌های گفتگو | Chat Music List: همه‌ی فایل‌های صوتی (بدون ویس) گفتگوی باز به ترتیب ارسال (all non-voice audio files of the open chat in order) */
@@ -3811,7 +3826,7 @@ function muStep(k){if(!mu)return;/* قبلی بعد از ۵ ثانیه | Previou
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkmu");if(!el||e.target.closest(".lkdl"))return;e.stopPropagation();const t=e.target;if(t.closest(".msk"))return;e.preventDefault();
  const id=el.dataset.mid,r=t.closest(".mr");
  if(r)muPlay(r.dataset.mid,r.dataset.n);
- else if(t.closest(".mpp,.mcv,.mtx"))muPlay(id,el.dataset.n);
+ else if(t.closest(".mufv .lkfi")){const q=t.closest(".lkfr");if(q)muPlay(q.dataset.mid,q.dataset.n)}else if(t.closest(".mpp,.mcv,.mtx"))muPlay(id,el.dataset.n);
  else if(t.closest(".mpv"))muStep(-1);
  else if(t.closest(".mnx"))muStep(1);
  else if(t.closest(".mls")){el.classList.toggle("open");if(el.classList.contains("open"))muFill(el)}},true);
@@ -3835,6 +3850,16 @@ function muBar(){if(!mu){if(vn.classList.contains("mu")){vn.classList.remove("mu
  if(cur)return;const m=META[mu.id]||{},a=mu.a,D=(isFinite(a.duration)&&a.duration)||MD[mu.id]||1;
  vn.classList.add("mu","on");vn.querySelector(".vnp").innerHTML=ic(a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=m.t||muNm(mu.name);vn.querySelector("small").textContent=m.a||tr("Music");vn.querySelector(".vnl").style.width=Math.min(100,a.currentTime/D*100)+"%";vNowPlace()}
 const _muUi=muUi;muUi=function(){_muUi.apply(this,arguments);muBar()};
+/* شکل فایل و پلیر | File/Player Switch: مادام که آهنگ در پلیر باز است (حتی با مکث) حباب پلیر می‌ماند؛ فقط وقتی پخش کامل قطع شود (دکمه بستن نوار موزیک زیر پروفایل یا پایان آهنگ‌ها) حباب به شکل فایل برمی‌گردد؛ برگشت کمی دیر می‌شود تا هنگام رفتن به آهنگ بعدی پرش نکند (player stays while a track is loaded, even paused; it returns to the file look only when playback is fully stopped from the music bar under the profile or ends; the return is delayed a little so switching tracks does not flicker) */
+/* نمای فایل | File View Rows: وقتی پخش نیست، هر آهنگ یک سطر مثل فایل معمولی دارد (آیکن پخش، نام، حجم، دکمه دانلود)؛ اگر چند آهنگ پشت هم باشند همه در همین حباب لیست می‌شوند (rows shown while nothing plays: play icon, name, size, download; a run of tracks is listed in one bubble) */
+const muFvL=b=>{const bs=muIsAu(b)&&!muSub(b)?muRun(b):[b];return bs.flatMap(q=>{const k=lkDec(q.dataset.t);return k&&k.k==="files"?k.it.filter(x=>MUR.test(x.n||"")).map(x=>({id:x.id,n:x.n,s:x.s})):[]})};
+const muFvFill=()=>{document.querySelectorAll("#msgs .lkmu").forEach(el=>{const b=el.closest(".b");if(!b||b.classList.contains("musub"))return;const L=muFvL(b),k=L.map(x=>x.id).join();if(el._fk===k)return;el._fk=k;const fv=el.querySelector(".mufv");if(fv)fv.innerHTML=L.map(x=>'<div class="lkfr" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><div class="lkfi">'+MUS.pl+'</div><div class="lkft"><b dir="auto">'+esc(x.n)+'</b><span>'+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div>').join("")})};
+const _muGrFv=muGroup;muGroup=function(){_muGrFv.apply(this,arguments);muFvFill()};
+let muClT=0;
+/* ابزار حذف آهنگ | Music Delete Bridge: چند ابزار پلیر را برای بخش حذف پیام بیرون می‌دهد تا فقط آهنگِ در حال پخش پاک شود و بقیه می‌مانند (shares a few player helpers with the message-delete code so only the playing track is removed) */
+window.lkMuApi={isAu:muIsAu,sub:muSub,run:muRun,stop:muStop,cur:()=>mu};
+const muClApply=()=>{document.querySelectorAll("#msgs .lkmu").forEach(el=>{const on=!!mu&&mu.id===el.dataset.mid;el.classList.toggle("cl",!on)})};
+const _muUiCl=muUi;muUi=function(){_muUiCl.apply(this,arguments);muFvFill();if(mu){clearTimeout(muClT);muClT=0;muClApply()}else if(!muClT)muClT=setTimeout(()=>{muClT=0;muClApply()},250)};
 function muGo(){if(!mu)return;const cid=mu.c,id=mu.id;if(cid!=null){const on=$("#chat").classList.contains("on"),prev=S.openId;if(!(prev===cid&&on)){openChat(cid);if(on&&prev!==cid)(S.backStack=S.backStack||[]).push(prev)}}
  let n=0;const t=setInterval(()=>{const el=muFind(id);if(el||++n>20){clearInterval(t);if(!el)return;const b=el.closest(".b")||el;b.scrollIntoView({block:"center",behavior:"smooth"});b.style.transition="filter .3s";b.style.filter="brightness(1.6)";setTimeout(()=>{b.style.filter=""},900)}},50)}
 let muSw=0,muSx=0,muDx=0,muDr=0;
