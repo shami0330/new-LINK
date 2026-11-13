@@ -1344,6 +1344,8 @@ const LKA=(()=>{
   async function chatFor(me,other){const A=window.Appwrite,id=chatIdOf(me,other);
    try{await db.getRow({databaseId:DBID,tableId:"chats",rowId:id});return id}catch(e){}
    try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.user(me)),A.Permission.read(A.Role.user(other)),A.Permission.update(A.Role.user(me)),A.Permission.update(A.Role.user(other))]})}catch(e){if(e.code!==409)throw e}
+   /* ثبت عضویت | Register Members: برای هر دو نفر یک ردیف در جدول members ساخته می‌شود (اگر از قبل بود نادیده گرفته می‌شود) تا چت در جدول اعضا هم ثبت باشد (one members row per user, ignored if it exists) */
+   for(const u of[me,other]){try{await db.createRow({databaseId:DBID,tableId:"members",rowId:A.ID.unique(),data:{memberKey:(u+"_"+id).slice(0,73),chatId:id,userId:u,role:u===me?"owner":"member",joinedAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.user(me)),A.Permission.read(A.Role.user(other)),A.Permission.update(A.Role.user(u))]})}catch(e){}}
    return id}
   /* قالب پیام | Message Shape: ردیف سرور را به شکل ساده برای برنامه درمی‌آورد (row to simple object) */
   const mapMsg=r=>({id:r.$id,chatId:r.chatId,from:r.senderId,text:r.text||"",kind:r.kind||"text",at:r.$createdAt});
