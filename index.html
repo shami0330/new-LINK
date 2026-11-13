@@ -257,7 +257,9 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .cpr small{display:block;color:var(--sub);font-size:12px}
 .cpr .bl{color:var(--blue);font-size:16px}
 /* تب‌های رسانه | Media Tabs: کپسول افقی چسبان زیر نوار بالا (sticky horizontal capsule under the top bar) */
-.cptw{position:sticky;top:calc(env(safe-area-inset-top) + 56px);z-index:5;background:var(--bg);padding:6px 14px}
+/* تب‌های پروفایل | Profile Tabs: با اسکرول زیر نوار بالا می‌چسبند و رسانه‌ها از زیرشان شروع می‌شوند (Stick under the top bar on scroll; media starts below them) */
+.cptw{position:-webkit-sticky;position:sticky;top:-1px;z-index:7;background:var(--bg);padding:6px 14px}
+#cpbody{position:relative;z-index:1}
 #cptabs{display:flex;gap:2px;background:var(--card);border-radius:20px;padding:3px;overflow-x:auto}
 .ct{flex:none;padding:6px 14px;border-radius:16px;font-size:14px;transition:background .2s}
 .ct.on{background:var(--card2)}
@@ -729,6 +731,8 @@ html.light #shov .shcap{background:rgba(235,235,240,.85)}
 .inbar input,.inbar textarea,.inbar #mi{flex:1;min-width:0;background:var(--card);border:0;outline:0;border-radius:20px;height:40px;padding:0 14px;color:#fff;font-size:16px;-webkit-user-select:text;user-select:text}
 .round{width:40px;height:40px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
 .round.send{background:var(--blue)}
+/* رنگ دکمه ویس و ویدیو مسیج | Voice/Video Button Color: دکمه میک و دوربین هم‌رنگ دکمه ارسال (آبی) با آیکن سفید (mic and camera button share the send button's blue with a white icon) */
+#send{background:var(--blue);color:#fff}
 
 /* تنظیمات | Settings: کارت‌های گروه‌بندی‌شده (grouped cards) */
 .card{background:var(--card);border-radius:14px;margin:10px 14px;overflow:hidden}
@@ -1283,7 +1287,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 
 /* ---- ۳.۰ آیکون‌ها | 3.0 Icons ---- */
 /* مسیر آیکون‌ها | Icon Paths: خط‌های SVG شبیه LINK، بدون ایموجی (LINK-like line icons, no emoji) */
-const P={reply:"M9 14L4 9l5-5M4 9h10a6 6 0 016 6v3",more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M7 4h4v16H7zM13 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
+const P={reply:"M9 14L4 9l5-5M4 9h10a6 6 0 016 6v3",more:"M5 12h.01M12 12h.01M19 12h.01",note:"M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",lines:"M4 6h16M4 12h10M4 18h7",share:"M4 12v8h16v-8M12 15V3M7 8l5-5 5 5",file:"M6 2h9l5 5v15H6zM14 2v6h6",play:"M7 4l13 8-13 8z",pause:"M6 4h4v16H6zM14 4h4v16h-4z",eye:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",eyeoff:"M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.6A17 17 0 002 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2",link:"M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
 person:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6",chat:"M21 12a8 8 0 01-11.5 7.2L4 20l1.2-4.3A8 8 0 1121 12z",
 gear:"M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
 compose:"M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4",back:"M15 5l-7 7 7 7",pin:"M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z",
@@ -2626,7 +2630,7 @@ function lkVTick(){cancelAnimationFrame(LKV.raf);const m=LKV.v;if(!m)return;lkVU
 /* رویدادهای ویدیو | Video Events: پخش، توقف، پایان و تغییر زمان آیکون و نوار را هماهنگ می‌کنند (play, pause, end, time change keep icon and bar in sync) */
 function lkVBind(m){m.addEventListener("play",()=>{lkVPlI();lkVTick()});m.addEventListener("pause",lkVPlI);m.addEventListener("ended",lkVPlI);m.addEventListener("loadedmetadata",lkVUp);m.addEventListener("durationchange",lkVUp);m.addEventListener("seeked",lkVUp)}
 /* نام و زمان بالا | Header Info: نام فرستنده و «امروز ساعت ۱۸:۴۸» از روی حباب پیام (sender name and day/time read from the message bubble) */
-function lkVMeta(b){if(!b)return["",""];const me=b.classList.contains("me"),nm=me?(S.user?S.user.name:"You"):($("#cname")?$("#cname").textContent:"");let p=b.previousElementSibling;while(p&&!p.classList.contains("dsep"))p=p.previousElementSibling;const sm=b.querySelector("small"),tm=b.dataset.tm||(sm&&sm.firstChild?sm.firstChild.textContent.trim():""),dy=p?p.textContent.trim():"";return[nm,(dy?(dy==="Today"?"today":dy)+" at ":"")+tm]}
+function lkVMeta(b){/* نام فرستنده از پروفایل | Sender From Profile: وقتی رسانه از تب پروفایل باز شود نام و زمان همان رسانه نشان داده می‌شود (when opened from the profile tab, show that item's sender and time) */if(!b)return window.cpVM||["",""];const me=b.classList.contains("me"),nm=me?(S.user?S.user.name:"You"):($("#cname")?$("#cname").textContent:"");let p=b.previousElementSibling;while(p&&!p.classList.contains("dsep"))p=p.previousElementSibling;const sm=b.querySelector("small"),tm=b.dataset.tm||(sm&&sm.firstChild?sm.firstChild.textContent.trim():""),dy=p?p.textContent.trim():"";return[nm,(dy?(dy==="Today"?"today":dy)+" at ":"")+tm]}
 /* جای اسلایدها | Slide Positions: اسلاید k به اندازه‌ی (k-1)×(عرض+۱۶) از وسط فاصله می‌گیرد و ریل به جای اول برمی‌گردد (slide k sits (k-1)×(width+16) from centre, track reset) */
 function lkVPos(){const W=$("#lkvs").clientWidth,tk=$("#lkvtk");[...tk.children].forEach((s,k)=>s.style.transform="translateX("+(k-1)*(W+16)+"px)");tk.style.transition="none";tk.style.transform="none"}
 /* فایل رسانه | Media Blob: برای ویدیوی کناری فقط عکس کوچک (thumb) و برای بقیه فایل کامل از کش (side videos use only the thumb, the rest the full file from cache) */
@@ -2639,7 +2643,7 @@ async function lkVFill(s,k){const x=LKV.it[k],c=k===LKV.i,sg=x?k+":"+(x.t==="vid
  if(c&&x.t==="video"){el=document.createElement("video");el.playsInline=true;el.setAttribute("webkit-playsinline","");el.preload="auto";el.muted=LKV.mu;el.src=u;LKV.v=el;lkVBind(el);s.appendChild(el);el.play().catch(lkVPlI)}
  else{el=document.createElement("img");el.draggable=false;el.src=u;s.appendChild(el)}}
 /* هماهنگ‌سازی بالا و پایین | Sync Chrome: شمارنده، نام، زمان، حالت ویدیو و نوار را برای رسانه‌ی فعلی تازه می‌کند (refreshes counter, name, time, video mode and bar for the current item) */
-function lkVSync(){const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.bs?LKV.bs[LKV.i]:LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
+function lkVSync(){{const dm=$("#lkvdm");if(dm)dm.remove()}const x=LKV.it[LKV.i],n=LKV.it.length,c=$("#lkvcnt"),mt=lkVMeta(LKV.bs?LKV.bs[LKV.i]:LKV.b);LKV.lt="";c.style.display=n>1?"flex":"none";c.textContent=(LKV.i+1)+" of "+n;$("#lkv").classList.toggle("vd",!!x&&x.t==="video");$("#lkvfil").style.transform="scaleX(0)";$("#lkvt0").textContent="0:00";$("#lkvt1").textContent=lkDur(x&&x.d);$("#lkvn").textContent=mt[0];$("#lkvsub").textContent=mt[1];lkVMu();lkVPlI()}
 {const _vs=lkVSync;lkVSync=function(){const r=_vs.apply(this,arguments);try{lkStrSync()}catch(e){}return r}}
 /* رفتن به شماره | Go To Item: زوم را ریست می‌کند و سه اسلاید (قبلی، فعلی، بعدی) را پر می‌کند (resets zoom, fills prev / current / next) */
 function lkVGo(i){LKV.i=i;LKZ.s=1;LKZ.x=0;LKZ.y=0;const tk=$("#lkvtk");[...tk.children].forEach(s=>{const m=s.firstElementChild;if(m){m.style.transition="none";m.style.transform=""}});[...tk.children].forEach((s,k)=>lkVFill(s,i+k-1));lkVSync()}
@@ -2704,7 +2708,13 @@ function lkVEl(){let v=$("#lkv");if(v)return v;v=document.createElement("div");v
  addEventListener("resize",()=>{if(v.classList.contains("on"))lkVPos()});
  return v}
 /* دکمه‌های پایین | Footer Actions: فوروارد و حذف همان عکس یا ویدیو را با روش حالت انتخاب انجام می‌دهند (forward / delete of this item through the select-mode logic) */
-function lkVAct(k){const x=LKV.it[LKV.i],b=LKV.bs?LKV.bs[LKV.i]:LKV.b;if(!x||!b||!window.lkVSel)return;lkVClose();setTimeout(()=>window.lkVSel(b,x.id,k),180)}
+/* منوی حذف در نمایشگر | Viewer Delete Menu: لمس دکمه زباله فقط همانجا بالای دکمه دو گزینه نشان می‌دهد؛ نمایشگر بسته نمی‌شود تا گزینه انتخاب شود (tapping the trash button shows two options right above it; the viewer stays open until one is chosen) */
+function lkVMenu(x,b){const v=$("#lkv"),o=$("#lkvdm");if(o){o.remove();return}const m=document.createElement("div");m.id="lkvdm";m.style.cssText="position:absolute;right:12px;bottom:calc(env(safe-area-inset-bottom) + 66px);z-index:20;min-width:190px;border-radius:14px;overflow:hidden;background:rgba(44,44,46,.96);font-size:16px;text-align:center";
+ m.innerHTML=`<div data-d="me" style="padding:13px 16px;cursor:pointer">${tr("Delete for me")}</div><div data-d="both" style="padding:13px 16px;cursor:pointer;color:#ff453a;border-top:1px solid rgba(255,255,255,.12)">${tr("Delete for both")}</div>`;
+ ["pointerdown","touchstart"].forEach(ev=>m.addEventListener(ev,e=>e.stopPropagation()));
+ m.onclick=e=>{const d=e.target.closest("[data-d]");if(!d)return;m.remove();lkVClose();setTimeout(()=>window.lkVDel&&window.lkVDel(b,x.id),180)};
+ v.append(m);const off=e=>{if(m.contains(e.target)||e.target.closest("#lkvdl"))return;m.remove();document.removeEventListener("pointerdown",off,true)};document.addEventListener("pointerdown",off,true)}
+function lkVAct(k){const x=LKV.it[LKV.i],b=LKV.bs?LKV.bs[LKV.i]:LKV.b;if(!x||!b||!window.lkVSel)return;if(k==="del"){lkVMenu(x,b);return}/* فوروارد داخل نمایشگر | In-Viewer Forward: کشوی فوروارد همانجا روی نمایشگر باز می‌شود و نمایشگر بسته نمی‌شود (the forward drawer opens right over the viewer; the viewer stays open) */if(k==="fwd"&&window.lkVFwd){window.lkVFwd(b,x.id);return}lkVClose();setTimeout(()=>window.lkVSel(b,x.id,k),180)}
 /* بستن | Close Viewer: ویدیو می‌ایستد، ۰.۱۶ ثانیه محو می‌شود، بعد همه‌ی اسلایدها خالی و آدرس‌ها آزاد می‌شوند (pauses, fades 0.16s, then empties slides and frees URLs) */
 function lkVClose(){const v=$("#lkv");if(!v||!v.classList.contains("on")||v.classList.contains("out"))return;if(LKV.v)LKV.v.pause();v.classList.add("out");setTimeout(()=>{v.classList.remove("on","out","hid","drag","vd");$("#lkvmn").classList.remove("on");[...$("#lkvtk").children].forEach(s=>{lkVFree(s);s.innerHTML="";s._g=""});LKV.v=null;lkVPos()},170)}
 /* باز کردن | Open Viewer: آلبوم و پیام مبدا را می‌گیرد و رسانه‌ی لمس‌شده را نشان می‌دهد (takes the album and source bubble, shows the tapped item) */
@@ -2919,6 +2929,25 @@ function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"S
  b.innerHTML=h;b.classList.remove("fd");void b.offsetWidth;b.classList.add("fd");
  $$("#cpbody .mt").forEach(t=>t.onclick=()=>openViewer(t,im=>{im.style.background=t.style.background;im.textContent=""},false));
  $$("#cpbody .vr").forEach(r=>r.querySelector(".pbtn").onclick=()=>playRow(r))}
+/* تب‌های پروفایل با داده واقعی | Real Profile Tabs: در گفتگوهایی که چیزی فرستاده شده، داده نمایشی حذف می‌شود و رسانه، فایل، موزیک، ویس و لینک‌های واقعی همان گفتگو نشان داده می‌شوند؛ لمس رسانه آن را باز می‌کند و ویس/موزیک پخش می‌شوند (in chats where something was sent, demo data is replaced by that chat's real media, files, music, voice and links; tapping media opens it, voice/music play) */
+(function(){const demo=cpBody;
+ const fd=s=>Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
+ function cpReal(c){const sa=c.id===2?CFG.saved:(CFG.sent&&CFG.sent[c.id]);if(!sa||!sa.length)return null;const src=chatMsgs(c).filter(m=>sa.includes(m));const R={med:[],files:[],music:[],voice:[],links:[],saved:[]};
+  src.forEach(m=>{const w=m[0],t=m[1],day=dayLabel(m[3]||0),d=w==="me"?"s":"r",o=lkDec(t);
+   if(o&&o.it){if(o.k==="files")o.it.forEach(x=>(/\.(mp3|m4a|wav|ogg|aac|flac|opus)$/i.test(x.n||"")?R.music:R.files).push([x,day,d]));else if(o.k==="voice")o.it.forEach(x=>R.voice.push([x,day,d]));else o.it.forEach((x,i)=>{if(x.t!=="voice")R.med.push([x,t,i,[w==="me"?(S.user?S.user.name:"You"):c.n,(day==="Today"?"today":day)+" at "+m[2]]])})}
+   else if(!o){const body=fwBody(t);(body.match(/(https?:\/\/|www\.)[^\s<>"]+/gi)||[]).forEach(u=>R.links.push([u,day]));if(w==="me")R.saved.push([body,day])}});return R}
+ cpBody=function(){const c=CHATS.find(x=>x.id===S.openId),R=c&&cpReal(c);if(!R)return demo();
+  const b=$("#cpbody"),k=CP.tab,dir=d=>d==="s"?"Sent":"Received",em='<div style="padding:40px 20px;text-align:center;opacity:.5">—</div>';let h="";
+  if(k==="media")h=R.med.length?'<div class="mgrid">'+R.med.map((q,i)=>`<div class="mt" data-lkm="${q[0].id}" data-mi="${i}" style="background:#222;overflow:hidden"><img alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">${q[0].t==="video"&&q[0].d?`<span class="dur">${fd(q[0].d)}</span>`:""}</div>`).join("")+"</div>":em;
+  else if(k==="files")h=R.files.map(([x,day,d])=>`<div class="lrow"><div class="fic">${ic("file",22)}</div><div class="lt"><b dir="auto">${esc(x.n)}</b><small>${fmtSize(x.s)} · ${day}</small></div><small>${dir(d)}</small></div>`).join("")||em;
+  else if(k==="music")h=R.music.map(([x,day])=>`<div class="lrow vr" data-d="30"><div class="pbtn">${ic("play",18)}</div><div class="lt"><b dir="auto">${esc(x.n)}</b><small>${fmtSize(x.s)} · ${day}</small></div></div>`).join("")||em;
+  else if(k==="voice")h=R.voice.map(([x,day,d])=>{const wf=Array.isArray(x.wf)&&x.wf.length?x.wf:null,mx=wf?Math.max(...wf,1e-9):1,bars=wf?wf.map(v=>6+Math.round(v/mx*18)):Array.from({length:30},(_,i)=>6+(i*37)%18);return `<div class="lrow vr" data-d="${Math.round(x.d||5)}"><div class="pbtn">${ic("play",18)}</div><div class="lt"><div class="wf">${bars.map(v=>`<i style="height:${v}px"></i>`).join("")}</div><small>${fd(x.d||0)} · ${day}</small></div><small>${dir(d)}</small></div>`}).join("")||em;
+  else if(k==="links")h=R.links.map(([u])=>`<div class="lrow"><div class="fic">${ic("link",22)}</div><div class="lt"><b dir="auto">${esc(u.replace(/^https?:\/\//i,"").split("/")[0])}</b><small style="color:var(--blue)" dir="auto">${esc(u)}</small></div></div>`).join("")||em;
+  else h=R.saved.map(([x,day])=>`<div class="lrow"><div class="lt"><b dir="auto">${esc(x)}</b><small>${day}</small></div></div>`).join("")||em;
+  b.innerHTML=h;b.classList.remove("fd");void b.offsetWidth;b.classList.add("fd");
+  $$("#cpbody .mt").forEach(t=>t.onclick=()=>{const q=R.med[+t.dataset.mi];if(q){window.cpVM=q[3];/* حباب واقعی رسانه | Real Bubble: حباب همان پیام در گفتگو پیدا می‌شود تا حذف (برای من / برای هر دو) و فوروارد از نمایشگر کار کند (finds the message's bubble in the chat so delete for me/both and forward work from the viewer) */const bb=[...$("#msgs").children].find(e=>e.classList&&e.classList.contains("b")&&e.dataset.t===q[1])||null;lkOpen(q[1],q[2],bb)}});
+  $$("#cpbody .vr").forEach(r=>r.querySelector(".pbtn").onclick=()=>playRow(r));
+  try{lkHydrate(b)}catch(e){}}})();
 /* پخش ویس و موزیک | Voice/Music Player: دکمه پخش، موج رنگی می‌شود تا پایان (play button, waveform fills while playing) */
 function stopPl(){if(!CP.pl)return;clearInterval(CP.pl.t);CP.pl.r.querySelector(".pbtn").innerHTML=ic("play",18);CP.pl.r.querySelectorAll(".wf i").forEach(x=>x.classList.remove("on"));CP.pl=null}
 function playRow(r){if(CP.pl&&CP.pl.r===r){stopPl();return}stopPl();let p=0;const bars=[...r.querySelectorAll(".wf i")],dur=Math.min(+r.dataset.d,30)*10;
@@ -3193,6 +3222,8 @@ Object.assign(FA,{"Reply":"پاسخ","Copy":"کپی","Pin":"پین","Unpin":"ب�
  const key=b=>b.dataset.t+"|"+tmOf(b);
  const close=()=>{ov.classList.remove("on");ov.innerHTML=""};
  const oc=chatMsgs;chatMsgs=function(c){const h=CFG.hid&&CFG.hid[c.id];const l=oc(c);return h&&h.length?l.filter(m=>!h.includes(m[1]+"|"+m[2])):l};
+/* پیش‌نمایش آخرین پیام | Last Message Preview: موقع باز شدن برنامه، پیش‌نمایش هر گفتگو با آخرین پیام موجود همان گفتگو یکی می‌شود؛ اگر همه پیام‌ها پاک شده باشند چیزی نشان داده نمی‌شود (on load each chat preview is synced to its last existing message; shows nothing if all messages are deleted) */
+ try{CHATS.forEach(c=>{if(c.ty!=="ch"||CFG.hid&&CFG.hid[c.id]||CFG.cleared&&CFG.cleared[c.id])lkSyncPreview(c)});if(typeof renderChats==="function")renderChats()}catch(e){}
  window.applyPin=function(){const pt=CFG.pins&&CFG.pins[S.openId],pb=$(".pinbar");if(!pb)return;const sm=pb.querySelector("small"),sp=pb.querySelector("span");if(!sm)return;if(!pb.dataset.dflt)pb.dataset.dflt=sm.textContent;
   /* آیکن نوار پین | Pin Bar Icons: متن پیام پین‌شده با آیکن خطی به‌جای ایموجی */if(pt)sm.innerHTML=lkPrevIc(esc(fwBody(pt).replace(/<[^>]*>/g,"").slice(0,60)));else sm.textContent=pb.dataset.dflt;if(sp)sp.textContent=tr("Pinned Message")};
  /* برگه‌ی ارسال | Share Sheet (Forward): انتخاب چند گفتگو، جستجو، شرح و دکمه Send با شمارنده؛ مثل LINK (multi-select chats, search, caption, Send with count) */
@@ -3376,6 +3407,9 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
   if(many.length&&window.lkFwd)window.lkFwd(bs[0],many)};
  /* حذف و فوروارد از نمایشگر | Viewer Actions: دکمه‌های پایین نمایشگر همان حذف و فوروارد حالت انتخاب را برای همان عکس یا ویدیو اجرا می‌کنند (viewer footer buttons reuse select-mode delete / forward for that one item) */
  window.lkVSel=function(b,id,k){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);if(k==='del')ask([['me','Delete for me'],['both','Delete for both',1]],doDelete);else $('#selFw').onclick()};
+ window.lkVDel=function(b,id){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);doDelete()};
+ /* فوروارد از نمایشگر | Viewer Forward: کشو به داخل نمایشگر منتقل می‌شود و بعد از بسته شدن به جای خود برمی‌گردد و حالت انتخاب گفتگو خاموش می‌شود (the drawer is moved into the viewer, returns to its place when closed, and chat select mode is turned off) */
+ window.lkVFwd=function(b,id){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);$('#selFw').onclick();const o=document.getElementById('shov'),v=document.getElementById('lkv');if(!o||!v)return;v.append(o);o.style.zIndex=6000;if(!o.__lkv){o.__lkv=1;['pointerdown','touchstart','touchmove'].forEach(ev=>o.addEventListener(ev,e=>e.stopPropagation()));o.style.userSelect='text';o.style.webkitUserSelect='text'}let was=o.classList.contains('on');const mo=new MutationObserver(()=>{if(o.classList.contains('on')){was=true;return}if(!was)return;mo.disconnect();setTimeout(()=>{$('#app').append(o);o.style.zIndex='';try{exit()}catch(e){}},300)});mo.observe(o,{attributes:true,attributeFilter:['class']})};
 })();
 CFG.sched=CFG.sched||[];
 (function(){const sb=$("#send"),hh=t=>new Date(t).toTimeString().slice(0,5),p2=n=>String(n).padStart(2,"0");
@@ -3621,11 +3655,11 @@ snd.addEventListener("pointerdown",async e=>{
   o.iv=setInterval(()=>{if(buf){o.an.getByteTimeDomainData(buf);let s=0;for(const v of buf){const x=(v-128)/128;s+=x*x}o.wf.push(Math.sqrt(s/buf.length))}else o.wf.push(Math.random()*.3);const t=vt&&ov.querySelector(".vt");if(t)t.textContent=fT(rec.seconds)},50)};
  const w=Math.max(0,220-(Date.now()-o.t0));setTimeout(()=>{if(!o.up&&!o.done)go();else if(o.up&&!o.done&&Date.now()-o.t0>=220){}},w);
 });
-snd.addEventListener("pointermove",e=>{const o=R;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?-1:1,sd=Math.max(0,-dx*sg);
+snd.addEventListener("pointermove",e=>{const o=R;if(!o||o.up||o.locked||!o.shown||e.pointerId!==o.pid)return;const dx=e.clientX-o.sx,dy=e.clientY-o.sy,sg=o.right?1:-1,sd=Math.max(0,-dx*sg);
  if(o.sl){o.sl.style.transform="translateX("+(dx*sg<0?dx:0)+"px)";o.sl.style.opacity=Math.max(0,1-sd/110)}
- {const tx=dx*sg<0?dx:0;snd.style.transition="none";snd.style.transform="translateX("+tx+"px) scale(1.9)"}
+ {const tx=dx*sg<0?dx:0,ty=Math.max(-90,Math.min(0,dy));/* حرکت آزاد چپ و بالا | Free Left/Up Drag: دکمه تا قبل از قفل شدن هم‌زمان به چپ و بالا آزادانه حرکت می‌کند؛ بالا تا حد ۷۰ قفل، چپ تا حد ۹۰ لغو می‌شود (before locking the button moves freely left and up at once; past 70px up it locks, past 90px left it cancels) */snd.style.transition="none";snd.style.transform="translate("+tx+"px,"+ty+"px) scale(1.9)"}
  lk.style.transform="translateY("+Math.min(0,dy)+"px)";
- if(sd>90||Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*1.5)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
+ if(sd>90)discard(o);else if(dy<-70){o.up=Date.now();lockRec(o)}});
 const up=e=>{const o=R;if(!o||e.pointerId!==o.pid)return;if(o.locked){o.pid=-1;S.sendHold=true;setTimeout(()=>S.sendHold=false,400);return}
  o.up=Date.now();if(!o.rec)return;if(!o.shown){o.done=1;o.rec.cancel().catch(()=>{});cleanup(o);return}
  S.sendHold=true;setTimeout(()=>S.sendHold=false,400);if(e.type==="pointercancel")discard(o);else finish(o)};
