@@ -1368,7 +1368,7 @@ const LKA=(()=>{
   const chatIdOf=(a,b)=>h32(pairKey(a,b));
   /* ساخت چت | Ensure Chat: اگر چت دو نفره نبود می‌سازد؛ سرور اجازه نمی‌دهد کاربر برای یک نفر دیگر دسترسی بنویسد (خطای ۴۰۱)، پس دسترسی برای کاربران واردشده است و برنامه فقط چت‌های خودم را نشان می‌دهد (creates the private chat if missing; Appwrite forbids granting permission to another user, so access is for logged-in users and the app filters to my chats) */
   async function chatFor(me,other){const A=window.Appwrite,id=chatIdOf(me,other);
-   try{await db.getRow({databaseId:DBID,tableId:"chats",rowId:id});return id}catch(e){}
+   try{const ro=await db.getRow({databaseId:DBID,tableId:"chats",rowId:id});if(ro.type!=="pv")await db.updateRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv"}});return id}catch(e){}
    try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e){if(e.code!==409){e.message="ساخت چت: "+e.message;throw e}}
    return id}
   /* قالب پیام | Message Shape: ردیف سرور را به شکل ساده برای برنامه درمی‌آورد (row to simple object) */
@@ -1391,11 +1391,12 @@ const LKA=(()=>{
   async function tomb(me,other,mid){const A=window.Appwrite,cid=chatIdOf(me,other);try{await db.createRow({databaseId:DBID,tableId:"messages",rowId:h32("dl"+mid),data:{chatId:cid,senderId:me,kind:"dl",text:mid},permissions:[A.Permission.read(A.Role.users()),A.Permission.delete(A.Role.user(me))]})}catch(e){if(e.code!==409)throw e}}
   /* پاک کردن تاریخچه دوطرفه | Clear Both: یک ردیف نشانه (kind=clr) با زمان پاک کردن می‌سازد؛ همهٔ پیام‌های قدیمی‌تر از آن برای هر دو نفر نمایش داده نمی‌شوند (a marker row with the clear time; older messages are hidden for both) */
   const clrId=cid=>h32("clr"+cid);
-  async function clearBoth(me,other){const A=window.Appwrite,cid=chatIdOf(me,other),id=clrId(cid),t=new Date().toISOString();
+  async function clearBoth(me,other,del){const A=window.Appwrite,cid=chatIdOf(me,other),id=clrId(cid),t=new Date().toISOString()+(del?"|del":"");
+   /* حذف گفتگو برای هر دو | Chat Gone For Both: نوع ردیف چت «del» می‌شود تا از فهرست هر دو نفر برود (chat row type becomes del so it leaves both lists) */if(del)db.updateRow({databaseId:DBID,tableId:"chats",rowId:cid,data:{type:"del"}}).catch(()=>{});
    try{await db.updateRow({databaseId:DBID,tableId:"messages",rowId:id,data:{text:t,senderId:me}})}
    catch(e){if(e.code!==404)throw e;try{await db.createRow({databaseId:DBID,tableId:"messages",rowId:id,data:{chatId:cid,senderId:me,kind:"clr",text:t},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e2){if(e2.code!==409)throw e2}}}
   /* زمان پاک شدن | Clear Time: آخرین باری که این چت برای هر دو نفر پاک شده (0 یعنی هرگز) (last time this chat was cleared for both) */
-  async function clearedAt(cid){try{const r=await db.getRow({databaseId:DBID,tableId:"messages",rowId:clrId(cid)});return Date.parse(r.text)||0}catch(e){return 0}}
+  async function clearedAt(cid){try{const r=await db.getRow({databaseId:DBID,tableId:"messages",rowId:clrId(cid)});return Date.parse(String(r.text).split("|")[0])||0}catch(e){return 0}}
   /* دیده‌شدن | Seen Marker: یک ردیف ثابت برای هر نفر در هر چت (kind=seen) که زمان آخرین باز بودن چت را نگه می‌دارد؛ طرف مقابل از روی آن تیک دوم را می‌زند (one fixed row per user per chat holding the last time the chat was viewed) */
   const seenId=(cid,u)=>h32("seen"+cid+u);
   async function markSeen(me,other){const A=window.Appwrite,cid=chatIdOf(me,other),id=seenId(cid,me),t=new Date().toISOString();
@@ -1826,7 +1827,7 @@ function lkRebuild(c){if(S.openId===c.id&&$("#chat").classList.contains("on")){S
 function lkDelBoth(id,keys){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid)return;const L=CFG.sent[id]||[];
  keys.forEach(k=>{const i=L.findIndex(r=>r[7]&&r[1]+"|"+r[2]===k);if(i<0)return;const r=L.splice(i,1)[0];LKA.delRow(r[7]).catch(()=>LKA.tomb(S.user.id,c.uid,r[7]).catch(lkErr))});saveCfg()}
 /* پاک کردن دوطرفه | Clear History For Both: نشانهٔ پاک شدن روی سرور گذاشته می‌شود تا تاریخچه برای هر دو نفر خالی شود (puts the clear marker on the server) */
-function lkClearBoth(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)return;c.mk=0;LKA.clearBoth(S.user.id,c.uid).catch(lkErr)}
+function lkClearBoth(c,del){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)return;c.mk=0;LKA.clearBoth(S.user.id,c.uid,del).catch(lkErr)}
 /* تیک دوم واقعی | Real Double Tick: ✓ یعنی به سرور رسیده، ✓✓ فقط وقتی طرف مقابل بعد از آن پیام چت را دیده؛ هم حباب‌ها و هم لیست چت‌ها را به‌روز می‌کند (one tick = delivered, two = the other person viewed the chat after that message) */
 function lkTicks(c){if(!c||!c.uid||LK_MODE!=="real")return;const L=chatMsgs(c);let last=0;L.forEach(r=>{if(r[0]==="me"&&r[6]>last)last=r[6]});c.sl=last>0&&(c.sn||0)>=last;
  if(S.openId===c.id){const bs=[...document.querySelectorAll("#msgs .b")];if(bs.length===L.length)bs.forEach((b,i)=>{if(L[i][0]!=="me")return;const t=b.querySelector(".tick");if(t)t.innerHTML=ic(L[i][6]&&(c.sn||0)>=L[i][6]?"t2":"t1",15)})}
@@ -1844,7 +1845,7 @@ function lkReal(c,v,rp){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return 
  LKA.send(S.user.id,c.uid,lkRpEnc(v,rp)).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);const L=CFG.sent[c.id]||[];for(let i=L.length-1;i>=0;i--)if(L[i][0]==="me"){if(!L[i][6])L[i][6]=Date.parse(m.at)||0;L[i][7]=m.id;break}lkTicks(c)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
 function lkIn(m){if(!S.user||!m)return;if(m.kind==="del"||m.kind==="dl"){const mid=m.kind==="dl"?m.text:m.id;if(m.kind==="dl"&&m.from===S.user.id)return;CHATS.forEach(c=>{const L=CFG.sent[c.id]||[],i=L.findIndex(r=>r[7]===mid);if(i>=0){L.splice(i,1);saveCfg();lkSyncPreview(c);lkRebuild(c);renderChats()}});return}
- if(m.kind==="clr"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from);if(c&&(CFG.sent[c.id]||[]).length){CFG.sent[c.id]=[];c.m="";c.un=0;saveCfg();lkRebuild(c);renderChats()}}return}
+ if(m.kind==="clr"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from);if(c&&(CFG.sent[c.id]||[]).length||c&&/\|del$/.test(m.text||"")){CFG.sent[c.id]=[];c.m="";c.un=0;saveCfg();lkRebuild(c);if(/\|del$/.test(m.text||"")){CHATS=CHATS.filter(x=>x!==c);delete CFG.sent[c.id]}renderChats()}}return}
  if(m.kind==="seen"){if(m.from!==S.user.id){const c=CHATS.find(x=>x.uid===m.from),t=Date.parse(m.text)||0;if(c&&t>(c.sn||0)){c.sn=t;lkTicks(c)}}return}if(m.from===S.user.id||LKC.seen[m.id]||m.kind!=="text")return;LKC.seen[m.id]=1;
  const go=c=>{c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);(CFG.sent[c.id]=CFG.sent[c.id]||[]).push(lkRec(m,c));
   if(S.openId===c.id&&$("#chat").classList.contains("on")){{const d=lkRpDec(m.text,m.from,c);addMsg("ot",d.t,lkHM(m.at),0,d.rp)}lkMarkSeen(c)}else c.un=(c.un||0)+1;
@@ -1870,7 +1871,7 @@ function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)re
  LKC.un=LKA.listen(S.user.id,lkIn);
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=lkRpDec(r.last,r.lastSender,c).t;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
+ LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=lkRpDec(r.last,r.lastSender,c).t;c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS=CHATS.filter(x=>!x.uid||rs.some(r=>r.uid===x.uid)||!(CFG.sent[x.id]||[]).length);renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
  LKC.tm=setInterval(lkPoll,5000);lkDiag();
   /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
   LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
@@ -3151,7 +3152,7 @@ function showFolderMenu(c){const m=$("#menu"),m2=$("#menu2");
 function showDeleteMenu(c){const m2=$("#menu2"),m=$("#menu");m.classList.remove("al-top");m.classList.add("al-bot");m2.className="dn";
  m2.innerHTML=`<div data-d="me"><span>${tr("Delete for me")}</span></div><div data-d="both" style="color:var(--red)"><span>${tr("Delete for both")}</span></div>`;
  m2.style.display="block";m2.style.maxHeight="none";const dr=$("#menu [data-i='4']"),bt=$("#menu").offsetTop+dr.offsetTop+dr.offsetHeight;m2.style.top=Math.max(70,bt-m2.offsetHeight)+"px";
- $$("#menu2 div").forEach(d=>d.onclick=()=>{CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
+ $$("#menu2 div").forEach(d=>d.onclick=()=>{if(d.dataset.d==="both")lkClearBoth(c,1);CHATS=CHATS.filter(x=>x.id!==c.id);closeMenu();renderChats()})}
 /* پس‌زمینه‌ی گفتگو | Chat Background: چند طرح ساده یا عکس از گالری */
 /* پس‌زمینه‌ی لینک | Link Background Preset: الگوی زنجیر پیکسلی لوگو، اولین گزینه و پیش‌فرض */
 /* پالت رنگ پس زمینه | Background Color Palette: رنگ های برگرفته از تم ها (روشن و تیره) برای انتخاب سریع؛ دایره ی رنگین کمانی برای انتخاب رنگ دلخواه */
