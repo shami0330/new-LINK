@@ -2034,7 +2034,7 @@ const FWR=/^\u21aa([^\u2063]*)\u2063([\s\S]*)$/;
 const fwBody=t=>{const m=FWR.exec(t);return lkMsgPlain(m?m[2]:t)};
 const fwHead=t=>{const m=FWR.exec(t);return m?`<div class="fwh"><span class="fwt">${tr("Forwarded from")}</span><div class="fwn">${av(m[1],colOf(m[1]),0)}<span>${esc(m[1])}</span></div></div>`:""};
 /* نمایش پیام | Add Message: پارامتر آخر ed یعنی پیام ویرایش شده و کنار ساعت «ویرایش شده» می‌آید */
-function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${lkPrevIc(esc(rp.t))}</span></div>`:""}${fwHead(t)}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic((()=>{const q=host?null:CHATS.find(x=>x.id===S.openId);return q&&q.uid&&LK_MODE==="real"?"t1":"t2"})(),15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* اتصال نقل‌قول به پیام اصلی | Attach Quote Source: متن خام و فرستنده پیام اصلی روی نقل‌قول گذاشته می‌شود (puts the raw text and sender of the original on the quote) */if(rp&&rp.r){const _q=d.querySelector(".q");if(_q){_q._r=rp.r;_q._w=rp.w}}/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
+function addMsg(w,t,tm,n=0,rp=null,ed=0,host=null,gc=null){const H=host||$("#msgs");if(S.lastD!==n){const h=document.createElement("div");h.className="dsep";h.dataset.n=n;h.textContent=dayLabel(n);H.append(h);S.lastD=n}const d=document.createElement("div");d.className="b "+w+(lkDec(t)?" mm":"");d.dataset.t=t;d.dataset.w=w;d.dataset.tm=tm;d.dataset.id=S.mid=(S.mid||0)+1;d.innerHTML=`${fwHead(t)}${rp?`<div class="q" data-rid="${rp.id||""}"><b>${esc(rp.n)}</b><span>${lkPrevIc(esc(rp.t))}</span></div>`:""}${lkMsgHtml(t)}<small>${ed?`<span class="edl">${tr("edited")}</span>`:""}${tm}${w==="me"?` <span class="tick" style="color:#fff">${ic((()=>{const q=host?null:CHATS.find(x=>x.id===S.openId);return q&&q.uid&&LK_MODE==="real"?"t1":"t2"})(),15)}</span>`:""}</small><span class="ri">${ic("reply",16)}</span>`;H.append(d);/* اتصال نقل‌قول به پیام اصلی | Attach Quote Source: متن خام و فرستنده پیام اصلی روی نقل‌قول گذاشته می‌شود (puts the raw text and sender of the original on the quote) */if(rp&&rp.r){const _q=d.querySelector(".q");if(_q){_q._r=rp.r;_q._w=rp.w}}/* سربرگ و پروفایل فرستنده | Sender Header And Avatar: در گروه برای پیام دیگران نام رنگی و آواتار می‌گذارد (in groups adds colored name + avatar to others' bubbles) */if(w==="ot")gpDecor(d,gc);if(d.querySelector("[data-lkm]"))lkHydrate(d);if(!host)$("#msgs").scrollTop=1e9;return d}
 /* تزئین حباب گروه | Group Bubble Decor: فرستنده از روی اعضای گروه ثابت انتخاب می‌شود؛ نام فقط اول هر دسته و آواتار فقط آخر هر دسته می‌ماند مثل LINK (stable sender from members; name on first of run, avatar on last of run) */
 function gpDecor(d,gc){const c=gc||CHATS.find(x=>x.id===S.openId);if(!c||c.ty!=="gp")return;let ms=(c.members||[]).filter(x=>x!=="You");if(!ms.length&&c.s&&c.s!=="You")ms=[c.s];if(!ms.length)return;const key=d.dataset.t+"|"+d.dataset.tm;const sn=(window.DSN&&window.DSN[key])||ms[[...key].reduce((a,ch)=>a+ch.charCodeAt(0),0)%ms.length];d.dataset.sn=sn;d.classList.add("gp");const pv=d.previousElementSibling,same=pv&&pv.classList.contains("b")&&pv.classList.contains("gp")&&pv.dataset.sn===sn;if(!same){const h=document.createElement("div");h.className="gsn";h.style.color=colOf(sn);h.textContent=sn;d.prepend(h)}else{const o=pv.querySelector(":scope>.gsa");if(o)o.remove()}const a=document.createElement("div");a.className="gsa";a.innerHTML=av(sn,colOf(sn),0);d.append(a)}
 /* باز شدن پروفایل از آواتار | Avatar Opens Profile: لمس آواتار فرستنده در گروه، گفتگوی او را باز می‌کند و صفحه پروفایلش را نشان می‌دهد (tap on a group sender avatar opens that person's chat and shows their profile) */
@@ -3795,7 +3795,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
 #chat.sel>.top:not(#selTop){display:none}
 #chat.sel>#selTop{display:flex}
 #selTop .pill{display:block;line-height:44px;text-align:center;height:44px;padding:0 14px;font-size:17px;font-weight:600;color:var(--txt);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* کپسول وسط | Center Capsule: فقط به اندازهٔ نوشتهٔ «Selected» و وسط نوار می‌ماند و جای خالی اطراف برای دکمه‌های تازه می‌ماند (shrinks to the text width, stays centered, side space is free for new buttons) */#selTop #selCnt{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 6px);transform:translateX(-50%);flex:none;margin:0}
+/* دکمه بازه | Range Button: کنار «پاک کردن» می‌نشیند و «لغو» به لبه دیگر می‌رود (sits next to Clear; Cancel goes to the other edge) */#selTop{justify-content:flex-start}#selTop #selCan{margin-inline-start:auto}#selTop #selRng{flex:none;display:flex;align-items:center;justify-content:center;padding:0 14px}#selTop #selRng.on{background:#2f8fff;color:#fff}/* کپسول وسط | Center Capsule: فقط به اندازهٔ نوشتهٔ «Selected» و وسط نوار می‌ماند و جای خالی اطراف برای دکمه‌های تازه می‌ماند (shrinks to the text width, stays centered, side space is free for new buttons) */#selTop #selCnt{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 6px);transform:translateX(-50%);flex:none;margin:0}
 #chat.sel>.inbar{display:none}
 /* دکمه های پایین در صفحه | Select Buttons Inside Screen: دکمه های سطل، دانلود و فوروارد ۲۰ پیکسل بالاتر از لبه صفحه نمایش می ایستند مثل کپسول پایین (bottom buttons sit 20px above the display edge like the tab capsule, using --gap, so they are never cut off) */
 /* دکمه‌های پایین حالت انتخاب | Select Mode Bottom Buttons: حاشیهٔ امن پایین گوشی هم اضافه شد تا حذف، دانلود و فوروارد داخل صفحه بمانند و بیرون نزنند (safe-area bottom added so delete/download/forward stay inside the screen) */
@@ -3819,7 +3819,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  /* حالت و نوار بالا و پایین | State & Bars: پیام‌های کامل در m و عکس‌های جدا در i نگه داشته می‌شوند */
  const SEL={on:false,m:new Set(),i:new Map()};
  const top=document.createElement('div');top.className='top';top.id='selTop';
- top.innerHTML=`<div class='pill' id='selClr'></div><div class='pill' id='selCnt'></div><div class='pill' id='selCan'></div>`;
+ top.innerHTML=`<div class='pill' id='selClr'></div><div class='pill' id='selRng'></div><div class='pill' id='selCnt'></div><div class='pill' id='selCan'></div>`;
  $('#chat>.top').after(top);
  const bot=document.createElement('div');bot.id='selBot';
  bot.innerHTML=`<div class='round' id='selDel'>${ic('trash',24)}</div><div class='round' id='selDl'>${lkDlI}</div><div class='round' id='selFw'>${ic('fwd',24)}</div>`;
@@ -3829,6 +3829,14 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  const itEls=b=>[...b.querySelectorAll('.lkc[data-lkm],.lkfr')];
  const idOf=e=>e.classList.contains('lkc')?e.dataset.lkm:((e.querySelector('.lkdl')||{dataset:{}}).dataset.dl);
  const count=()=>{let n=SEL.m.size;SEL.i.forEach(s=>{n+=s.size});return n};
+  /* انتخاب بازه‌ای | Range Select: وقتی روشن است همه پیام‌های انتخاب‌نشده بین اولین و آخرین پیام انتخاب‌شده هم انتخاب می‌شوند (حداکثر ۱۰۰ پیام)؛ با خاموش کردن، فقط انتخاب‌های دستی می‌مانند (when on, every unselected message between the first and last selected is selected too, up to 100 messages; turning it off keeps only the manual picks) */
+  try{Object.assign(FA,{"Range":"بازه"});P.chk3="M2 13l3.5 3.5L12 8M7 13l3.5 3.5L17 8M12 13l3.5 3.5L22 8"}catch(e){}
+  const RNG={on:false,auto:new Set(),ex:new Set()},rb=top.querySelector('#selRng');
+  const isSel=b=>isAl(b)?SEL.i.has(b):SEL.m.has(b);
+  function rngFill(){const all=[...M.querySelectorAll('.b')].filter(x=>!x.classList.contains('pend'));let a=-1,z=-1;all.forEach((x,k)=>{if(isSel(x)){if(a<0)a=k;z=k}});if(a<0)return;for(let k=a;k<=z&&SEL.m.size+SEL.i.size<100;k++){const x=all[k];if(isSel(x)||RNG.ex.has(x))continue;if(isAl(x)){const ids=itEls(x).map(idOf);if(!ids.length)continue;SEL.i.set(x,new Set(ids))}else SEL.m.add(x);RNG.auto.add(x)}}
+  function rngTouch(b,was){if(!RNG.on)return;const now=isSel(b);if(was&&!now){RNG.auto.delete(b);RNG.ex.add(b)}else if(!was&&now)RNG.ex.delete(b);rngFill()}
+  function rngReset(){RNG.auto.clear();RNG.ex.clear();RNG.on=false;rb.classList.remove('on')}
+  rb.onclick=()=>{if(RNG.on){RNG.auto.forEach(x=>{if(isAl(x))SEL.i.delete(x);else SEL.m.delete(x)});rngReset()}else{RNG.on=true;RNG.auto.clear();RNG.ex.clear();rb.classList.add('on');rngFill()}paint()};
  /* رنگ‌آمیزی | Paint: دایره‌ها، شمارنده و دکمه‌های پایین را با انتخاب‌ها هماهنگ می‌کند */
  function paint(){
   M.querySelectorAll('.selc').forEach(c=>{const b=c._b;let on;if(isAl(b)){const ids=itEls(b).map(idOf),s=SEL.i.get(b);on=!!s&&ids.length>0&&ids.every(x=>s.has(x))}else on=SEL.m.has(b);c.classList.toggle('on',on)});
@@ -3838,12 +3846,12 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
   $('#selDel').classList.toggle('dis',!n);$('#selFw').classList.toggle('dis',!n);$('#selDl').style.visibility=dl?'visible':'hidden'}
  function place(){M.querySelectorAll('.selc').forEach(c=>{const b=c._b;c.style.top=(b.offsetTop+b.offsetHeight/2-12)+'px'})}
  /* انتخاب و برداشتن | Toggle: دایره‌ی چپ کل پیام (یا همه‌ی عکس‌های آلبوم) را، دایره‌ی روی هر عکس فقط همان عکس را انتخاب می‌کند */
- function toggleItem(b,id){let s=SEL.i.get(b);if(!s){s=new Set();SEL.i.set(b,s)}s.has(id)?s.delete(id):s.add(id);if(!s.size)SEL.i.delete(b);paint()}
- function toggleMsg(b){if(isAl(b)){const ids=itEls(b).map(idOf),s=SEL.i.get(b),all=!!s&&ids.every(x=>s.has(x));if(all)SEL.i.delete(b);else SEL.i.set(b,new Set(ids))}else SEL.m.has(b)?SEL.m.delete(b):SEL.m.add(b);paint()}
+ function toggleItem(b,id){const was=isSel(b);let s=SEL.i.get(b);if(!s){s=new Set();SEL.i.set(b,s)}s.has(id)?s.delete(id):s.add(id);if(!s.size)SEL.i.delete(b);rngTouch(b,was);paint()}
+ function toggleMsg(b){const was=isSel(b);if(isAl(b)){const ids=itEls(b).map(idOf),s=SEL.i.get(b),all=!!s&&ids.every(x=>s.has(x));if(all)SEL.i.delete(b);else SEL.i.set(b,new Set(ids))}else SEL.m.has(b)?SEL.m.delete(b):SEL.m.add(b);rngTouch(b,was);paint()}
  /* شروع و پایان | Start & Exit: دایره‌ها ساخته یا پاک می‌شوند */
  window.lkSelStart=function(b){
   if(SEL.on)return;SEL.on=true;SEL.m.clear();SEL.i.clear();
-  $('#selClr').textContent=tr('Clear Chat');$('#selCan').textContent=tr('Cancel');
+  $('#selClr').textContent=tr('Clear Chat');$('#selRng').innerHTML=ic('chk3',24);$('#selRng').title=tr('Range');$('#selCan').textContent=tr('Cancel');
   C.classList.add('sel');muSwap(true);
   M.querySelectorAll('.b').forEach(x=>{if(x.classList.contains('pend'))return;
    const c=document.createElement('i');c.className='selc';c.innerHTML=CK;c._b=x;M.appendChild(c);
@@ -3851,7 +3859,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
   place();if(b)toggleMsg(b);else paint()};
  /* حالت انتخاب برای موزیک | Select Mode For Music: موقع انتخاب، پلیرها مثل بقیه فایل‌ها حباب می‌شوند تا هر فایل تک‌تک قابل انتخاب باشد و بعد از خروج پلیر برمی‌گردد (in select mode players become normal file bubbles so each file can be picked, and come back after exit) */
  const muSwap=on=>{if(on)M.querySelectorAll('.musub').forEach(x=>x.classList.remove('musub'));window.lkNoMu=on?1:0;M.querySelectorAll('.b').forEach(x=>{if(on?!x.querySelector('.lkmu'):!x._mu)return;const bs=x.querySelectorAll('.lkbody');if(!bs.length)return;bs.forEach((e,i)=>{if(i)e.remove()});bs[0].outerHTML=lkMsgHtml(x.dataset.t);x._mu=on?1:0;if(x.querySelector('[data-lkm]'))lkHydrate(x)});window.lkNoMu=0};
- function exit(){if(!SEL.on)return;SEL.on=false;SEL.m.clear();SEL.i.clear();C.classList.remove('sel');M.querySelectorAll('.selc,.selp').forEach(x=>x.remove());muSwap(false)}
+ function exit(){if(!SEL.on)return;SEL.on=false;SEL.m.clear();SEL.i.clear();rngReset();C.classList.remove('sel');M.querySelectorAll('.selc,.selp').forEach(x=>x.remove());muSwap(false)}
  window.lkSelEnd=exit;
  /* حذف موزیک پلیر | Delete Player Track: با نگه داشتن روی پلیر و زدن حذف، فقط همان آهنگی که در پلیر است پاک می‌شود؛ اگر تنها فایل پیام باشد کل پیام حذف می‌شود (long-press + delete removes only the track shown in the player; if it is the only file of its message the whole message goes) */
  window.lkMuDel=function(b,mid){const A=window.lkMuApi;if(!A||!mid)return false;const id=S.openId;let ow=b;if(A.isAu(b)&&!A.sub(b))ow=A.run(b).find(q=>{const k=lkDec(q.dataset.t);return k&&k.it&&k.it.some(x=>x.id===mid)})||b;
