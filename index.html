@@ -1240,7 +1240,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 
 <script>
 /* اندازه‌ی هدر | Header Height Meter: ارتفاع هدر و نوار پین را اندازه می‌گیرد و به لیست پیام می‌دهد تا پیام‌ها از زیر آن‌ها شروع شوند و دیده شوند (measures header + pin bar height for the messages list) */
-(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}if(h>0)ch.style.setProperty('--hh',Math.round(h)+'px')}if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
+(function(){var ch=document.getElementById('chat');if(!ch)return;var tp=ch.querySelector(':scope>.top'),pb=ch.querySelector(':scope>.pinbar');function fit(){var r=ch.getBoundingClientRect(),h=0;if(tp)h=tp.getBoundingClientRect().bottom-r.top;if(pb&&pb.offsetHeight){h=Math.max(h,pb.getBoundingClientRect().bottom-r.top+4)}var vn2=ch.querySelector(':scope>#vnow.on');if(vn2&&vn2.offsetHeight){h=Math.max(h,vn2.getBoundingClientRect().bottom-r.top+4)}if(h>0)ch.style.setProperty('--hh',Math.round(h)+'px')}if(window.ResizeObserver){var ro=new ResizeObserver(fit);if(tp)ro.observe(tp);if(pb)ro.observe(pb);ro.observe(ch)}if(pb&&window.MutationObserver)new MutationObserver(fit).observe(pb,{attributes:true,attributeFilter:['style','class']});addEventListener('resize',fit);fit()})();
 </script>
 <!-- نوار پایین | Bottom Tab Bar و نوار ویرایش | Edit Bar -->
 <div id="tabbar" style="display:none">
@@ -3587,15 +3587,38 @@ const barsH=a=>a.map(h=>'<i style="height:'+Math.max(12,h)*.26+'px"></i>').join(
 const _body=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="voice"){const x=o.it[0];return '<div class="lkvo" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vpb">'+ic("play",18)+'</div><div class="vcol"><div class="vwf">'+barsH(x.wf||[])+'</div><span class="vdu">'+fd(x.d)+'</span></div></div>'}return _body(o)};
 const _plain=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="voice")return "🎤 "+tr("Voice message")+" "+fd(o.it[0].d);return _plain(t)};
 const setPB=(vo,p)=>{const b=vo.querySelector(".vpb");if(b)b.innerHTML=ic(p?"pause":"play",18)};
-function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}}
-async function playVo(vo){const id=vo.dataset.vid;if(cur&&cur.vo===vo){if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}return}
+function stopCur(){if(!cur)return;const{a,vo}=cur;cur=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}if(vo.isConnected){setPB(vo,false);vo.querySelectorAll(".vwf i").forEach(x=>x.classList.remove("on"));const d=vo.querySelector(".vdu");if(d)d.textContent=fd(+vo.dataset.d)}vNowSync()}
+async function playVo(vo){const id=vo.dataset.vid;if(cur&&cur.id===id){cur.vo=vo;if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}return}
  stopCur();let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("File removed from cache");return}
- const a=new Audio(URL.createObjectURL(b)),bs=vo.querySelectorAll(".vwf i"),du=vo.querySelector(".vdu"),D=+vo.dataset.d;cur={a,vo};
- a.ontimeupdate=()=>{const f=a.currentTime/((isFinite(a.duration)&&a.duration)||D||1);bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));du.textContent=fd(a.currentTime)};
+ const a=new Audio(URL.createObjectURL(b)),D=+vo.dataset.d;a.playbackRate=vSpd;cur={a,vo,id,D,name:vNowName(vo)};
+ a.ontimeupdate=vNowTick;a.onplay=a.onpause=vNowSync;
  a.onended=stopCur;
  try{await a.play();setPB(vo,true)}catch(e){toast("Cannot play this audio");stopCur()}}
 $("#msgs").addEventListener("click",e=>{const p=e.target.closest(".lkvo .vpb");if(!p)return;e.stopPropagation();e.preventDefault();playVo(p.closest(".lkvo"))},true);
+/* نوار پخش ویس مثل تلگرام | Telegram Voice Player Bar: مدتی که ویس پخش می‌شود یک نوار زیر بالای صفحه دیده می‌شود (مکث/پخش، نام فرستنده، سرعت 1X/1.5X/2X، بستن، خط پیشرفت). با رفتن از گفتگو هم نوار و صدا تا پایان ویس می‌ماند (a bar under the header while a voice plays: pause/play, sender name, speed, close, progress line; it and the audio stay when you leave the chat) */
+Object.assign(FA,{"You":"شما"});
+let vSpd=1;
+const vn=document.createElement("div");vn.id="vnow";vn.innerHTML='<div class="vnp"></div><div class="vnm"><b class="vnn"></b><small></small></div><div class="vns">1X</div><div class="vnx">'+ic("close",18)+'</div><i class="vnl"></i>';
+vn.querySelector("small").textContent=tr("Voice message");
+(function(){const s=document.createElement("style");s.textContent=`#vnow{position:absolute;left:12px;right:12px;height:38px;display:none;align-items:center;gap:6px;box-sizing:border-box;padding:0 8px;background:var(--card);border-radius:19px;z-index:60;overflow:hidden;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#vnow.on{display:flex}
+#vnow .vnp,#vnow .vnx{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+#vnow .vnm{flex:1;min-width:0;text-align:center;line-height:1.15}
+#vnow .vnn{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#vnow small{display:block;font-size:12px;color:var(--sub)}
+#vnow .vns{min-width:34px;height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-top:2px dashed var(--sub);border-bottom:2px dashed var(--sub);font-size:13px;font-weight:700;color:var(--sub);flex:none;cursor:pointer}
+#vnow .vns.f{color:var(--blue);border-color:var(--blue)}
+#vnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}`;document.head.appendChild(s)})();
+function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
+function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)"}
+function vNowTick(){if(!cur)return;const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
+function vNowSync(){if(!cur){vn.classList.remove("on");vn.querySelector(".vnl").style.width="0";return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
+vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){vSpd=vSpd===1?1.5:vSpd===1.5?2:1;cur.a.playbackRate=vSpd;const b=vn.querySelector(".vns");b.textContent=(vSpd===1.5?"1.5":vSpd)+"X";b.classList.toggle("f",vSpd>1)}});
+/* نگه‌داشتن ویس بین صفحه‌ها | Keep Voice Across Screens: با عوض شدن صفحه نوار به صفحه‌ی جدید می‌رود؛ وقتی گفتگو دوباره باز می‌شود حباب ویس درحال‌پخش دوباره به صدا وصل می‌شود (the bar follows the visible screen; when the chat is reopened the playing bubble is reconnected to the audio) */
+let vRaf=0;const vSoon=()=>{if(vRaf)return;vRaf=requestAnimationFrame(()=>{vRaf=0;vNowPlace()})};
+new MutationObserver(vSoon).observe($("#app"),{attributes:true,attributeFilter:["class"],subtree:true});
+new MutationObserver(()=>{if(!cur)return;const vo=document.querySelector('#msgs .lkvo[data-vid="'+cur.id+'"]');if(vo&&vo!==cur.vo){cur.vo=vo;setPB(vo,!cur.a.paused);vNowTick()}}).observe($("#msgs"),{childList:true,subtree:true});
 /* ارسال | Send Voice */
 async function sendVoice(res,wf){
  if(!res||!res.blob||res.duration<.5){toast("Hold to record voice message");return}
