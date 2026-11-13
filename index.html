@@ -818,6 +818,15 @@ html.light #login .pf{color:#000}
 .tabs{overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs.many .tab{flex:1 0 auto;padding:0 12px}
+/* آکاردئون پوشه | Folder Accordion: کادر بازشونده زیر نوار پوشه‌ها با نگه‌داشتن روی پوشه؛ ارتفاعش نرم از ۰ تا ۲۲۰ پیکسل باز می‌شود، پس‌زمینه‌ی کارت، گوشه‌ی گرد ۱۶، سایه (opens under the folder bar, height 0 to 220, card bg, radius 16) */
+#fmenu{position:absolute;left:12px;right:12px;z-index:60;background:var(--card);border-radius:16px;overflow:hidden;max-height:0;opacity:0;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.35);transition:max-height .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
+#fmenu.on{max-height:220px;opacity:1;pointer-events:auto}
+/* ردیف آکاردئون | Accordion Row: هر گزینه یک ردیف با فاصله‌ی ۱۳ و ۱۴، متن ۱۵، خط جداکننده‌ی نازک؛ ردیف حذف قرمز است (row padding 13/14, font 15, thin divider, red for delete) */
+#fmenu .fr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;font-size:15px;color:var(--txt);border-bottom:.5px solid var(--line)}
+#fmenu .fr:last-child{border:0}
+#fmenu .fr.red{color:var(--red)}
+/* پوشه‌ی در حال جابجایی | Moving Folder: در حالت جابجایی پوشه‌ی انتخابی قاب آبی ۲ پیکسلی می‌گیرد، کمی بزرگ می‌شود و لمس افقی را خودش می‌گیرد (blue 2px ring, scale 1.04, touch-action none) */
+.tabs.mv .tab.mvk{touch-action:none;box-shadow:inset 0 0 0 2px var(--blue);transform:scale(1.04);transition:transform .15s}
 /* نمونه پس‌زمینه | Background Swatch: مربع کوچک انتخاب پس‌زمینه‌ی گفتگو */
 .bgs{width:62px;height:90px;border-radius:12px;border:2px solid transparent;background-clip:padding-box;flex:none}
 .bgs.on{border-color:var(--blue)}.bgw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(128,128,128,.35);box-sizing:border-box;flex:none;position:relative;overflow:hidden}.bgw.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue)}.bgw input{position:absolute;inset:-8px;width:60px;height:60px;opacity:0;cursor:pointer;border:0;padding:0}
@@ -1601,9 +1610,9 @@ function renderTabs(){const T=allTabs();if(!T.some(x=>x[0]===S.folder))S.folder=
  $("#tabs").style.display=T.length<2?"none":"";
  $("#tabs").classList.toggle("many",T.length>4);
  $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>inFolder(x,k)&&x.un).length;
-  return `<div class="tab ${S.folder===k?"on":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
+  return `<div class="tab ${S.folder===k?"on":""}${S.mv===k?" mvk":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
  /* قلاب نشانگر | Indicator Hook: بعد از ساختن تب‌ها، نشانگر لغزنده را می‌گذارد */lkTabInd();
- $$(".tab").forEach(t=>t.onclick=()=>{const l=$("#clist"),y=l.scrollTop,T0=allTabs().map(x=>x[0]),d=T0.indexOf(t.dataset.k)-T0.indexOf(S.folder);S.folder=t.dataset.k;renderChats();/* قلاب لغزش | Slide Hook: با زدن روی تب هم لیست می‌لغزد */if(d)lkSlide(d>0?1:-1);if(y>0){const sp=document.createElement("div");l.append(sp);sp.style.height=Math.max(0,y-(l.scrollHeight-l.clientHeight))+"px";l.scrollTop=y}})}
+ $$(".tab").forEach(t=>t.onclick=()=>{/* نگهبان کلیک | Click Guard: بعد از نگه‌داشتن یا در حالت جابجایی پوشه عوض نمی‌شود */if(lkFolderGuard())return;const l=$("#clist"),y=l.scrollTop,T0=allTabs().map(x=>x[0]),d=T0.indexOf(t.dataset.k)-T0.indexOf(S.folder);S.folder=t.dataset.k;renderChats();/* قلاب لغزش | Slide Hook: با زدن روی تب هم لیست می‌لغزد */if(d)lkSlide(d>0?1:-1);if(y>0){const sp=document.createElement("div");l.append(sp);sp.style.height=Math.max(0,y-(l.scrollHeight-l.clientHeight))+"px";l.scrollTop=y}})}
 /* رندر چت‌ها | Render Chats: سنجاق‌شده‌ها بالا، بقیه به ترتیب (pinned first, then order) */
 /* تیک آبی تأیید | Verified Badge: آیکن SVG تیک آبی (بدون پس‌زمینه) برای گفتگوهای تأییدشده توسط مدیر سرور (فیلد v:1)؛ کنار نام در لیست، هدر گفتگو و پروفایل نشان داده می‌شود */
 const VB="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNTJiNmZmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMWE3M2U4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHBvbHlnb24gcG9pbnRzPSIxMi4wMCwxLjYwIDE0LjIzLDMuNjkgMTcuMjAsMi45OSAxOC4wOCw1LjkyIDIxLjAxLDYuODAgMjAuMzEsOS43NyAyMi40MCwxMi4wMCAyMC4zMSwxNC4yMyAyMS4wMSwxNy4yMCAxOC4wOCwxOC4wOCAxNy4yMCwyMS4wMSAxNC4yMywyMC4zMSAxMi4wMCwyMi40MCA5Ljc3LDIwLjMxIDYuODAsMjEuMDEgNS45MiwxOC4wOCAyLjk5LDE3LjIwIDMuNjksMTQuMjMgMS42MCwxMi4wMCAzLjY5LDkuNzcgMi45OSw2LjgwIDUuOTIsNS45MiA2LjgwLDIuOTkgOS43NywzLjY5IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTcuNyAxMi41bDMgMyA1LjctNi4zIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=";
@@ -1899,7 +1908,8 @@ const DEF_TABS=[["pv","P V",""],["gp","Gap",""],["ch","Channel",""]],DEF_NAME={p
 const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 let FE=null;
 /* تب‌ها | All Tabs: «همه» + پوشه‌های آماده‌ی نمایش‌داده‌شده + پوشه‌های ساخته‌شده توسط کاربر */
-function allTabs(){return [["all","All",""],...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,""])]}
+/* ترتیب پوشه‌ها | Folder Order: پوشه‌ها طبق ترتیب ذخیره‌شده‌ی CFG.order چیده می‌شوند و «All» همیشه اول می‌ماند (folders follow saved CFG.order, All stays first) */
+function allTabs(){const R=[...DEF_TABS.filter(t=>!CFG.hidden.includes(t[0])),...CFG.folders.map(f=>["f_"+f.id,f.name,""])],O=CFG.order||[],ix=k=>{const i=O.indexOf(k);return i<0?1e6:i};return [["all","All",""],...R.map((t,n)=>[t,n]).sort((a,b)=>ix(a[0][0])-ix(b[0][0])||a[1]-b[1]).map(x=>x[0])]}
 /* عضویت در پوشه | In Folder: آیا این گفتگو داخل این پوشه است؟ */
 function inFolder(c,k){if(k==="all")return true;if(k.startsWith("f_")){const f=CFG.folders.find(x=>"f_"+x.id===k);return !!f&&f.chats.includes(c.id)}return c.ty===k||(CFG.extra[k]||[]).includes(c.id)}
 /* لیست پوشه‌ها | Folder List: پوشه‌های شما و پوشه‌های پیشنهادی (حذف‌شده‌ها) */
@@ -1938,6 +1948,46 @@ $("#feOk").onclick=()=>{const name=$("#fe_name").value.trim();if(!name){toast(tr
 $("#feDel").onclick=()=>askConfirm("Delete this folder?","Delete Folder",()=>{
  if(FE.def)CFG.hidden.push(FE.k);else CFG.folders=CFG.folders.filter(x=>x.id!==FE.id);
  saveCfg();renderFolders();renderChats();closeSub()});
+/* ===== منوی نگه‌داشتن پوشه | Folder Hold Menu: با نگه‌داشتن روی پوشه آکاردئون (ویرایش نام و گفتگوها، جابجایی، حذف) باز می‌شود ===== */
+/* ترجمه‌ی آکاردئون | Accordion Texts: متن فارسی گزینه‌های آکاردئون پوشه */
+Object.assign(FA,{"Edit Chats & Name":"ویرایش گفتگوها و نام","Move Folder":"جابجایی پوشه","Slide the folder left or right":"پوشه را به چپ یا راست بکشید"});
+/* وضعیت منوی پوشه | Folder Menu State: کلید پوشه‌ی باز، تایمر نگه‌داشتن، نقطه‌ی شروع لمس و پرچم کشیدن (open key, hold timer, touch start, drag flag) */
+const FM={k:null,tm:0,x:0,y:0,drag:0};
+/* نگهبان کلیک پوشه | Folder Click Guard: بعد از نگه‌داشتن یا در حالت جابجایی کلیک پوشه را عوض نمی‌کند، و کلیک روی پوشه آکاردئون باز را می‌بندد */
+function lkFolderGuard(){if(S.fsup){S.fsup=0;return true}if(S.mv)return true;if(FM.k)lkFolderClose();return false}
+/* جعبه‌ی آکاردئون | Accordion Box: عنصر زیر نوار پوشه‌ها را یک بار می‌سازد */
+function lkFolderBox(){let b=$("#fmenu");if(!b){b=document.createElement("div");b.id="fmenu";$("#hdrChats").append(b)}return b}
+/* بستن آکاردئون | Close Accordion: آکاردئون بسته و حالت جابجایی خاموش می‌شود */
+function lkFolderClose(){const b=$("#fmenu");if(b)b.classList.remove("on");FM.k=null;if(S.mv){S.mv=null;$("#tabs").classList.remove("mv");renderTabs()}}
+/* باز کردن آکاردئون | Open Accordion: زیر نوار پوشه‌ها سه گزینه (ویرایش نام و گفتگوها، جابجایی، حذف) با لغزش نرم باز می‌شود */
+function lkFolderOpen(k){const T=$("#tabs"),b=lkFolderBox();FM.k=k;
+ b.innerHTML=`<div class="fr" data-a="edit"><span>${tr("Edit Chats & Name")}</span>${ic("folder",18)}</div><div class="fr" data-a="move"><span>${tr("Move Folder")}</span>${ic("grid",18)}</div><div class="fr red" data-a="del"><span>${tr("Delete Folder")}</span>${ic("trash",18)}</div>`;
+ b.style.top=(T.offsetTop+T.offsetHeight+4)+"px";b.getBoundingClientRect();b.classList.add("on");
+ $$("#fmenu .fr").forEach(r=>r.onclick=()=>{const a=r.dataset.a;
+  if(a==="edit"){lkFolderClose();openFolder(k)}
+  else if(a==="del"){lkFolderClose();askConfirm("Delete this folder?","Delete Folder",()=>lkFolderDel(k))}
+  else if(a==="move")lkFolderMoveOn(k)})}
+/* روشن کردن جابجایی | Move Mode On: پوشه‌ی انتخابی قابل کشیدن می‌شود و آکاردئون فقط راهنما و دکمه‌ی «تمام» را نشان می‌دهد */
+function lkFolderMoveOn(k){S.mv=k;$("#tabs").classList.add("mv");renderTabs();const b=$("#fmenu");
+ b.innerHTML=`<div class="fr" style="color:var(--sub)"><span>${tr("Slide the folder left or right")}</span></div><div class="fr" data-a="done" style="color:var(--blue);justify-content:center"><span>${tr("Done")}</span></div>`;
+ b.querySelector("[data-a=done]").onclick=lkFolderClose}
+/* جابجایی پوشه | Shift Folder: پوشه‌ی در حال کشیدن را جای پوشه‌ی دیگر می‌گذارد و ترتیب را ذخیره می‌کند («All» ثابت می‌ماند) */
+function lkFolderShift(to){const K=allTabs().map(x=>x[0]).filter(x=>x!=="all"),a=K.indexOf(S.mv),b=K.indexOf(to);if(a<0||b<0||a===b)return;K.splice(a,1);K.splice(b,0,S.mv);CFG.order=K;saveCfg();renderTabs()}
+/* حذف پوشه از نوار | Delete Folder From Bar: پوشه‌ی ساخته‌شده پاک و پوشه‌ی آماده مخفی می‌شود (مثل صفحه‌ی ویرایش پوشه) */
+function lkFolderDel(k){if(k.startsWith("f_"))CFG.folders=CFG.folders.filter(x=>"f_"+x.id!==k);else CFG.hidden.push(k);saveCfg();renderFolders();renderChats()}
+/* لمس نوار پوشه | Folder Bar Touch: نگه‌داشتن ۴۵۰ میلی‌ثانیه روی پوشه (به جز «All») آکاردئون را باز می‌کند؛ در حالت جابجایی کشیدن پوشه ترتیب را عوض می‌کند؛ لمس بیرون آکاردئون را می‌بندد */
+(function(){const TB=$("#tabs");
+ TB.addEventListener("pointerdown",e=>{const t=e.target.closest(".tab");if(!t||t.dataset.k==="all")return;const k=t.dataset.k;
+  if(S.mv){if(k===S.mv){FM.drag=1;try{TB.setPointerCapture(e.pointerId)}catch(_){}}return}
+  FM.x=e.clientX;FM.y=e.clientY;clearTimeout(FM.tm);FM.tm=setTimeout(()=>{FM.tm=0;S.fsup=1;lkFolderOpen(k)},450)});
+ TB.addEventListener("pointermove",e=>{
+  if(FM.tm&&Math.hypot(e.clientX-FM.x,e.clientY-FM.y)>8){clearTimeout(FM.tm);FM.tm=0}
+  if(!FM.drag)return;const m=TB.querySelector(".tab.mvk");if(!m)return;
+  const o=[...TB.querySelectorAll(".tab")].find(t=>{const r=t.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right});
+  if(!o||o===m||o.dataset.k==="all")return;const r=o.getBoundingClientRect(),mr=m.getBoundingClientRect(),c=(r.left+r.right)/2;
+  if(r.left<mr.left?e.clientX<c:e.clientX>c)lkFolderShift(o.dataset.k)});
+ ["pointerup","pointercancel"].forEach(ev=>TB.addEventListener(ev,()=>{clearTimeout(FM.tm);FM.tm=0;FM.drag=0;if(S.fsup)setTimeout(()=>{S.fsup=0},80)}));
+ document.addEventListener("pointerdown",e=>{if(!FM.k&&!S.mv)return;if(e.target.closest("#fmenu,#tabs"))return;lkFolderClose()},true)})();
 /* حافظه‌ی گفتگوها | Chat Cache: حجم داده‌ی هر گفتگو روی دستگاه (تخمین از پیام‌های ذخیره‌شده) */
 /* رسانه‌ی کش‌شده | Media Cache: فقط عکس، ویدیو، پیام صوتی و فایل؛ پیام‌های متنی هرگز جزو کش نیستند و با پاک کردن کش حذف نمی‌شوند */
 const fmtSize=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB";
