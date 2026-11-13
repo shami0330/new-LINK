@@ -3611,7 +3611,7 @@ vn.querySelector("small").textContent=tr("Voice message");
 #vnow .vns.f{color:var(--blue);border-color:var(--blue)}
 #vnow .vnl{position:absolute;left:0;bottom:0;height:3px;width:0;border-radius:2px;background:var(--txt);transition:width .25s linear}`;document.head.appendChild(s)})();
 function vNowName(vo){const b=vo.closest(".b");if(b&&b.dataset.w==="me")return tr("You");const n=$("#cname");return n?n.textContent:""}
-function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)"}
+function vNowPlace(){if(!cur)return;const subs=[...document.querySelectorAll(".sub.on")],ch=document.getElementById("chat"),scr=subs[subs.length-1]||(ch.classList.contains("on")?ch:document.querySelector(".screen.on:not(#login)"));if(!scr)return;if(vn.parentNode!==scr)scr.appendChild(vn);const sr=scr.getBoundingClientRect();let b=0;scr.querySelectorAll(":scope>.top,:scope>.pinbar,:scope .hdr>.tabs,:scope .hdr>.search").forEach(x=>{if(x.offsetHeight)b=Math.max(b,x.getBoundingClientRect().bottom-sr.top)});vn.style.top=b?(b+4)+"px":"calc(env(safe-area-inset-top,0px) + 4px)"}
 function vNowTick(){if(!cur)return;const a=cur.a,f=Math.min(1,a.currentTime/((isFinite(a.duration)&&a.duration)||cur.D||1));vn.querySelector(".vnl").style.width=(f*100)+"%";const vo=cur.vo;if(vo&&vo.isConnected){const bs=vo.querySelectorAll(".vwf i");bs.forEach((x,i)=>x.classList.toggle("on",i<f*bs.length));const du=vo.querySelector(".vdu");if(du)du.textContent=fd(a.currentTime)}}
 function vNowSync(){if(!cur){if(vKeep)return;vn.classList.remove("on");vn.querySelector(".vnl").style.width="0";return}vn.classList.add("on");vn.querySelector(".vnp").innerHTML=ic(cur.a.paused?"play":"pause",20);vn.querySelector(".vnn").textContent=cur.name;if(cur.vo&&cur.vo.isConnected)setPB(cur.vo,!cur.a.paused);vNowPlace();vNowTick()}
 vn.addEventListener("click",e=>{if(!cur)return;if(e.target.closest(".vnx")){stopCur()}else if(e.target.closest(".vnp")){if(cur.a.paused)cur.a.play().catch(()=>{});else cur.a.pause()}else if(e.target.closest(".vns")){vSpd=vSpd===1?1.5:vSpd===1.5?2:1;cur.a.playbackRate=vSpd;const b=vn.querySelector(".vns");b.textContent=(vSpd===1.5?"1.5":vSpd)+"X";b.classList.toggle("f",vSpd>1)}});
@@ -3628,6 +3628,15 @@ async function vEnded(){if(!cur)return;const cid=cur.cid,id=cur.id,L=vList(cid),
  for(i++;i<L.length;i++){const x=L[i];let vo=x.el&&x.el.isConnected?x.el:null;if(!vo){vo=document.createElement("div");vo.className="lkvo";vo.dataset.vid=x.id;vo.dataset.d=x.d}
   await playVo(vo,{cid,name:x.me?tr("You"):cn});if(cur)break}
  vKeep=0;if(!cur)vNowSync()}
+/* رفتن به ویس | Jump To Playing Voice: زدن روی وسط نوار، گفتگویی که ویس در آن پخش می‌شود را باز می‌کند و روی حباب همان ویس اسکرول می‌کند (tapping the middle of the bar opens the chat of the playing voice and scrolls to its bubble) */
+function vNowGo(){if(!cur)return;const cid=cur.cid,id=cur.id,find=()=>document.querySelector('#msgs .lkvo[data-vid="'+id+'"]');
+ if(!(S.openId===cid&&$("#chat").classList.contains("on")))openChat(cid);
+ let n=0;const t=setInterval(()=>{const el=find();if(el||++n>20){clearInterval(t);if(!el)return;const b=el.closest(".b")||el;b.scrollIntoView({block:"center",behavior:"smooth"});b.style.transition="filter .3s";b.style.filter="brightness(1.6)";setTimeout(()=>{b.style.filter=""},900)}},50)}
+vn.addEventListener("click",e=>{if(e.target.closest(".vnm"))vNowGo()});
+/* جای نوار بیرون از گفتگو | Bar Place Outside Chat: در صفحه‌های دیگر نوار ویس زیر نوار پوشه‌ها می‌آید، و اگر پوشه نبود زیر نوار جستجو؛ با اسکرول هم جایش دوباره حساب می‌شود (outside chats the bar sits under the folders bar, or under the search bar if there are no folders; its place is recalculated on scroll) */
+$("#app").addEventListener("scroll",vSoon,true);
+/* قطع پخش هنگام ضبط | Stop Playback On Record: با شروع ضبط ویس (یا ادامه‌ی ضبط) همه‌ی ویس‌های درحال‌پخش و نوار پخش قطع می‌شود (starting or resuming a voice recording stops every playing voice and hides the player bar) */
+function vStopAll(){stopCur();document.querySelectorAll("audio,video").forEach(m=>{try{m.pause()}catch(e){}})}
 /* ارسال | Send Voice */
 async function sendVoice(res,wf){
  if(!res||!res.blob||res.duration<.5){toast("Hold to record voice message");return}
@@ -3684,7 +3693,7 @@ async function vMerge(a,b){const oc=new(window.OfflineAudioContext||window.webki
 async function vResume(o){if(o.busyR||!o.res||o.resume||o.done)return;o.busyR=1;
  try{if(o.pa){try{o.pa.pause();URL.revokeObjectURL(o.pa.src)}catch(_){}o.pa=null}
   const T=o.trm;if(T&&(T.s>.01||T.e<.99)){const d=o.res.duration,r=await mediaRun(o.res.file,{trim:{start:T.s*d,end:T.e*d}},"voice");if(r&&!r.failed){if(!r.duration)r.duration=(T.e-T.s)*d;const n=o.wf.length,a=Math.floor(T.s*n);o.wf=o.wf.slice(a,Math.max(a+1,Math.ceil(T.e*n)));o.res=r}}
-  const rec=await mediaRecord("voice");o.rec=rec;o.resume=1;o.prev=0;o.base=o.res.duration;o.wfLen=o.wf.length;
+  const rec=await mediaRecord("voice");vStopAll();o.rec=rec;o.resume=1;o.prev=0;o.base=o.res.duration;o.wfLen=o.wf.length;
   ov.innerHTML='<i class="vdot"></i><span class="vt">'+fT(o.base)+'</span><span class="vcn">'+tr("Cancel")+'</span>';
   vLockLook();
   try{if(!o.an){o.an=MPERM.ctx.createAnalyser();o.an.fftSize=512}MPERM.src.connect(o.an)}catch(_){}
@@ -3705,7 +3714,7 @@ snd.addEventListener("pointerdown",async e=>{
  let rec;try{rec=await mediaRecord("voice")}catch(err){if(R===o)R=null;toast("Microphone access denied");return}
  o.rec=rec;
  if(o.up){/* قبل از آماده شدن رها شد | released before ready */if(Date.now()-o.t0<300||!o.shown){o.done=1;try{await rec.cancel()}catch(_){}if(R===o)R=null;return}}
- const go=()=>{if(o.done||o.shown)return;showRec(o);
+ const go=()=>{if(o.done||o.shown)return;showRec(o);vStopAll();
   try{o.an=MPERM.ctx.createAnalyser();o.an.fftSize=512;MPERM.src.connect(o.an)}catch(_){}
   const buf=o.an?new Uint8Array(o.an.fftSize):null,vt=ov.querySelector(".vt"),sl=ov.querySelector(".vsl");o.sl=sl;
   o.iv=setInterval(()=>{if(buf){o.an.getByteTimeDomainData(buf);let s=0;for(const v of buf){const x=(v-128)/128;s+=x*x}vLv(o,Math.sqrt(s/buf.length))}else o.wf.push(Math.random()*.3);const t=vt&&ov.querySelector(".vt");if(t)t.textContent=fT(rec.seconds)},50)};
