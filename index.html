@@ -1351,7 +1351,10 @@ const LKA=(()=>{
    return mapMsg(r)}
   /* تاریخچه | History: ۲۰۰ پیام آخر این چت از قدیم به جدید (last 200 messages, old to new) */
   async function history(me,other){if(!ok)return null;const Q=window.Appwrite.Query;
-   const r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.equal("chatId",chatIdOf(me,other)),Q.orderAsc("$createdAt"),Q.limit(200)]});
+   const cid=chatIdOf(me,other);let r;
+    /* راه جایگزین بدون ایندکس | No-Index Fallback: اگر سرور ایندکس chatId نداشت، ۵۰۰ پیام آخرِ خودم را می‌گیرد و در برنامه جدا می‌کند (if the server has no index on chatId, fetch my latest 500 and filter in the app) */
+    try{r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.equal("chatId",cid),Q.orderAsc("$createdAt"),Q.limit(200)]})}
+    catch(e){const a=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.orderDesc("$createdAt"),Q.limit(500)]});r={rows:(a.rows||[]).filter(x=>x.chatId===cid).slice(0,200).reverse()}}
    return(r.rows||[]).map(mapMsg).filter(m=>m.kind==="text")}
   /* فهرست چت‌ها | My Chats: چت‌های دو نفره من با نام طرف مقابل و آخرین پیام (private chats with the other person's name and last message) */
   async function chats(me){if(!ok)return[];const Q=window.Appwrite.Query;
