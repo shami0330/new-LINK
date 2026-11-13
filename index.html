@@ -52,6 +52,12 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font:15px -apple-sys
 /* صفحه | Screen: هر صفحه کل قاب را می‌گیرد و با جابجایی انیمیشن می‌شود (full-frame page, slide animation) */
 .screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column}
 .screen.on{display:flex}
+/* لودینگ شروع | Boot Loading Style: تمام‌صفحه روی همه چیز؛ لوگو وسط و حلقهٔ چرخان زیرش؛ بعد از آماده شدن آرام محو می‌شود (full screen above everything; logo with a spinner, fades out when ready) */
+#lkBoot{position:absolute;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .28s ease}
+#lkBoot.off{opacity:0;pointer-events:none}
+#lkBoot img{width:120px;height:120px;border-radius:50%;object-fit:cover;image-rendering:pixelated;filter:drop-shadow(0 6px 14px rgba(255,70,110,.35))}
+#lkBoot .lkbs{width:26px;height:26px;border-radius:50%;border:3px solid rgba(128,128,128,.3);border-top-color:var(--blue);animation:lkbspin .8s linear infinite}
+@keyframes lkbspin{to{transform:rotate(360deg)}}
 
 /* سربرگ | Top Bar: ارتفاع ۵۶، زیر نوار وضعیت (height 56, below status bar) */
 .top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px;gap:8px}
@@ -1083,6 +1089,8 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 <!-- ===== بخش ۲ | SECTION 2: ساختار صفحه | HTML Structure ===== -->
 
 <!-- ورود | Login Screen: ثبت‌نام/ورود با ایمیل و رمز -->
+<!-- صفحه لودینگ شروع | Boot Loading: تا مشخص شدن نشست قبلی نشان داده می‌شود؛ اگر نشست فعال بود مستقیم وارد برنامه می‌شود وگرنه صفحه ورود/ثبت‌نام باز می‌شود -->
+<div id="lkBoot"><img alt=""><div class="lkbs"></div></div>
 <div class="screen on" id="login">
   <!-- لوگوی برنامه | App Logo: لوگوی پیکسلی دایره‌ای بدون پس‌زمینه در صفحه‌ی ورود -->
   <div id="lgsw"></div>
@@ -1792,13 +1800,18 @@ $("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Conf
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
 $("#logout").onclick=()=>{LKA.out();lkStop(1);S.user=null;show("login")};
 /* بازیابی نشست | Session Restore: اگر قبلاً وارد شده بود، مستقیم وارد برنامه می‌شود */
-LKA.restore().then(u=>{if(u&&!S.user){S.user={email:u.email,name:u.name,id:u.id,username:u.username};lkEnter()}});
+/* پایان لودینگ شروع | Boot Loading Off: لودینگ آرام محو و بعد برداشته می‌شود (fades the boot screen out, then removes it) */
+function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.off=1;b.classList.add("off");setTimeout(()=>b.remove(),320)}
+{const b=$("#lkBoot"),lg=document.querySelector("#login .lgo");if(b&&lg)b.querySelector("img").src=lg.src}
+/* اگر سرور دیر جواب داد | Boot Timeout: بعد از ۸ ثانیه لودینگ برداشته می‌شود تا برنامه گیر نکند (never stuck on loading) */
+setTimeout(lkBootOff,8000);
+LKA.restore().then(u=>{if(u&&!S.user){S.user={email:u.email,name:u.name,id:u.id,username:u.username};lkEnter()}}).catch(()=>{}).finally(lkBootOff);
 /* ورود نمایشی موقت | Temporary Demo Entry: فقط با این دکمه بدون فیلد و اینترنت وارد می‌شود؛ ثبت‌نام/ورود عادی فقط آنلاین و با فیلدهای معتبر */
 $("#lgdemo").onclick=()=>{DEMO=true;try{$("#lbtn").onclick()}finally{DEMO=false}};
 
 /* ---- ۳.۴ب چت واقعی | 3.4b Real Chat (Server) ---- */
 /* وضعیت چت واقعی | Real Chat State: شنونده زنده، زمان‌سنج بررسی و آی‌دی پیام‌های دیده‌شده (live listener, poll timer, seen message ids) */
-const LKC={un:null,tm:0,seen:{}};
+const LKC={un:null,tm:0,seen:{},del:{}};
 /* نمایش خطای سرور | Show Server Error: خطای سرور را با کد نشان می‌دهد (حداکثر هر ۸ ثانیه یک بار) تا علت مشخص شود (shows the server error code, at most once per 8s) */
 /* وصل دوباره | Live Reconnect: دریافت زنده را از نو راه می‌اندازد و پیام‌های جامانده را می‌گیرد؛ وقتی برنامه از پس‌زمینه برمی‌گردد یا اینترنت وصل می‌شود هم خودکار اجرا می‌شود (restart live receive and catch up) */
 function lkRevive(){if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=LKA.listen(S.user.id,lkIn);LKA.recent().then(a=>a.forEach(lkIn)).catch(lkErr)}
@@ -1835,7 +1848,7 @@ const lkRec=(m,c)=>{const d=lkRpDec(m.text,m.from,c);return[m.from===S.user.id?"
 function lkChatOf(uid,name,un){let c=CHATS.find(x=>x.uid===uid);if(!c){c={id:lkCid(uid),n:name||un||"User",m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(un||name||uid),uid:uid,uname:un};CHATS.push(c)}return c}
 /* بارگیری گفتگو | Load Chat: پیام‌های سرور این گفتگو را می‌گیرد و اگر چیزی عوض شده بود صفحه را تازه می‌کند (fetch server messages, redraw if changed) */
 function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
- LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const sg=a=>JSON.stringify((a||[]).map(r=>r[1]+"|"+r[4])),old=sg(CFG.sent[c.id]);CFG.sent[c.id]=L.map(m=>lkRec(m,c));saveCfg();lkSyncPreview(c);
+ LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;L=L.filter(m=>!LKC.del[m.id]);const sg=a=>JSON.stringify((a||[]).map(r=>r[1]+"|"+r[4])),old=sg(CFG.sent[c.id]);CFG.sent[c.id]=L.map(m=>lkRec(m,c));saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&sg(CFG.sent[c.id])!==old){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}
   lkTicks(c);lkMarkSeen(c);lkPinPull(c);renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
 /* پین مشترک | Shared Pins: بعد از پین یا برداشتن پین، آی‌دی پیام‌های پین‌شده روی سرور نوشته می‌شود؛ از سرور هم خوانده می‌شود تا پین طرف مقابل در گفتگوی من هم دیده شود (push my pins to the server and pull the other person's) */
@@ -1844,14 +1857,14 @@ function lkPinPull(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)retur
 /* برداشتن پین با حذف | Unpin On Delete: وقتی پیامی پاک می‌شود، پینش هم از فهرست پین‌ها برمی‌دارد (removes the pin of a deleted message) */
 function lkUnpin(id,t){const v=CFG.pins&&CFG.pins[id];if(!v)return;const a=(Array.isArray(v)?v:[v]).filter(x=>x!==t);if(a.length)CFG.pins[id]=a;else delete CFG.pins[id];saveCfg();if(S.openId===id&&window.applyPin)window.applyPin()}
 /* ارسال ویرایش | Push Edit: متن تازهٔ پیام خودم را (با پاسخش) روی سرور می‌نویسد؛ تا تمام نشدن، بارگیری گفتگو متن قدیمی را برنمی‌گرداند (writes my edited text to the server) */
-function lkEditPush(c,rec,nv){if(LK_MODE!=="real"||!c||!c.uid||!rec||!rec[7])return;c.lks=(c.lks||0)+1;LKA.editRow(rec[7],lkRpEnc(nv,rec[5])).catch(er=>{lkNetFail(er);lkErr(er)}).finally(()=>{c.lks--})}
+function lkEditPush(c,rec,nv){if(LK_MODE!=="real"||!c||!c.uid||!rec)return;if(!rec[7]){(rec.q=rec.q||[]).push(()=>lkEditPush(c,rec,nv));return}c.lks=(c.lks||0)+1;LKA.editRow(rec[7],lkRpEnc(nv,rec[5])).catch(er=>{lkNetFail(er);lkErr(er)}).finally(()=>{c.lks--})}
 /* رفتن گفتگو | Chat Gone: گفتگویی که طرف مقابل برای هر دو حذف کرده؛ اگر باز باشد بسته می‌شود و از فهرست و حافظه می‌رود (a chat deleted for both by the other person: closed if open, removed from the list) */
 function lkGone(c){if(!c)return;if(S.openId===c.id&&$("#chat").classList.contains("on")){try{$("#back").click()}catch(e){}}CHATS=CHATS.filter(x=>x!==c);delete CFG.sent[c.id];if(CFG.cleared)delete CFG.cleared[c.id];saveCfg();renderChats()}
 /* ساخت دوباره گفتگو | Rebuild Chat: اگر این گفتگو باز است، پیام‌هایش را از نو روی صفحه می‌چیند (redraws the open chat) */
 function lkRebuild(c){if(S.openId===c.id&&$("#chat").classList.contains("on")){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}}
 /* حذف دوطرفه پیام | Delete Messages For Both: پیام از سرور پاک می‌شود؛ اگر سرور اجازه ندهد (پیام‌های قدیمی) نشانهٔ «حذف‌شده» می‌گذارد؛ در هر دو حالت طرف مقابل همان لحظه می‌بیند (message is deleted from the server, or hidden by a tombstone if the server refuses) */
 function lkDelBoth(id,keys){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid)return;const L=CFG.sent[id]||[];
- keys.forEach(k=>{const i=L.findIndex(r=>r[7]&&r[1]+"|"+r[2]===k);if(i<0)return;const r=L.splice(i,1)[0];lkUnpin(id,r[1]);LKA.delRow(r[7]).catch(()=>LKA.tomb(S.user.id,c.uid,r[7]).catch(lkErr))});saveCfg();lkPinPush(c)}
+ keys.forEach(k=>{const i=L.findIndex(r=>r[1]+"|"+r[2]===k);if(i<0)return;const r=L.splice(i,1)[0];lkUnpin(id,r[1]);/* حذف بی‌انتظار | Instant Delete: از صفحه همان لحظه می‌رود؛ سرور پشت‌صحنه خبردار می‌شود و اگر پیام هنوز به سرور نرسیده باشد بعد از رسیدن پاک می‌شود (leaves the screen at once; the server is told in the background, or right after the message arrives) */const go=()=>{LKC.del[r[7]]=1;LKA.delRow(r[7]).catch(()=>LKA.tomb(S.user.id,c.uid,r[7]).catch(lkErr))};if(r[7])go();else(r.q=r.q||[]).push(go)});saveCfg();lkPinPush(c)}
 /* پاک کردن دوطرفه | Clear History For Both: نشانهٔ پاک شدن روی سرور گذاشته می‌شود تا تاریخچه برای هر دو نفر خالی شود (puts the clear marker on the server) */
 function lkClearBoth(c,del){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)return;c.mk=0;LKA.clearBoth(S.user.id,c.uid,del).catch(lkErr)}
 /* تیک دوم واقعی | Real Double Tick: ✓ یعنی به سرور رسیده، ✓✓ فقط وقتی طرف مقابل بعد از آن پیام چت را دیده؛ هم حباب‌ها و هم لیست چت‌ها را به‌روز می‌کند (one tick = delivered, two = the other person viewed the chat after that message) */
@@ -1867,8 +1880,9 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){const c=C
 {const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id);const c=CHATS.find(x=>x.id===id);lkSeenPull(c);setTimeout(()=>{lkTicks(c);lkMarkSeen(c)},300)}catch(e){}return r}}
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
 function lkReal(c,v,rp){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
+ /* رکورد همین پیام | This Message Record: پیش از رفتن به سرور نگه داشته می‌شود تا ویرایش یا حذفِ قبل از رسیدن پاسخ سرور هم بعداً اعمال شود (kept so an edit or delete made before the server answers is applied right after) */const rec0=[...(CFG.sent[c.id]||[])].reverse().find(r=>r[0]==="me");
  c.lks=(c.lks||0)+1;lkSyncPreview(c);bumpChat(c);saveCfg();renderChats();
- LKA.send(S.user.id,c.uid,lkRpEnc(v,rp)).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);const L=CFG.sent[c.id]||[];for(let i=L.length-1;i>=0;i--)if(L[i][0]==="me"){if(!L[i][6])L[i][6]=Date.parse(m.at)||0;L[i][7]=m.id;break}lkTicks(c)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
+ LKA.send(S.user.id,c.uid,lkRpEnc(v,rp)).then(m=>{LKC.seen[m.id]=1;c.lat=Math.max(c.lat||0,Date.parse(m.at)||0);if(rec0){rec0[6]=rec0[6]||Date.parse(m.at)||0;rec0[7]=m.id;const q=rec0.q;rec0.q=null;(q||[]).forEach(f=>{try{f()}catch(e){}})}lkTicks(c)}).catch(er=>{lkNetFail(er);toast("⚠ "+((er&&er.code)||"")+" "+String((er&&er.message)||er).slice(0,90));lkLong()}).finally(()=>{c.lks--});return true}
 /* دریافت پیام | Incoming Message: پیام تازه از طرف مقابل در حباب سمت چپ می‌آید، یا شمارنده نخوانده زیاد می‌شود (new message: left bubble or unread +1) */
 function lkIn(m){if(!S.user||!m)return;if(m.kind==="del"||m.kind==="dl"){const mid=m.kind==="dl"?m.text:m.id;if(m.kind==="dl"&&m.from===S.user.id)return;CHATS.forEach(c=>{const L=CFG.sent[c.id]||[],i=L.findIndex(r=>r[7]===mid);if(i>=0){const t0=L.splice(i,1)[0][1];lkUnpin(c.id,t0);saveCfg();lkSyncPreview(c);lkRebuild(c);renderChats()}});return}
  if(m.kind==="edit"){CHATS.forEach(c=>{const r=(CFG.sent[c.id]||[]).find(x=>x[7]===m.id);if(!r)return;const d=lkRpDec(m.text,m.from,c),old=r[1];if(old===d.t)return;r[1]=d.t;r[4]=1;if(d.rp)r[5]=d.rp;if(CFG.pins&&CFG.pins[c.id])CFG.pins[c.id]=[].concat(CFG.pins[c.id]).map(x=>x===old?d.t:x);saveCfg();lkSyncPreview(c);lkRebuild(c);renderChats();if(S.openId===c.id&&window.applyPin)window.applyPin()});return}
