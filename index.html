@@ -1094,6 +1094,8 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <input id="nm2" name="lm-n2" placeholder="Last Name" autocomplete="off" autocorrect="off" spellcheck="false">
   <input id="em" name="lm-e" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
   <div class="pwrap"><input id="pw" name="lm-p" type="text" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><span id="pwEye"></span></div>
+  <!-- تکرار رمز | Confirm Password: فقط در ثبت‌نام دیده می‌شود و باید با رمز بالا یکی باشد (shown only in sign up) -->
+  <input id="pw2" name="lm-p2" type="text" placeholder="Confirm Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <button id="lbtn">Sign Up</button>
   <a id="lsw">Already have an account? Log in</a>
 </div>
@@ -1305,14 +1307,43 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 </div>
 
 </div>
+<!-- کتابخانه‌ی رسمی Appwrite | Official Appwrite SDK: کتابخانه‌ی رسمی اپ‌رایت برای ثبت‌نام و ورود؛ از اینترنت بارگیری می‌شود (نسخه‌ی ثابت) -->
+<script src="https://cdn.jsdelivr.net/npm/appwrite@20.1.0"></script>
 <script>
-/* ===== اتصال سرور (خالی) | Server Link (Empty): همه‌ی کد سرور پاک شد؛ این بخش فقط یک پوسته‌ی خالی است تا بقیه‌ی برنامه خطا ندهد. سرور جدید را اینجا بنویس ===== */
-/* پوسته‌ی سرور | Server Shell: همه‌ی دستورهای سرور وجود دارند ولی کاری نمی‌کنند؛ ورود و ارسال با پیام «سرور وصل نیست» رد می‌شود (all server calls exist but do nothing) */
+/* ===== اتصال سرور | Server Link (Appwrite): مرحله ۱ فقط ثبت‌نام و ورود با ایمیل و رمز؛ پیام‌رسانی بعداً می‌آید ===== */
+/* ورود و ثبت‌نام | Auth Layer: ساخت حساب، ورود، نگه‌داشتن نشست بعد از رفرش و خروج با نشست رسمی Appwrite؛ رمز عبور هیچ‌جا ذخیره نمی‌شود و هیچ کلید مخفی در برنامه نیست (official Appwrite session; no password stored, no secret key) */
 const LKA=(()=>{
- const off=()=>Promise.reject(new Error("سرور وصل نیست"));
- /* پاک کردن نشست قدیمی | Clear Old Session: ورود ذخیره‌شده‌ی سرور قبلی از حافظه‌ی گوشی پاک می‌شود (removes the old saved login) */
- const out=()=>{try{localStorage.removeItem("cookieFallback")}catch(e){}};
- return{auth:off,restore:()=>Promise.resolve(null),out,search:()=>Promise.resolve([]),msg:e=>String((e&&e.message)||"سرور وصل نیست"),send:off,history:()=>Promise.resolve(null),chats:()=>Promise.resolve([]),user:off,listen:()=>null,recent:()=>Promise.resolve([]),live:()=>false,db:()=>null,account:()=>null,client:()=>null,ok:false}})();
+ const EP="https://fra.cloud.appwrite.io/v1",PJ="6aecbdce0036439c36ca";
+ let ok=false,cl,ac;
+ try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);ok=true}catch(e){}
+ /* نام نمایشی | Display Name: بخش قبل از @ ایمیل؛ مثل ali123@gmail.com ← ali123 (the part before @) */
+ const uname=e=>String(e||"").split("@")[0];
+ const pack=u=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:n,username:n.toLowerCase()}};
+ /* ثبت‌نام و ورود | Sign Up / Log In: اگر ثبت‌نام باشد اول حساب ساخته می‌شود، بعد نشست ساخته می‌شود (create account then session) */
+ async function auth(signup,email,pw){
+  if(!ok)throw new Error("کتابخانه‌ی سرور بارگیری نشد");
+  if(signup)await ac.create({userId:window.Appwrite.ID.unique(),email:email,password:pw,name:uname(email)});
+  try{await ac.deleteSession({sessionId:"current"})}catch(e){}
+  await ac.createEmailPasswordSession({email:email,password:pw});
+  return pack(await ac.get())}
+ /* بازیابی نشست | Session Check: هنگام شروع، اگر نشست فعال بود کاربر را برمی‌گرداند وگرنه null (returns the user if a session is active) */
+ async function restore(){if(!ok)return null;try{return pack(await ac.get())}catch(e){return null}}
+ /* خروج | Sign Out: نشست فعلی را در سرور می‌بندد و ردپای نشست را از حافظه پاک می‌کند (closes the session) */
+ const out=()=>{const rm=()=>{try{localStorage.removeItem("cookieFallback")}catch(e){}};if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
+ /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
+ const msg=e=>{const c=e&&e.code,m=String((e&&e.message)||""),t=String((e&&e.type)||"");
+  if(c===409)return"این ایمیل قبلاً ثبت‌نام شده است";
+  if(c===401||t==="user_invalid_credentials")return"ایمیل یا رمز عبور اشتباه است";
+  if(c===429)return"تعداد تلاش‌ها زیاد است؛ کمی بعد دوباره امتحان کنید";
+  if(t==="user_blocked")return"این حساب مسدود شده است";
+  if(c===400&&/password/i.test(t+m))return"رمز عبور معتبر نیست؛ حداقل ۸ حرف و نه خیلی ساده";
+  if(c===400&&/email/i.test(t+m))return"ایمیل معتبر نیست";
+  if(!navigator.onLine||c===0||/fetch|network|load failed|cors/i.test(m))return"اتصال به سرور برقرار نشد؛ اینترنت را بررسی کنید";
+  if(/بارگیری/.test(m))return m;
+  return"خطایی رخ داد؛ دوباره تلاش کنید"};
+ /* بخش‌های بعدی | Later Stages: جستجو، پیام و دریافت زنده در مرحله‌های بعد نوشته می‌شوند؛ فعلاً خالی هستند تا بقیه‌ی برنامه خطا ندهد (empty placeholders for the next stages) */
+ const off=()=>Promise.reject(new Error("هنوز فعال نشده"));
+ return{auth,restore,out,search:()=>Promise.resolve([]),msg,send:off,history:()=>Promise.resolve(null),chats:()=>Promise.resolve([]),user:off,listen:()=>null,recent:()=>Promise.resolve([]),live:()=>false,db:()=>null,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1613,11 +1644,20 @@ async function mediaRecord(pn,opt){
  return{stop:()=>{end();return result},cancel:()=>{cancelled=true;end();return result},result,get seconds(){return(Date.now()-t0)/1000}}}
 
 /* ---- ۳.۴ ورود و ثبت‌نام | 3.4 Login / Signup ---- */
-/* ورود | Login Action: فقط بخش قبل @ کافی است؛ بدون @ خودکار gmail.com اضافه می‌شود (prefix only, auto @gmail.com) */
+/* ورود | Login Action: ثبت‌نام یا ورود با ایمیل و رمز؛ نام نمایشی بخش قبل از @ است (email + password, display name = part before @) */
 /* حالت نمایشی | Demo Mode: فعلاً با فیلدهای خالی هم وارد می‌شود (برای تست)؛ برای فعال شدن قانون‌ها false کنید */
 let DEMO=false;
-$("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("Internet connection required");return}let e=$("#em").value.trim(),p=$("#pw").value;let nm=$("#nm").value.trim();if(DEMO){e=e||"demo";nm=nm||"Demo"}else if(!e||p.length<8||(S.signup&&!nm)){toast(S.signup?"Name, email and password (min 8 chars) required":"Email and password (min 8 chars) required");return}
- if(!e.includes("@"))e+="@gmail.com";if(!DEMO){const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;LKA.auth(S.signup,e,p,nm).then(u=>{S.user={email:u.email,name:u.name,id:u.id,username:u.username};lkEnter()}).catch(er=>toast(LKA.msg(er))).finally(()=>delete b.dataset.busy);return}S.user={email:e,name:S.signup?nm:e.split("@")[0]};lkEnter()};
+$("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("اتصال اینترنت لازم است");return}let e=$("#em").value.trim().toLowerCase(),p=$("#pw").value;
+ /* ورود نمایشی | Demo Login: بدون سرور و بدون قانون‌ها (demo, no server) */
+ if(DEMO){const nm=$("#nm").value.trim()||"Demo";e=e||"demo";if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:S.signup?nm:e.split("@")[0]};lkEnter();return}
+ /* بررسی فرم | Form Check: ایمیل معتبر، رمز حداقل ۸ حرف و در ثبت‌نام تکرار رمز یکسان (valid email, min 8 chars, same repeat) */
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)){toast("ایمیل معتبر نیست");return}
+ if(p.length<8){toast("رمز عبور باید حداقل ۸ حرف باشد");return}
+ if(p.length>256){toast("رمز عبور خیلی طولانی است");return}
+ if(S.signup&&p!==$("#pw2").value){toast("رمز عبور و تکرار آن یکسان نیستند");return}
+ const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;/* نام وارد‌شده | Entered Name: اگر در ثبت‌نام اسم نوشته شده باشد همان نمایش داده می‌شود، وگرنه بخش قبل از @ ایمیل (typed first name, else email prefix) */const fn=S.signup?$("#nm").value.trim():"";
+ /* فرستادن به سرور | Send To Server: ثبت‌نام یا ورود؛ بعد از موفقیت فیلدهای رمز خالی می‌شوند تا رمز جایی نماند (fields are cleared on success) */
+ LKA.auth(S.signup,e,p).then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username};toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>delete b.dataset.busy)};
 /* جداسازی داده نمایشی | Demo Data Split: محتوای نمایشی (چت‌ها، مخاطبین و پیام‌ها) فقط با دکمه‌ی «ورود نمایشی» می‌آید؛ ورود و ثبت‌نام واقعی با لیست خالی شروع می‌شود و دادهٔ هر حالت جدا نگه‌داشته می‌شود */
 const LK_SNAP={c:JSON.parse(JSON.stringify(CHATS)),p:JSON.parse(JSON.stringify(PEOPLE))};
 const LK_CK=["sent","cleared","media","sched","blocked","hid","saved","dlp","hidden","pins","dl","cperm","cadm","gperm","gone","order","cedit","folders"];
@@ -1654,7 +1694,7 @@ function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
  initUser();renderChats();renderContacts();show("chats");lkStart()};
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
-$("#lsw").onclick=()=>{S.signup=!S.signup;$("#nm").style.visibility=$("#nm2").style.visibility=S.signup?"visible":"hidden";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
+$("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Confirm Field Toggle: فقط در ثبت‌نام */$("#pw2").style.display=S.signup?"":"none";$("#pw2").value="";$("#nm").style.visibility=$("#nm2").style.visibility=S.signup?"visible":"hidden";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
 $("#logout").onclick=()=>{LKA.out();lkStop(1);S.user=null;show("login")};
 /* بازیابی نشست | Session Restore: اگر قبلاً وارد شده بود، مستقیم وارد برنامه می‌شود */
@@ -1673,8 +1713,8 @@ const lkCid=u=>1000+(parseInt(String(u).slice(-6),16)||0);
 function lkConnOk(){return false}
 /* ارسال واقعی | Real Send: سرور نیست، پس false برمی‌گرداند و پیام فقط محلی می‌ماند (no server: returns false) */
 function lkReal(c,v){return false}
-/* پاک کردن اطلاعات سرور از گوشی | Wipe Server Data: چت‌ها و پیام‌های ذخیره‌شده‌ی سرور قبلی و نشست قدیمی از گوشی پاک می‌شود (removes cached server chats, messages and old session) */
-function lkWipe(){LKA.out();CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}
+/* پاک کردن اطلاعات سرور از گوشی | Wipe Server Data: چت‌ها و پیام‌های ذخیره‌شده‌ی سرور قبلی و نشست قدیمی از گوشی پاک می‌شود (removes cached server chats and messages; the login session is kept) */
+function lkWipe(){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}
 /* شروع | Start: بعد از ورود فقط اطلاعات قدیمی سرور را پاک می‌کند (on login, wipes old server data) */
 function lkStart(){lkWipe()}
 /* توقف | Stop: با خروج اطلاعات سرور از گوشی پاک می‌شود (on logout wipes server data) */
@@ -3744,7 +3784,7 @@ $("#login").addEventListener("touchmove",e=>{if(e.target.tagName!=="INPUT")e.pre
 /* ---- چشم پسورد | Password Eye Toggle ---- */
 /* نمایش/پنهان‌سازی پسورد | Show-Hide Password: پیش‌فرض بدون نقطه (نمایان، چشم ساده)؛ با زدن، پسورد پنهان می‌شود و چشم خط‌دار می‌شود؛ دوباره زدن آشکار می‌کند (default visible without dots; tap eye to mask with dots, tap again to reveal) */
 let pwHide=false;
-function setPw(){$("#pw").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEye").innerHTML=ic(pwHide?"eyeoff":"eye",22)}
+function setPw(){$("#pw").style.webkitTextSecurity=$("#pw2").style.webkitTextSecurity=pwHide?"disc":"none";$("#pwEye").innerHTML=ic(pwHide?"eyeoff":"eye",22)}
 $("#pwEye").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pwEye").onclick=()=>{pwHide=!pwHide;setPw()};
 setPw();
@@ -4843,7 +4883,7 @@ applyPin();
  Object.keys(X).forEach(k=>{if(!FA[k])FA[k]=X[k]});if(S.signup===undefined)S.signup=true;
  /* متن‌های ورود | Login Texts: برچسب‌ها، placeholder و جهت را طبق زبان فعلی می‌گذارد */
  window.loginLang=function(){const fa=CFG.lang==="fa",su=S.signup;$("#login").setAttribute("dir",fa?"rtl":"ltr");
-  $("#ltitle").textContent=tr("Link Messenger");$("#lgdemo").textContent=fa?"ورود نمایشی":"Demo";$("#nm").placeholder=tr("First Name");$("#nm2").placeholder=tr("Last Name");$("#em").placeholder=tr("Email");$("#pw").placeholder=tr("Password");
+  $("#ltitle").textContent=tr("Link Messenger");$("#lgdemo").textContent=fa?"ورود نمایشی":"Demo";$("#nm").placeholder=tr("First Name");$("#nm2").placeholder=tr("Last Name");$("#em").placeholder=tr("Email");$("#pw").placeholder=tr("Password");/* تکرار رمز | Confirm Placeholder */$("#pw2").placeholder=fa?"تکرار رمز عبور":"Confirm Password";
   $("#lbtn").textContent=tr(su?"Sign Up":"Log In");$("#lsw").textContent=tr(su?"Already have an account? Log in":"New here? Sign up");
   $("#lgsw").innerHTML=ic("globe",16)+(fa?"English":"فارسی");requestAnimationFrame(()=>{const g=$("#lgcn"),s=$("#lgsw");if(g&&s)g.style.left=(14+s.offsetWidth+8)+"px"})};
  $("#lsw").addEventListener("click",()=>loginLang());
