@@ -1326,9 +1326,13 @@ const LKA=(()=>{
   await ac.createEmailPasswordSession({email:email,password:pw});
   const u=await ac.get();return pack(u,await prof(u,nm))}
  async function restore(){if(!ok)return null;try{const u=await ac.get();return pack(u,await prof(u))}catch(e){return null}}
+ /* جستجوی کاربر | User Search: پیشوند یوزرنیم یا ایمیل؛ نزدیک‌ترین (کمترین اختلاف طول) اول، خود کاربر حذف می‌شود */
+ async function search(q){q=String(q||"").trim().toLowerCase().replace(/^@/,"");if(!ok||q.length<2)return[];const Q=window.Appwrite.Query;
+  const r=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.or([Q.startsWith("usernameLower",q),Q.startsWith("email",q)]),Q.limit(25)]});
+  return(r.rows||[]).filter(x=>!(S.user&&x.$id===S.user.id)).map(x=>({id:x.$id,username:x.username,email:x.email,photo:x.avatarId,name:((x.firstName||"")+" "+(x.lastName||"")).trim()||x.username,score:(x.usernameLower===q||x.email===q)?-1:Math.abs((x.usernameLower||"").length-q.length)})).sort((a,b)=>a.score-b.score)}
  const out=()=>{if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{})};
  const msg=e=>{const c=e&&e.code;if(c===409)return"This email is already registered";if(c===401)return"Wrong email or password";if(c===429)return"Too many attempts, try later";if(!navigator.onLine||c===0||/fetch|network|load failed/i.test(String(e&&e.message)))return"Cannot reach server";return String((e&&e.message)||"Error").slice(0,90)};
- return{auth,restore,out,msg,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1634,7 +1638,36 @@ async function mediaRecord(pn,opt){
 let DEMO=false;
 $("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("Internet connection required");return}let e=$("#em").value.trim(),p=$("#pw").value;let nm=$("#nm").value.trim();if(DEMO){e=e||"demo";nm=nm||"Demo"}else if(!e||p.length<8||(S.signup&&!nm)){toast(S.signup?"Name, email and password (min 8 chars) required":"Email and password (min 8 chars) required");return}
  if(!e.includes("@"))e+="@gmail.com";if(!DEMO){const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;LKA.auth(S.signup,e,p,nm).then(u=>{S.user={email:u.email,name:u.name,id:u.id,username:u.username};lkEnter()}).catch(er=>toast(LKA.msg(er))).finally(()=>delete b.dataset.busy);return}S.user={email:e,name:S.signup?nm:e.split("@")[0]};lkEnter()};
-function lkEnter(){const e=S.user.email;
+/* جداسازی داده نمایشی | Demo Data Split: محتوای نمایشی (چت‌ها، مخاطبین و پیام‌ها) فقط با دکمه‌ی «ورود نمایشی» می‌آید؛ ورود و ثبت‌نام واقعی با لیست خالی شروع می‌شود و دادهٔ هر حالت جدا نگه‌داشته می‌شود */
+const LK_SNAP={c:JSON.parse(JSON.stringify(CHATS)),p:JSON.parse(JSON.stringify(PEOPLE))};
+const LK_CK=["sent","cleared","media","sched","blocked","hid","saved","dlp","hidden","pins","dl","cperm","cadm","gperm","gone","order","cedit","folders"];
+let LK_MODE="demo";
+function lkMode(m){if(LK_MODE===m)return;
+ try{const o={};LK_CK.forEach(k=>{if(CFG[k]!==undefined)o[k]=CFG[k]});localStorage.setItem("lk_ck_"+LK_MODE,JSON.stringify(o))}catch(e){}
+ LK_CK.forEach(k=>delete CFG[k]);
+ try{Object.assign(CFG,JSON.parse(localStorage.getItem("lk_ck_"+m))||{})}catch(e){}
+ LK_MODE=m;
+ if(m==="demo"){CHATS=JSON.parse(JSON.stringify(LK_SNAP.c));PEOPLE=JSON.parse(JSON.stringify(LK_SNAP.p))}
+ else{CHATS=[{id:2,n:"Saved Messages",m:"",tm:"",ty:"pv",pin:1,t:0,un:0,mute:0,on:0,col:"#3a9bff"}];PEOPLE=[]}
+ S.openId=null;S.folder="all";S.sel.clear();saveCfg()}
+/* نتایج جستجو | Search Results: زیر نوار جستجو فهرست نتایج سرور (۳ نتیجهٔ اول، با دکمهٔ شمارش‌دار برای بقیه) فقط در حالت واقعی */
+const LKGS={q:"",res:[],done:0,more:0,t:0,seq:0,fa:0};
+function lkGS(){const q=$("#q").value.trim(),old=$("#lkgs");if(old)old.remove();
+ if(LK_MODE!=="real"||!S.user||!S.user.id||q.replace(/^@/,"").length<2){LKGS.q="";LKGS.seq++;return}
+ if(!LKGS.fa){LKGS.fa=1;Object.assign(FA,{"Search results":"نتایج جستجو","Show more":"نمایش بیشتر","No users found":"کاربری پیدا نشد"})}
+ if(LKGS.q!==q){LKGS.q=q;LKGS.res=[];LKGS.done=0;LKGS.more=0;clearTimeout(LKGS.t);const my=++LKGS.seq;
+  LKGS.t=setTimeout(()=>LKA.search(q).then(r=>{if(my!==LKGS.seq)return;LKGS.res=r;LKGS.done=1;lkGS()}).catch(()=>{if(my===LKGS.seq){LKGS.done=1;lkGS()}}),300)}
+ const R=LKGS.res,n=LKGS.more?R.length:Math.min(3,R.length);let h='<div id="lkgs"><div style="padding:10px 16px 4px;font-size:13px;opacity:.6">'+esc(tr("Search results"))+'</div>';
+ if(LKGS.done&&!R.length)h+='<div style="padding:10px 16px;font-size:14px;opacity:.6">'+esc(tr("No users found"))+'</div>';
+ h+=R.slice(0,n).map((u,i)=>'<div class="row" data-gi="'+i+'">'+av(u.name,colOf(u.username||u.name),0,"","")+'<div class="mid"><div class="n">'+esc(u.name)+'</div><div class="m">@'+esc(u.username||"")+'</div></div></div>').join("");
+ if(R.length>n)h+='<div class="row" data-gm="1" style="justify-content:center;color:var(--blue)">'+esc(tr("Show more"))+' ('+(R.length-n)+')</div>';
+ $("#clist").insertAdjacentHTML("beforeend",h+'</div>');
+ $$("#lkgs .row").forEach(r=>r.onclick=()=>{if(r.dataset.gm){LKGS.more=1;lkGS();return}lkGOpen(R[+r.dataset.gi])})}
+/* باز کردن گفتگو از نتیجه | Open From Result: چت شخصی با کاربر پیداشده (uid = شناسهٔ سرور)؛ ارسال پیام واقعی در مرحلهٔ بعد وصل می‌شود */
+function lkGOpen(u){if(!u)return;let c=CHATS.find(x=>x.uid===u.id);if(!c){c={id:Math.max(100,...CHATS.map(x=>x.id))+1,n:u.name,m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(u.username||u.name),uid:u.id,uname:u.username};CHATS.push(c)}
+ $("#q").value="";renderChats();openChat(c.id)}
+{const _rc=renderChats;renderChats=function(){const r=_rc.apply(this,arguments);try{lkGS()}catch(e){}return r}}
+function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
  initUser();renderChats();renderContacts();show("chats")};
@@ -1919,7 +1952,7 @@ function bdOpen(){const T=g2j(new Date()),fa=CFG.lang==="fa",v=$("#ed_bday").val
  $("#dobNo").onclick=close;$("#dobClr").onclick=()=>{$("#ed_bday").value="";bdShow();close()};
  $("#dobOk").onclick=()=>{if(!y||!m||!d){toast(fa?"سال، ماه و روز را انتخاب کنید":"Pick year, month and day");return}const g=j2g(y,m,d),p=n=>String(n).padStart(2,"0");$("#ed_bday").value=g[0]+"-"+p(g[1])+"-"+p(g[2]);bdShow();close()};
  $("#dobov").classList.add("on")}
-function initUser(){const u=S.user;u.pass=$("#pw").value;u.last=S.signup?($("#nm2")?$("#nm2").value.trim():""):"";u.bio="";u.bday="";u.photo="";u.username=(u.email.split("@")[0].toLowerCase().match(/^[a-z0-9_]*[a-z0-9][a-z0-9_]*$/)||[""])[0];fillMe()}
+function initUser(){const u=S.user;u.pass=$("#pw").value;u.last=S.signup?($("#nm2")?$("#nm2").value.trim():""):"";u.bio="";u.bday="";u.photo="";u.username=u.username||(u.email.split("@")[0].toLowerCase().match(/^[a-z0-9_]*[a-z0-9][a-z0-9_]*$/)||[""])[0];fillMe()}
 function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
  $("#myname").textContent=f;$("#myname2").textContent=f;$("#pf_name").textContent=f;
  $("#myinfo").textContent=u.email+(u.username?" • @"+u.username:"");
