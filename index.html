@@ -1727,12 +1727,12 @@ const lkRec=m=>[m.from===S.user.id?"me":"ot",m.text,lkHM(m.at),lkAgo(m.at),0,nul
 /* چت محلی | Local Chat: چت کاربر مقابل را در لیست پیدا می‌کند و اگر نبود می‌سازد (find or create the chat row in the list) */
 function lkChatOf(uid,name,un){let c=CHATS.find(x=>x.uid===uid);if(!c){c={id:lkCid(uid),n:name||un||"User",m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(un||name||uid),uid:uid,uname:un};CHATS.push(c)}return c}
 /* بارگیری گفتگو | Load Chat: پیام‌های سرور این گفتگو را می‌گیرد و اگر چیزی عوض شده بود صفحه را تازه می‌کند (fetch server messages, redraw if changed) */
-function lkLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
+function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
  LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;const old=(CFG.sent[c.id]||[]).length;CFG.sent[c.id]=L.map(lkRec);saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&L.length!==old){S.lastD=null;$("#msgs").innerHTML="";chatMsgs(c).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]));lkLastUp()}
   renderChats()}).catch(()=>{c.lkb=0})}
 /* قلاب باز شدن گفتگو | Open Hook: بعد از باز شدن هر گفتگوی واقعی پیام‌های سرور هم گرفته می‌شود (after opening a real chat, load its server messages) */
-{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkLoad(id)}catch(e){}return r}}
+{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id)}catch(e){}return r}}
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
 function lkReal(c,v){if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
  c.lks=(c.lks||0)+1;lkSyncPreview(c);bumpChat(c);saveCfg();renderChats();
@@ -1745,7 +1745,7 @@ function lkIn(m){if(!S.user||!m||m.from===S.user.id||LKC.seen[m.id]||m.kind!=="t
  const c=CHATS.find(x=>x.uid===m.from);if(c)go(c);else LKA.user(m.from).then(u=>go(lkChatOf(u.id,u.name,u.username))).catch(()=>{})}
 /* بررسی دوره‌ای | Fallback Poll: هر ۱۵ ثانیه اگر صفحه باز باشد چت‌ها را چک می‌کند تا اگر دریافت زنده قطع شد پیامی گم نشود (every 15s safety check) */
 function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)return;
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkLoad(c.id)}}});renderChats()}).catch(()=>{})}
+ LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(()=>{})}
 /* شروع | Start: بعد از ورود، چت‌های سرور را می‌آورد و دریافت زنده و بررسی دوره‌ای را روشن می‌کند (load chats, start live receive) */
 function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;
  LKC.un=LKA.listen(S.user.id,lkIn);
