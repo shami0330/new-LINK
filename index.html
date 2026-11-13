@@ -3665,99 +3665,134 @@ vn.addEventListener("pointerdown",e=>{if(!e.target.closest(".vns"))return;clearT
 ["pointerup","pointercancel","pointerleave"].forEach(t=>vn.addEventListener(t,()=>clearTimeout(vLT)));
 document.addEventListener("click",e=>{const r=e.target.closest("#vnsp div");if(r){vSetSpd(+r.dataset.v);return}},true);
 document.addEventListener("pointerdown",e=>{if(!e.target.closest("#vnsp")&&!e.target.closest(".vns"))vSpdClose()},true);
-/* ===== حباب پلیر موزیک | Music Player Bubble: فایل صوتیِ غیر از ویس (mp3، m4a، wav و...) که در گفتگو فرستاده شود حباب پلیر می‌گیرد: پخش و مکث، نوار زمان که می‌شود کشید، ۱۰ ثانیه عقب و جلو، توقف، سرعت، و یک نوار آکوردئونی با فهرست همه‌ی موزیک‌های همین گفتگو که با زدن روی هر کدام پخش می‌شود (audio files other than voice get a player bubble: play/pause, draggable timeline, 10s back/forward, stop, speed, and an accordion listing all music of this chat) ===== */
+/* ===== حباب پلیر موزیک | Music Player Bubble: فایل صوتیِ غیر از ویس (mp3، m4a، wav و...) در گفتگو به جای حباب معمولی خودش یک پلیر است: عکس آلبوم، نام آهنگ و خواننده، نوار زمان، قبلی/پخش/بعدی و یک فهرست باز‌شدنی از موزیک‌های گفتگو (audio files other than voice are themselves a player instead of a normal bubble: cover, title and artist, timeline, previous/play/next and an expandable list of the chat's music) ===== */
 Object.assign(FA,{"Music in this chat":"موزیک‌های این گفتگو"});
-/* ظاهر پلیر موزیک | Music Player Style: رنگ و اندازه‌ی حباب پلیر، نوار زمان، دکمه‌ها و نوار آکوردئونی (colors and sizes of the player, timeline, buttons and accordion) */
+/* ظاهر پلیر | Player Style: خود حباب پیام به رنگ عکس آلبوم درمی‌آید و اندازه‌ی آن جمع‌وجور است (the message bubble itself takes the cover's color and stays compact) */
 (function(){const s=document.createElement("style");s.textContent=`
-.lkmu{direction:ltr;display:flex;flex-direction:column;gap:4px;min-width:240px;padding:4px 6px 0;white-space:normal}
-.lkmu .mh{display:flex;align-items:center;gap:10px}
-.lkmu .mpb{width:42px;height:42px;border-radius:50%;background:#fff;color:var(--bubOut);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
-.b.ot .lkmu .mpb{background:var(--blue);color:#fff}
-.lkmu .mt{flex:1;min-width:0;display:flex;flex-direction:column}
-.lkmu .mt b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lkmu .mt span{font-size:12px;opacity:.7}
-.lkmu .msk{-webkit-appearance:none;appearance:none;width:100%;height:18px;margin:2px 0 0;background:transparent;color:inherit;touch-action:none;cursor:pointer}
-.lkmu .msk::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,currentColor var(--p,0%),rgba(128,128,128,.35) var(--p,0%))}
-.lkmu .msk::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-4px;border-radius:50%;background:currentColor;border:0}
-.lkmu .msk::-moz-range-track{height:4px;border-radius:2px;background:rgba(128,128,128,.35)}
-.lkmu .msk::-moz-range-progress{height:4px;border-radius:2px;background:currentColor}
-.lkmu .msk::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:currentColor;border:0}
-.lkmu .mtm{display:flex;justify-content:space-between;font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
-.lkmu .mc{display:flex;align-items:center;justify-content:space-between}
-.lkmu .mcb{min-width:34px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:700}
-.lkmu:not(.cur) .mst,.lkmu:not(.cur) .mbk,.lkmu:not(.cur) .mfw{opacity:.4}
-.lkmu .mtg svg{transform:rotate(180deg);transition:transform .25s}
-.lkmu.open .mtg svg{transform:none}
+.b.mm:has(.lkmu){padding:0;background:linear-gradient(100deg,rgb(var(--ic,60,24,18)) 0%,#140a0a 100%)!important;color:#fff}
+.b.mm:has(.lkmu) small{color:rgba(255,255,255,.55)!important;padding:0 14px 6px}
+.lkmu{direction:ltr;display:flex;flex-direction:column;gap:2px;min-width:272px;padding:12px 14px 0;white-space:normal;color:#fff}
+.lkmu .mt1{display:flex;align-items:center;gap:12px;height:60px}
+.lkmu .mcv{width:60px;height:60px;border-radius:9px;background:#2a2a2c center/cover;flex:none;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);cursor:pointer}
+.lkmu .mcv.nc svg{display:block}
+.lkmu .mcv:not(.nc) svg{display:none}
+.lkmu .mtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.lkmu .mtt{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lkmu .mta{font-size:14px;color:rgba(255,255,255,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lkmu .mbr{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}
+.lkmu .mbr span{min-width:30px}
+.lkmu .mbr span:last-child{text-align:right}
+.lkmu input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:18px;margin:0;background:transparent;touch-action:none;cursor:pointer}
+.lkmu input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,rgba(255,255,255,.7) var(--p,0%),rgba(255,255,255,.2) var(--p,0%))}
+.lkmu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1px;height:6px;background:transparent;border:0}
+.lkmu input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.2)}
+.lkmu input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:rgba(255,255,255,.7)}
+.lkmu input[type=range]::-moz-range-thumb{width:1px;height:6px;background:transparent;border:0}
+.lkmu .mk{display:grid;grid-template-columns:repeat(5,1fr);align-items:center;justify-items:center;height:46px}
+.lkmu .mk>div{display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lkmu .mk .dis{opacity:.3;pointer-events:none}
+.lkmu .mls{color:rgba(255,255,255,.55)}
+.lkmu.open .mls{color:#fff}
 .lkmu .mac{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
 .lkmu.open .mac{grid-template-rows:1fr}
 .lkmu .mai{overflow:hidden;min-height:0}
-.lkmu .mah{font-size:12px;opacity:.75;padding:4px 4px 2px}
-.lkmu .mr{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;cursor:pointer;font-size:13px}
-.lkmu .mr.on{background:rgba(128,128,128,.25)}
+.lkmu .mli{max-height:170px;overflow:auto;touch-action:pan-y;padding-bottom:8px}
+.lkmu .mah{font-size:12px;color:rgba(255,255,255,.55);padding:0 4px 4px}
+.lkmu .mr{display:flex;align-items:center;gap:8px;height:36px;padding:0 6px;border-radius:10px;font-size:14px;cursor:pointer}
+.lkmu .mr.on{background:rgba(255,255,255,.14)}
 .lkmu .mri{width:18px;display:flex;justify-content:center;flex:none}
 .lkmu .mrn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lkmu .mrd{font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
-.b.mm:has(.lkmu){padding:3px}`;document.head.appendChild(s)})();
-/* داده پلیر | Music Data: پسوندهای صوتی، مدت هر آهنگ و آهنگی که الان پخش می‌شود (audio extensions, duration of each track and the playing track) */
+.lkmu .mrd{font-size:12px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}`;document.head.appendChild(s)})();
+/* داده پلیر | Music Data: پسوندهای صوتی، مدت و اطلاعات هر آهنگ و آهنگ در حال پخش (audio extensions, duration and tags of each track and the playing track) */
 const MUR=/\.(mp3|m4a|wav|ogg|oga|aac|flac|opus|wma|weba)$/i,MUMIME={mp3:"audio/mpeg",m4a:"audio/mp4",wav:"audio/wav",ogg:"audio/ogg",oga:"audio/ogg",aac:"audio/aac",flac:"audio/flac",opus:"audio/ogg",weba:"audio/webm"};
 const muMime=n=>MUMIME[(n.split(".").pop()||"").toLowerCase()]||"audio/mpeg";
 const mf=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
-let mu=null,muSpd=1,muDrag=0,muBusy=null,muPF=null;const MD={};
-const MUI={stop:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>',
- bk:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><text x="12" y="15.5" font-size="8" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">10</text></svg>',
- fw:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><text x="12" y="15.5" font-size="8" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">10</text></svg>'};
-/* ساخت حباب پلیر | Build Player Bubble: HTML یک فایل صوتی؛ دکمه‌ی دانلود قبلی هم می‌ماند (HTML of one audio file; the old download button stays) */
-const muHtml=x=>'<div class="lkbody lkmu" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><div class="mh"><div class="mpb">'+ic("play",20)+'</div><div class="mt"><b dir="auto">'+esc(x.n)+'</b><span>'+esc((x.n.split(".").pop()||"").toUpperCase().slice(0,4))+' · '+fmtSize(x.s)+'</span></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><input class="msk" type="range" min="0" max="1000" value="0" aria-label="timeline"><div class="mtm"><span class="mcu">0:00</span><span class="mdu">'+(MD[x.id]?mf(MD[x.id]):"--:--")+'</span></div><div class="mc"><div class="mcb mst">'+MUI.stop+'</div><div class="mcb mbk">'+MUI.bk+'</div><div class="mcb mfw">'+MUI.fw+'</div><div class="mcb msp">1X</div><div class="mcb mtg">'+chev+'</div></div><div class="mac"><div class="mai"></div></div></div>';
-/* جایگزینی حباب فایل | Hook Files Bubble: فایل‌های صوتی حباب پلیر می‌گیرند و بقیه‌ی فایل‌ها مثل قبل می‌مانند؛ در حال ارسال همان ظاهر قبلی (audio files get the player, other files stay as before; while sending the old look stays) */
+const muNm=n=>String(n||"").replace(/\.[^.]+$/,"").replace(/_+/g," ");
+let mu=null,muDrag=0,muBusy=null;const MD={},META={};
+const MUS={
+ pv:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M11 6v12L2.5 12zM20.5 6v12L12 12z"/></svg>',
+ nx:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M13 6v12l8.5-6zM3.5 6v12L12 12z"/></svg>',
+ pa:'<svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="5" height="18" rx="1.6"/><rect x="14" y="3" width="5" height="18" rx="1.6"/></svg>',
+ pl:'<svg width="38" height="38" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8z"/></svg>',
+ pas:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="5" height="18" rx="1.6"/><rect x="14" y="3" width="5" height="18" rx="1.6"/></svg>',
+ pls:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8z"/></svg>',
+ ls:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+ nt:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>'};
+/* ساخت پلیر | Build Player: HTML پلیرِ یک فایل صوتی؛ دکمه‌ی دانلود قبلی بالا سمت راست می‌ماند (HTML of the player of one audio file; the old download button stays at the top right) */
+const muHtml=x=>'<div class="lkbody lkmu" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><div class="mt1"><div class="mcv nc">'+MUS.nt+'</div><div class="mtx"><div class="mtt" dir="auto">'+esc(muNm(x.n))+'</div><div class="mta" dir="auto"></div></div><div class="lkdl" data-dl="'+x.id+'" data-n="'+esc(x.n)+'">'+lkDlI+'</div></div><div class="mbr"><span class="mcu">0:00</span><input class="msk" type="range" min="0" max="1000" value="0"><span class="mre">'+(MD[x.id]?"-"+mf(MD[x.id]):"-0:00")+'</span></div><div class="mk"><div></div><div class="mpv dis">'+MUS.pv+'</div><div class="mpp">'+MUS.pl+'</div><div class="mnx dis">'+MUS.nx+'</div><div class="mls">'+MUS.ls+'</div></div><div class="mac"><div class="mai"><div class="mli"></div></div></div></div>';
+/* جایگزینی حباب فایل | Hook Files Bubble: فایل‌های صوتی پلیر می‌گیرند و بقیه‌ی فایل‌ها مثل قبل می‌مانند؛ در حال ارسال همان ظاهر قبلی (audio files get the player, other files stay as before; while sending the old look stays) */
 const _bodyMu=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="files"&&!o.pend&&o.it.some(x=>MUR.test(x.n||""))){const ot=o.it.filter(x=>!MUR.test(x.n||""));return o.it.filter(x=>MUR.test(x.n||"")).map(muHtml).join("")+(ot.length?_bodyMu(Object.assign({},o,{it:ot})):"")}return _bodyMu(o)};
 /* فهرست موزیک‌های گفتگو | Chat Music List: همه‌ی فایل‌های صوتی (بدون ویس) گفتگوی باز به ترتیب ارسال (all non-voice audio files of the open chat in order) */
 function muList(){const o=[],seen={};document.querySelectorAll("#msgs .b:not(.pend)").forEach(b=>{const k=lkDec(b.dataset.t);if(k&&k.k==="files")k.it.forEach(x=>{if(MUR.test(x.n||"")&&!seen[x.id]){seen[x.id]=1;o.push({id:x.id,n:x.n})}})});return o}
-/* پر کردن آکوردئون | Fill Accordion: ردیف‌های فهرست موزیک داخل نوار آکوردئونی ساخته می‌شود (builds the rows inside the accordion) */
-function muFill(el){const L=muList();el.querySelector(".mai").innerHTML='<div class="mah">'+tr("Music in this chat")+' · '+L.length+'</div>'+L.map(x=>'<div class="mr" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><span class="mri"></span><span class="mrn" dir="auto">'+esc(x.n)+'</span><span class="mrd"></span></div>').join("");muUi()}
-/* بروزرسانی ظاهر | Refresh Player UI: دکمه‌ی پخش/مکث، نوار زمان، زمان‌ها، سرعت و ردیف‌های آکوردئون در همه‌ی حباب‌ها (play/pause icon, timeline, times, speed and accordion rows in every bubble) */
-function muUi(){const d=mu&&mu.a,pl=!!d&&!d.paused;
- document.querySelectorAll("#msgs .lkmu").forEach(el=>{const id=el.dataset.mid,on=!!mu&&mu.id===id;el.classList.toggle("cur",on);
-  const pb=el.querySelector(".mpb"),w=on&&pl?"pause":"play";if(pb.dataset.s!==w){pb.dataset.s=w;pb.innerHTML=ic(w,20)}
-  const D=on&&isFinite(d.duration)&&d.duration>0?d.duration:(MD[id]||0),T=on?d.currentTime:0,sk=el.querySelector(".msk");
-  if(!(muDrag&&on))sk.value=D?Math.round(Math.min(1,T/D)*1000):0;sk.style.setProperty("--p",(sk.value/10)+"%");
-  el.querySelector(".mcu").textContent=mf(T);el.querySelector(".mdu").textContent=D?mf(D):"--:--";el.querySelector(".msp").textContent=muSpd+"X"});
- document.querySelectorAll("#msgs .lkmu .mr").forEach(r=>{const id=r.dataset.mid,on=!!mu&&mu.id===id,w=on&&pl?"pause":"play",i=r.querySelector(".mri");r.classList.toggle("on",on);if(i.dataset.s!==w){i.dataset.s=w;i.innerHTML=ic(w,14)}const D=on&&isFinite(d.duration)&&d.duration>0?d.duration:MD[id];r.querySelector(".mrd").textContent=D?mf(D):""})}
-/* توقف | Stop Music: آهنگ قطع و نوار زمان به صفر برمی‌گردد (music stops and the timeline returns to zero) */
-function muStop(){if(!mu)return;const a=mu.a;mu=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}muUi()}
-/* پخش | Play Music: پخش یا مکث یک آهنگ؛ پخش آهنگ تازه، ویس یا آهنگ دیگر را قطع می‌کند؛ f جای شروع (۰ تا ۱) است (play or pause one track; starting a track stops any voice or other track; f is the start position 0..1) */
+/* خواندن اطلاعات آهنگ | Read Song Tags: از برچسب ID3 فایل mp3 نام آهنگ، خواننده و عکس آلبوم خوانده می‌شود و از عکس رنگ زمینه‌ی جزیره ساخته می‌شود؛ اگر نبود از نام فایل استفاده می‌شود (reads title, artist and cover from the ID3 tag of an mp3 and picks the island color from the cover; falls back to the file name) */
+async function muMeta(id,b){if(META[id])return META[id];const m=META[id]={t:"",a:"",img:"",col:""};
+ try{const h=new Uint8Array(await b.slice(0,10).arrayBuffer());
+  if(h[0]===73&&h[1]===68&&h[2]===51){const v=h[3],ss=(a,i)=>((a[i]&127)<<21)|((a[i+1]&127)<<14)|((a[i+2]&127)<<7)|(a[i+3]&127),n=Math.min(ss(h,6),12e6),u=new Uint8Array(await b.slice(10,10+n).arrayBuffer()),dv=new DataView(u.buffer);let p=0;
+   const dec=(e,x)=>{let l="windows-1252";if(e===3)l="utf-8";else if(e===1||e===2){l=e===2?"utf-16be":"utf-16le";if(x[0]===255&&x[1]===254){l="utf-16le";x=x.subarray(2)}else if(x[0]===254&&x[1]===255){l="utf-16be";x=x.subarray(2)}}try{return new TextDecoder(l).decode(x).split("\0")[0].trim()}catch(_){return""}};
+   if(h[5]&64)p=v===4?ss(u,0):dv.getUint32(0)+4;
+   const il=v===2?3:4,hl=v===2?6:10;
+   while(p+hl<=n){const fid=String.fromCharCode(...u.subarray(p,p+il));if(!/^[A-Z0-9]+$/.test(fid))break;
+    const fs=v===2?(u[p+3]<<16)|(u[p+4]<<8)|u[p+5]:v===4?ss(u,p+4):dv.getUint32(p+4);if(!fs)break;const d=u.subarray(p+hl,p+hl+fs);p+=hl+fs;
+    if(fid==="TIT2"||fid==="TT2")m.t=dec(d[0],d.subarray(1));
+    else if(fid==="TPE1"||fid==="TP1")m.a=dec(d[0],d.subarray(1));
+    else if((fid==="APIC"||fid==="PIC")&&!m.img){const e=d[0];let q=1,mime="";
+     if(v===2){mime=String.fromCharCode(d[1],d[2],d[3]).toLowerCase()==="png"?"image/png":"image/jpeg";q=4}else{let z=q;while(z<d.length&&d[z])z++;mime=String.fromCharCode(...d.subarray(q,z));q=z+1}
+     q++;if(e===1||e===2){while(q+1<d.length&&!(d[q]===0&&d[q+1]===0))q+=2;q+=2}else{while(q<d.length&&d[q])q++;q++}
+     const im=d.subarray(q);if(im.length>100){if(!/^image\/[a-z]/.test(mime))mime=im[0]===137?"image/png":"image/jpeg";m.img=URL.createObjectURL(new Blob([im],{type:mime}))}}}}
+  if(m.img)await new Promise(ok=>{const im=new Image();im.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=8;const x=c.getContext("2d");x.drawImage(im,0,0,8,8);const q=x.getImageData(0,0,8,8).data;let r=0,g=0,bb=0;for(let i=0;i<q.length;i+=4){r+=q[i];g+=q[i+1];bb+=q[i+2]}const k=q.length/4;m.col=[r,g,bb].map(c=>Math.round(c/k*.45)).join(",")}catch(_){}ok()};im.onerror=ok;im.src=m.img})
+ }catch(e){}
+ return m}
+/* ردیف‌های فهرست | List Rows: موزیک‌های گفتگو داخل بخش بازشونده‌ی همین پلیر (the chat's music inside the expandable part of this player) */
+function muFill(el){const L=muList();el.querySelector(".mli").innerHTML='<div class="mah">'+tr("Music in this chat")+' · '+L.length+'</div>'+L.map(x=>'<div class="mr" data-mid="'+x.id+'" data-n="'+esc(x.n)+'"><span class="mri"></span><span class="mrn" dir="auto">'+esc((META[x.id]&&META[x.id].t)||muNm(x.n))+'</span><span class="mrd"></span></div>').join("");muUi()}
+/* بروزرسانی ظاهر | Refresh Player UI: همه‌ی پلیرهای گفتگو با صدا هماهنگ می‌شوند (نام، عکس، رنگ، آیکن پخش، نوار و زمان، قبلی/بعدی، ردیف‌های فهرست) (every player of the chat is synced with the audio) */
+function muUi(){const d=mu&&mu.a,pl=!!d&&!d.paused,L=muList(),ci=mu?L.findIndex(x=>x.id===mu.id):-1,st=(e,t)=>{if(e.textContent!==t)e.textContent=t};
+ document.querySelectorAll("#msgs .lkmu").forEach(el=>{const id=el.dataset.mid,on=!!mu&&mu.id===id,m=META[id]||{},b=el.closest(".b");
+  const D=on&&isFinite(d.duration)&&d.duration>0?d.duration:(MD[id]||0),T=on?d.currentTime:0;
+  st(el.querySelector(".mtt"),m.t||muNm(el.dataset.n));st(el.querySelector(".mta"),m.a||(b&&b.dataset.w==="me"?tr("You"):(($("#cname")||{}).textContent||"")));
+  const cv=el.querySelector(".mcv"),u=m.img||"";if(cv.dataset.u!==u){cv.dataset.u=u;cv.style.backgroundImage=u?'url("'+u+'")':"";cv.classList.toggle("nc",!u)}
+  if(b&&b.dataset.c!==(m.col||"")){b.dataset.c=m.col||"";if(m.col)b.style.setProperty("--ic",m.col);else b.style.removeProperty("--ic")}
+  const pp=el.querySelector(".mpp"),w=on&&pl?"pa":"pl";if(pp.dataset.s!==w){pp.dataset.s=w;pp.innerHTML=MUS[w]}
+  const sk=el.querySelector(".msk");if(!(muDrag&&on))sk.value=D?Math.round(Math.min(1,T/D)*1000):0;sk.style.setProperty("--p",(sk.value/10)+"%");
+  st(el.querySelector(".mcu"),mf(T));st(el.querySelector(".mre"),D?"-"+mf(D-T):"-0:00");
+  el.querySelector(".mpv").classList.toggle("dis",!on||ci<=0);el.querySelector(".mnx").classList.toggle("dis",!on||ci<0||ci>=L.length-1);
+  el.querySelectorAll(".mr").forEach(r=>{const o=!!mu&&mu.id===r.dataset.mid,ri=r.querySelector(".mri"),k=o&&pl?"pas":"pls";r.classList.toggle("on",o);if(ri.dataset.s!==k){ri.dataset.s=k;ri.innerHTML=MUS[k]}const dd=o&&D?D:MD[r.dataset.mid];st(r.querySelector(".mrd"),dd?mf(dd):"");const t=(META[r.dataset.mid]||{}).t;if(t)st(r.querySelector(".mrn"),t)})})}
+/* توقف | Stop Music: آهنگ قطع می‌شود و نوار زمان به صفر برمی‌گردد (music stops and the timeline returns to zero) */
+function muStop(){if(mu){const a=mu.a;mu=null;try{a.pause();URL.revokeObjectURL(a.src)}catch(e){}}muUi()}
+/* پخش | Play Music: پخش یا مکث یک آهنگ؛ شروع آهنگ تازه ویس یا آهنگ قبلی را قطع می‌کند؛ f جای شروع (۰ تا ۱) است (play or pause one track; starting a track stops any voice or other track; f is the start position 0..1) */
 async function muPlay(id,name,f){
  if(mu&&mu.id===id){if(mu.a.paused)mu.a.play().catch(()=>{});else mu.a.pause();muUi();return}
- if(muBusy===id){if(f!=null)muPF=f;return}
- muBusy=id;muPF=f==null?null:f;
+ if(muBusy===id)return;muBusy=id;
  try{muStop();try{stopCur()}catch(e){}
   let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
   if(!b){toast("File removed from cache");return}
   if(!b.type)b=new Blob([b],{type:muMime(name||"")});
-  const a=new Audio(URL.createObjectURL(b));a.playbackRate=muSpd;mu={a,id,name};
+  const a=new Audio(URL.createObjectURL(b));mu={a,id,name};
   a.ontimeupdate=muUi;a.onplay=a.onpause=muUi;a.onended=muEnded;
-  a.onloadedmetadata=()=>{if(isFinite(a.duration)){MD[id]=a.duration;if(muPF!=null){a.currentTime=muPF*a.duration;muPF=null}}muUi()};
+  a.onloadedmetadata=()=>{if(isFinite(a.duration))MD[id]=a.duration;muUi()};
+  muMeta(id,b).then(muUi);
   try{await a.play()}catch(e){toast("Cannot play this audio");muStop();return}
+  if(f!=null&&MD[id])a.currentTime=f*MD[id];
   muUi()}finally{muBusy=null}}
-/* پایان آهنگ | Track Ended: بعد از تمام شدن آهنگ، آهنگ بعدیِ گفتگو خودکار پخش می‌شود (the next track of the chat plays automatically) */
-function muEnded(){if(!mu)return;const id=mu.id,L=muList(),i=L.findIndex(x=>x.id===id),nx=i>=0?L[i+1]:null;muStop();if(nx)muPlay(nx.id,nx.n)}
-/* لمس دکمه‌ها | Player Taps: پخش، توقف، ۱۰ ثانیه عقب/جلو، سرعت، باز و بسته شدن آکوردئون، و پخش از ردیف فهرست (play, stop, 10s back/forward, speed, accordion toggle, play from a list row) */
+/* پایان آهنگ | Track Ended: بعد از تمام شدن، آهنگ بعدیِ گفتگو خودکار پخش می‌شود (the next track of the chat plays automatically) */
+function muEnded(){if(!mu)return;const L=muList(),i=L.findIndex(x=>x.id===mu.id),nx=i>=0?L[i+1]:null;if(nx)muPlay(nx.id,nx.n);else muStop()}
+/* قبلی و بعدی | Previous Next: رفتن به آهنگ قبلی یا بعدیِ همین گفتگو؛ اگر نبود کاری نمی‌کند (goes to the previous or next track of the chat; does nothing if there is none) */
+function muStep(k){if(!mu)return;const L=muList(),i=L.findIndex(x=>x.id===mu.id),x=i<0?null:L[i+k];if(x)muPlay(x.id,x.n)}
+/* لمس پلیر | Player Taps: پخش/مکث (دکمه، عکس یا نام)، قبلی، بعدی، باز و بسته شدن فهرست و پخش از ردیف فهرست؛ دکمه‌ی دانلود مثل قبل کار می‌کند (play/pause, previous, next, list toggle and play from a row; the download button works as before) */
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkmu");if(!el||e.target.closest(".lkdl"))return;e.stopPropagation();const t=e.target;if(t.closest(".msk"))return;e.preventDefault();
- const id=el.dataset.mid,on=!!mu&&mu.id===id,r=t.closest(".mr");
+ const id=el.dataset.mid,r=t.closest(".mr");
  if(r)muPlay(r.dataset.mid,r.dataset.n);
- else if(t.closest(".mpb"))muPlay(id,el.dataset.n);
- else if(t.closest(".mst")){if(on)muStop()}
- else if(t.closest(".mbk")){if(on){mu.a.currentTime=Math.max(0,mu.a.currentTime-10);muUi()}}
- else if(t.closest(".mfw")){if(on){const D=mu.a.duration;mu.a.currentTime=isFinite(D)?Math.min(D,mu.a.currentTime+10):mu.a.currentTime+10;muUi()}}
- else if(t.closest(".msp")){muSpd=muSpd<1.25?1.25:muSpd<1.5?1.5:muSpd<2?2:1;if(mu)mu.a.playbackRate=muSpd;muUi()}
- else if(t.closest(".mtg")){el.classList.toggle("open");if(el.classList.contains("open"))muFill(el)}},true);
-/* کشیدن نوار زمان | Timeline Drag: کشیدن نوار زمان آهنگ را جابجا می‌کند؛ اگر آهنگ پخش نمی‌شد از همان جا شروع می‌شود؛ لمس نوار گفتگو را نمی‌کشد (dragging the timeline seeks; if the track was idle it starts from there; touching the bar does not scroll or swipe the chat) */
+ else if(t.closest(".mpp,.mcv,.mtx"))muPlay(id,el.dataset.n);
+ else if(t.closest(".mpv"))muStep(-1);
+ else if(t.closest(".mnx"))muStep(1);
+ else if(t.closest(".mls")){el.classList.toggle("open");if(el.classList.contains("open"))muFill(el)}},true);
+/* کشیدن نوار زمان | Timeline Drag: کشیدن نوار آهنگ را جابجا می‌کند؛ روی آهنگی که پخش نمی‌شود از همان جا شروعش می‌کند؛ لمس نوار گفتگو را نمی‌کشد (dragging seeks; on an idle track it starts from there; touching the bar does not swipe the chat) */
 $("#msgs").addEventListener("input",e=>{const sk=e.target.closest&&e.target.closest(".lkmu .msk");if(!sk)return;const el=sk.closest(".lkmu"),id=el.dataset.mid,f=sk.value/1000;
  if(mu&&mu.id===id){const D=mu.a.duration;if(isFinite(D)&&D>0){mu.a.currentTime=f*D;muUi()}}else muPlay(id,el.dataset.n,f)});
 ["pointerdown","touchstart","touchmove","mousedown"].forEach(t=>$("#msgs").addEventListener(t,e=>{if(e.target.closest&&e.target.closest(".lkmu .msk")){if(t==="pointerdown")muDrag=1;e.stopPropagation()}},{capture:true,passive:true}));
 ["pointerup","pointercancel"].forEach(t=>document.addEventListener(t,()=>{muDrag=0}));
-/* مدت آهنگ | Track Duration: مدت هر آهنگ بی‌صدا از فایل خوانده می‌شود تا قبل از پخش دیده شود (the duration is read silently from the file so it shows before playing) */
-async function muProbe(el){el.dataset.pb=1;const id=el.dataset.mid;if(MD[id]){muUi();return}let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return;if(!b.type)b=new Blob([b],{type:muMime(el.dataset.n||"")});const u=URL.createObjectURL(b),a=new Audio();a.preload="metadata";a.onloadedmetadata=()=>{if(isFinite(a.duration))MD[id]=a.duration;URL.revokeObjectURL(u);muUi()};a.onerror=()=>URL.revokeObjectURL(u);a.src=u}
-/* نگهبان حباب‌ها | Bubble Watcher: حباب تازه که آمد مدتش خوانده می‌شود؛ اگر حبابِ آهنگِ در حال پخش از صفحه رفت (مثلاً گفتگو عوض شد) آهنگ قطع می‌شود (reads the duration of new bubbles; stops the music if its bubble leaves the screen, e.g. chat changed) */
+/* اطلاعات و مدت آهنگ | Track Info: برای هر پلیر تازه، مدت و اطلاعات آهنگ (نام، خواننده، عکس) بی‌صدا از فایل خوانده می‌شود تا قبل از پخش دیده شود (for each new player the duration and tags are read silently so they show before playing) */
+async function muProbe(el){el.dataset.pb=1;const id=el.dataset.mid;let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}if(!b)return;if(!b.type)b=new Blob([b],{type:muMime(el.dataset.n||"")});muMeta(id,b).then(muUi);if(MD[id]){muUi();return}const u=URL.createObjectURL(b),a=new Audio();a.preload="metadata";a.onloadedmetadata=()=>{if(isFinite(a.duration))MD[id]=a.duration;URL.revokeObjectURL(u);muUi()};a.onerror=()=>URL.revokeObjectURL(u);a.src=u}
+/* نگهبان پلیرها | Player Watcher: پلیر تازه که آمد اطلاعاتش خوانده می‌شود؛ اگر پلیرِ آهنگِ در حال پخش از صفحه رفت (مثلاً گفتگو عوض شد) آهنگ قطع می‌شود (reads info of new players; stops the music if its player leaves the screen, e.g. chat changed) */
 let muRaf=0;new MutationObserver(()=>{if(muRaf)return;muRaf=requestAnimationFrame(()=>{muRaf=0;if(mu&&!document.querySelector('#msgs .lkmu[data-mid="'+mu.id+'"]')){muStop();return}document.querySelectorAll("#msgs .lkmu:not([data-pb])").forEach(muProbe)})}).observe($("#msgs"),{childList:true,subtree:true});
 /* اتصال به ویس | Voice Link: پخش ویس یا شروع ضبط، موزیک را قطع می‌کند (playing a voice or starting a recording stops the music) */
 const _muPv=playVo;playVo=function(vo,ex){muStop();return _muPv(vo,ex)};
