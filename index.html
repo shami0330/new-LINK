@@ -1565,7 +1565,7 @@ const MP={
  photoFile:{kind:"image",original:true},
  videoChat:{kind:"video",heights:[240,360,480,720,1080],bitrates:{240:4e5,360:7e5,480:12e5,720:25e5,1080:5e6}},
  videoFile:{kind:"video",original:true,vbr:8e6},
- videoMsg:{kind:"video",w:384,h:384,ratio:1,maxSec:60,vbr:1e6,abr:128e3},
+ videoMsg:{kind:"video",w:384,h:384,ratio:1,maxSec:60,vbr:7e5,abr:64e3},
  voice:{kind:"audio",abr:64e3},
  audioFile:{kind:"audio",original:true,abr:64e3},
  file:{kind:"file",original:true}
@@ -2497,7 +2497,7 @@ function lkGDl(el,vm){const id=el.dataset.vid,b=el.closest(".b"),o=b&&lkDec(b.da
  if(LKG[id]){clearInterval(LKG[id]);delete LKG[id];if(vm)h.classList.remove("go");h.innerHTML=lkDlI;if(du)du.textContent=sz;return}
  const tot=Math.max(1500,Math.min(8000,((x&&x.s)||1e6)/1.2e6*1000)),t0=Date.now();if(vm)h.classList.add("go");h.innerHTML=lkRingH.replace('data-ph="c"','data-ph="u"');const rg=h.querySelector(".lkrg");
  LKG[id]=setInterval(()=>{if(!el.isConnected){clearInterval(LKG[id]);delete LKG[id];return}const p=Math.min(1,(Date.now()-t0)/tot);if(rg)rg.style.setProperty("--p",Math.round(Math.max(.08,p)*100));if(du)du.textContent=Math.round(p*100)+"%";
-  if(p>=1){clearInterval(LKG[id]);delete LKG[id];(CFG.dl=CFG.dl||{})[id]=1;saveCfg();el.classList.remove("lkgt");if(vm&&el._v&&el._vis&&!el.classList.contains("pl"))el._v.play().catch(()=>{});if(vm){const g=el.querySelector(".lkdw"),z=el.querySelector(".lkgs");if(g)g.remove();if(z)z.remove()}else{h.innerHTML=ic("play",18);if(du)du.textContent=lkGfd(el.dataset.d)}}},100)}
+  if(p>=1){clearInterval(LKG[id]);delete LKG[id];(CFG.dl=CFG.dl||{})[id]=1;saveCfg();el.classList.remove("lkgt");/* شروع پخش بی‌صدا بعد از دانلود | Silent Start After Download: ویدیو مسیج بعد از پر شدن حلقه خودش ساخته و بی‌صدا و تکراری پخش می‌شود (the video is built and plays muted and looping when the ring completes) */if(vm&&window.vmStartSilent)window.vmStartSilent(el,0);if(vm){const g=el.querySelector(".lkdw"),z=el.querySelector(".lkgs");if(g)g.remove();if(z)z.remove()}else{h.innerHTML=ic("play",18);if(du)du.textContent=lkGfd(el.dataset.d)}}},100)}
 $("#msgs").addEventListener("click",e=>{if($("#chat").classList.contains("sel"))return;const m=e.target.closest(".lkvm.lkgt"),v=m?null:e.target.closest(".lkvo.lkgt .vpb");if(!m&&!v)return;e.stopImmediatePropagation();e.preventDefault();lkGDl(m||v.closest(".lkvo"),!!m)},true);
 (()=>{const st=document.createElement("style");st.textContent=".lkdu[data-rs]:empty{display:none}";document.head.appendChild(st)})();
 function lkCellIn(x,o){if(lkRm(x))return (x.t==="video"?'<span class="lkpl">'+lkPlayI+'</span>':'<span class="lkdw" data-dw="'+x.id+'">'+lkDlI+'</span>')+'<span class="lkdu" data-rs="1">'+lkDlTxt(x)+'</span>';
