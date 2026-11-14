@@ -4852,6 +4852,10 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 #vmfloat circle{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round}`;document.head.appendChild(s)})();
 
 /* ---- ضبط | Recording ---- */
+/* انتخاب دوربین اصلی | Main Camera Picker: برای دوربین پشت فقط لنز اصلی را انتخاب می‌کند (نه واید، تله، ماکرو یا دوگانه/سه‌گانه) تا هنگام ضبط بین لنزها جابه‌جا نشود؛ برای دوربین جلو هم همان دوربین جلو ثابت می‌ماند؛ اگر برچسب‌ها در دسترس نبود، روش معمولی facingMode استفاده می‌شود (picks only the main back lens, not wide, tele, macro or dual/triple, so it never switches lenses; the front stays on the front camera; falls back to plain facingMode) */
+async function vmCamGet(f,vc){const base=vc(f);try{const l=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="videoinput"&&d.deviceId),bad=/ultra|tele|macro|depth|dual|triple|wide angle|0\.5/i,pk=f==="user"?l.find(d=>/front|user|facetime/i.test(d.label)):l.filter(d=>/back|rear|environment/i.test(d.label)&&!bad.test(d.label))[0];
+ if(pk){const c=Object.assign({},base,{deviceId:{exact:pk.deviceId}});delete c.facingMode;try{return await navigator.mediaDevices.getUserMedia({video:c})}catch(e){}}}catch(e){}
+ return navigator.mediaDevices.getUserMedia({video:base})}
 /* موتور ضبط | Video Recorder Engine: دوربین و میکروفن را باز می‌کند؛ تصویر را مربع و با اندازه‌ی MP.videoMsg روی بوم می‌کشد و همراه صدای خام (بدون حذف نویز، بدون اکو‌گیری، بدون تقویت خودکار) ضبط می‌کند. مکث، ادامه، تعویض دوربین و فلش را هم دارد. برمی‌گرداند {v,stop,cancel,pause,resume,flip,torch,seconds} (opens camera and mic, draws a square frame at the MP.videoMsg size and records it with raw audio (no noise suppression, echo cancel or auto gain); supports pause, resume, camera switch and flash) */
 async function vmRec(o){
  const P=MP.videoMsg,vc=f=>({width:{ideal:640},height:{ideal:640},facingMode:{ideal:f}});
@@ -4859,16 +4863,27 @@ async function vmRec(o){
  let vtr=st.getVideoTracks()[0];
  const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}
  const cv=document.createElement("canvas"),x=cv.getContext("2d");cv.width=P.w;cv.height=P.h;x.imageSmoothingQuality="high";
- let off=false,raf=0;
- const draw=()=>{if(off)return;const w=v.videoWidth,h=v.videoHeight;if(w&&h){const q=Math.min(w,h);/* آینه‌ی ویدیو مسیج | Mirror Video Message: دوربین جلو هنگام ارسال آینه می‌شود تا مثل پیش‌نمایش باشد (front camera is mirrored when sent, like the preview) */x.save();if((o.facing||"user")==="user"){x.translate(P.w,0);x.scale(-1,1)}x.drawImage(v,(w-q)/2,(h-q)/2,q,q,0,0,P.w,P.h);x.restore()}raf=requestAnimationFrame(draw)};draw();
- const out=cv.captureStream(30);st.getAudioTracks().forEach(t=>out.addTrack(t));
+ let off=false,raf=0,zm=1;
+ const draw=()=>{if(off)return;const w=v.videoWidth,h=v.videoHeight;if(w&&h){const q=Math.min(w,h);x.save();/* بدون آینه | No Mirror: دوربین جلو هم مثل حالت معمولی (بدون آینه) ضبط می‌شود؛ فقط پیش‌نمایش هنگام ضبط آینه‌ای است (front camera is recorded normally, not mirrored; only the live preview is mirrored) *//* زوم ضبط | Record Zoom: با زوم، بخش کوچک‌تری از وسط تصویر برش می‌خورد (zm=۱ یعنی بدون زوم) */const qz=q/zm;x.drawImage(v,(w-qz)/2,(h-qz)/2,qz,qz,0,0,P.w,P.h);x.restore()}raf=requestAnimationFrame(draw)};draw();
+ const out=cv.captureStream(30);
+ /* تقویت ملایم صدا | Gentle Voice Boost: صدای ویدیو مسیج کمی بلندتر می‌شود (حدود ۱٫۸ برابر) و یک محدودکننده‌ی نرم جلوی ترکیدن صدا را می‌گیرد؛ اگر مرورگر اجازه ندهد، صدای خام بدون تغییر ضبط می‌شود (voice gets a small gain, about 1.8x, with a soft limiter against clipping; if the browser refuses, the raw voice is recorded) */
+ let ac=null;
+ try{const at=st.getAudioTracks();if(at.length){ac=new(window.AudioContext||window.webkitAudioContext)({sampleRate:48000});
+  const sr=ac.createMediaStreamSource(new MediaStream([at[0]])),g=ac.createGain(),cp=ac.createDynamicsCompressor(),ds=ac.createMediaStreamDestination();
+  g.gain.value=1.8;cp.threshold.value=-12;cp.knee.value=20;cp.ratio.value=3;cp.attack.value=.005;cp.release.value=.2;
+  sr.connect(g);g.connect(cp);cp.connect(ds);
+  await Promise.race([ac.resume(),new Promise(ok=>setTimeout(ok,400))]);if(ac.state!=="running")throw 0;
+  ds.stream.getAudioTracks().forEach(t=>out.addTrack(t))}}
+ catch(e){try{ac&&ac.close()}catch(_){}ac=null;st.getAudioTracks().forEach(t=>out.addTrack(t))}
  const mime=mPick(MIME_V),rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:P.vbr,audioBitsPerSecond:P.abr});
  const parts=[],t0=Date.now();let acc=0,seg=Date.now(),cancelled=false,torch=false;
  rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
  const done=new Promise(ok=>{rc.onstop=ok}),end=()=>{if(rc.state!=="inactive"){if(seg){acc+=Date.now()-seg;seg=0}rc.stop()}};
  rc.start(250);
- const result=done.then(async()=>{off=true;cancelAnimationFrame(raf);v.srcObject=null;st.getTracks().forEach(t=>t.stop());try{vtr.stop()}catch(e){}if(cancelled)return null;const th=await new Promise(ok=>{try{cv.toBlob(ok,"image/jpeg",.75)}catch(e){ok(null)}});const m=rc.mimeType||mime,r=mResult(new Blob(parts,{type:m}),"video-message-"+t0,m,P.w,P.h,acc/1000);r.thumb=th;return r});
- return{v,
+ const result=done.then(async()=>{off=true;cancelAnimationFrame(raf);cancelAnimationFrame(zt);try{ac&&ac.close()}catch(_){}v.srcObject=null;st.getTracks().forEach(t=>t.stop());try{vtr.stop()}catch(e){}if(cancelled)return null;const th=await new Promise(ok=>{try{cv.toBlob(ok,"image/jpeg",.75)}catch(e){ok(null)}});const m=rc.mimeType||mime,r=mResult(new Blob(parts,{type:m}),"video-message-"+t0,m,P.w,P.h,acc/1000);r.thumb=th;return r});
+ /* کنترل زوم | Zoom Control: setZoom(عدد از ۱ تا ۴، مدت نرم شدن به میلی‌ثانیه)؛ تصویر پیش‌نمایش و تصویر ضبط‌شده هر دو با هم زوم می‌شوند (sets zoom 1 to 4, optional smooth time in ms; preview and recording zoom together) */
+ let zt=0;const setZ=(z,ms)=>{cancelAnimationFrame(zt);z=Math.min(4,Math.max(1,z||1));if(!ms){zm=z;v.style.scale=zm;return}const z0=zm,t1=performance.now(),st2=n=>{const p=Math.min(1,(n-t1)/ms),e=1-Math.pow(1-p,3);zm=z0+(z-z0)*e;v.style.scale=zm;if(p<1)zt=requestAnimationFrame(st2)};zt=requestAnimationFrame(st2)};
+ return{v,setZoom:setZ,get zoom(){return zm},
   stop:()=>{end();return result},cancel:()=>{cancelled=true;end();return result},
   pause:()=>{if(rc.pause&&rc.state==="recording"){rc.pause();acc+=Date.now()-seg;seg=0}},
   resume:()=>{if(rc.state==="paused"){rc.resume();seg=Date.now()}},
@@ -4877,7 +4892,7 @@ async function vmRec(o){
   get canTorch(){try{return!!(vtr.getCapabilities&&vtr.getCapabilities().torch)}catch(e){return false}},
   get torch(){return torch},
   setTorch:async on=>{await vtr.applyConstraints({advanced:[{torch:!!on}]});torch=!!on},
-  flip:async()=>{const nf=o.facing==="user"?"environment":"user",ns=await navigator.mediaDevices.getUserMedia({video:vc(nf)}),old=vtr;vtr=ns.getVideoTracks()[0];torch=false;v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}try{old.stop()}catch(e){}o.facing=nf;return nf}}}
+  flip:async()=>{const nf=o.facing==="user"?"environment":"user",ns=await vmCamGet(nf,vc),old=vtr;vtr=ns.getVideoTracks()[0];torch=false;v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}try{old.stop()}catch(e){}o.facing=nf;return nf}}}
 
 /* ---- صفحه‌ی ضبط | Record Screen ---- */
 let V=null,UI=null;
@@ -4887,13 +4902,27 @@ function recUI(){if(UI)return UI;const d=document.createElement("div");d.id="vmr
  chat.append(d);UI={d,pv:d.querySelector(".vmpv"),pg:d.querySelector(".pg"),fl:d.querySelector(".vmfl"),fh:d.querySelector(".vmfh"),bar:d.querySelector(".vmbar"),lk:d.querySelector(".vmlk"),btn:d.querySelector(".vmbtn")};
  /* دکمه‌های صفحه‌ی ضبط | Record Screen Buttons: تعویض دوربین، فلش، مکث، ارسال و لغو بعد از قفل */
  UI.fl.onclick=()=>{const o=V;if(!o||!o.rec)return;o.rec.flip().then(()=>{o.rec.v.classList.toggle("mir",o.facing==="user");recTorchLook(o)}).catch(()=>toast("Could not switch camera"))};
- UI.fh.onclick=()=>{const o=V;if(!o||!o.rec)return;if(!o.rec.canTorch){toast("Flash not available");return}o.rec.setTorch(!o.rec.torch).then(()=>recTorchLook(o)).catch(()=>toast("Flash not available"))};
+ UI.fh.onclick=()=>{const o=V;if(!o||!o.rec)return;/* فلش دوربین جلو | Front Flash: دوربین جلو چراغ ندارد؛ به‌جایش صفحه سفید می‌شود */if((o.facing||"user")==="user"){recScreenFlash(o);return}if(!o.rec.canTorch){toast("Flash not available");return}o.rec.setTorch(!o.rec.torch).then(()=>recTorchLook(o)).catch(()=>toast("Flash not available"))};
  UI.lk.onclick=()=>{const o=V;if(o&&o.locked)recStop(o)};
  UI.btn.onclick=()=>{const o=V;if(o&&o.locked)recFinish(o)};
+ /* وصل کردن زوم | Connect Zoom: زوم دو انگشتی روی صفحه‌ی ضبط (در بخش «زوم و فلش صفحه» پایین‌تر) */recGestures(d);
  d.addEventListener("click",e=>{if(e.target.closest(".vmcn,.vmtr")&&V)recDiscard(V)});
  return UI}
 /* حالت فلش | Flash Look: آیکن فلش روشن یا خاموش یا غیرفعال (اگر دوربین فلش ندارد کم‌رنگ) */
-function recTorchLook(o){const r=o.rec;UI.fh.innerHTML=r.torch?I.fl:I.flo;UI.fh.classList.toggle("off",!r.canTorch)}
+function recTorchLook(o){const r=o.rec,fr=(o.facing||"user")==="user",on=fr?!!o.sf:r.torch;UI.fh.innerHTML=on?I.fl:I.flo;UI.fh.classList.toggle("off",!fr&&!r.canTorch);UI.d.classList.toggle("sf",fr&&!!o.sf)}
+/* ---- زوم و فلش صفحه | Zoom And Screen Flash ---- */
+/* فلش صفحه | Screen Flash: روشن و خاموش کردن فلش دوربین جلو؛ صفحه‌ی ضبط سفید می‌شود تا نور سفید به صورت بتابد (مثل تلگرام) */
+function recScreenFlash(o){o.sf=!o.sf;recTorchLook(o)}
+/* زوم دو انگشتی | Pinch Zoom: با دو انگشت روی صفحه‌ی ضبط زوم می‌شود. اگر هر دو انگشت رها شوند زوم نرم به حالت اول برمی‌گردد؛ تا وقتی حتی یک انگشت روی صفحه است زوم همان‌طور می‌ماند (two fingers zoom; when all fingers lift the zoom smoothly returns to normal; while even one finger stays, the zoom stays) */
+function recGestures(d){
+ const P=new Map();let d0=0,z0=1;
+ const dist=()=>{const a=[...P.values()];return a.length>1?Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y):0},rc=()=>V&&V.rec&&!V.done&&V.rec.setZoom?V.rec:null;
+ d.addEventListener("pointerdown",e=>{if(!rc()||(e.target.closest&&e.target.closest(".vmib,.vmbtn,.vmlk,.vmbar")))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});if(P.size>=2){d0=dist()||1;z0=rc().zoom;rc().setZoom(z0)}});
+ d.addEventListener("pointermove",e=>{const p=P.get(e.pointerId);if(!p)return;p.x=e.clientX;p.y=e.clientY;const r=rc();if(r&&P.size>=2&&d0)r.setZoom(z0*dist()/d0)});
+ const up=e=>{if(!P.delete(e.pointerId))return;const r=rc();if(P.size>=2){d0=dist()||1;z0=r?r.zoom:1}else if(P.size===1){d0=0}else{d0=0;if(r)r.setZoom(1,250)}};
+ d.addEventListener("pointerup",up);d.addEventListener("pointercancel",up)}
+/* استایل فلش صفحه | Screen Flash Style: وقتی فلش جلو روشن است پس‌زمینه سفید و نوشته‌ها تیره می‌شوند */
+(()=>{const s=document.createElement("style");s.textContent="#vmrec.sf{background:#fff;color:#111;-webkit-backdrop-filter:none;backdrop-filter:none}#vmrec.sf .vmib,#vmrec.sf .vmbar,#vmrec.sf .vmlk{background:rgba(0,0,0,.08)}#vmrec.sf .vmrg .tk{stroke:rgba(0,0,0,.15)}#vmrec.sf .vmrg .pg{stroke:#111}";document.head.appendChild(s)})();
 /* جای دکمه‌ها | Place Buttons: نوار و دکمه‌ها را دقیقاً روی نوار پیام و دکمه‌ی ارسال می‌گذارد؛ در زبان راست‌به‌چپ آینه می‌شود */
 function recPlace(o){const cr=chat.getBoundingClientRect(),sr=snd.getBoundingClientRect(),right=sr.left-cr.left>cr.width/2;o.right=right;
  const cx=sr.left-cr.left+sr.width/2,cy=sr.top-cr.top+sr.height/2;
@@ -4914,7 +4943,7 @@ function recShow(o){const u=recUI();o.shown=true;S.sendHold=true;
  const tk=u.bar.querySelector(".vmt");
  o.iv=setInterval(()=>{const s=o.rec.seconds;tk.textContent=fT(s);u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,s/MP.videoMsg.maxSec))).toFixed(1);if(s>=MP.videoMsg.maxSec)recFinish(o)},50)}
 /* بستن صفحه | Hide Record Screen: صفحه را می‌بندد و همه‌چیز را به حالت اول برمی‌گرداند */
-function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps","pv");recPvClean(o);UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
+function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps","pv","sf");recPvClean(o);UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
 /* قفل | Lock: با کشیدن به بالا ضبط قفل می‌شود؛ دکمه‌ی ارسال فلش می‌شود و بالای آن دکمه‌ی مکث می‌آید */
 function recLock(o){o.locked=true;const u=UI;u.btn.style.transition="";u.btn.style.transform="";u.btn.innerHTML=ic("send",24);
  u.lk.className="vmlk pz";u.lk.style.transform="";u.lk.style.top=(parseFloat(u.btn.style.top)-14-44)+"px";u.lk.innerHTML='<i style="width:16px;height:16px;border-radius:4px;background:var(--red);display:block"></i>';
