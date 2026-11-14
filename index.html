@@ -1288,9 +1288,10 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
   <div class="tb" data-s="settings"><span class="tbav" id="tbav"></span>Settings</div>
 </div>
 <div id="cp">
-  <div class="cpbar"><div class="pill" id="cpBack"><i data-ic="back" data-s="22"></i></div><div class="cpmini"><span id="cp_mn" dir="auto"></span><small id="cp_ms"></small></div><div class="pill">Edit</div></div>
+  <div class="cpbar"><div class="pill" id="cpBack"><i data-ic="back" data-s="22"></i></div><div class="cpmini"><span id="cp_mn" dir="auto"></span><small id="cp_ms"></small></div><div class="pill" id="cpEdit">Edit</div></div>
   <div class="cpscroll" id="cpScroll">
     <div class="cph" id="cph"><div class="av" id="cp_av"></div><h2 id="cp_n" dir="auto"></h2><div class="cps" id="cp_s"></div></div>
+    <div id="cpEd" style="display:none;margin:0 16px 14px"><div class="card"><input class="fld" id="cpe_f" dir="auto" placeholder="First Name" autocomplete="off" autocorrect="off" spellcheck="false"><div style="border-top:.5px solid var(--line)"></div><input class="fld" id="cpe_l" dir="auto" placeholder="Last Name" autocomplete="off" autocorrect="off" spellcheck="false"></div><div class="card" style="margin-top:12px"><div class="item" id="cpe_sv" style="color:var(--blue);justify-content:center">Save Contact</div><div class="item" id="cpe_rm" style="color:var(--red);justify-content:center;display:none">Remove Contact</div></div></div>
     <div class="cpact">
       <div class="ab"><i data-ic="phone" data-s="20"></i>call</div><div class="ab" id="cpMute"><i data-ic="bell" data-s="20"></i>mute</div><div class="ab" id="cpMore"><i data-ic="more" data-s="20"></i>more</div>
     </div>
@@ -1435,11 +1436,16 @@ const LKA=(()=>{
    if(ids.length){const u=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.equal("$id",ids),Q.limit(100)]});(u.rows||[]).forEach(x=>{us[x.$id]=x})}
    return rows.filter(x=>oid(x)).map(x=>{const uid=oid(x),p=us[uid]||{};return{cid:x.$id,uid:uid,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username||"User",last:x.lastText||"",at:x.lastAt||x.$updatedAt,lastSender:x.lastSenderId}})}
   /* پروفایل کاربر | User Profile: نام و یوزرنیم یک کاربر با آی‌دی (name and username by id) */
-  async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username,
+  async function user(uid,me){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});
+  /* مخاطب بودن بین دو نفر | Am I In Their Contacts: صاحب حساب لیست مخاطبین خود را فقط به شکل کدهای رمزشده در ستون contacts ذخیره می‌کند تا آیدی مخاطبین به دیگران نشان داده نشود؛ اینجا کد من را می‌سازیم و می‌بینیم در لیست هست یا نه (the owner stores only hashed codes of contacts, so ids are not exposed; here I build my code and check if it is in the list) */
+  const h=me?await ctH(uid,me):"",inCt=!!h&&String(p.contacts||"").split(",").includes(h),vis=(v,d)=>{v=v||d;return v==="Everybody"||(v==="My Contacts"&&inCt)};
+  return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username,
    /* ایمیل و بیو با اجازه صاحبشان | Email And Bio By Permission: ایمیل فقط وقتی برمی‌گردد که صاحب حساب در بخش امنیت «همه» یا «مخاطبین من» گذاشته باشد؛ بیو مگر اینکه «هیچ‌کس» باشد (email only if the owner allows it; bio unless Nobody) */
-   email:(p.privEmail==="Everybody"||p.privEmail==="My Contacts")?String(p.email||""):"",bio:p.privBio==="Nobody"?"":String(p.bio||""),
+   email:vis(p.privEmail,"Nobody")?String(p.email||""):"",bio:vis(p.privBio,"Everybody")?String(p.bio||""):"",
    /* تاریخ تولد واقعی | Real Birthday: فقط اگر به شکل سال-ماه-روز در سرور ثبت شده باشد برمی‌گردد؛ خالی یعنی ثبت نشده (only a saved YYYY-MM-DD value is returned; empty means not set) */
-   bday:/^\d{4}-\d{2}-\d{2}$/.test(String(p.bday||""))&&p.privBday!=="Nobody"?String(p.bday):""}}
+   bday:/^\d{4}-\d{2}-\d{2}$/.test(String(p.bday||""))&&vis(p.privBday,"My Contacts")?String(p.bday):""}}
+  /* کد مخاطب | Contact Code: کد کوتاه رمزشده از آیدی صاحب و آیدی مخاطب (short hashed code of owner id + contact id) */
+  async function ctH(a,b){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(a+":"+b));return Array.from(new Uint8Array(d)).slice(0,8).map(x=>x.toString(16).padStart(2,"0")).join("")}
   /* ذخیره پروفایل من | Save My Profile: ردیف خودم در جدول users روی سرور به‌روز می‌شود؛ اگر نشد false برمی‌گرداند (updates my own users row; returns false on failure) */
   async function saveMe(id,d){if(!ok||!id)return false;try{await db.updateRow({databaseId:DBID,tableId:"users",rowId:id,data:d});return true}catch(e){return false}}
   /* دریافت زنده | Live Receive: هر پیام تازه‌ای که برای من ساخته شود همان لحظه می‌رسد (new messages arrive instantly) */
@@ -1458,7 +1464,7 @@ const LKA=(()=>{
  async function check(){if(!ok)return["کتابخانه‌ی سرور بارگیری نشد"];const bad=[],Q=window.Appwrite.Query;
   for(const t of["users","chats","messages"]){try{await db.listRows({databaseId:DBID,tableId:t,queries:[Q.limit(1)]})}catch(e){bad.push(t+" "+(e.code||"")+" "+String((e&&e.message)||"").slice(0,70))}}
   return bad}
- return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,saveMe,listen,recent,newest,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,saveMe,ctH,listen,recent,newest,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -3386,10 +3392,10 @@ function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName
 /* ذخیره حریم خصوصی روی سرور | Save Privacy To Server: انتخاب کاربر برای نمایش ایمیل و بیو به دیگران روی سرور ذخیره می‌شود (saves who may see my email and bio) */
 function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const f=LK_PRIV[k];if(!f)return;const d={};d[f]=v;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون های privEmail و privBio و privBday و privSeen و privPhoto و privGroups باید به جدول users اضافه شود")}).catch(()=>{})}
 /* پروفایل واقعی مخاطب | Real Contact Profile: در حالت سرور فقط اطلاعات واقعی (نام‌کاربری، ایمیل و بیو با اجازه صاحبش) نشان داده می‌شود و هر چیز خالی پنهان می‌ماند؛ در حالت نمایشی همان نمونه‌ها (online shows only real data allowed by the owner; empty rows stay hidden; demo keeps samples) */
-function lkCpReal(c,real){const ph=$("#cp_ph"),rp=ph.closest(".cpr"),ru=$("#cp_un").closest(".cpr"),rb=$("#cp_bir"),rd=$("#cp_bdr"),cd=rp.closest(".card");
+function lkCpReal(c,real){$("#cpEd").style.display="none";const ph=$("#cp_ph"),rp=ph.closest(".cpr"),ru=$("#cp_un").closest(".cpr"),rb=$("#cp_bir"),rd=$("#cp_bdr"),cd=rp.closest(".card");
  if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";$("#cp_bdv").textContent="";rd.style.display="none";return}
  $("#cp_phl").textContent=tr("Email");$("#cp_bdl").textContent=tr("Birthday");$("#cp_bil").textContent=tr("Bio");$("#cp_bdv").textContent="";ph.textContent="";ph.setAttribute("dir","ltr");$("#cp_biv").textContent="";[rp,ru,rb,rd].forEach(r=>r.style.display="none");cd.style.display="none";
- if(c.uid)LKA.user(c.uid).then(u=>{if(S.openId!==c.id)return;const un=u.username||c.uname||"";let n=0;
+ if(c.uid)LKA.user(c.uid,S.user&&S.user.id).then(u=>{if(S.openId!==c.id)return;const un=u.username||c.uname||"";let n=0;
   if(un){$("#cp_un").textContent="@"+un;ru.style.display="";n++}
   if(u.email){ph.textContent=u.email;rp.style.display="";n++}
   if(u.bio){$("#cp_biv").textContent=u.bio;rb.style.display="";n++}
@@ -3401,6 +3407,28 @@ function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.
  /* بدون شماره و نام کاربری ساختگی | No Fake Contact Info: در چت واقعی شمارهٔ نمایشی پنهان و نام کاربری واقعی نشان داده می‌شود (real chat hides the demo phone and shows the real username) */const _real=LK_MODE==="real";$("#cp_ph").textContent=_real?"":"+98 901 720 6536";{const r=$("#cp_ph").closest(".cpr");if(r)r.style.display=_real?"none":""}["#cp_bdr","#cp_bir"].forEach(q=>{const e=$(q);if(e)e.style.display=_real?"none":""});$("#cp_un").textContent=_real?(c.uname?"@"+c.uname:""):"@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");/* بدون مشخصات نمایشی | No Demo Details Online: در حالت آنلاین همهٔ چت‌ها (نه فقط کاربران سرور) شماره، تولد و بیو نمایشی ندارند؛ نام کاربری هم اگر واقعی نباشد مخفی می‌شود و کارت خالی نمایش داده نمی‌شود (online: no demo phone, birthday or bio for any chat; username hidden unless real; an empty card is not shown) */{const r=$("#cp_un").closest(".cpr");if(r)r.style.display=_real&&!c.uname?"none":"";const cd=$("#cp_ph").closest(".card");if(cd)cd.style.display=_real&&!c.uname?"none":""}
  lkCpReal(c,_real);paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();cpMuteSync();$("#cp").classList.add("on")}
 $("#chat .top .title").onclick=openCP;$("#cav").onclick=openCP;
+/* مخاطبین من | My Contacts: همه ناشناسند مگر اینکه با دکمه Edit پروفایل ذخیره‌شان کنیم؛ لیست مخاطبین روی دستگاه (CFG.ct) و کدهای رمزشده‌اش روی سرور (ستون contacts) ذخیره می‌شود تا تنظیم «مخاطبین من» در حریم خصوصی معنی داشته باشد (nobody is a contact until saved; list stored on the device in CFG.ct and as hashed codes on the server in the contacts column) */
+CFG.ct=CFG.ct||{};Object.assign(FA,{"Save Contact":"ذخیره به عنوان مخاطب","Remove Contact":"حذف مخاطب","Contact saved":"مخاطب ذخیره شد","Contact removed":"مخاطب حذف شد"});
+const lkCtKey=c=>c.uid||("c"+c.id);
+/* اعمال نام مخاطب | Apply Contact Names: نام ذخیره‌شده جای نام اصلی نشان داده می‌شود؛ نام اصلی در n0 نگه داشته می‌شود (saved name replaces the original, which is kept in n0) */
+function lkCtApply(){CHATS.forEach(c=>{const o=CFG.ct[lkCtKey(c)];if(!o)return;if(c.n0===undefined)c.n0=c.n;const nm=((o.f||"")+" "+(o.l||"")).trim();c.n=nm||c.n0})}
+{const _rc2=renderChats;renderChats=function(){try{lkCtApply()}catch(e){}return _rc2.apply(this,arguments)}}
+/* همگام‌سازی مخاطبین با سرور | Contacts Server Sync: کدهای رمزشده مخاطبین را در ستون contacts می‌نویسد (writes hashed contact codes to the contacts column) */
+function lkCtSync(){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const ids=Object.keys(CFG.ct).filter(k=>!/^c\d+$/.test(k));Promise.all(ids.map(k=>LKA.ctH(S.user.id,k))).then(h=>LKA.saveMe(S.user.id,{contacts:h.join(",")})).then(ok=>{if(ok===false)toast("لیست مخاطبین در سرور ذخیره نشد؛ ستون contacts باید به جدول users اضافه شود")}).catch(()=>{})}
+/* پنل ویرایش مخاطب | Contact Edit Panel: دکمه Edit پروفایل نام، نام خانوادگی و ذخیره به عنوان مخاطب را باز می‌کند (Edit button opens first name, last name and save contact) */
+$("#cpEdit").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c)return;const p=$("#cpEd");if(p.style.display!=="none"){p.style.display="none";return}
+ const o=CFG.ct[lkCtKey(c)],nm=String(c.n0!==undefined?c.n0:c.n||""),sp=nm.split(" ");$("#cpe_f").placeholder=tr("First Name");$("#cpe_l").placeholder=tr("Last Name");$("#cpe_f").value=o?(o.f||""):(sp[0]||"");$("#cpe_l").value=o?(o.l||""):sp.slice(1).join(" ");
+ $("#cpe_sv").textContent=tr("Save Contact");$("#cpe_rm").textContent=tr("Remove Contact");$("#cpe_rm").style.display=o?"":"none";p.style.display="block"};
+/* ذخیره مخاطب | Save Contact: گفتگو وارد لیست مخاطبین می‌شود و نام جدید روی آن می‌نشیند (the chat joins the contact list with the new name) */
+$("#cpe_sv").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c)return;const f=$("#cpe_f").value.trim(),l=$("#cpe_l").value.trim();if(!f&&!l){toast(tr("Name can't be empty"));return}
+ if(c.n0===undefined)c.n0=c.n;CFG.ct[lkCtKey(c)]={f,l};saveCfg();lkCtApply();lkCtSync();renderChats();$("#cpEd").style.display="none";openCP();toast(tr("Contact saved"))};
+/* حذف مخاطب | Remove Contact: از لیست مخاطبین می‌رود و نام اصلی برمی‌گردد (leaves the contact list, original name returns) */
+$("#cpe_rm").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c)return;delete CFG.ct[lkCtKey(c)];if(c.n0!==undefined)c.n=c.n0;saveCfg();lkCtSync();renderChats();$("#cpEd").style.display="none";openCP();toast(tr("Contact removed"))};
+/* لیست مخاطبین واقعی | Real Contacts List: در حالت سرور صفحه مخاطبین فقط کسانی را نشان می‌دهد که خودم ذخیره کرده‌ام؛ نمایشی همان نمونه‌ها (online the contacts page lists only people I saved) */
+{const _rcn=renderContacts;renderContacts=function(){if(LK_MODE!=="real")return _rcn.apply(this,arguments);try{lkCtApply()}catch(e){}
+ const L=CHATS.filter(c=>c.uid&&CFG.ct[c.uid]).sort((a,b)=>String(a.n).localeCompare(String(b.n)));
+ $("#ctlist").innerHTML=blueRows()+L.map(c=>`<div class="row" data-cid="${c.id}">${av(c.n,colOf(c.n),0)}<div class="mid"><div class="n">${esc(c.n)}</div><div class="m">${c.uname?"@"+esc(c.uname):""}</div><div class="m"></div></div></div>`).join("");
+ $$("#ctlist .row").forEach(r=>{if(r.dataset.cid){r.onclick=()=>{const c=CHATS.find(x=>String(x.id)===r.dataset.cid);if(c){S.fromContacts=true;openChat(c.id)}}}else r.onclick=()=>openByName(r.dataset.n)})}}
 $("#cpBack").onclick=()=>{stopPl();$("#cp").classList.remove("on")};
 /* بستن با کشیدن به چپ | Swipe Left To Close: کشیدن انگشت به سمت چپ روی صفحه پروفایل آن را میبندد و به صفحه چت برمیگرداند؛ فقط وقتی حرکت بیشتر افقی باشد و بیشتر از ۷۰ پیکسل (swipe left on the profile closes it and returns to the chat; only if mostly horizontal and over 70px) */
 (function(){const P=$("#cp");let x0=null,y0=0,nb=false;
