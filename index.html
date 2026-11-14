@@ -587,8 +587,8 @@ html.light #shov .shcap{background:rgba(235,235,240,.85)}
 /* دکمه‌های روی رسانه | Media Overlays: دکمه‌ی پخش وسط، دکمه‌ی صدا پایین چپ و شمارنده‌ی کل پایین راست */
 #mpv .mpp{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
 #mpv .mpp.off{display:none}
-#mpv .mpmute{display:none;position:absolute;left:10px;bottom:102px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
-#mpv .mpmute svg{width:20px;height:20px}
+#mpv .mpmute{display:none;position:absolute;left:10px;bottom:90px;width:28px;height:28px;border-radius:50%;background:rgba(120,120,128,.7);align-items:center;justify-content:center}
+#mpv .mpmute svg{width:16px;height:16px;stroke-width:1.7}
 #mpv .mpn{position:absolute;right:10px;bottom:57px;width:28px;height:28px;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
 #mpv.vid .mpmute{display:flex}
 #mpv.vid .mpn{bottom:102px;background:rgba(120,120,128,.7);border-color:transparent}
@@ -1587,7 +1587,7 @@ const MP={
  photoFile:{kind:"image",original:true},
  videoChat:{kind:"video",heights:[240,360,480,720,1080],bitrates:{240:4e5,360:7e5,480:12e5,720:25e5,1080:5e6}},
  videoFile:{kind:"video",original:true,vbr:8e6},
- videoMsg:{kind:"video",w:480,h:480,ratio:1,maxSec:60,vbr:9e5,abr:64e3},
+ videoMsg:{kind:"video",w:350,h:350,ratio:1,maxSec:60,vbr:8e5,abr:64e3},
  voice:{kind:"audio",abr:64e3},
  audioFile:{kind:"audio",original:true,abr:64e3},
  file:{kind:"file",original:true}
@@ -2709,8 +2709,8 @@ const MPI={play:'<svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5
  crop:MPS('<path d="M6 2v14a2 2 0 002 2h14M2 6h14a2 2 0 012 2v14"/>'),
  draw:MPS('<circle cx="12" cy="12" r="9.5"/><path d="M8.8 16.4l2.5-9a.8.8 0 011.4 0l2.5 9M9.8 13.8h4.4"/>'),
  adj:MPS('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
- on:MPS('<path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4z" fill="#fff"/><path d="M15.5 9a4 4 0 010 6M17.8 6.8a7.2 7.2 0 010 10.4"/>'),
- off:MPS('<path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4z" fill="#fff"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>')};
+ on:MPS('<path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4z"/><path d="M15.5 9.2a4 4 0 010 5.6M18 6.8a7.5 7.5 0 010 10.4"/>'),
+ off:MPS('<path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>')};
 /* ویدیوی فعلی | Current Video: عنصر ویدیوی صفحه‌ی در حال نمایش (اگر عکس باشد خالی) */
 const mpvV=()=>{const s=$("#mpTr").children[MPV.i];return s?s.querySelector("video"):null};
 /* جای لغزنده | Slider Position: لغزنده‌ی صفحه‌ها را روی صفحه‌ی فعلی می‌گذارد (با انیمیشن یا بدون) و dx جابه‌جایی انگشت است */
@@ -4975,7 +4975,7 @@ async function vmRec(o){
  const out=cv.captureStream(30);
  /* صدای خام مثل ویس | Raw Voice Like Voice Message: صدای ویدیو مسیج دقیقاً مثل ویس ضبط می‌شود: ۴۸ کیلوهرتز، مونو، بدون حذف نویز و اکو‌گیری و تقویت خودکار، بدون هیچ تقویت یا محدودکننده‌ی اضافه، و با همان ۶۴ کیلوبیت بر ثانیه (audio is recorded exactly like a voice message: 48 kHz mono, no noise suppression, echo cancel, auto gain, no extra gain or limiter, same 64 kbps) */
  let ac=null;st.getAudioTracks().forEach(t=>out.addTrack(t));
- const mime=mPick(MIME_VM),rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:/hvc|hev/.test(mime||"")?65e4:P.vbr,audioBitsPerSecond:P.abr});
+ const mime=mPick(MIME_VM),rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:P.vbr,audioBitsPerSecond:P.abr});
  const parts=[],t0=Date.now();let acc=0,seg=Date.now(),cancelled=false,torch=false;
  rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
  const done=new Promise(ok=>{rc.onstop=ok}),end=()=>{if(rc.state!=="inactive"){if(seg){acc+=Date.now()-seg;seg=0}rc.stop()}};
