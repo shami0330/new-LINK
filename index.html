@@ -285,6 +285,27 @@ i[data-ic]{display:inline-flex;font-style:normal}
 .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
 .mt{aspect-ratio:1;position:relative}
 .mt:active{opacity:.8}
+/* منوی نگه‌داشتن رسانه | Media Hold Menu CSS: پیش‌نمایش + منو، حالت انتخاب با دایره‌ها، نوار بالا و پایین (preview + menu, select mode circles, top and bottom bars) */
+.mt{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.mt img{transition:transform .15s,border-radius .15s}
+.mt .mck{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;border:1.5px solid #fff;background:rgba(0,0,0,.28);box-sizing:border-box;display:none;align-items:center;justify-content:center;color:#fff;z-index:2}
+.cpsel .mt .mck{display:flex}
+.mt.on .mck{background:var(--blue);border-color:var(--blue)}
+.mt.on img{transform:scale(.84);border-radius:8px}
+#cpsb{position:fixed;left:0;right:0;top:0;z-index:75;display:none;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 18px 12px;background:var(--menu);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-size:17px}
+#cpsb.on{display:flex}
+#cpsx{cursor:pointer}
+#cpsbb{position:fixed;left:0;right:0;bottom:0;z-index:75;display:none;justify-content:space-between;padding:12px 30px calc(env(safe-area-inset-bottom) + 12px);background:var(--menu);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+#cpsbb.on{display:flex}
+#cpsbb .cpbt{padding:6px;color:var(--blue);cursor:pointer}
+#cpsbb .cpbt.dis{opacity:.35;pointer-events:none}
+#cpmn{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;box-sizing:border-box}
+#cpmn.on{display:flex;animation:fade .18s}
+#cpmn .pv{max-width:78vw;max-height:46vh;border-radius:18px;object-fit:contain;background:#222;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+#cpmn .mn2{width:min(78vw,300px);background:var(--menu);border-radius:14px;overflow:hidden;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+#cpmn .mn2 div{padding:13px 16px;font-size:16px;border-bottom:.5px solid var(--line);display:flex;justify-content:space-between;align-items:center;color:var(--txt);cursor:pointer}
+#cpmn .mn2 div:last-child{border:0}
+#cpmn .mn2 div.rd{color:var(--red)}
 .dur{position:absolute;left:4px;bottom:4px;font-size:11px;color:#fff;background:rgba(0,0,0,.5);border-radius:8px;padding:0 5px}
 /* ردیف‌های لیست | List Rows: فایل، موزیک، ویس، لینک، ذخیره‌شده (files, music, voice, links, saved) */
 .lrow{display:flex;gap:12px;align-items:center;padding:9px 16px;border-bottom:.5px solid var(--line)}
@@ -3544,6 +3565,48 @@ function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"S
   $$("#cpbody .vr").forEach(r=>r.querySelector(".pbtn").onclick=()=>playRow(r));
   $$("#cpbody .lfx").forEach(r=>r.onclick=()=>lkSave(r.dataset.id,r.dataset.n));
   try{lkHydrate(b)}catch(e){}}})();
+/* نگه‌داشتن رسانه مثل تلگرام | Media Hold Like Telegram: نگه‌داشتن روی رسانه‌ی تب Media پیش‌نمایش و منوی Show in Chat / Forward / Delete / Select را باز می‌کند؛ Select حالت انتخاب چندتایی با دایره، شمارنده و دکمه‌های پایین دارد؛ لمس ساده رسانه همان نمایشگر گفتگو را باز می‌کند (hold on a Media-tab item opens preview + menu; Select gives multi-select with circles, counter and bottom buttons; a plain tap opens the same viewer as the chat) */
+(function(){const cp=$("#cp"),body=$("#cpbody"),M=()=>$("#msgs"),SEL={on:false,s:new Set()};let sup=0,tm=0,tt=null,sx=0,sy=0;
+ const e2=s=>window.CSS&&CSS.escape?CSS.escape(s):String(s).replace(/"/g,'\\"');
+ const bub=id=>{const e=M().querySelector('.lkc[data-lkm="'+e2(id)+'"]');return e?e.closest(".b"):null};
+ const tile=id=>body.querySelector('.mt[data-lkm="'+e2(id)+'"]');
+ const sb=document.createElement("div");sb.id="cpsb";sb.innerHTML='<b id="cpsn"></b><span id="cpsx" style="color:var(--blue)"></span>';
+ const bb=document.createElement("div");bb.id="cpsbb";bb.innerHTML='<div class="cpbt" id="cpsd" style="color:var(--red)">'+ic("trash",26)+'</div><div class="cpbt" id="cpsf">'+ic("share",26)+'</div>';
+ const mn=document.createElement("div");mn.id="cpmn";cp.append(sb,bb,mn);
+ const upd=()=>{const n=SEL.s.size;$("#cpsn").textContent=n+" "+tr("Selected");$("#cpsd").classList.toggle("dis",!n);$("#cpsf").classList.toggle("dis",!n)};
+ function tog(t){const id=t.dataset.lkm;if(SEL.s.has(id)){SEL.s.delete(id);t.classList.remove("on")}else{SEL.s.add(id);t.classList.add("on")}upd()}
+ function enter(t){if(SEL.on)return;SEL.on=true;SEL.s.clear();body.classList.add("cpsel");body.querySelectorAll(".mt[data-lkm]").forEach(x=>{if(!x.querySelector(".mck")){const i=document.createElement("i");i.className="mck";i.innerHTML=ic("check",14);x.appendChild(i)}});sb.classList.add("on");bb.classList.add("on");$("#cpsx").textContent=tr("Cancel");if(t)tog(t);else upd()}
+ function exit(){if(!SEL.on)return;SEL.on=false;SEL.s.clear();body.classList.remove("cpsel");body.querySelectorAll(".mt.on").forEach(x=>x.classList.remove("on"));body.querySelectorAll(".mck").forEach(x=>x.remove());sb.classList.remove("on");bb.classList.remove("on")}
+ const close=()=>{mn.classList.remove("on");mn.innerHTML=""};
+ /* پرسش حذف | Ask Sheet: همان برگه‌ی «برای من / برای هر دو» */
+ function ask(rows,cb){let o=$("#fwdov");if(!o){o=document.createElement("div");o.id="fwdov";$("#app").append(o)}o.innerHTML="<div class='mn' style='width:calc(100% - 24px)'>"+rows.map(r=>"<div data-d='"+r[0]+"'"+(r[2]?" style='color:var(--red)'":"")+">"+tr(r[1])+"</div>").join("")+"</div>";o.classList.add("on");o.onclick=e=>{const d=e.target.closest("[data-d]");o.classList.remove("on");if(d)cb(d.dataset.d)}}
+ function delAsk(ids){const bs=ids.map(bub).filter(Boolean);if(!bs.length)return;const rows=[["me","Delete for me"]];if(bs.every(b=>b.classList.contains("me")))rows.push(["both","Delete for both",1]);ask(rows,m=>{window.lkVMany(ids,"del",m);exit();setTimeout(()=>cpBody(),60)})}
+ /* بستن کشوی فوروارد | Forward Drawer Watch: بعد از بسته شدن کشو (ارسال یا لغو) حالت انتخاب خاموش می‌شود */
+ function watch(){const o=document.getElementById("shov");if(!o)return;let was=o.classList.contains("on");const mo=new MutationObserver(()=>{if(o.classList.contains("on")){was=true;return}if(!was)return;mo.disconnect();setTimeout(()=>{try{window.lkSelEnd&&window.lkSelEnd()}catch(_){}exit()},300)});mo.observe(o,{attributes:true,attributeFilter:["class"]})}
+ function act(a,ids){
+  if(a==="sel"){enter(tile(ids[0]));return}
+  const bs=ids.map(bub).filter(Boolean);if(!bs.length)return;
+  if(a==="show"){const b=bs[0];$("#cpBack").click();setTimeout(()=>{b.scrollIntoView({block:"center",behavior:"smooth"});b.classList.add("hl");setTimeout(()=>b.classList.remove("hl"),2500)},350);return}
+  if(a==="fwd"){window.lkVMany(ids,"fwd");watch();return}
+  if(a==="del")delAsk(ids)}
+ /* منوی نگه‌داشتن | Hold Menu: پیش‌نمایش بزرگ رسانه با منو زیر آن */
+ function menu(t){const id=t.dataset.lkm,im=t.querySelector("img"),rows=[["show","Show in Chat","chat"],["fwd","Forward","share"],["del","Delete","trash",1],["sel","Select","check"]];
+  mn.innerHTML=(im&&im.src?'<img class="pv" src="'+im.src+'" alt="">':"")+'<div class="mn2">'+rows.map(r=>'<div data-a="'+r[0]+'"'+(r[3]?' class="rd"':"")+'><span>'+tr(r[1])+'</span>'+ic(r[2],20)+'</div>').join("")+"</div>";
+  mn.classList.add("on");
+  mn.onclick=e=>{if(Date.now()-sup<500)return;const r=e.target.closest("[data-a]");close();if(r)setTimeout(()=>act(r.dataset.a,[id]),120)}}
+ body.addEventListener("touchstart",e=>{const t=e.target.closest(".mt[data-lkm]");if(!t||SEL.on)return;const p=e.touches[0];sx=p.clientX;sy=p.clientY;tt=t;clearTimeout(tm);tm=setTimeout(()=>{if(!tt)return;const x=tt;tt=null;sup=Date.now();try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}menu(x)},420)},{passive:true});
+ body.addEventListener("touchmove",e=>{if(!tt)return;const p=e.touches[0];if(Math.abs(p.clientX-sx)>8||Math.abs(p.clientY-sy)>8){clearTimeout(tm);tt=null}},{passive:true});
+ ["touchend","touchcancel"].forEach(ev=>body.addEventListener(ev,()=>{clearTimeout(tm);tt=null},{passive:true}));
+ body.addEventListener("contextmenu",e=>{const t=e.target.closest(".mt[data-lkm]");if(!t)return;e.preventDefault();if(!SEL.on){sup=Date.now();menu(t)}});
+ /* لمس | Tap: در حالت انتخاب لمس فقط انتخاب می‌کند؛ بعد از نگه‌داشتن لمس رها شده رسانه را باز نمی‌کند */
+ body.addEventListener("click",e=>{const t=e.target.closest(".mt[data-lkm]");if(!t)return;if(Date.now()-sup<600){e.stopImmediatePropagation();e.preventDefault();return}if(SEL.on){e.stopImmediatePropagation();e.preventDefault();tog(t)}},true);
+ $("#cpsx").onclick=exit;
+ $("#cpsd").onclick=()=>{if(SEL.s.size)delAsk([...SEL.s])};
+ $("#cpsf").onclick=()=>{if(SEL.s.size)act("fwd",[...SEL.s])};
+ /* خروج خودکار | Auto Exit: تغییر تب، برگشت از پروفایل یا بستن آن حالت انتخاب و منو را پاک می‌کند */
+ {const _c=cpBody;cpBody=function(){exit();close();return _c.apply(this,arguments)}}
+ $("#cpBack").addEventListener("click",()=>{exit();close()});
+ new MutationObserver(()=>{if(!cp.classList.contains("on")){exit();close()}}).observe(cp,{attributes:true,attributeFilter:["class"]})})();
 /* پخش ویس و موزیک | Voice/Music Player: دکمه پخش، موج رنگی می‌شود تا پایان (play button, waveform fills while playing) */
 function stopPl(){if(!CP.pl)return;clearInterval(CP.pl.t);CP.pl.r.querySelector(".pbtn").innerHTML=ic("play",18);CP.pl.r.querySelectorAll(".wf i").forEach(x=>x.classList.remove("on"));CP.pl=null}
 function playRow(r){if(CP.pl&&CP.pl.r===r){stopPl();return}stopPl();let p=0;const bars=[...r.querySelectorAll(".wf i")],dur=Math.min(+r.dataset.d,30)*10;
@@ -4085,6 +4148,8 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  /* حذف و فوروارد از نمایشگر | Viewer Actions: دکمه‌های پایین نمایشگر همان حذف و فوروارد حالت انتخاب را برای همان عکس یا ویدیو اجرا می‌کنند (viewer footer buttons reuse select-mode delete / forward for that one item) */
  window.lkVSel=function(b,id,k){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);if(k==='del')ask([['me','Delete for me'],['both','Delete for both',1]],doDelete);else $('#selFw').onclick()};
  window.lkVDel=function(b,id,mode){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);doDelete(mode)};
+ /* چند رسانه از پروفایل | Many From Profile: رسانه‌های انتخاب‌شده در تب Media پروفایل (با شناسه) را فوروارد یا حذف می‌کند (forward or delete several media picked in the profile Media tab, by id) */
+ window.lkVMany=function(ids,k,mode){window.lkSelStart(null);ids.forEach(id=>{const e=M.querySelector('.lkc[data-lkm="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]'),b=e&&e.closest('.b');if(!b||b.classList.contains('pend'))return;if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b)});if(k==='del')doDelete(mode);else $('#selFw').onclick()};
  /* فوروارد از نمایشگر | Viewer Forward: کشو به داخل نمایشگر منتقل می‌شود و بعد از بسته شدن به جای خود برمی‌گردد و حالت انتخاب گفتگو خاموش می‌شود (the drawer is moved into the viewer, returns to its place when closed, and chat select mode is turned off) */
  window.lkVFwd=function(b,id){if(!b||!b.isConnected)return;window.lkSelStart(null);if(isAl(b)&&itEls(b).length>1)toggleItem(b,id);else toggleMsg(b);$('#selFw').onclick();const o=document.getElementById('shov'),v=document.getElementById('lkv');if(!o||!v)return;v.append(o);o.style.zIndex=6000;if(!o.__lkv){o.__lkv=1;['pointerdown','touchstart','touchmove'].forEach(ev=>o.addEventListener(ev,e=>e.stopPropagation()));o.style.userSelect='text';o.style.webkitUserSelect='text'}let was=o.classList.contains('on');const mo=new MutationObserver(()=>{if(o.classList.contains('on')){was=true;return}if(!was)return;mo.disconnect();setTimeout(()=>{$('#app').append(o);o.style.zIndex='';try{exit()}catch(e){}},300)});mo.observe(o,{attributes:true,attributeFilter:['class']})};
 })();
