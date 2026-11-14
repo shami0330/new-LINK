@@ -5213,6 +5213,8 @@ const vmIO=new IntersectionObserver(es=>es.forEach(en=>{const el=en.target;el._v
 /* پیدا کردن دایره‌های تازه | Watch New Bubbles: هر حباب ویدیو مسیج تازه به ناظر دید داده می‌شود */
 const vmSee=n=>{if(n.nodeType!==1)return;(n.classList&&n.classList.contains("lkvm")?[n]:[...n.querySelectorAll(".lkvm")]).forEach(el=>{if(!el._o){el._o=1;vmIO.observe(el)}})};
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(vmSee))).observe($("#msgs"),{childList:true,subtree:true});vmSee($("#msgs"));
+/* نگهبان پخش بی‌صدا | Silent Loop Watchdog: هر ۰.۳ ثانیه دایره‌های دانلودشده و دیده‌شده‌ای که ساکن مانده‌اند بی‌صدا و تکراری راه می‌افتند؛ اگر ویدیوشان هنوز ساخته نشده بسازد، و اگر گوشی تا یک جابه‌جایی کوچک تصویر نمی‌دهد همان را انجام می‌دهد؛ برای همین بعد از دانلود دیگر لازم نیست یک بار دستی پخش کنی (every 0.3 s, downloaded and visible circles that are not moving are started muted and looping; builds the video if missing and does the tiny seek some phones need) */
+setInterval(()=>{if(document.hidden)return;document.querySelectorAll("#msgs .lkvm:not(.lkgt):not(.pl):not(.vup)").forEach(el=>{if(el._vis!==true)return;const v=el._v;if(!v){el._wd=(el._wd||0)+1;if(el._wd<=8&&window.vmStartSilent)window.vmStartSilent(el,0);return}el._wd=0;if(v.paused){v.muted=true;v.loop=true;if(v.readyState<2&&!v._nz){v._nz=1;try{v.currentTime=.01}catch(_){}}const q=v.play();if(q&&q.catch)q.catch(()=>{})}else if(v.readyState<2){v._st=(v._st||0)+1;if(v._st===3){try{v.currentTime=.01}catch(_){}}}else v._st=0})},300);
 })();
 </script>
 <script>if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
