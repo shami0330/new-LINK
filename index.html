@@ -1383,7 +1383,7 @@ const LKA=(()=>{
   await ac.createEmailPasswordSession({email:email,password:pw});
   const u=await ac.get();return packMe(u,await safeProf(u,fn,ln))}
  /* بازیابی نشست | Session Check: هنگام شروع، اگر نشست فعال بود کاربر را برمی‌گرداند وگرنه null (returns the user if a session is active) */
- async function restore(){if(!ok)return null;let u;try{u=await ac.get()}catch(e){return null}return packMe(u,await safeProf(u))}
+ async function restore(){if(!ok)return null;let u;try{u=await ac.get()}catch(e){const c=e&&e.code;return(c===401||c===403)?null:{offline:1}}/* آفلاین | Offline: خطای شبکه یعنی نشست خراب نیست؛ کش می‌ماند */return packMe(u,await safeProf(u))}
  /* خروج | Sign Out: نشست فعلی را در سرور می‌بندد و ردپای نشست را از حافظه پاک می‌کند (closes the session) */
  const out=()=>{const rm=()=>{try{localStorage.removeItem("cookieFallback")}catch(e){}};if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
  /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
@@ -1852,7 +1852,7 @@ function lkMode(m){if(LK_MODE===m)return;
  try{Object.assign(CFG,JSON.parse(localStorage.getItem("lk_ck_"+m))||{})}catch(e){}
  /* مقدار پیش‌فرض | Default Values: بعد از پاک شدن تنظیمات حالت قبل، فهرست‌های خالی دوباره ساخته می‌شوند تا خطای includes نیاید (empty lists restored after the mode switch) */
  CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];/* مقدار پیش‌فرض صف زمان‌بندی | Default Schedule Queue: بعد از عوض شدن حالت، لیست پیام‌های زمان‌بندی‌شده دوباره خالی ساخته می‌شود؛ بدون آن grow خطا می‌داد و ارسال به سرور هرگز اجرا نمی‌شد (restores CFG.sched after the mode switch; without it grow threw and the real send never ran) */CFG.sched=CFG.sched||[];
- LK_MODE=m;
+ LK_MODE=m;try{localStorage.setItem("lk_mode",m)}catch(e){}/* یادآوری حالت | Remember Mode: برای شروع از کش */
  if(m==="demo"){CHATS=JSON.parse(JSON.stringify(LK_SNAP.c));PEOPLE=JSON.parse(JSON.stringify(LK_SNAP.p))}
  else{CHATS=[{id:2,n:"Saved Messages",m:"",tm:"",ty:"pv",pin:1,t:0,un:0,mute:0,on:0,col:"#3a9bff"}];PEOPLE=[]}
  S.openId=null;S.folder="all";S.sel.clear();saveCfg()}
@@ -1880,14 +1880,33 @@ function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;/* نگه‌�
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
 $("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Confirm Field Toggle: فقط در ثبت‌نام */$("#pw2").style.display=S.signup?"":"none";$("#pw2").value="";$("#nm").style.visibility=$("#nm2").style.visibility=S.signup?"visible":"hidden";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
-$("#logout").onclick=()=>{LKA.out();lkStop();S.user=null;show("login")};
+$("#logout").onclick=()=>{try{localStorage.removeItem("lk_snap2")}catch(e){}LKA.out();lkStop();S.user=null;show("login")};
+/* ---- ۳.۴c کش اول | 3.4c Cache First ---- */
+/* عکس لحظه‌ای | Snapshot Save: لیست چت‌ها و اطلاعات کاربر را در حافظه‌ی گوشی نگه می‌دارد تا دفعه‌ی بعد بدون منتظر ماندن برای سرور باز شود (پیام‌ها خودشان در CFG.sent ذخیره می‌شوند) */
+const LK_SN="lk_snap2";let lkSnT=0,LK_FROM_CACHE=0,lkRetT=0;
+function lkSnapSave(){clearTimeout(lkSnT);lkSnT=setTimeout(()=>{try{if(LK_MODE!=="real"||!S.user||!S.user.id)return;const u=S.user;localStorage.setItem(LK_SN,JSON.stringify({u:{email:u.email,name:u.name,id:u.id,username:u.username||"",last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""},c:CHATS}))}catch(e){}},500)}
+/* قلاب ذخیره | Snapshot Hook: هر بار لیست چت‌ها کشیده شد، عکس لحظه‌ای هم ذخیره می‌شود */
+{const _rcSn=renderChats;renderChats=function(){const r=_rcSn.apply(this,arguments);lkSnapSave();return r}}
+/* نام و عکس بالا | Header Names: اسم و ایمیل و حرف اول در صفحه‌ی چت‌ها را پر می‌کند */
+function lkNameUi(){const u=S.user;$("#myname").textContent=u.name;$("#myname2").textContent=u.name;$("#myinfo").textContent=u.email;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=(u.name||"?")[0].toUpperCase();a.style.background=colOf(u.name)})}
+/* شروع از کش | Start From Cache: اگر دفعه‌ی قبل وارد شده بودی، همان لحظه چت‌ها و پیام‌های ذخیره‌شده نشان داده می‌شود و سرور بعداً در پس‌زمینه به‌روز می‌کند */
+function lkCacheStart(){if(S.user||localStorage.getItem("lk_mode")!=="real")return;try{const sn=JSON.parse(localStorage.getItem(LK_SN)||"null");if(!sn||!sn.u||!sn.u.id||!Array.isArray(sn.c)||!sn.c.length)return;LK_MODE="real";CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.sched=CFG.sched||[];CHATS=sn.c;PEOPLE=[];S.user=sn.u;S.openId=null;LK_FROM_CACHE=1;lkNameUi();initUser();renderChats();renderContacts();show("chats");lkBootOff()}catch(e){if(!LK_FROM_CACHE){S.user=null;LK_MODE="demo"}}}
+/* بعد از سرور | After Server Check: وقتی جواب سرور رسید، اگر نشست درست بود همگام‌سازی شروع می‌شود؛ اگر نشست تمام شده بود به صفحه‌ی ورود می‌رود؛ اگر اینترنت نبود چت‌های کش می‌مانند و دوباره تلاش می‌شود */
+function lkAfterRestore(u){clearTimeout(lkRetT);
+ if(u&&u.offline){if(LK_FROM_CACHE)lkRetT=setTimeout(()=>{LKA.restore().then(lkAfterRestore).catch(()=>{})},15000);return}
+ if(!u||!u.id){if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}return}
+ const me={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};
+ if(LK_FROM_CACHE&&S.user&&S.user.id===u.id){LK_FROM_CACHE=0;Object.assign(S.user,me);lkApplyMe(u);lkNameUi();try{fillMe()}catch(e){}renderChats();lkStart();return}
+ if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;LK_MODE="demo"}
+ if(!S.user){S.user=me;lkApplyMe(u);lkEnter()}}
+addEventListener("online",()=>{if(LK_FROM_CACHE)LKA.restore().then(lkAfterRestore).catch(()=>{})});
 /* بازیابی نشست | Session Restore: اگر قبلاً وارد شده بود، مستقیم وارد برنامه می‌شود */
 /* پایان لودینگ شروع | Boot Loading Off: لودینگ آرام محو و بعد برداشته می‌شود (fades the boot screen out, then removes it) */
 function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.off=1;/* اتصال بررسی مجوز | Connect Permission Check: بعد از بالا آمدن برنامه، مجوز میکروفن و دوربین بررسی می‌شود */setTimeout(()=>{try{lkPermCheck()}catch(e){}},700);b.classList.add("off");setTimeout(()=>b.remove(),320)}
 {const b=$("#lkBoot"),lg=document.querySelector("#login .lgo");if(b&&lg)b.querySelector("img").src=lg.src}
 /* اگر سرور دیر جواب داد | Boot Timeout: بعد از ۸ ثانیه لودینگ برداشته می‌شود تا برنامه گیر نکند (never stuck on loading) */
 setTimeout(lkBootOff,8000);
-LKA.restore().then(u=>{if(u&&!S.user){S.user={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};lkApplyMe(u);lkEnter()}}).catch(()=>{}).finally(lkBootOff);
+Promise.resolve().then(lkCacheStart).then(()=>LKA.restore()).then(lkAfterRestore).catch(()=>{}).finally(lkBootOff);
 /* ورود نمایشی موقت | Temporary Demo Entry: فقط با این دکمه بدون فیلد و اینترنت وارد می‌شود؛ ثبت‌نام/ورود عادی فقط آنلاین و با فیلدهای معتبر */
 $("#lgdemo").onclick=()=>{DEMO=true;try{$("#lbtn").onclick()}finally{DEMO=false}};
 
@@ -3841,7 +3860,7 @@ function openContactMenu(n){const pp=PEOPLE.find(x=>x[0]===n),c=CHATS.find(x=>x.
  const isCh=()=>{const c=CHATS.find(x=>x.id===S.openId);return !!c&&c.ty==="ch"};
  const eye='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
  const fmt=n=>n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;
- const views=(t,tm,cx)=>{const c0=cx||CHATS.find(x=>x.id===S.openId);/* بازدید واقعی | Real Views: در کانال آنلاین تعداد اعضایی که بعد از ارسال این پست کانال را دیده‌اند (in an online channel: members who viewed the channel after this post) */if(c0&&c0.gid&&c0.mids){const r=(CFG.sent[c0.id]||[]).find(x=>x[1]===t&&x[2]===tm),at=r&&r[6]||0,sm=c0.sm||{};return at?c0.mids.filter(u=>(sm[u]||0)>=at).length:0}let h=7;const s=String(t)+tm;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return 800+h%9000};
+ const views=(t,tm,cx)=>{const c0=cx||CHATS.find(x=>x.id===S.openId);/* بازدید واقعی | Real Views: در کانال آنلاین تعداد اعضایی که بعد از ارسال این پست کانال را دیده‌اند (in an online channel: members who viewed the channel after this post) */if(c0&&c0.gid&&c0.mids){const r=(CFG.sent[c0.id]||[]).find(x=>x[1]===t&&x[2]===tm),at=r&&r[6]||0,sm=c0.sm||{};return Math.max(1,at?c0.mids.filter(u=>(sm[u]||0)>=at).length:0)}/* بازدید واقعی و حداقل یک | Real Views Minimum One: عدد بازدید فقط از دیدن واقعی اعضا حساب می‌شود (عدد الکی حذف شد)؛ چون ادمین بعد از ارسال پست را می‌بیند، کمترین عدد همیشه ۱ است */return 1};
   /* بازدید کانال | Channel Views Sync: وقتی کانال باز است زمان دیدن من روی سرور نوشته می‌شود و زمان دیدن همه‌ی اعضا خوانده می‌شود؛ بعد عدد زیر هر پست تازه می‌شود. هر ۱۲ ثانیه تکرار می‌شود (while the channel is open my view time is saved and every member's is read, then the numbers under posts are redrawn; repeats every 12 seconds) */
   try{Object.assign(FA,{"member":"عضو","members":"عضو","subscriber":"مشترک","subscribers":"مشترک"})}catch(e){}
   function chViewsDraw(c){if(!c||S.openId!==c.id)return;document.querySelectorAll("#msgs .b").forEach(b=>{const v=b.querySelector(".vw");if(v)v.innerHTML=eye+fmt(views(b.dataset.t,b.dataset.tm,c))})}
