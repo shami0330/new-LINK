@@ -1375,7 +1375,7 @@ const LKA=(()=>{
    if(un===q||em===q)return -1;
    const d=Math.min(un.startsWith(q)?un.length-q.length:1e3,em.startsWith(q)?em.length-q.length:1e3);
    return d<1e3?d:1e3+Math.min(un.length,em.length)};
-  return rows.filter(x=>!(S.user&&x.$id===S.user.id)).map(x=>({id:x.$id,username:x.username,email:x.email,photo:(x.privPhoto!=="Nobody"&&x.photo)||"",name:((x.firstName||"")+" "+(x.lastName||"")).trim()||x.username,score:sc(x)})).sort((a,b)=>a.score-b.score).slice(0,25)}
+  return rows.filter(x=>!(S.user&&x.$id===S.user.id)).map(x=>({id:x.$id,username:x.username,email:x.email,photo:((x.privPhoto||"Everybody")==="Everybody"&&x.photo)||"",name:((x.firstName||"")+" "+(x.lastName||"")).trim()||x.username,score:sc(x)})).sort((a,b)=>a.score-b.score).slice(0,25)}
   /* پیام‌رسانی سرور | Server Messaging: ساختن چت دو نفره، فرستادن و خواندن پیام و دریافت زنده از جدول‌های chats و messages (private chat create, send, read, live receive) */
   /* شناسه چت | Chat Id: از دو آی‌دی کاربر همیشه یک شناسه ثابت ۳۲ حرفی می‌سازد تا هر دو طرف به یک چت برسند (same 32-char id for both users) */
   const pairKey=(a,b)=>[a,b].sort().join("_");
@@ -1441,7 +1441,7 @@ const LKA=(()=>{
   const h=me?await ctH(uid,me):"",inCt=!!h&&String(p.contacts||"").split(",").includes(h),vis=(v,d)=>{v=v||d;return v==="Everybody"||(v==="My Contacts"&&inCt)};
   return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username,
    /* ایمیل و بیو با اجازه صاحبشان | Email And Bio By Permission: ایمیل فقط وقتی برمی‌گردد که صاحب حساب در بخش امنیت «همه» یا «مخاطبین من» گذاشته باشد؛ بیو مگر اینکه «هیچ‌کس» باشد (email only if the owner allows it; bio unless Nobody) */
-   email:vis(p.privEmail,"Nobody")?String(p.email||""):"",bio:vis(p.privBio,"Everybody")?String(p.bio||""):"",
+   /* عکس با اجازه | Photo By Permission: عکس فقط به کسی نشان داده می‌شود که طبق تنظیم صاحب حساب (همه یا مخاطبین من) مجاز باشد (photo only if the owner allows: Everybody or My Contacts) */photo:vis(p.privPhoto,"Everybody")?String(p.photo||""):"",email:vis(p.privEmail,"Nobody")?String(p.email||""):"",bio:vis(p.privBio,"Everybody")?String(p.bio||""):"",
    /* تاریخ تولد واقعی | Real Birthday: فقط اگر به شکل سال-ماه-روز در سرور ثبت شده باشد برمی‌گردد؛ خالی یعنی ثبت نشده (only a saved YYYY-MM-DD value is returned; empty means not set) */
    bday:/^\d{4}-\d{2}-\d{2}$/.test(String(p.bday||""))&&vis(p.privBday,"My Contacts")?String(p.bday):""}}
   /* کد مخاطب | Contact Code: کد کوتاه رمزشده از آیدی صاحب و آیدی مخاطب (short hashed code of owner id + contact id) */
@@ -3387,7 +3387,7 @@ const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Musi
 const LK_PRIV={email:"privEmail",seen:"privSeen",photo:"privPhoto",bio:"privBio",bday:"privBday",groups:"privGroups"};
 function lkApplyMe(u){if(!u)return;Object.keys(LK_PRIV).forEach(k=>{if(u[LK_PRIV[k]])CFG.priv[k]=u[LK_PRIV[k]]});saveCfg()}
 /* ذخیره پروفایل من روی سرور | Save My Profile To Server: نام، نام‌کاربری، بیو و تولد را روی سرور می‌نویسد؛ اگر ستون بیو یا تولد در سرور نبود، فقط نام و نام‌کاربری ذخیره می‌شود و پیام می‌آید (writes name, username, bio, birthday; falls back to name+username if columns are missing) */
-function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();/* عکس پروفایل | Profile Photo: عکس فقط وقتی ذخیره می‌شود که حجمش مناسب باشد (photo saved only when small enough) */if(u.photo&&u.photo.length<180000)core.photo=u.photo;if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
+function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();/* عکس پروفایل | Profile Photo: عکس فقط وقتی ذخیره می‌شود که حجمش مناسب باشد (photo saved only when small enough) */if(u.photo){const im=new Image();im.onload=()=>{const s=Math.min(1,256/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);LKA.saveMe(u.id,{photo:cv.toDataURL("image/jpeg",.7)}).then(ok=>{if(!ok)toast("عکس در سرور ذخیره نشد؛ ستون photo باید به جدول users اضافه شود")}).catch(()=>{})};im.src=u.photo}if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
  LKA.saveMe(u.id,Object.assign({},core,{bio:String(u.bio||"").slice(0,70),bday:String(u.bday||"")})).then(ok=>{if(ok)return;return LKA.saveMe(u.id,core).then(ok2=>toast(ok2?"بیو و تولد در سرور ذخیره نشد؛ ستون bio و bday باید به جدول users اضافه شود":"ذخیره در سرور انجام نشد"))}).catch(()=>{})}
 /* ذخیره حریم خصوصی روی سرور | Save Privacy To Server: انتخاب کاربر برای نمایش ایمیل و بیو به دیگران روی سرور ذخیره می‌شود (saves who may see my email and bio) */
 function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const f=LK_PRIV[k];if(!f)return;const d={};d[f]=v;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون های privEmail و privBio و privBday و privSeen و privPhoto و privGroups باید به جدول users اضافه شود")}).catch(()=>{})}
@@ -3396,7 +3396,7 @@ function lkCpReal(c,real){$("#cpEd").style.display="none";const ph=$("#cp_ph"),r
  if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";$("#cp_bdv").textContent="";rd.style.display="none";return}
  $("#cp_phl").textContent=tr("Email");$("#cp_bdl").textContent=tr("Birthday");$("#cp_bil").textContent=tr("Bio");$("#cp_bdv").textContent="";ph.textContent="";ph.setAttribute("dir","ltr");$("#cp_biv").textContent="";[rp,ru,rb,rd].forEach(r=>r.style.display="none");cd.style.display="none";
  if(c.uid)LKA.user(c.uid,S.user&&S.user.id).then(u=>{if(S.openId!==c.id)return;const un=u.username||c.uname||"";let n=0;
-  if(un){$("#cp_un").textContent="@"+un;ru.style.display="";n++}
+  if(u.photo)paintAv($("#cp_av"),{name:c.n,photo:u.photo});if(un){$("#cp_un").textContent="@"+un;ru.style.display="";n++}
   if(u.email){ph.textContent=u.email;rp.style.display="";n++}
   if(u.bio){$("#cp_biv").textContent=u.bio;rb.style.display="";n++}
   /* تولد شمسی | Jalali Birthday: اگر ثبت شده باشد به شمسی نشان داده می‌شود؛ وگرنه ردیف پنهان می‌ماند (shown in Jalali if set, hidden otherwise) */
