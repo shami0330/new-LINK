@@ -5051,7 +5051,7 @@ async function recDiscard(o){if(o.done)return;o.done=1;clearInterval(o.iv);try{a
 async function recFinish(o){if(o.done||o.busy)return;
  /* مسیر پیش‌نمایش | Preview Path: اگر نوار تریم باز است، اول بخش انتخاب‌شده بریده می‌شود و بعد ارسال می‌شود */
  if(o.pvRes){o.busy=1;let res=o.pvRes;const T=o.trm;
-  if(T&&(T.s>.01||T.e<.99)){const d=res.duration,t0=T.s*d,t1=T.e*d;let r2=null;try{r2=await Promise.race([mediaRun(res.file,{trim:{start:t0,end:t1}},"videoMsg"),new Promise(ok=>setTimeout(()=>ok(null),25000))])}catch(e){}
+  if(T&&(T.s>.01||T.e<.99)){const d=res.duration,t0=T.s*d,t1=T.e*d;let r2=null;try{r2=await Promise.race([/* برش بدون ساخت دوباره | Trim Without Re-encode: برش فقط کپی می‌کند (سریع، بدون افت کیفیت، کدک و بیت‌ریت ضبط حفظ می‌شود)؛ شروع ویدیو ممکن است کمی زودتر باشد. برای برگشت به حالت قبلی {height:"Original"} را بردار (trim only copies; fast, lossless, keeps the recorded codec and bitrate; the start may be a little early; remove {height:"Original"} to go back to re-encoding) */mediaRun(res.file,{trim:{start:t0,end:t1}},"videoMsg",{height:"Original"}),new Promise(ok=>setTimeout(()=>ok(null),25000))])}catch(e){}
    if(!(r2&&!r2.failed&&!r2.original&&r2.blob)){o.busy=0;toast("Could not trim video");return}
    if(!r2.duration)r2.duration=t1-t0;r2.thumb=res.thumb;res=r2}
   o.done=1;recHide(o);await sendVM(res);return}
