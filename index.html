@@ -1967,7 +1967,7 @@ function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)re
  LKC.un=LKA.listen(S.user.id,lkIn);
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
- LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);if(r.photo)c.photo=r.photo;c.lat=Date.parse(r.at)||0;c.m=(x=>lkSvIs(x)?lkSvPlain(x):FWR.test(x)?"\u21aa "+fwBody(x):x)(lkRpDec(r.last,r.lastSender,c).t);/* پیش‌نمایش فوروارد | Forward Preview: در لیست چت‌ها پیام فوروارد با «↪» و متن پیام نشان داده می‌شود نه چسبیده به نام (forwarded text shows as ↪ plus the body in the chat list) */c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS.filter(x=>x.uid&&!rs.some(r=>r.uid===x.uid)&&(CFG.sent[x.id]||[]).length&&!(CFG.sent[x.id]||[]).some(r=>r[9]&&!r[7])).forEach(lkGone);rs.forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c)c.inSrv=1});renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
+ LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);if(r.photo)c.photo=r.photo;c.lat=Date.parse(r.at)||0;c.m=(x=>lkSvIs(x)?lkSvPlain(x):FWR.test(x)?"\u21aa "+fwBody(x):/* پیش‌نمایش رسانه | Media Preview Fix: اگر آخرین پیام عکس/ویدیو/فایل است، به‌جای کد خام نوع رسانه نوشته می‌شود (raw media code becomes 🖼 Photo / 🎬 Video / 📎 File before the chat is opened) */(x&&x[0]===LKM?lkMsgPlain(x):x))(lkRpDec(r.last,r.lastSender,c).t);/* پیش‌نمایش فوروارد | Forward Preview: در لیست چت‌ها پیام فوروارد با «↪» و متن پیام نشان داده می‌شود نه چسبیده به نام (forwarded text shows as ↪ plus the body in the chat list) */c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS.filter(x=>x.uid&&!rs.some(r=>r.uid===x.uid)&&(CFG.sent[x.id]||[]).length&&!(CFG.sent[x.id]||[]).some(r=>r[9]&&!r[7])).forEach(lkGone);rs.forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c)c.inSrv=1});renderChats();/* تامبنیل بدون باز کردن چت | Thumbnail Without Opening: چتی که آخرین پیامش رسانه است پیام‌هایش در پس‌زمینه گرفته می‌شود تا تامبنیل در لیست بیاید (chats whose last message is media load their messages in the background so the list shows the thumbnail) */rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}else if(c&&String(r.last||"").indexOf(LKM)>=0)lkChatLoad(c.id)})}).catch(lkErr);
  /* تایمر آرام | Slow Timer: بررسی دوره‌ای از ۵ ثانیه به ۶۰ ثانیه رفت تا پهنای باند سرور کم مصرف شود؛ ارسال دوباره پیام‌های نرسیده جدا و هر ۵ ثانیه می‌ماند چون هیچ درخواستی نمی‌فرستد مگر پیام نرسیده‌ای باشد؛ با برگشتن به برنامه یک دور کامل فوری انجام می‌شود (poll every 60s to save bandwidth; unsent-message retry stays at 5s; a full round runs at once when the app is shown again) */LKC.tm=setInterval(lkPoll,60000);clearInterval(LKC.tf);LKC.tf=setInterval(lkFlush,5000);if(!LKC.vl){LKC.vl=1;document.addEventListener("visibilitychange",()=>{if(!document.hidden){LKC.pn=4;lkPoll()}})}lkDiag();/* فرستادن بعد از باز شدن برنامه | Flush On Open: پیام‌های مانده از دفعهٔ قبل بعد از آماده شدن چت‌ها فرستاده می‌شوند (leftover messages are sent once chats are ready) */setTimeout(lkFlush,1500);setTimeout(lkFlush,6000);
   /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
   LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
@@ -2265,16 +2265,36 @@ function fillMe(){const u=S.user;if(!u)return;const f=fullName(u);
 /* کیفیت عکس پروفایل | Profile Photo Quality: عکس پروفایل مثل LINK با اندازه‌ی ۶۴۰ پیکسل و کیفیت بالا ذخیره می‌شود، نه بندانگشتی ۳۲۰ کم‌کیفیت (profile photos are saved at 640px high quality like LINK, not a 320px thumbnail) */
 function pickPhoto(cb,bg){const f=$("#photoIn");f.value="";f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{if(bg){const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7));return}const m=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=640;const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,640,640);cb(c.toDataURL("image/jpeg",.92))};im.src=r.result};r.readAsDataURL(file)};f.click()}
 function openEdit(){const u=S.user;if(!u)return;ED={photo:u.photo};
- $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";bdShow();$("#ed_user").value=u.username;$("#ed_email").textContent=u.email;
+ $("#ed_first").value=u.name;$("#ed_last").value=u.last||"";$("#ed_bio").value=u.bio||"";$("#ed_bday").value=u.bday||"";bdShow();$("#ed_user").value=u.username;/* قلاب پاک‌کردن پیام یوزرنیم | Username Msg Reset Hook: پیام و رنگ قبلی کادر یوزرنیم پاک می‌شود */if(window.lkUnReset)window.lkUnReset();$("#ed_email").textContent=u.email;
  paintAv($("#ed_av"),{name:u.name,photo:ED.photo});openSub("pedit")}
 $("#seEdit").onclick=openEdit;$("#pfEdit").onclick=openEdit;$("#myav").onclick=()=>{if(!S.user)return;if(S.pfBig)openViewer($("#myav"),im=>paintAv(im,S.user),false);else setBig(true)};
 $("#chPhoto").onclick=()=>{if(S.user)pickPhoto(d=>{S.user.photo=d;fillMe()})};
 $("#edPhoto").onclick=$("#ed_av").onclick=()=>pickPhoto(d=>{ED.photo=d;paintAv($("#ed_av"),{name:$("#ed_first").value||S.user.name,photo:d})});
 $("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
-$("#edOk").onclick=()=>{const u=S.user,nm=$("#ed_first").value.trim(),un=$("#ed_user").value.trim().replace(/^@/,"");
+$("#edOk").onclick=async()=>{const u=S.user,nm=$("#ed_first").value.trim(),un=$("#ed_user").value.trim().replace(/^@/,"");
  if(!nm){toast(tr("Name can't be empty"));return}
- if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){toast(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}
+ if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){toast(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}/* قلاب بررسی یوزرنیم | Username Check Hook: قبل از ذخیره، تکراری نبودن یوزرنیم تازه روی سرور دوباره بررسی می‌شود؛ اگر تکراری بود هیچ چیز تغییر نمی‌کند */if(un&&LK_MODE==="real"&&un.toLowerCase()!==String(u.username||"").toLowerCase()){if(ED.busy)return;ED.busy=1;const f=await lkUnameFree(un,u.id);ED.busy=0;if(f!==true){lkUnShow(f===false?"taken":"err");toast(tr(f===false?"This username is already taken":"Couldn't check the username, try again"));return}}
  Object.assign(u,{name:nm,last:$("#ed_last").value.trim(),bio:$("#ed_bio").value.trim(),bday:$("#ed_bday").value,username:un,photo:ED.photo||""});fillMe();closeSub();lkSaveMe(u)};
+/* ---- ۳.۱۳ بررسی یوزرنیم | 3.13 Username Availability ---- */
+Object.assign(FA,{"This username is already taken":"این نام کاربری قبلاً گرفته شده","Username is available":"این نام کاربری آزاد است","Checking…":"در حال بررسی…","Couldn't check the username, try again":"بررسی نام کاربری انجام نشد؛ دوباره تلاش کن"});
+/* آزاد بودن یوزرنیم | Username Free Check: روی سرور می‌پرسد آیا کس دیگری این یوزرنیم را دارد؛ درست=آزاد، نادرست=تکراری، خالی=بررسی نشد (true=free, false=taken, null=could not check) */
+async function lkUnameFree(un,myId){const l=String(un).toLowerCase();try{const Q=window.Appwrite.Query,db=LKA.db(),sel=Q.select(["$id","username","usernameLower"]);let rows;
+ try{const r=await db.listRows({databaseId:"link",tableId:"users",queries:[Q.equal("usernameLower",l),Q.limit(5),sel]});rows=r.rows||[]}
+ catch(e){const a=await db.listRows({databaseId:"link",tableId:"users",queries:[Q.limit(500),sel]});rows=(a.rows||[]).filter(x=>String(x.usernameLower||x.username||"").toLowerCase()===l)}
+ return!rows.some(x=>x.$id!==myId)}catch(e){return null}}
+/* نمایش پیام یوزرنیم | Username Message: زیر کادر یوزرنیم به سبک تلگرام پیام می‌نویسد؛ تکراری و نامعتبر قرمز، آزاد سبز، در حال بررسی خاکستری */
+function lkUnShow(st){const f=$("#ed_user");if(!f)return;let m=$("#ed_unmsg");if(!m){m=document.createElement("div");m.id="ed_unmsg";m.style.cssText="padding:2px 16px 10px;font-size:13px;display:none";f.closest(".item").after(m)}
+ const T={taken:["This username is already taken","var(--red)"],bad:["Username: at least 5 characters, only a-z, 0-9 and _","var(--red)"],err:["Couldn't check the username, try again","var(--red)"],free:["Username is available","#30a46c"],wait:["Checking…","var(--sub,#8e8e93)"]}[st];
+ if(!T){m.style.display="none";m.textContent="";f.style.color="";return}
+ m.textContent=tr(T[0]);m.style.color=T[1];m.style.display="block";f.style.color=(st==="taken"||st==="bad")?"var(--red)":""}
+/* پاک‌کردن پیام | Reset Message: با باز شدن صفحه‌ی ویرایش پیام و رنگ قرمز پاک می‌شود */
+window.lkUnReset=()=>{clearTimeout(ED.unT);ED.unTok=(ED.unTok||0)+1;lkUnShow("")};
+/* بررسی هنگام نوشتن | Live Check: ۴۵۰ هزارم ثانیه بعد از آخرین حرف، یوزرنیم تازه روی سرور بررسی می‌شود */
+document.addEventListener("input",e=>{if(!e.target||e.target.id!=="ed_user")return;const un=e.target.value.trim().replace(/^@/,""),cur=String((S.user&&S.user.username)||"").toLowerCase();clearTimeout(ED.unT);const tok=ED.unTok=(ED.unTok||0)+1;
+ if(!un||un.toLowerCase()===cur){lkUnShow("");return}
+ if(!/^[A-Za-z0-9_]{5,}$/.test(un)){lkUnShow("bad");return}
+ if(LK_MODE!=="real"){lkUnShow("");return}
+ lkUnShow("wait");ED.unT=setTimeout(async()=>{const f=await lkUnameFree(un,S.user&&S.user.id);if(tok!==ED.unTok)return;lkUnShow(f===true?"free":f===false?"taken":"err")},450)});
 $("#edLogout").onclick=()=>$("#logout").click();
 /* ردیف‌های منو | Menu Rows: هر ردیف صفحه خودش را باز می‌کند (each row opens its page) */
 $$("[data-go]").forEach(e=>e.onclick=()=>{const g=e.dataset.go;if(g==="saved"){S.fromSet=true;openChat(2);return}if(g==="pfile"){openEdit();return}if(g==="cpass")["#cp_old","#cp_new","#cp_rep"].forEach(q=>$(q).value="");renderVals();openSub(g)});
@@ -2426,7 +2446,9 @@ function lkDrop(ids){ids.forEach(i=>{if(LKU[i])URL.revokeObjectURL(LKU[i]);delet
 /* رمز پیام رسانه | Media Message Code: پیام رسانه‌ای در همان فهرست پیام‌ها ذخیره می‌شود؛ متن با یک نشانه‌ی نامرئی شروع می‌شود و بعدش اطلاعات فایل‌ها (نام، اندازه، عرض و ارتفاع، مدت) می‌آید. lkMsgPlain خلاصه‌ی متنی برای فهرست گفتگوها و پاسخ و جست‌وجو می‌دهد */
 const lkEnc=o=>LKM+JSON.stringify(o);
 function lkDec(t){const m=FWR.exec(t),x=m?m[2]:t;if(!x||x[0]!==LKM)return null;try{return JSON.parse(x.slice(1))}catch(e){return null}}
-function lkMsgPlain(t){if(lkSvIs(t))return lkSvPlain(t);const o=lkDec(t);if(!o)return t;const n=o.it.length,a=o.it[0];/* متن لیست چت | Chat List Text: اگر کپشن دارد بعد از نوع رسانه نشان داده می‌شود */const pl=o.k==="files"?"📎 "+(n>1?n+" files":a.n):(n>1?"🖼 "+n+" items":(a.t==="video"?"🎬 Video":"🖼 Photo"));return o.cap?pl+": "+o.cap:pl}
+/* متن جایگزین رسانه | Media Fallback Text: لیست چت‌ها فقط ۲۰۰ حرف اول پیام را می‌گیرد و رسانه ناقص می‌شود؛ به‌جای کد عجیب، نوع رسانه از همان ابتدای متن خوانده و نوشته می‌شود (the chat list only gets the first 200 chars so a media message is cut; the type is read from the start and shown as text instead of raw code) */
+function lkMediaFallback(t){const s=String(t).slice(0,300),k=/"k":"(\w+)"/.exec(s),ty=/"t":"(\w+)"/.exec(s);return k&&k[1]==="files"?"📎 File":(ty&&ty[1]==="video"?"🎬 Video":"🖼 Photo")}
+function lkMsgPlain(t){if(lkSvIs(t))return lkSvPlain(t);const o=lkDec(t);if(!o)return String(t)[0]===LKM?lkMediaFallback(t):t;const n=o.it.length,a=o.it[0];/* متن لیست چت | Chat List Text: اگر کپشن دارد بعد از نوع رسانه نشان داده می‌شود */const pl=o.k==="files"?"📎 "+(n>1?n+" files":a.n):(n>1?"🖼 "+n+" items":(a.t==="video"?"🎬 Video":"🖼 Photo"));return o.cap?pl+": "+o.cap:pl}
 /* ظاهر پیام رسانه | Media Bubble: عکس و ویدیو به‌صورت آلبوم ردیفی مثل LINK (تا ۱۰ تا)، فایل‌ها به‌صورت یک بسته که هر کدام دکمه‌ی دانلود جدا دارد */
 /* چیدمان LINKی ۳ و ۴ عکس | LINK Mosaic: اگر عکس اول عمودی باشد، آن بزرگ در سمت چپ می‌ایستد و بقیه زیر هم در ستون راست می‌آیند؛ در غیر این صورت چیدمان ردیفی قبلی می‌ماند */
 function lkTele(o){const it=o.it,n=it.length;if(o.k==="files"||n<3||n>4)return null;const f=it[0];if(!((f.w||1)/(f.h||1)<1))return null;
@@ -2826,7 +2848,7 @@ function mpvSrc(i){const m=$("#mpTr").children[i].querySelector("img,video"),vd=
 /* رسم نتیجه | Draw Edited Preview: نتیجه‌ی برش، چرخش، آینه و رنگ را با همان mDraw سیستم رسانه روی بوم صفحه می‌کشد تا پیش‌نمایش با فایل ارسالی یکی باشد */
 function mpvDraw(i){const sl=$("#mpTr").children[i];if(!sl)return;if(!mpvIsEd(i)){sl.classList.remove("ed");return}const r=MPV.rec[i],{m,sw,sh}=mpvSrc(i);if(!sw||!sh||(m.tagName==="VIDEO"&&m.readyState<2)){sl.classList.remove("ed");return}
  const cv=sl.querySelector(".mpc"),k=Math.min(2,devicePixelRatio||1),W=Math.round(sl.clientWidth*k),H=Math.round(sl.clientHeight*k);if(!W||!H)return;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
- const c=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2,s=ch>cw?Math.max(W/cw,H/ch):Math.min(W/cw,H/ch),dw=Math.max(1,Math.round(cw*s)),dh=Math.max(1,Math.round(ch*s));
+ const c=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2,s=(ch>cw*1.01&&!($("#mpv").classList.contains("avp")&&!$("#mpv").classList.contains("bgp")))?Math.max(W/cw,H/ch):Math.min(W/cw,H/ch),dw=Math.max(1,Math.round(cw*s)),dh=Math.max(1,Math.round(ch*s));
  const oc=MPV.oc||(MPV.oc=document.createElement("canvas"));oc.width=dw;oc.height=dh;mDraw(oc.getContext("2d",{willReadFrequently:!MHASF}),m,sw,sh,mediaRecipe(r),c,dw,dh);
  const x=cv.getContext("2d");x.clearRect(0,0,W,H);x.drawImage(oc,(W-dw)/2,(H-dh)/2);sl.classList.add("ed")}
 /* علامت ویرایش | Mark Edited: اگر فایل برش، رنگ، چرخش یا آینه دارد بوم نتیجه را نشان می‌دهد، وگرنه خود فایل را */
@@ -2964,6 +2986,7 @@ async function avPreview(file,cb){
  cr.onclick=async()=>{await c0();MPE.ratio=1};
  sb.onclick=()=>{try{const rr=MPV.rec[0],{m,sw,sh}=mpvSrc(0),N=640,cv=document.createElement("canvas");cv.width=cv.height=N;let c={...(rr.crop||{x:0,y:0,w:1,h:1})};const rot=((rr.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2;if(cw>ch+1){const nw=ch/w2;c.x+=(c.w-nw)/2;c.w=nw}else if(ch>cw+1){const nh=cw/h2;c.y+=(c.h-nh)/2;c.h=nh}
   mDraw(cv.getContext("2d"),m,sw,sh,mediaRecipe(rr),c,N,N);cb(cv.toDataURL("image/jpeg",.92))}catch(e){toast("Couldn't use this photo");return}b0();end()}
+/* باز شدن خودکار برش | Auto Crop: بعد از انتخاب عکس، ویرایشگر مستقیم وارد حالت برش مربعی می‌شود (after picking a photo the editor opens straight in square-crop mode) */try{await cr.onclick()}catch(e){}
 }
 /* برش پس‌زمینه | Background Crop: وقتی عکس پس‌زمینه‌ی چت انتخاب می‌شود، همان ویرایشگر برش پروفایل باز می‌شود؛ قاب برش روی نسبت دقیق صفحه‌ی چت قفل است (فقط کوچک و بزرگ و جابه‌جا می‌شود) و بدون دایره‌ی راهنما */
 (function(){const st=document.createElement("style");st.textContent="#mpv.bgp #mpeR::after,#mpv.bgp #mpeR::before,#mpv.bgp .avg{display:none!important}";document.head.append(st)})();
@@ -3554,6 +3577,30 @@ $("#vwBack").onclick=closeViewer;
  vw.addEventListener("touchmove",e=>{if(y0===null)return;d=e.touches[0].clientY-y0;$("#vwimg").style.transform=`translateY(${d}px)`;$("#vwbg").style.opacity=Math.max(0,1-Math.abs(d)/400);$$("#vw .vwc").forEach(c=>c.style.opacity=0)},{passive:true});
  vw.addEventListener("touchend",()=>{if(y0===null)return;if(Math.abs(d)>110)closeViewer();else if(Math.abs(d)>4){const im=$("#vwimg");im.animate([{transform:`translateY(${d}px)`},{transform:"none"}],{duration:200});im.style.transform="";$("#vwbg").style.opacity=1;$$("#vw .vwc").forEach(c=>c.style.opacity=1)}y0=null;d=0})})();
 
+/* زوم عکس | Photo Zoom: در نمایشگر تمام‌صفحه عکس را با دو انگشت بزرگ و کوچک می‌کنی، با دو بار لمس سریع بزرگ/برمی‌گردد، و وقتی بزرگ است با یک انگشت جابه‌جا می‌شود؛ تا وقتی بزرگ است کشیدن-به-پایین برای بستن کار نمی‌کند */
+(function(){const vw=$("#vw"),im=$("#vwimg");if(!vw||!im)return;
+ const Z={s:1,x:0,y:0};let own=false,g=null,last=0;
+ /* اعمال زوم | Apply Zoom: مقدار بزرگ‌نمایی و جابه‌جایی روی عکس گذاشته می‌شود (با ویژگی scale/translate تا با انیمیشن باز و بسته شدن قاطی نشود) */
+ const apply=(anim)=>{im.style.transition=anim?"scale .22s,translate .22s":"none";im.style.scale=Z.s===1?"":Z.s;im.style.translate=Z.s===1?"":Z.x+"px "+Z.y+"px"};
+ const clampPan=()=>{const l=innerWidth*(Z.s-1)/2;Z.x=Math.max(-l,Math.min(l,Z.x));Z.y=Math.max(-l,Math.min(l,Z.y))};
+ const reset=(anim)=>{Z.s=1;Z.x=0;Z.y=0;apply(anim);own=false;g=null};
+ const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+ /* قلاب گرفتن لمس | Touch Hook: لمس‌ها قبل از «کشیدن برای بستن» گرفته می‌شوند تا هنگام زوم عکس بسته نشود */
+ const P=vw.parentNode;
+ P.addEventListener("touchstart",e=>{if(!vw.contains(e.target)||e.target.closest(".vwc"))return;const t=e.touches;
+  if(t.length>=2){own=true;im.style.transform="";$("#vwbg").style.opacity=1;g={d0:dist(t),s0:Z.s};e.stopPropagation();return}
+  const now=Date.now(),dbl=now-last<300;last=now;
+  if(dbl){own=true;if(Z.s>1)reset(true);else{Z.s=2.5;Z.x=0;Z.y=0;apply(true)}last=0;e.stopPropagation();return}
+  if(Z.s>1){own=true;g={px:t[0].clientX,py:t[0].clientY};e.stopPropagation()}},{capture:true,passive:true});
+ P.addEventListener("touchmove",e=>{if(!own||!vw.contains(e.target))return;e.stopPropagation();const t=e.touches;
+  if(t.length>=2&&g&&g.d0){Z.s=Math.max(1,Math.min(4,g.s0*dist(t)/g.d0));clampPan();apply(false)}
+  else if(t.length===1&&g&&g.px!==undefined&&Z.s>1){Z.x+=t[0].clientX-g.px;Z.y+=t[0].clientY-g.py;g.px=t[0].clientX;g.py=t[0].clientY;clampPan();apply(false)}},{capture:true,passive:true});
+ P.addEventListener("touchend",e=>{if(!own||!vw.contains(e.target))return;e.stopPropagation();const t=e.touches;
+  if(t.length===0){if(Z.s<1.05)reset(true);own=false;g=null}
+  else if(t.length===1&&Z.s>1)g={px:t[0].clientX,py:t[0].clientY}},{capture:true,passive:true});
+ /* ریست زوم | Zoom Reset: با بسته شدن نمایشگر یا زدن برگشت، زوم به حالت اول برمی‌گردد */
+ $("#vwBack").addEventListener("click",()=>reset(false),true);
+ new MutationObserver(()=>{if(vw.style.display==="none")reset(false)}).observe(vw,{attributes:true,attributeFilter:["style"]})})();
 /* ---- پاسخ و نوار پیام | Reply & Message Bar ---- */
 /* ارتفاع نوار | Bar Height: ارتفاع واقعی نوار پایین را برای فاصله پیام‌ها ثبت می‌کند (stores real bar height so messages stay above it) */
 function fitBar(){requestAnimationFrame(()=>{const cb=$("#chbar");$("#chat").style.setProperty("--ibh",($(".inbar").offsetHeight||(cb&&cb.offsetHeight)||$("#blkbar").offsetHeight)+"px")})}
