@@ -1618,6 +1618,9 @@ function mediaIdle(k){const s=MPERM.live[k];if(s)s.getTracks().forEach(t=>{t.ena
 function mediaRelease(k){const s=MPERM.live[k];if(s)s.getTracks().forEach(t=>t.stop());delete MPERM.live[k];clearTimeout(MPERM.t[k]);if(k==="mic"){MPERM.src=null;MPERM.srcStream=null}}
 /* پرسیدن یک‌بار | Ask Once: برای mic/camera/both/storage یک‌بار اجازه می‌گیرد و درست یا نادرست برمی‌گرداند؛ دفعه‌های بعد بدون پرسیدن درست برمی‌گرداند */
 async function mediaAsk(kind){if(kind==="storage")return(await mediaPerm(kind))==="granted";try{await mediaStream(kind);mediaIdle(kind);return true}catch(e){return false}}
+/* بررسی اولیه‌ی مجوز | Startup Permission Check: بعد از ورود به برنامه، بی‌صدا بررسی می‌شود که میکروفن و دوربین مجاز هستند یا نه. اگر هر دو از قبل مجاز بودند یا کاربر قبلاً رد کرده بود، کاری نمی‌کند؛ در غیر این صورت یک‌بار از مرورگر اجازه می‌خواهد و بلافاصله دوربین و میکروفن را دوباره می‌بندد تا چراغ آن‌ها روشن نماند (silently checks mic and camera after the app opens; does nothing if both are already allowed or were refused; otherwise asks once and closes them at once so their lights do not stay on) */
+let lkPermDone=0;
+async function lkPermCheck(){if(lkPermDone)return;lkPermDone=1;try{const m=await mediaPerm("both");if(m!=="prompt")return;await mediaAsk("both");mediaRelease("both")}catch(e){}}
 
 /* ---- سیستم برش و تنظیم | Crop & Adjust System ---- */
 /* ناحیه‌ی برش | Crop Area: ناحیه‌ی برش نهایی را برمی‌گرداند؛ اگر نسبت ثابت لازم باشد (مثلاً ۱:۱) ناحیه را از وسط همان نسبت می‌کند. بدون برش یعنی کل تصویر */
@@ -1848,7 +1851,7 @@ $("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Conf
 $("#logout").onclick=()=>{LKA.out();lkStop(1);S.user=null;show("login")};
 /* بازیابی نشست | Session Restore: اگر قبلاً وارد شده بود، مستقیم وارد برنامه می‌شود */
 /* پایان لودینگ شروع | Boot Loading Off: لودینگ آرام محو و بعد برداشته می‌شود (fades the boot screen out, then removes it) */
-function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.off=1;b.classList.add("off");setTimeout(()=>b.remove(),320)}
+function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.off=1;/* اتصال بررسی مجوز | Connect Permission Check: بعد از بالا آمدن برنامه، مجوز میکروفن و دوربین بررسی می‌شود */setTimeout(()=>{try{lkPermCheck()}catch(e){}},700);b.classList.add("off");setTimeout(()=>b.remove(),320)}
 {const b=$("#lkBoot"),lg=document.querySelector("#login .lgo");if(b&&lg)b.querySelector("img").src=lg.src}
 /* اگر سرور دیر جواب داد | Boot Timeout: بعد از ۸ ثانیه لودینگ برداشته می‌شود تا برنامه گیر نکند (never stuck on loading) */
 setTimeout(lkBootOff,8000);
@@ -4947,7 +4950,7 @@ function recShow(o){const u=recUI();o.shown=true;S.sendHold=true;
  u.pg.style.strokeDashoffset="307.9";u.d.classList.remove("ps");u.d.classList.add("on");recTorchLook(o);
  try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
  const tk=u.bar.querySelector(".vmt");
- o.iv=setInterval(()=>{const s=o.rec.seconds;tk.textContent=fT(s);u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,s/MP.videoMsg.maxSec))).toFixed(1);if(s>=MP.videoMsg.maxSec)recFinish(o)},50)}
+ o.iv=setInterval(()=>{const s=o.rec.seconds;tk.textContent=fT(s);u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,s/MP.videoMsg.maxSec))).toFixed(1);/* سقف یک دقیقه | One Minute Limit: به یک دقیقه که برسد ضبط خودکار نمی‌فرستد؛ متوقف می‌شود و به حالت تریم می‌رود تا کاربر خودش بفرستد (at one minute it stops and opens trim instead of sending; the user sends it) */if(s>=MP.videoMsg.maxSec){clearInterval(o.iv);if(!o.locked)recLock(o);toast("Time limit reached");recStop(o)}},50)}
 /* بستن صفحه | Hide Record Screen: صفحه را می‌بندد و همه‌چیز را به حالت اول برمی‌گرداند */
 function recHide(o){clearInterval(o.iv);if(UI){UI.d.classList.remove("on","ps","pv","sf");recPvClean(o);UI.pv.innerHTML="";UI.btn.style.transform="";UI.lk.style.transform=""}if(V===o)V=null;setTimeout(()=>{S.sendHold=false},400)}
 /* قفل | Lock: با کشیدن به بالا ضبط قفل می‌شود؛ دکمه‌ی ارسال فلش می‌شود و بالای آن دکمه‌ی مکث می‌آید */
@@ -5103,7 +5106,7 @@ function vmDockOff(){if(!VMF.classList.contains("on"))return;VMF.classList.remov
 /* هماهنگی هر فریم | Frame Sync: آیکون مکث نوار، نشان دادن یا پنهان کردن دایره‌ی شناور، و هماهنگ نگه داشتن تصویر آن با ویدیوی اصلی */
 function vmSync(el,v){const pz=v.paused;if(v.duration)VMB.querySelector(".vnl").style.width=(v.currentTime/v.duration*100)+"%";if(VMB._pz!==pz){VMB._pz=pz;VMB.querySelector(".vnp").innerHTML=ic(pz?"play":"pause",20)}
  const ch=$("#chat"),cs=ch.style,hh=parseFloat(cs.getPropertyValue("--hh"))||0,bh=parseFloat(cs.getPropertyValue("--bh"))||0,cr=ch.getBoundingClientRect(),ib=ch.querySelector(".inbar").getBoundingClientRect(),r=el.getBoundingClientRect();
- if(!VMF._free&&!ch.classList.contains("on"))vmFree(v);if(VMF._free){if(ch.classList.contains("on")&&VB.cur&&S.openId===VB.cur.cid)vmUnfree();else{vmFreeSync(el,v);return}}if(!cr.width)return;const up=r.bottom<cr.top+hh+bh+4,dn=r.top>ib.top-4;
+ if(!VMF._free&&(!ch.classList.contains("on")||!el.isConnected))vmFree(v);if(VMF._free){if(el.isConnected&&ch.classList.contains("on")&&VB.cur&&S.openId===VB.cur.cid)vmUnfree();else{vmFreeSync(el,v);return}}if(!cr.width)return;const up=r.bottom<cr.top+hh+bh+4,dn=r.top>ib.top-4;
  if(!up&&!dn){vmDockOff();return}
  if(up){VMF.style.top=(hh+bh+2)+"px";VMF.style.bottom="auto"}else{VMF.style.top="auto";VMF.style.bottom=(cr.bottom-ib.top+8)+"px"}
  const f=VMF.querySelector("video");
@@ -5138,7 +5141,7 @@ window.vmReset=vmReset;
 function vmStop(el){if(!el)return;if(VB.cur&&VB.cur.vm&&VB.cur.vo===el){VB.vKeep=0;VB.stopCur();return}vmReset(el)}
 /* حلقه‌ی هماهنگی | Sync Loop: تصویر دایره را با صدای پلیر مشترک (cur.a) هماهنگ نگه می‌دارد و حلقه و زمان را به‌روز می‌کند */
 let vmRaf=0;
-function vmLoop(){const el=VM.cur;if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return;if(!el.isConnected){VM.cur=null;vmDockOff();return}
+function vmLoop(){const el=VM.cur;if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return;/* ماندن حباب شناور | Keep Float Alive: اگر گفتگوی دیگری باز شد و حباب اصلی از صفحه رفت، دایره‌ی شناور همچنان می‌ماند و پخش ادامه دارد؛ فقط وقتی همان گفتگو دوباره ساخته می‌شود پنهان می‌شود (if another chat is opened and the original bubble leaves the page, the floating circle stays and playback continues; it hides only when the same chat is rebuilt) */if(!el.isConnected&&(!VB.cur.cid||S.openId===VB.cur.cid)){VM.cur=null;vmDockOff();return}
  const a=VB.cur.a,v=el._v;
  if(v){if(a.paused){if(!v.paused)v.pause()}else{if(v.paused)v.play().catch(()=>{});if(v.playbackRate!==a.playbackRate)v.playbackRate=a.playbackRate;/* همگام‌سازی نرم | Soft Sync: فقط وقتی تصویر بیش از ۱ ثانیه از صدا عقب یا جلو افتاد و فایل قابل جلو/عقب بردن بود، جابه‌جا می‌شود؛ پرش‌های پیاپی باعث فریز تصویر می‌شد (jump only if the picture is over 1 s off and seekable; constant jumps froze the picture) */if(!v.seeking&&v.seekable&&v.seekable.length&&Math.abs(v.currentTime-a.currentTime)>1){try{v.currentTime=a.currentTime}catch(_){}}}vmSync(el,v)}
  el.classList.toggle("pz",a.paused);
