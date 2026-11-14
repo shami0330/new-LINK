@@ -299,13 +299,12 @@ i[data-ic]{display:inline-flex;font-style:normal}
 #cpsbb.on{display:flex}
 #cpsbb .cpbt{padding:6px;color:var(--blue);cursor:pointer}
 #cpsbb .cpbt.dis{opacity:.35;pointer-events:none}
-#cpmn{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;box-sizing:border-box}
+#cpmn{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0;box-sizing:border-box}
 #cpmn.on{display:flex;animation:fade .18s}
 #cpmn .pv{max-width:78vw;max-height:46vh;border-radius:18px;object-fit:contain;background:#222;box-shadow:0 10px 40px rgba(0,0,0,.4)}
-#cpmn .mn2{width:min(78vw,300px);background:var(--menu);border-radius:14px;overflow:hidden;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
-#cpmn .mn2 div{padding:13px 16px;font-size:16px;border-bottom:.5px solid var(--line);display:flex;justify-content:space-between;align-items:center;color:var(--txt);cursor:pointer}
-#cpmn .mn2 div:last-child{border:0}
-#cpmn .mn2 div.rd{color:var(--red)}
+#cpmn .mn2{width:240px;background:var(--menu);border-radius:18px;overflow:hidden}
+#cpmn .mn2 div{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:17px;color:var(--txt);cursor:pointer}
+#cpmn .mn2 div.rd{color:var(--red);border-bottom:0}
 .dur{position:absolute;left:4px;bottom:4px;font-size:11px;color:#fff;background:rgba(0,0,0,.5);border-radius:8px;padding:0 5px}
 /* ردیف‌های لیست | List Rows: فایل، موزیک، ویس، لینک، ذخیره‌شده (files, music, voice, links, saved) */
 .lrow{display:flex;gap:12px;align-items:center;padding:9px 16px;border-bottom:.5px solid var(--line)}
@@ -3599,7 +3598,7 @@ function cpBody(){const b=$("#cpbody"),k=CP.tab;let h="";const dir=d=>d==="s"?"S
   if(a==="del")delAsk(ids)}
  /* منوی نگه‌داشتن | Hold Menu: پیش‌نمایش بزرگ رسانه با منو زیر آن */
  function menu(t){const id=t.dataset.lkm,im=t.querySelector("img"),rows=[["show","Show in Chat","chat"],["fwd","Forward","share"],["del","Delete","trash",1],["sel","Select","check"]];
-  mn.innerHTML=(im&&im.src?'<img class="pv" src="'+im.src+'" alt="">':"")+'<div class="mn2">'+rows.map(r=>'<div data-a="'+r[0]+'"'+(r[3]?' class="rd"':"")+'><span>'+tr(r[1])+'</span>'+ic(r[2],20)+'</div>').join("")+"</div>";
+  mn.innerHTML=(im&&im.src?'<img class="pv" src="'+im.src+'" alt="">':"")+'<div class="mn2">'+rows.map(r=>'<div data-a="'+r[0]+'"'+(r[3]?' class="rd"':"")+'>'+ic(r[2],22)+'<span>'+tr(r[1])+'</span></div>').join("")+"</div>";
   mn.classList.add("on");
   mn.onclick=e=>{if(Date.now()-sup<500)return;const r=e.target.closest("[data-a]");close();if(r)setTimeout(()=>act(r.dataset.a,[id]),120)}}
  body.addEventListener("touchstart",e=>{const t=e.target.closest(".mt[data-lkm]");if(!t||SEL.on)return;const p=e.touches[0];sx=p.clientX;sy=p.clientY;tt=t;clearTimeout(tm);tm=setTimeout(()=>{if(!tt)return;const x=tt;tt=null;sup=Date.now();try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}menu(x)},420)},{passive:true});
@@ -4371,9 +4370,10 @@ let vFxC=null;const vFxG={};
 /* آماده‌سازی موتور صدا | Voice Fx Init: موتور صدای مرورگر را می‌سازد و بیدار می‌کند؛ باید با لمس کاربر صدا زده شود */
 function vFxInit(){try{if(!vFxC){const C=window.AudioContext||window.webkitAudioContext;if(C)vFxC=new C()}if(vFxC&&vFxC.state!=="running")vFxC.resume().catch(()=>{})}catch(e){vFxC=null}}
 /* اندازه‌گیری بلندی ویس | Voice Loudness Measure: بلندی واقعی صحبت (بدون سکوت‌ها) را می‌سنجد و ضریب تقویت را برمی‌گرداند؛ نتیجه برای هر ویس یادآوری می‌شود */
-async function vFxGain(b,id){if(vFxG[id])return vFxG[id];let g=2.5;try{const ab=await vFxC.decodeAudioData(await b.arrayBuffer()),d=ab.getChannelData(0);let s=0,n=0,pk=0;for(let i=0;i<d.length;i++){const x=Math.abs(d[i]);if(x>pk)pk=x;if(x>.01){s+=x*x;n++}}if(n>200&&pk>0){const rms=Math.sqrt(s/n);g=Math.min(.125/rms,2/pk,8);g=Math.max(1,g)}}catch(e){}return vFxG[id]=g}
+async function vFxGain(b,id){if(vFxG[id])return vFxG[id];let g=1.25;try{const ab=await vFxC.decodeAudioData(await b.arrayBuffer()),d=ab.getChannelData(0);let s=0,n=0,pk=0;for(let i=0;i<d.length;i++){const x=Math.abs(d[i]);if(x>pk)pk=x;if(x>.01){s+=x*x;n++}}if(n>200&&pk>0){const rms=Math.sqrt(s/n);g=Math.min(.125/rms,2/pk,8);g=Math.max(1,g/2)/* نصف شدن گین | Half Gain: بلندی تقویت‌شده‌ی ویس نصف شد (voice boost halved) */}}catch(e){}return vFxG[id]=g}
 /* وصل‌کردن تقویت به پخش | Voice Fx Attach: صدا را از تقویت‌کننده و محدودکننده رد می‌کند و بعد به بلندگو می‌فرستد */
-async function vFxAttach(a,b,id){try{if(!vFxC)return;if(vFxC.state!=="running")await Promise.race([vFxC.resume(),new Promise(r=>setTimeout(r,300))]);if(vFxC.state!=="running")return;const src=vFxC.createMediaElementSource(a),gn=vFxC.createGain(),lm=vFxC.createDynamicsCompressor();lm.threshold.value=-4;lm.knee.value=3;lm.ratio.value=20;lm.attack.value=.002;lm.release.value=.1;gn.gain.value=vFxG[id]||2.5;src.connect(gn);gn.connect(lm);lm.connect(vFxC.destination);a._fx={d(){try{src.disconnect();gn.disconnect();lm.disconnect()}catch(e){}}};const pr=vFxGain(b,id).then(g=>{try{gn.gain.setTargetAtTime(g,vFxC.currentTime,.05)}catch(e){}});await Promise.race([pr,new Promise(r=>setTimeout(r,250))])}catch(e){}}
+async function vFxAttach(a,b,id){try{if(!vFxC)return;if(vFxC.state!=="running")await Promise.race([vFxC.resume(),new Promise(r=>setTimeout(r,300))]);if(vFxC.state!=="running")return;const src=vFxC.createMediaElementSource(a),gn=vFxC.createGain(),lm=vFxC.createDynamicsCompressor();lm.threshold.value=-4;lm.knee.value=3;lm.ratio.value=20;lm.attack.value=.002;lm.release.value=.1;gn.gain.value=vFxG[id]||1.25;src.connect(gn);gn.connect(lm);lm.connect(vFxC.destination);a._fx={d(){try{src.disconnect();gn.disconnect();lm.disconnect()}catch(e){}}};const pr=vFxGain(b,id).then(g=>{try{gn.gain.setTargetAtTime(g,vFxC.currentTime,.05)}catch(e){}});await Promise.race([pr,new Promise(r=>setTimeout(r,250))])}catch(e){}}
+window.vFxInit=vFxInit;window.vFxAttach=vFxAttach;
 async function playVo(vo,ex){const id=vo.dataset.vid;/* لمس حلقه آپلود | Tap On Upload Ring: وقتی ویس هنوز دارد آپلود می‌شود، لمس آن آپلود را لغو می‌کند نه پخش (while uploading, a tap cancels instead of playing) */if(vo.classList.contains("vup")){if(vo._vc)vo._vc();return}if(cur&&cur.id===id){cur.vo=vo;if(cur.a.paused){cur.a.play().catch(()=>{});setPB(vo,true)}else{cur.a.pause();setPB(vo,false)}/* واکنش فوری ویس | Instant Voice Toggle: بعد از مکث یا پخش بلافاصله دکمه‌ها و نوار به‌روز می‌شوند و منتظر رویداد نمی‌مانند (buttons and bar update at once, not waiting for the audio event) */vNowSync();return}
  stopCur();/* بیدارکردن موتور تقویت | Wake Voice Fx: همزمان با لمس کاربر موتور تقویت صدا آماده می‌شود (wakes the boost engine on the user's tap) */vFxInit();/* توقف ویدیو مسیج | Halt Video Message: شروع یک ویس، ویدیو مسیجِ در حال پخش را می‌بندد (starting a voice closes a playing video message) */try{window.vmHalt&&window.vmHalt()}catch(e){}let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  /* گرفتن ویس از سرور | Fetch Voice From Server: اگر ویس روی این دستگاه نیست و شناسه‌ی سرور دارد، همان لحظه از انبار media گرفته و ذخیره می‌شود */if(!b){const rf0=lkVoRf(id,ex&&ex.cid)||lkVoRfEl(vo);if(rf0){setPB(vo,true);try{b=await LKA.getFile(rf0);if(b&&b.size){if(!/^audio\//.test(b.type||""))b=new Blob([b],{type:"audio/ogg"});LKB[id]=b;try{await Promise.race([lkPut(id,{blob:b}),new Promise(ok=>setTimeout(ok,3000))])}catch(e){}}else b=null}catch(e){b=null}if(!b)setPB(vo,false)}}
@@ -5143,7 +5143,7 @@ async function sendVM(res){
  if(LK_MODE==="real"&&c.uid&&LKA.ok&&c.id!==2){try{tmpTm=lkNow();tmpD=addMsg("me",lkEnc({k:"vmsg",it:[it]}),tmpTm,0,S.reply);/* ثبت آپلود ویدیو مسیج | Register Video Upload: آپلود در فهرست پس‌زمینه ثبت می‌شود (registers this upload in the background list) */var vP=window.vpReg(c,"vm",it,tmpTm,()=>tmpD,v=>{tmpD=v},()=>{cancelled=1},nd=>{vmupStart(nd,vP.cancel);vmupSet(nd,vP.p)});vmupStart(tmpD,vP.cancel)}catch(e){tmpD=null}
   const tU0=Date.now(),fp=vmFrame(res.blob,res.duration).then(f=>f?lkTinyB64(f,2400):"").catch(()=>"");
   try{rf=await LKA.upFile(res.blob,res.name||"video-message.mp4",p=>{if(vP)vP.p=p;vmupSet(tmpD,p)})}catch(er){if(vP)vP.done=1;if(tmpD)tmpD.remove();toast("Upload failed ["+String((er&&er.message)||er).slice(0,120)+"]");return}
-  if(cancelled){if(rf)LKA.delFile(rf).catch(()=>{});return}/* اندازه‌گیری موقت | Temp Timing: زمان آماده‌سازی و آپلود، حجم و کدک روی آیفون نشان داده می‌شود (shows prep time, upload time, size and codec) */try{const tt=$("#toast");toast("Upload "+((Date.now()-tU0)/1000).toFixed(1)+"s · "+(res.blob.size/1e6).toFixed(2)+"MB · prep "+((tU0-tS)/1000).toFixed(1)+"s · "+(res.blob.type||"?"));if(tt){clearTimeout(toast.h);toast.h=setTimeout(()=>tt.classList.remove("on"),9000)}}catch(e){}
+  if(cancelled){if(rf)LKA.delFile(rf).catch(()=>{});return}
   if(rf){it.rf=rf;it.r=1;(CFG.dl=CFG.dl||{})[id]=1;try{const tn=await fp;if(tn)it.bl=tn}catch(e){}}}
  const text=lkEnc({k:"vmsg",it:[it]}),now=tmpTm||lkNow();
  (c.id===2?CFG.saved:(CFG.sent[c.id]=CFG.sent[c.id]||[])).push(["me",text,now,0]);
@@ -5259,7 +5259,7 @@ window.vmReconnect=function(el){vmAttach(el).then(()=>{if(VB.cur&&VB.cur.vm&&VB.
 /* لمس دایره | Tap Circle: مثل ویس؛ بار اول شروع، بعد مکث و ادامه */
 async function vmTap(el){const id=el.dataset.vid;/* لمس حلقه آپلود | Tap On Upload Ring: وقتی ویدیو مسیج هنوز آپلود می‌شود، لمس آن آپلود را لغو می‌کند نه پخش (while uploading, a tap cancels instead of playing) */if(el.classList.contains("vup")){if(el._vc)el._vc();return}
  if(VB.cur&&VB.cur.id===id){VB.cur.vo=el;if(VB.cur.a.paused)VB.cur.a.play().catch(()=>{});else VB.cur.a.pause();VB.vNowSync();return}
- await vmAttach(el);if(!el._v){toast("Video removed from cache");return}
+ try{window.vFxInit&&window.vFxInit()}catch(_){}await vmAttach(el);if(!el._v){toast("Video removed from cache");return}
  try{window.vStopVoice&&window.vStopVoice()}catch(_){}VB.stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
  let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("Video removed from cache");VB.vKeep=0;VB.vNowSync();return}
@@ -5267,7 +5267,7 @@ async function vmTap(el){const id=el.dataset.vid;/* لمس حلقه آپلود |
  VB.cur={a,vo:el,id,D,vm:true,cid:S.openId,name:VB.vNowName(el)};VB.vKeep=0;
  a.ontimeupdate=VB.vNowTick;a.onplay=a.onpause=VB.vNowSync;a.onended=VB.vEnded;
  vmVisual(el);
- try{VB.vNowSync();await a.play()}catch(e){toast("Cannot play this video");VB.stopCur()}}
+ /* تقویت صدای ویدیو مسیج | Video Message Fx: صدای ویدیو مسیج هم مثل ویس از همان تقویت‌کننده و محدودکننده رد می‌شود (video message sound goes through the same boost as voices) */try{if(!a._fx&&window.vFxAttach)await window.vFxAttach(a,b,id)}catch(_){}try{VB.vNowSync();await a.play()}catch(e){toast("Cannot play this video");VB.stopCur()}}
 /* دسترسی از بیرون | Video Message Hooks: ویس برای پخش پشت‌سرهم، ویدیو مسیج را از اینجا پخش یا متوقف می‌کند */
 window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
@@ -5733,7 +5733,7 @@ html.light #chat .b.rtm.ot{background:rgba(255,255,255,.9);color:#27306e;border-
  function settle(b){peer.classList.remove('on');peer.remove();if(live.isConnected)M.insertBefore(b,live);b.classList.add('rts')}
  /* منوی پیام در حالت لحظه‌ای | Realtime Message Menu Theme: منوی نگه داشتن روی پیام (ایموجی‌ها و لیست کارها) در چت لحظه‌ای هم‌رنگ تم شب/روز همان حالت می‌شود: شیشه‌ای بنفش/صورتی با لبه‌ی روشن و درخشش نرم (menu follows the realtime night/day theme: purple-pink glass with soft glow) */
  const mst=document.createElement('style');
- mst.textContent='html.rton #mmenu{background:rgba(24,16,70,.55)}html.rton #mmenu .rxb,html.rton #mmenu .mm{background:linear-gradient(160deg,rgba(62,50,154,.94),rgba(132,72,172,.94));border:1px solid rgba(255,200,240,.3);box-shadow:0 8px 30px rgba(90,50,170,.5)}html.rton #mmenu .mm:not(.bb) div{color:#fff}html.rton #mmenu .mm:not(.bb) div.rd{color:#ffb0c8;border-bottom:6px solid rgba(255,255,255,.14)}html.rton #mmenu .rxb .more{background:rgba(255,255,255,.22)}html.light.rton #mmenu{background:rgba(120,100,190,.35)}html.light.rton #mmenu .rxb,html.light.rton #mmenu .mm{background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(236,226,255,.96));border:1px solid rgba(178,141,255,.5);box-shadow:0 8px 30px rgba(178,141,255,.4)}html.light.rton #mmenu .mm:not(.bb) div{color:#2a2f6e}html.light.rton #mmenu .mm:not(.bb) div.rd{color:#d6336c;border-bottom:6px solid rgba(178,141,255,.2)}html.light.rton #mmenu .rxb .more{background:rgba(178,141,255,.55)}';
+ mst.textContent='html.rton #mmenu{background:rgba(24,16,70,.55)}html.rton #cpmn .mn2,html.rton #mmenu .rxb,html.rton #mmenu .mm{background:linear-gradient(160deg,rgba(62,50,154,.94),rgba(132,72,172,.94));border:1px solid rgba(255,200,240,.3);box-shadow:0 8px 30px rgba(90,50,170,.5)}html.rton #mmenu .mm:not(.bb) div,html.rton #cpmn .mn2 div{color:#fff}html.rton #mmenu .mm:not(.bb) div.rd{color:#ffb0c8;border-bottom:6px solid rgba(255,255,255,.14)}html.rton #mmenu .rxb .more{background:rgba(255,255,255,.22)}html.light.rton #mmenu{background:rgba(120,100,190,.35)}html.light.rton #cpmn .mn2,html.light.rton #mmenu .rxb,html.light.rton #mmenu .mm{background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(236,226,255,.96));border:1px solid rgba(178,141,255,.5);box-shadow:0 8px 30px rgba(178,141,255,.4)}html.light.rton #mmenu .mm:not(.bb) div,html.light.rton #cpmn .mn2 div{color:#2a2f6e}html.light.rton #mmenu .mm:not(.bb) div.rd{color:#d6336c;border-bottom:6px solid rgba(178,141,255,.2)}html.light.rton #mmenu .rxb .more{background:rgba(178,141,255,.55)}';
  document.head.appendChild(mst);
  /* نوار پاسخ و ویرایش در حالت لحظه‌ای | Realtime Reply Bar Theme: نوار بالای کادر پیام وقتی پاسخ یا ویرایش داری در چت لحظه‌ای هم‌رنگ تم شب/روز می‌شود: شیشه‌ای، خط رنگی کناری صورتی/بنفش و متن‌های روشن (reply/edit bar above the input follows the realtime night/day theme) */
  const rst=document.createElement('style');
