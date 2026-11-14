@@ -2475,6 +2475,9 @@ const lkPut=(id,v)=>lkTx("readwrite",s=>s.put(v,id));
 const lkGet=id=>lkTx("readonly",s=>s.get(id));
 /* پاک کردن از انبار | Media Drop: وقتی کاربر کش را پاک می‌کند، فایل‌ها هم از انبار و حافظه‌ی موقت پاک می‌شوند */
 function lkDrop(ids){ids.forEach(i=>{if(LKU[i])URL.revokeObjectURL(LKU[i]);delete LKU[i];delete LKB[i]});return lkTx("readwrite",s=>{ids.forEach(i=>s.delete(i))}).catch(()=>{})}
+/* کش ماندگار | Persistent Cache: از مرورگر می‌خواهد انبار رسانه (lk_media) را ماندگار کند تا با بستن برنامه یا کم شدن حافظه‌ی پس‌زمینه خودکار پاک نشود و فقط با پاک کردن دستی یا پر شدن واقعی حافظه برود؛ بار اول موقع باز شدن و یک بار دیگر بعد از اولین لمس (چون بعضی مرورگرها فقط با لمس کاربر قبول می‌کنند) (asks the browser to make the media store persistent so it is not evicted when the app closes; only manual clearing or a truly full disk removes it; asked at start and once more after the first touch) */
+(function(){const ask=()=>{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persisted().then(p=>{window.LKPERSIST=!!p;return p||navigator.storage.persist().then(g=>{window.LKPERSIST=!!g})}).catch(()=>{})}catch(e){}};ask();
+ ["touchend","click"].forEach(ev=>addEventListener(ev,function f(){removeEventListener(ev,f,true);ask()},true))})();
 /* رمز پیام رسانه | Media Message Code: پیام رسانه‌ای در همان فهرست پیام‌ها ذخیره می‌شود؛ متن با یک نشانه‌ی نامرئی شروع می‌شود و بعدش اطلاعات فایل‌ها (نام، اندازه، عرض و ارتفاع، مدت) می‌آید. lkMsgPlain خلاصه‌ی متنی برای فهرست گفتگوها و پاسخ و جست‌وجو می‌دهد */
 const lkEnc=o=>LKM+JSON.stringify(o);
 function lkDec(t){const m=FWR.exec(t),x=m?m[2]:t;if(!x||x[0]!==LKM)return null;try{return JSON.parse(x.slice(1))}catch(e){return null}}
