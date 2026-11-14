@@ -1864,14 +1864,14 @@ function lkGS(){const q=$("#q").value.trim(),old=$("#lkgs");if(old)old.remove();
 function lkGOpen(u){if(!u)return;let c=CHATS.find(x=>x.uid===u.id);if(!c){c={id:lkCid(u.id),n:u.name,m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(u.username||u.name),uid:u.id,uname:u.username};CHATS.push(c)}
  $("#q").value="";renderChats();openChat(c.id)}
 {const _rc=renderChats;renderChats=function(){const r=_rc.apply(this,arguments);try{lkGS()}catch(e){}return r}}
-function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;
+function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;/* نگه‌داشتن کش | Keep Cache: با خروج چیزی پاک نمی‌شود؛ فقط اگر حساب دیگری وارد شود، داده‌ی حساب قبلی پاک می‌شود (nothing is wiped on logout; only a different account clears the old one) */try{const lu=localStorage.getItem("lk_uid");if(LK_MODE==="real"&&S.user.id){if(lu&&lu!==S.user.id){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}localStorage.setItem("lk_uid",S.user.id)}}catch(x){}
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
  initUser();renderChats();renderContacts();show("chats");lkStart()};
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
 $("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Confirm Field Toggle: فقط در ثبت‌نام */$("#pw2").style.display=S.signup?"":"none";$("#pw2").value="";$("#nm").style.visibility=$("#nm2").style.visibility=S.signup?"visible":"hidden";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
-$("#logout").onclick=()=>{LKA.out();lkStop(1);S.user=null;show("login")};
+$("#logout").onclick=()=>{LKA.out();lkStop();S.user=null;show("login")};
 /* بازیابی نشست | Session Restore: اگر قبلاً وارد شده بود، مستقیم وارد برنامه می‌شود */
 /* پایان لودینگ شروع | Boot Loading Off: لودینگ آرام محو و بعد برداشته می‌شود (fades the boot screen out, then removes it) */
 function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.off=1;/* اتصال بررسی مجوز | Connect Permission Check: بعد از بالا آمدن برنامه، مجوز میکروفن و دوربین بررسی می‌شود */setTimeout(()=>{try{lkPermCheck()}catch(e){}},700);b.classList.add("off");setTimeout(()=>b.remove(),320)}
@@ -2471,8 +2471,11 @@ function chatMsgs(c){return c.uid&&LK_MODE==="real"?(CFG.sent[c.id]||[]):CFG.cle
 let LKDBp=null;var LKU={},LKB={},LKM="\u2064";
 function lkDB(){return LKDBp||(LKDBp=new Promise((ok,no)=>{const r=indexedDB.open("lk_media",1);r.onupgradeneeded=()=>r.result.createObjectStore("b");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
 const lkTx=(m,f)=>lkDB().then(d=>new Promise((ok,no)=>{const t=d.transaction("b",m);let r;try{r=f(t.objectStore("b"))}catch(e){no(e);return}t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)}));
-const lkPut=(id,v)=>lkTx("readwrite",s=>s.put(v,id));
-const lkGet=id=>lkTx("readonly",s=>s.get(id));
+/* ذخیره‌ی پایدار | Stable Storage: سافاری بلاب‌های داخل IndexedDB را بعد از بستن برنامه گاهی نامعتبر می‌کند و فایل دوباره دانلود می‌شود؛ پس فایل‌ها به شکل ArrayBuffer ذخیره و موقع خواندن دوباره Blob می‌شوند (Safari can invalidate Blobs stored in IndexedDB after the app closes; store raw bytes instead and rebuild the Blob on read; old Blob records still work) */
+const lkPk=async v=>{if(!v||typeof v!=="object")return v;const o={};for(const k of Object.keys(v)){const x=v[k];if(typeof Blob!=="undefined"&&x instanceof Blob){try{o[k]={__ab:await x.arrayBuffer(),type:x.type||""}}catch(e){o[k]=x}}else o[k]=x}return o};
+const lkUp=v=>{if(!v||typeof v!=="object")return v;for(const k of Object.keys(v)){const x=v[k];if(x&&typeof x==="object"&&x.__ab instanceof ArrayBuffer)v[k]=new Blob([x.__ab],{type:x.type||""})}return v};
+const lkPut=async(id,v)=>{const p=await lkPk(v);return lkTx("readwrite",s=>s.put(p,id))};
+const lkGet=id=>lkTx("readonly",s=>s.get(id)).then(lkUp);
 /* پاک کردن از انبار | Media Drop: وقتی کاربر کش را پاک می‌کند، فایل‌ها هم از انبار و حافظه‌ی موقت پاک می‌شوند */
 function lkDrop(ids){ids.forEach(i=>{if(LKU[i])URL.revokeObjectURL(LKU[i]);delete LKU[i];delete LKB[i]});return lkTx("readwrite",s=>{ids.forEach(i=>s.delete(i))}).catch(()=>{})}
 /* کش ماندگار | Persistent Cache: از مرورگر می‌خواهد انبار رسانه (lk_media) را ماندگار کند تا با بستن برنامه یا کم شدن حافظه‌ی پس‌زمینه خودکار پاک نشود و فقط با پاک کردن دستی یا پر شدن واقعی حافظه برود؛ بار اول موقع باز شدن و یک بار دیگر بعد از اولین لمس (چون بعضی مرورگرها فقط با لمس کاربر قبول می‌کنند) (asks the browser to make the media store persistent so it is not evicted when the app closes; only manual clearing or a truly full disk removes it; asked at start and once more after the first touch) */
