@@ -3819,7 +3819,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  /* حالت و نوار بالا و پایین | State & Bars: پیام‌های کامل در m و عکس‌های جدا در i نگه داشته می‌شوند */
  const SEL={on:false,m:new Set(),i:new Map()};
  const top=document.createElement('div');top.className='top';top.id='selTop';
- top.innerHTML=`<div class='pill' id='selClr'></div><div class='pill' id='selRng'></div><div class='pill' id='selCnt'></div><div class='pill' id='selCan'></div>`;
+ top.innerHTML=`<div class='pill' id='selRng'></div><div class='pill' id='selCnt'></div><div class='pill' id='selCan'></div>`;
  $('#chat>.top').after(top);
  const bot=document.createElement('div');bot.id='selBot';
  bot.innerHTML=`<div class='round' id='selDel'>${ic('trash',24)}</div><div class='round' id='selDl'>${lkDlI}</div><div class='round' id='selFw'>${ic('fwd',24)}</div>`;
@@ -3854,7 +3854,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  /* شروع و پایان | Start & Exit: دایره‌ها ساخته یا پاک می‌شوند */
  window.lkSelStart=function(b){
   if(SEL.on)return;SEL.on=true;SEL.m.clear();SEL.i.clear();
-  $('#selClr').textContent=tr('Clear Chat');$('#selRng').innerHTML=ic('chk3',24);$('#selRng').title=tr('Range');$('#selCan').textContent=tr('Cancel');
+  $('#selRng').innerHTML=ic('chk3',24);$('#selRng').title=tr('Range');$('#selCan').textContent=tr('Cancel');
   C.classList.add('sel');muSwap(true);
   M.querySelectorAll('.b').forEach(x=>{if(x.classList.contains('pend'))return;
    const c=document.createElement('i');c.className='selc';c.innerHTML=CK;c._b=x;M.appendChild(c);
@@ -3904,9 +3904,7 @@ P.clock="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2";P.cal="M4 6h16v14H4zM4 10
  /* دکمه‌ها | Buttons */
  $('#selCan').onclick=exit;
  /* حذف کنار دکمه | Delete Beside Button: در حالت انتخاب هم گزینه‌های حذف کنار دکمه‌ی Delete باز می‌شوند (in select mode the options open beside the Delete button) */$('#selDel').onclick=()=>{if(count())lkDelPop($('#selDel'),[['me','Delete for me'],['both','Delete for both',1]],doDelete)};
- $('#selClr').onclick=()=>ask([['me','Clear for me'],['both','Clear for both',1]],mode=>{
-  const id=S.openId,c=CHATS.find(x=>x.id===id);if(!c)return;exit();if(mode==='both')lkClearBoth(c);
-  CFG.cleared=CFG.cleared||{};CFG.cleared[id]=1;CFG.sent[id]=[];c.m='';saveCfg();S.lastD=null;M.innerHTML='';toast(tr('History cleared'));renderChats()});
+ 
  /* دانلود | Download: فقط عکس و فایل‌ها؛ پیام متنی دانلود ندارد */
  $('#selDl').onclick=()=>{const jobs=[];SEL.i.forEach((s,b)=>{const o=lkDec(b.dataset.t);if(!o)return;o.it.forEach(x=>{if(s.has(x.id))jobs.push([x.id,x.n])})});
   jobs.forEach((j,k)=>setTimeout(()=>lkSave(j[0],j[1]),k*350));if(jobs.length)toast(tr('Downloading'));exit()};
@@ -5294,6 +5292,135 @@ B.addEventListener("pointermove",e=>{if(t&&Math.hypot(e.clientX-x0,e.clientY-y0)
 ["pointerup","pointercancel","pointerleave"].forEach(n=>B.addEventListener(n,clr));
 B.addEventListener("contextmenu",e=>e.preventDefault());
 B.addEventListener("click",e=>{if(hit){e.stopPropagation();e.preventDefault();hit=0}},true)})();
+</script>
+<script>
+/* چت لحظه‌ای | Realtime Chat (فقط رابط | UI only): گزینه در منوی گیره، درخواست و تأیید/رد، حالت رویایی شب/روز، حباب زنده؛ بدون انیمیشن سنگین و بدون blur (no heavy animation, no blur, to keep the phone cool) */
+(function(){
+ try{Object.assign(FA,{"Realtime Chat":"چت لحظه\u200cای","Realtime chat request sent":"درخواست چت لحظه\u200cای ارسال شد","Waiting for reply…":"در انتظار پاسخ…","wants a realtime chat":"چت لحظه\u200cای می\u200cخواهد","Accept":"تأیید","Decline":"رد","Request declined":"درخواست رد شد","Realtime chat started":"چت لحظه\u200cای شروع شد","Realtime chat ended":"چت لحظه\u200cای پایان یافت","No response":"پاسخی نیامد"})}catch(e){}
+ const C=$('#chat'),M=$('#msgs'),MI=$('#mi'),mv=$('#atv'),smc=mv&&mv.querySelector('.smc');
+ if(!C||!M||!MI||!smc)return;
+ const RT={on:false,pend:0,id:null,out:null,inc:null};
+ /* ظاهر | Look: شب = حالت پیش‌فرض، روز = html.light؛ همه ثابت و بدون انیمیشن (night is default, day is html.light; everything static) */
+ const st=document.createElement('style');
+ st.textContent=`.rtq{align-self:center;flex-shrink:0;max-width:88%;background:var(--card2);color:var(--txt);border-radius:16px;padding:10px 14px;font-size:14px;line-height:1.5;text-align:center}
+.rtq b{display:block;font-weight:600}.rtq small{display:block;color:var(--sub);margin-top:2px}
+.rtq .rtb{display:flex;gap:8px;margin-top:8px}.rtq .rtb div{flex:1;padding:7px 14px;border-radius:12px;font-weight:600;cursor:pointer;background:var(--card);color:var(--txt)}.rtq .rtb div.ok{background:var(--blue);color:#fff}.rtq.done .rtb{display:none}
+.rtl{display:none;flex-shrink:0;align-self:flex-end;max-width:78%;padding:7px 14px;border-radius:22px 22px 6px 22px;font-size:17.25px;line-height:1.5;white-space:pre-wrap;word-break:break-word;unicode-bidi:plaintext;color:#fff;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,200,240,.7);box-shadow:0 0 14px rgba(255,170,230,.45)}
+.rtl.on{display:block}.rtl.pe{align-self:flex-start;border-radius:22px 22px 22px 6px}
+.rtl i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin:0 4px;vertical-align:middle;box-shadow:0 0 8px 2px rgba(255,180,240,.8);animation:rtb 1s steps(1) infinite}
+@keyframes rtb{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.rtl i{animation:none}}
+html.light .rtl{color:#2a2f6e;background:rgba(255,255,255,.72);border-color:rgba(178,141,255,.85);box-shadow:0 0 12px rgba(178,141,255,.45)}html.light .rtl i{background:#b28dff;box-shadow:0 0 8px 2px rgba(178,141,255,.7)}
+#chat.rt{background:radial-gradient(circle 2px at 8% 10%,rgba(255,255,255,.9),transparent),radial-gradient(circle 1.5px at 22% 24%,rgba(255,255,255,.7),transparent),radial-gradient(circle 2px at 36% 8%,rgba(255,255,255,.85),transparent),radial-gradient(circle 1.5px at 51% 19%,rgba(255,255,255,.7),transparent),radial-gradient(circle 2px at 66% 12%,rgba(255,255,255,.9),transparent),radial-gradient(circle 1.5px at 79% 28%,rgba(255,255,255,.7),transparent),radial-gradient(circle 2px at 91% 9%,rgba(255,255,255,.85),transparent),radial-gradient(circle 1.5px at 14% 40%,rgba(255,255,255,.6),transparent),radial-gradient(circle 1.5px at 88% 46%,rgba(255,255,255,.6),transparent),linear-gradient(180deg,#0b1050 0%,#1d2a8c 30%,#5b3fa8 58%,#b05aa8 82%,#e58fa8 100%)!important}
+html.light #chat.rt{background:radial-gradient(ellipse 90px 38px at 18% 18%,rgba(255,255,255,.85),transparent),radial-gradient(ellipse 120px 48px at 82% 32%,rgba(255,255,255,.8),transparent),radial-gradient(ellipse 140px 54px at 28% 60%,rgba(255,255,255,.7),transparent),radial-gradient(ellipse 110px 44px at 86% 80%,rgba(255,255,255,.75),transparent),linear-gradient(180deg,#8fc4ff 0%,#b9b4ff 38%,#ffc0e0 72%,#ffe3c8 100%)!important}
+#chat.rt>.top{background:linear-gradient(135deg,rgba(40,55,165,.9),rgba(150,85,195,.85))!important;border-bottom:1px solid rgba(255,255,255,.3)!important;border-radius:0 0 26px 26px;box-shadow:0 6px 18px rgba(20,20,110,.3)!important;color:#fff}
+html.light #chat.rt>.top{background:linear-gradient(135deg,rgba(100,130,240,.92),rgba(230,120,190,.88))!important;box-shadow:0 6px 18px rgba(120,100,200,.3)!important}
+#chat.rt>.top .pill,#chat.rt>.top .title{background:rgba(255,255,255,.16)!important;border:1px solid rgba(255,255,255,.3);color:#fff}
+#chat.rt>.top #cname{color:#fff!important}#chat.rt>.top #cstat{color:rgba(255,255,255,.78)!important}
+#chat.rt #back{position:relative}#chat.rt #back>*{display:none}
+#chat.rt #back::before,#chat.rt #back::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:2px;margin:-1px 0 0 -9px;border-radius:2px;background:#fff}
+#chat.rt #back::before{transform:rotate(45deg)}#chat.rt #back::after{transform:rotate(-45deg)}
+#chat.rt>.pinbar{background:rgba(255,255,255,.16);color:#fff}html.light #chat.rt>.pinbar{background:rgba(255,255,255,.6);color:#2a2f6e}
+#chat.rt .b.me,html.light #chat.rt .b.me{background:linear-gradient(135deg,#ff8fc0 0%,#b28dff 55%,#6f95ff 100%);color:#fff;border-radius:20px 20px 6px 20px;box-shadow:0 4px 12px rgba(150,100,255,.4)}
+#chat.rt .b.ot{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:20px 20px 20px 6px}
+html.light #chat.rt .b.ot{background:rgba(255,255,255,.9);color:#27306e;border-color:#fff;box-shadow:0 4px 12px rgba(80,90,180,.18)}
+#chat.rt .b.me small{color:rgba(255,255,255,.8)}#chat.rt .b.ot small{color:rgba(255,255,255,.65)}html.light #chat.rt .b.ot small{color:rgba(39,48,110,.6)}
+#chat.rt .dsep,#chat.rt .b.sv,#chat.rt .rtq{background:rgba(255,255,255,.16);color:#fff}
+html.light #chat.rt .dsep,html.light #chat.rt .b.sv,html.light #chat.rt .rtq{background:rgba(255,255,255,.6);color:#2a2f6e}
+#chat.rt .rtq small{color:rgba(255,255,255,.72)}html.light #chat.rt .rtq small{color:rgba(42,47,110,.65)}
+#chat.rt .rtq .rtb div{background:rgba(255,255,255,.2);color:inherit}#chat.rt .rtq .rtb div.ok{background:linear-gradient(135deg,#ff8fc0,#b28dff 55%,#6f95ff);color:#fff}
+#chat.rt .inbar{background:linear-gradient(to top,rgba(20,20,100,.4),transparent)}html.light #chat.rt .inbar{background:linear-gradient(to top,rgba(255,255,255,.5),transparent)}
+#chat.rt .inbar #mi{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:22px}#chat.rt .inbar #mi::placeholder{color:rgba(255,255,255,.7)}
+html.light #chat.rt .inbar #mi{background:rgba(255,255,255,.78);border-color:rgba(160,140,230,.55);color:#27306e}html.light #chat.rt .inbar #mi::placeholder{color:rgba(39,48,110,.55)}
+#chat.rt .inbar .round{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}html.light #chat.rt .inbar .round{background:rgba(255,255,255,.72);color:#6a5ad8;border-color:rgba(160,140,230,.45)}
+#chat.rt .inbar .round.send{background:linear-gradient(135deg,#ff8fc0,#b28dff 55%,#6f95ff);color:#fff;border:0;box-shadow:0 4px 12px rgba(170,110,255,.5)}
+.rtl .rq{display:none;border-left:3px solid currentColor;padding-left:8px;margin-bottom:3px;font-size:14px;opacity:.85}.rtl .rq b{display:block}
+#chat .b.rtm.me,html.light #chat .b.rtm.me{background:linear-gradient(135deg,#ff8fc0 0%,#b28dff 55%,#6f95ff 100%);color:#fff;border-radius:20px 20px 6px 20px;box-shadow:0 4px 12px rgba(150,100,255,.4)}
+#chat .b.rtm.ot{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:20px 20px 20px 6px}
+html.light #chat .b.rtm.ot{background:rgba(255,255,255,.9);color:#27306e;border-color:#fff;box-shadow:0 4px 12px rgba(80,90,180,.18)}
+#chat .b.rtm.me small{color:rgba(255,255,255,.8)}#chat .b.rtm.ot small{color:rgba(255,255,255,.65)}html.light #chat .b.rtm.ot small{color:rgba(39,48,110,.6)}`;
+ document.head.appendChild(st);
+ /* گزینه در منوی گیره | Menu Option: سومین ردیف منو (در گروه و کانال پنهان) */
+ const row=document.createElement('div');row.dataset.m='rt';
+ row.innerHTML='<svg class="svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span></span>';
+ smc.appendChild(row);
+ $('#attachBtn').addEventListener('click',()=>{let hide=RT.on||RT.pend;try{const c=CHATS.find(x=>x.id===S.openId);if(c&&(c.ty==='ch'||c.ty==='gp'))hide=true}catch(e){}row.style.display=hide?'none':'';row.querySelector('span').textContent=tr('Realtime Chat')});
+ mv.addEventListener('click',e=>{if(!e.target.closest('[data-m="rt"]'))return;e.stopImmediatePropagation();mv.style.display='none';request()},true);
+ /* ابزار | Helpers */
+ const card=cls=>{const d=document.createElement('div');d.className='rtq '+(cls||'');return d};
+ const add=d=>{M.appendChild(d);M.scrollTop=M.scrollHeight};
+ const mk=pe=>{const d=document.createElement('div');d.className='rtl'+(pe?' pe':'');d.innerHTML='<div class="rq"><b></b><span></span></div><span class="tx" dir="auto"></span><i></i>';return d};
+ const live=mk(0),peer=mk(1);
+ /* درخواست | Request: کارت ارسال، و برای تست رابط کارت دریافت‌کننده با تأیید و رد زیر آن (sender card, plus a recipient card for testing the UI) */
+ function request(){if(RT.on||RT.pend)return;RT.pend=1;RT.id=S.openId;
+  const o=card('out');o.innerHTML='<b>'+tr('Realtime chat request sent')+'</b><small>'+tr('Waiting for reply…')+'</small>';add(o);RT.out=o;if(real()){RT.R=curR();push({s:'req',f:S.user.id});clearTimeout(RT.pt);RT.pt=setTimeout(()=>{if(RT.pend&&RT.out){RT.pend=0;const s=RT.out.querySelector('small');if(s)s.textContent=tr('No response');RT.out.classList.add('done');RT.out=null}},90000)}else window.lkRtIncoming()}
+ window.lkRtIncoming=function(){if(RT.on||(RT.inc&&RT.inc.isConnected))return;const q=card('in');
+  q.innerHTML='<b>'+esc(($('#cname')||{}).textContent||'')+' '+tr('wants a realtime chat')+'</b><div class="rtb"><div class="ok">'+tr('Accept')+'</div><div>'+tr('Decline')+'</div></div>';
+  q.querySelector('.ok').onclick=()=>respond(true,q);q.querySelector('.rtb div:last-child').onclick=()=>respond(false,q);add(q);RT.inc=q};
+ function answer(ok,q){RT.pend=0;const t=tr(ok?'Realtime chat started':'Request declined');
+  [RT.out,q].forEach(x=>{if(!x)return;x.classList.add('done');let s=x.querySelector('small');if(!s){s=document.createElement('small');x.appendChild(s)}s.textContent=t});
+  RT.out=null;RT.inc=null;if(ok)enter();else if(!RT.on)RT.R=null}
+ /* پاسخ گیرنده | Recipient Answer: کارت را به‌روز می‌کند و نتیجه را به سرور می‌فرستد (updates the card and sends the result to the server) */
+ function respond(ok,q){const R=curR();answer(ok,q);push({s:ok?'on':'no'},R)}
+ window.lkRtAnswer=ok=>answer(!!ok,RT.inc);
+ /* ورود و خروج | Enter & Exit */
+ function enter(){RT.on=true;RT.id=S.openId;if(real()&&!RT.R)RT.R=curR();C.classList.add('rt');try{window.lkChatFit&&window.lkChatFit()}catch(e){}sync();M.scrollTop=M.scrollHeight}
+ function exit(note,remote){if(!RT.on)return;RT.on=false;if(!remote){push({s:'end'});pushLive('',null)}RT.R=null;C.classList.remove('rt');live.classList.remove('on');peer.classList.remove('on');live.remove();peer.remove();
+  if(note){const d=card('done');d.innerHTML='<b>'+tr('Realtime chat ended')+'</b>';add(d)}}
+ /* حباب زنده | Live Bubble: هرچه در کادر نوشته یا پاک شود همان لحظه در حباب هم نوشته یا پاک می‌شود؛ فقط وقتی متنی هست داخل صفحه می‌ماند (mirrors the input box; only in the DOM while there is text) */
+ function place(){const near=M.scrollHeight-M.scrollTop-M.clientHeight<140,want=[];if(peer.classList.contains('on'))want.push(peer);if(live.classList.contains('on'))want.push(live);
+  [peer,live].forEach(x=>{if(want.indexOf(x)<0)x.remove()});
+  const n=M.children.length;if(want.length&&!want.every((x,i)=>M.children[n-want.length+i]===x))want.forEach(x=>M.appendChild(x));
+  if(near)M.scrollTop=M.scrollHeight}
+ function sync(){if(!RT.on)return;const rp=S.reply?{n:S.reply.n,t:S.reply.t}:null;pushLive(MI.value,rp);try{document.dispatchEvent(new CustomEvent('lkrt-typing',{detail:{text:MI.value,reply:rp}}))}catch(e){}}
+ window.lkRtPeerLive=(t,rp)=>{if(!RT.on)return;t=t||'';const q=peer.querySelector('.rq');q.style.display=rp?'block':'none';if(rp){q.firstChild.textContent=rp.n||'';q.lastChild.textContent=rp.t||''}peer.querySelector('.tx').textContent=t;peer.classList.toggle('on',!!(t||rp));place()};
+ MI.addEventListener('input',sync);
+ $('#send').addEventListener('click',()=>{if(!RT.on)return;live.remove();setTimeout(sync,80)},true);
+ MI.addEventListener('keydown',e=>{if(RT.on&&e.key==='Enter'&&!e.shiftKey){live.remove();setTimeout(sync,80)}},true);
+
+ /* اتصال به سرور | Server Link: درخواست و پاسخ و پایان با یک ردیف ثابت kind=rt و تایپ زنده با ردیف ثابت kind=rtl برای هر نفر در جدول messages همان Appwrite برنامه؛ در حالت نمایشی (demo) هیچ‌کدام اجرا نمی‌شود (request/answer/end in one fixed kind=rt row, live typing in one kind=rtl row per user, in the app's own Appwrite messages table; nothing runs in demo mode) */
+ const DBN='link',TBL='messages';
+ const pairKey=(a,b)=>[a,b].sort().join('_');
+ const h32=s=>{let h=[2166136261,2654435761,1597334677,3812015801];for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);for(let k=0;k<4;k++)h[k]=Math.imul(h[k]^c,16777619+k*2)>>>0}return h.map(x=>x.toString(16).padStart(8,'0')).join('')};
+ const peerOf=()=>{try{const c=CHATS.find(x=>x.id===S.openId);return c&&c.uid||null}catch(e){return null}};
+ const real=()=>{try{return LK_MODE==='real'&&!!S.user&&!!S.user.id&&LKA.ok&&!!peerOf()}catch(e){return false}};
+ const curR=()=>{if(!real())return null;return{cid:h32(pairKey(S.user.id,peerOf())),uid:peerOf()}};
+ let warned=0;const fail=e=>{try{console.warn(e)}catch(_){}if(warned)return;warned=1;try{toast('Realtime: '+String((e&&e.message)||e).slice(0,90))}catch(_){}};
+ async function push(o,R0){const R=R0||RT.R||curR();if(!R||!S.user)return;const me=S.user.id,A=window.Appwrite,db=LKA.db(),id=h32('rt'+R.cid),txt=JSON.stringify(Object.assign({a:me,t:Date.now()},o)),up=()=>db.updateRow({databaseId:DBN,tableId:TBL,rowId:id,data:{text:txt,senderId:me}});
+  try{await up()}catch(e){if(e.code!==404){fail(e);return}try{await db.createRow({databaseId:DBN,tableId:TBL,rowId:id,data:{chatId:R.cid,senderId:me,kind:'rt',text:txt},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e2){if(e2.code!==409){fail(e2);return}try{await up()}catch(e3){fail(e3)}}}}
+ /* تایپ زنده | Live Typing Pump: همیشه فقط آخرین متن فرستاده می‌شود و تا تمام نشدن درخواست قبلی درخواست تازه نمی‌رود (only the latest text is sent, one request at a time) */
+ let lq=null,lbusy=0;
+ function pushLive(x,r){const R=RT.R||curR();if(!R)return;lq={x:String(x||'').slice(0,3000),r:r||null,R};pump()}
+ async function pump(){if(lbusy||!lq||!S.user)return;lbusy=1;const q=lq;lq=null;const me=S.user.id,A=window.Appwrite,db=LKA.db(),id=h32('rtl'+q.R.cid+me),txt=JSON.stringify({x:q.x,r:q.r}),up=()=>db.updateRow({databaseId:DBN,tableId:TBL,rowId:id,data:{text:txt}});
+  try{try{await up()}catch(e){if(e.code!==404)throw e;try{await db.createRow({databaseId:DBN,tableId:TBL,rowId:id,data:{chatId:q.R.cid,senderId:me,kind:'rtl',text:txt},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.user(me))]})}catch(e2){if(e2.code!==409)throw e2;await up()}}}catch(e){fail(e)}
+  lbusy=0;setTimeout(pump,70)}
+ /* وضعیت دریافتی | Incoming State: req=درخواست، on=تأیید، no=رد، end=پایان؛ ردیف‌های قدیمی‌تر از ۲ دقیقه هنگام باز کردن گفتگو نادیده گرفته می‌شوند (old rows are ignored when a chat is opened) */
+ function onState(p,init){let s;try{s=JSON.parse(p.text)}catch(e){return}if(!S.user)return;const mine=s.a===S.user.id;
+  if(init&&Date.now()-(Date.parse(p.$updatedAt)||0)>120000)return;
+  if(s.s==='req'){if(!mine&&!RT.on&&!RT.pend)window.lkRtIncoming()}
+  else if(s.s==='on'){if(!mine&&RT.pend&&!init)answer(true,null)}
+  else if(s.s==='no'){if(!mine&&RT.pend)answer(false,null)}
+  else if(s.s==='end'){if(!mine&&RT.on)exit(1,1)}}
+ let pt=0;
+ function onEv(ev){try{const p=ev.payload||{};if(p.kind!=='rt'&&p.kind!=='rtl')return;const R=curR();if(!R||p.chatId!==R.cid)return;if((ev.events||[]).some(e=>/\.delete$/.test(e)))return;
+  if(p.kind==='rt'){onState(p,false);return}
+  if(p.senderId!==R.uid||!RT.on)return;let o={};try{o=JSON.parse(p.text||'{}')}catch(e){}clearTimeout(pt);const x=String(o.x||''),r=o.r||null;
+  if(x||r)window.lkRtPeerLive(x,r);else pt=setTimeout(()=>window.lkRtPeerLive('',null),300)}catch(e){}}
+ let sub=0;function ensureSub(){if(sub)return;try{const cl=LKA.client();if(!cl)return;sub=1;cl.subscribe(['tablesdb.'+DBN+'.tables.'+TBL+'.rows','databases.'+DBN+'.collections.'+TBL+'.documents'],onEv)}catch(e){sub=0}}
+ /* باز شدن گفتگو | Chat Opened: اشتراک زنده را روشن می‌کند و درخواست تازه‌ای را که وقتی گفتگو بسته بود رسیده نشان می‌دهد (starts the live subscription and shows a request that arrived while the chat was closed) */
+ let lastOpen=null;
+ new MutationObserver(()=>{if(!C.classList.contains('on')){lastOpen=null;return}if(S.openId===lastOpen)return;lastOpen=S.openId;const R=curR();if(!R)return;ensureSub();
+  LKA.db().getRow({databaseId:DBN,tableId:TBL,rowId:h32('rt'+R.cid)}).then(r=>{const R2=curR();if(R2&&R2.cid===R.cid)onState(r,true)}).catch(()=>{})}).observe(C,{attributes:true,attributeFilter:['class']});
+ /* دکمه‌ی X | X Button: در حالت لحظه‌ای بازگشت فقط از همین حالت خارج می‌شود (در حالت لحظه‌ای بازگشت به لیست انجام نمی‌شود، مگر گفتگو حذف شده باشد) */
+ $('#back').addEventListener('click',e=>{if(!RT.on)return;let gone=false;try{gone=!CHATS.some(x=>x.id===S.openId)}catch(_){}if(gone){exit(0);return}e.stopImmediatePropagation();e.preventDefault();exit(1)},true);
+ /* بستن گفتگو | Chat Closed: با رفتن به گفتگوی دیگر یا لیست، حالت و درخواست در انتظار پاک می‌شوند */
+ new MutationObserver(()=>{if(!C.classList.contains('on')||(RT.id!=null&&S.openId!==RT.id)){RT.pend=0;RT.out=null;RT.inc=null;if(RT.on)exit(0)}}).observe(C,{attributes:true,attributeFilter:['class']});
+ /* پیام‌های لحظه‌ای | Live Messages: پیام‌هایی که در حالت لحظه‌ای ارسال یا دریافت شوند علامت rtm می‌گیرند و ظاهرشان بعد از خروج و بعد از بستن و باز کردن گفتگو هم می‌ماند (messages added during realtime mode get class rtm, kept after exit and reopen) */
+ const rk=b=>b.dataset.w+'|'+b.dataset.t+'|'+b.dataset.tm;
+ new MutationObserver(ms=>{const id=S.openId;if(id==null)return;const m=(CFG.rtm=CFG.rtm||{}),o=(m[id]=m[id]||{});let ch=0;ms.forEach(r=>r.addedNodes.forEach(b=>{if(!b.classList||!b.classList.contains('b')||b.classList.contains('sv'))return;const k=rk(b);if(o[k])b.classList.add('rtm');else if(RT.on){o[k]=1;b.classList.add('rtm');ch=1}}));if(ch)saveCfg()}).observe(M,{childList:true});
+ /* ریپلای زنده | Live Reply: با گذاشتن یا برداشتن ریپلای، وضعیت دوباره برای طرف مقابل فرستاده می‌شود (reply set or cleared re-sends the typing state) */
+ new MutationObserver(sync).observe($('#rbar'),{attributes:true,attributeFilter:['class']});
+})();
 </script>
 
 
