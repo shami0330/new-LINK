@@ -5005,6 +5005,9 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 .lkvm.pl .vmg circle:not(.vmk){stroke-width:1.4;transition:stroke-width .15s}
 .lkvm .vmg circle.vmk{display:none;fill:#fff;stroke:none;opacity:1;transform-origin:50px 50px;transition:r .15s;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6))}
 .lkvm.pl .vmg circle.vmk{display:block}
+/* حلقه داخل دایره مثل تلگرام | Inset Ring Like Telegram: هنگام پخش حلقه و نشانگر کمی داخل لبه‌ی دایره می‌نشینند (ring and knob sit slightly inside the circle edge while playing) */
+.lkvm.pl .vmg,.lkvm.pl .vmtr{transform:rotate(-90deg) scale(.895)}
+.lkvm .vmtr circle{stroke:rgba(255,255,255,.32)}
 .lkvm.sc .vmtr circle,.lkvm.sc.pl .vmg circle:not(.vmk){stroke-width:4.4}
 .lkvm.sc.pl .vmg circle.vmk{r:5}
 
@@ -5337,7 +5340,7 @@ async function vmTap(el){const id=el.dataset.vid;/* لمس حلقه آپلود |
  try{window.vStopVoice&&window.vStopVoice()}catch(_){}VB.stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
  let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("Video removed from cache");VB.vKeep=0;VB.vNowSync();return}
- /* یک پخش‌کننده برای تصویر و صدا | One Player For Picture And Sound: به‌جای صدای جدا و تصویر بی‌صدا، خود عنصر ویدیو با صدا پخش می‌شود؛ پس تصویر و صدا هیچ‌وقت از هم جدا نمی‌شوند و فریز نمی‌کنند (the video element itself plays with sound, so picture and sound never drift or freeze) */const a=el._v;a._vm=1;a.muted=false;a.loop=false;/* صدای ۱.۵ برابر | Video Message Gain 1.5x: فقط یک گین ساده روی صدای ویدیو مسیج، بدون فشرده‌ساز و بدون پردازش اضافه (a single light gain node, once per video) */try{vFxInit();if(vFxC){if(vFxC.state!=="running")await Promise.race([vFxC.resume(),new Promise(r=>setTimeout(r,200))]);if(a._g)a._g.gain.value=1.5;else if(vFxC.state==="running"){const sc=vFxC.createMediaElementSource(a),gn=vFxC.createGain();gn.gain.value=1.5;sc.connect(gn);gn.connect(vFxC.destination);a._g=gn}}}catch(_){}try{a.currentTime=0}catch(_){}const D=+el.dataset.d;a.playbackRate=VB.vSpd;
+ /* یک پخش‌کننده برای تصویر و صدا | One Player For Picture And Sound: به‌جای صدای جدا و تصویر بی‌صدا، خود عنصر ویدیو با صدا پخش می‌شود؛ پس تصویر و صدا هیچ‌وقت از هم جدا نمی‌شوند و فریز نمی‌کنند (the video element itself plays with sound, so picture and sound never drift or freeze) */const a=el._v;a._vm=1;a.muted=false;a.loop=false;/* صدای ۲٫۵ برابر | Video Message Gain 2.5x: فقط یک گین ساده روی صدای ویدیو مسیج، بدون فشرده‌ساز و بدون پردازش اضافه (a single light gain node, once per video) */try{vFxInit();if(vFxC){if(vFxC.state!=="running")await Promise.race([vFxC.resume(),new Promise(r=>setTimeout(r,200))]);if(a._g)a._g.gain.value=2.5;else if(vFxC.state==="running"){const sc=vFxC.createMediaElementSource(a),gn=vFxC.createGain();gn.gain.value=2.5;sc.connect(gn);gn.connect(vFxC.destination);a._g=gn}}}catch(_){}try{a.currentTime=0}catch(_){}const D=+el.dataset.d;a.playbackRate=VB.vSpd;
  VB.cur={a,vo:el,id,D,vm:true,cid:S.openId,name:VB.vNowName(el)};VB.vKeep=0;
  a.ontimeupdate=VB.vNowTick;a.onplay=a.onpause=VB.vNowSync;a.onended=VB.vEnded;
  vmVisual(el);
@@ -5347,15 +5350,18 @@ window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
 /* کشیدن روی حلقه | Ring Scrub: لمس لبه‌ی دایره‌ی در حال پخش، نوار را ضخیم می‌کند و کشیدن انگشت دور دایره ویدیو را جلو و عقب می‌برد (touching the edge of the playing circle scrubs the video by angle) */
 window.vmKnob=(el,p)=>{const k=el.querySelector(".vmk");if(k)k.style.transform="rotate("+(p*360).toFixed(1)+"deg)"};
-(()=>{const M=$("#msgs");let sc=null,noClick=0;const zone=(e,t)=>{const el=(t||e.target).closest&&(t||e.target).closest(".lkvm.pl");if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return null;const r=el.getBoundingClientRect(),dx=t?e.clientX-r.left-r.width/2:e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,rr=Math.hypot(dx,dy)/(r.width/2);return rr>=.8&&rr<=1.25?el:null};
+(()=>{const M=$("#msgs");let sc=null,noClick=0;const zone=(e,t)=>{const el=(t||e.target).closest&&(t||e.target).closest(".lkvm.pl");if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return null;const r=el.getBoundingClientRect(),dx=t?e.clientX-r.left-r.width/2:e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,rr=Math.hypot(dx,dy)/(r.width/2);return rr>=.68&&rr<=1.08?el:null};
 const prog=(el,e)=>{const r=el.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;let q=Math.atan2(dx,-dy)/(2*Math.PI);if(q<0)q+=1;return q};
 const apply=(e,force)=>{if(!sc)return;const a=VB.cur&&VB.cur.a;if(!a)return;const d=+sc.dataset.d||a.duration||1;let q=prog(sc,e);/* بدون پرش دور کامل | No Wrap Jump: از نزدیک ابتدا به انتها نمی‌پرد */if(sc._q!=null&&Math.abs(q-sc._q)>.6){q=sc._q>.5?1:0}sc._q=q;sc.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-q)).toFixed(1);window.vmKnob(sc,q);sc.querySelector(".vmd").textContent=fc(Math.max(0,d-q*d));const n=Date.now();if(force||n-(sc._ts||0)>80){sc._ts=n;try{a.currentTime=Math.min(q*d,Math.max(0,d-.05))}catch(_){}}};
-const begin=e=>{const el=zone(e);if(!el)return false;sc=el;sc._q=null;el.classList.add("sc");return true};
-const end=e=>{if(!sc)return;apply(e,true);sc.classList.remove("sc");sc=null;noClick=Date.now()};
-M.addEventListener("touchstart",e=>{const t=e.touches[0];if(t&&begin(t)){e.preventDefault();e.stopPropagation();apply(t)}},{capture:true,passive:false});
-M.addEventListener("touchmove",e=>{if(!sc)return;e.preventDefault();e.stopPropagation();apply(e.touches[0])},{capture:true,passive:false});
-["touchend","touchcancel"].forEach(n=>M.addEventListener(n,e=>{if(!sc)return;e.preventDefault();e.stopPropagation();end(e.changedTouches[0])},{capture:true,passive:false}));
-M.addEventListener("mousedown",e=>{if(begin(e)){e.preventDefault();e.stopPropagation();apply(e)}},true);
+const begin=e=>{const el=zone(e);if(!el)return false;sc=el;sc._q=null;el.classList.add("sc");/* مکث هنگام کشیدن مثل تلگرام | Pause While Scrubbing: هنگام نگه‌داشتن روی حلقه ویدیو متوقف می‌شود و با رها کردن ادامه می‌دهد (pauses while held, resumes on release) */const a=VB.cur&&VB.cur.a;el._wp=!!(a&&!a.paused);if(el._wp){try{a.pause()}catch(_){}}return true};
+const end=e=>{if(!sc)return;apply(e,true);sc.classList.remove("sc");const a=VB.cur&&VB.cur.a;if(sc._wp&&a){a.play().catch(()=>{})}sc=null;noClick=Date.now()};
+/* بدون تداخل با ریپلای و انتخاب | No Clash With Reply And Select: کشیدن روی حلقه فقط بعد از نگه‌داشتن کوتاه (حدود ۱۸۰ میلی‌ثانیه) بدون حرکت فعال می‌شود؛ لمس سریع، کشیدن ریپلای و حالت انتخاب پیام دست‌نخورده می‌مانند (the ring scrub starts only after a short still hold; taps, swipe-to-reply and select mode are left alone) */
+let pd=null;const busy=()=>chat.classList.contains("sel");
+const pdClear=()=>{if(pd){clearTimeout(pd.t);pd=null}};
+M.addEventListener("touchstart",e=>{pdClear();if(busy()||e.touches.length!==1)return;const t=e.touches[0],el=zone(t);if(!el)return;pd={x:t.clientX,y:t.clientY,t:setTimeout(()=>{const q=pd;pd=null;if(!q||busy())return;if(begin({clientX:q.x,clientY:q.y})){window.vmScrubbing=1;if(!window.__vmSelW&&typeof window.lkSelStart==="function"){window.__vmSelW=1;const o0=window.lkSelStart;window.lkSelStart=function(){if(window.vmScrubbing)return;return o0.apply(this,arguments)}}apply({clientX:q.x,clientY:q.y})}},180)}},{capture:true,passive:true});
+M.addEventListener("touchmove",e=>{const t=e.touches[0];if(pd&&t&&Math.hypot(t.clientX-pd.x,t.clientY-pd.y)>8)pdClear();if(!sc)return;e.preventDefault();e.stopPropagation();apply(t)},{capture:true,passive:false});
+["touchend","touchcancel"].forEach(n=>M.addEventListener(n,e=>{pdClear();if(!sc)return;end(e.changedTouches[0]);setTimeout(()=>{window.vmScrubbing=0},300)},{capture:true,passive:true}));
+M.addEventListener("mousedown",e=>{if(chat.classList.contains("sel"))return;if(begin(e)){e.preventDefault();e.stopPropagation();apply(e)}},true);
 document.addEventListener("mousemove",e=>{if(sc)apply(e)});document.addEventListener("mouseup",e=>{if(sc)end(e)});
 M.addEventListener("click",e=>{if(Date.now()-noClick<400&&e.target.closest(".lkvm")){e.stopImmediatePropagation();e.preventDefault()}},true)})();
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkvm");if(!el||chat.classList.contains("sel"))return;e.stopPropagation();e.preventDefault();vmTap(el)},true);
