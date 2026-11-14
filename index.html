@@ -1295,10 +1295,10 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
       <div class="ab"><i data-ic="phone" data-s="20"></i>call</div><div class="ab" id="cpMute"><i data-ic="bell" data-s="20"></i>mute</div><div class="ab" id="cpMore"><i data-ic="more" data-s="20"></i>more</div>
     </div>
     <div class="card">
-      <div class="cpr"><div><small>mobile</small><div class="bl" id="cp_ph"></div></div></div>
+      <div class="cpr"><div><small id="cp_phl">mobile</small><div class="bl" id="cp_ph"></div></div></div>
       <div class="cpr"><div><small>username</small><div class="bl" id="cp_un"></div></div><i data-ic="grid" data-s="20" style="color:var(--blue)"></i></div>
       <div class="cpr" id="cp_bdr"><div><small>birthday</small><div>4 Aug</div></div></div>
-      <div class="cpr" id="cp_bir"><div><small>bio</small><div>39</div></div></div>
+      <div class="cpr" id="cp_bir"><div><small>bio</small><div id="cp_biv" dir="auto">39</div></div></div>
     </div>
     <div class="cptw"><div id="cptabs"></div></div>
     <div id="cpbody"></div>
@@ -1332,7 +1332,7 @@ const LKA=(()=>{
  try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);db=new A.TablesDB(cl);ok=true}catch(e){}
  /* نام نمایشی | Display Name: بخش قبل از @ ایمیل؛ مثل ali123@gmail.com ← ali123 (the part before @) */
  const uname=e=>String(e||"").split("@")[0];
- const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:n,username:(p&&p.username)||n.toLowerCase()}};
+ const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:(p&&p.firstName)||n,last:(p&&p.lastName)||"",bio:(p&&p.bio)||"",bday:(p&&p.bday)||"",privEmail:p&&p.privEmail,privBio:p&&p.privBio,username:(p&&p.username)||n.toLowerCase()}};
  /* پروفایل کاربر | User Profile Row: برای هر کاربر یک ردیف در جدول users ساخته می‌شود (یوزرنیم = بخش قبل از @؛ اگر تکراری بود چند رقم اضافه می‌شود) تا دیگران بتوانند او را جستجو کنند؛ اگر جدول هنوز ساخته نشده باشد ورود را خراب نمی‌کند (creates the searchable users row; never blocks login) */
  async function prof(u,fn,ln){
   try{return await db.getRow({databaseId:DBID,tableId:"users",rowId:u.$id})}catch(e){}
@@ -1435,7 +1435,11 @@ const LKA=(()=>{
    if(ids.length){const u=await db.listRows({databaseId:DBID,tableId:"users",queries:[Q.equal("$id",ids),Q.limit(100)]});(u.rows||[]).forEach(x=>{us[x.$id]=x})}
    return rows.filter(x=>oid(x)).map(x=>{const uid=oid(x),p=us[uid]||{};return{cid:x.$id,uid:uid,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username||"User",last:x.lastText||"",at:x.lastAt||x.$updatedAt,lastSender:x.lastSenderId}})}
   /* پروفایل کاربر | User Profile: نام و یوزرنیم یک کاربر با آی‌دی (name and username by id) */
-  async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username}}
+  async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username,
+   /* ایمیل و بیو با اجازه صاحبشان | Email And Bio By Permission: ایمیل فقط وقتی برمی‌گردد که صاحب حساب در بخش امنیت «همه» یا «مخاطبین من» گذاشته باشد؛ بیو مگر اینکه «هیچ‌کس» باشد (email only if the owner allows it; bio unless Nobody) */
+   email:(p.privEmail==="Everybody"||p.privEmail==="My Contacts")?String(p.email||""):"",bio:p.privBio==="Nobody"?"":String(p.bio||"")}}
+  /* ذخیره پروفایل من | Save My Profile: ردیف خودم در جدول users روی سرور به‌روز می‌شود؛ اگر نشد false برمی‌گرداند (updates my own users row; returns false on failure) */
+  async function saveMe(id,d){if(!ok||!id)return false;try{await db.updateRow({databaseId:DBID,tableId:"users",rowId:id,data:d});return true}catch(e){return false}}
   /* دریافت زنده | Live Receive: هر پیام تازه‌ای که برای من ساخته شود همان لحظه می‌رسد (new messages arrive instantly) */
   const listen=(me,cb)=>{if(!ok)return null;try{return cl.subscribe(["tablesdb."+DBID+".tables.messages.rows","databases."+DBID+".collections.messages.documents"],ev=>{try{const p=ev.payload||{};const ev0=ev.events||[];if(!ev0.some(e=>/\.create$/.test(e)||/\.delete$/.test(e)||(p.kind==="text"&&/\.update$/.test(e))||((p.kind==="seen"||p.kind==="clr"||p.kind==="pin")&&/\.update$/.test(e))))return;if(ev0.some(e=>/\.delete$/.test(e))){if(p.kind==="text")cb(Object.assign(mapMsg(p),{kind:"del"}));return}if(p.senderId===me)return;if(p.kind==="text"&&!ev0.some(e=>/\.create$/.test(e))){cb(Object.assign(mapMsg(p),{kind:"edit"}));return}cb(mapMsg(p))}catch(e){}})}catch(e){return null}};
   /* آخرین پیام‌ها | Recent Messages: ۵۰ پیام تازه‌ای که من اجازه‌ی دیدنشان را دارم، بدون نیاز به ایندکس؛ برای دریافت مطمئن حتی اگر دریافت زنده کار نکند (latest 50 messages, no index needed) */
@@ -1450,7 +1454,7 @@ const LKA=(()=>{
  async function check(){if(!ok)return["کتابخانه‌ی سرور بارگیری نشد"];const bad=[],Q=window.Appwrite.Query;
   for(const t of["users","chats","messages"]){try{await db.listRows({databaseId:DBID,tableId:t,queries:[Q.limit(1)]})}catch(e){bad.push(t+" "+(e.code||"")+" "+String((e&&e.message)||"").slice(0,70))}}
   return bad}
- return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,listen,recent,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,saveMe,listen,recent,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1766,7 +1770,7 @@ $("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("اتصال اینت�
  if(S.signup&&p!==$("#pw2").value){toast("رمز عبور و تکرار آن یکسان نیستند");return}
  const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;b.classList.add("ld");/* نام وارد‌شده | Entered Name: اگر در ثبت‌نام اسم نوشته شده باشد همان نمایش داده می‌شود، وگرنه بخش قبل از @ ایمیل (typed first name, else email prefix) */const fn=S.signup?$("#nm").value.trim():"";
  /* فرستادن به سرور | Send To Server: ثبت‌نام یا ورود؛ بعد از موفقیت فیلدهای رمز خالی می‌شوند تا رمز جایی نماند (fields are cleared on success) */
- LKA.auth(S.signup,e,p,fn,S.signup?$("#nm2").value.trim():"").then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username};toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>{delete b.dataset.busy;b.classList.remove("ld")})};
+ LKA.auth(S.signup,e,p,fn,S.signup?$("#nm2").value.trim():"").then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||""};lkApplyMe(u);toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>{delete b.dataset.busy;b.classList.remove("ld")})};
 /* جداسازی داده نمایشی | Demo Data Split: محتوای نمایشی (چت‌ها، مخاطبین و پیام‌ها) فقط با دکمه‌ی «ورود نمایشی» می‌آید؛ ورود و ثبت‌نام واقعی با لیست خالی شروع می‌شود و دادهٔ هر حالت جدا نگه‌داشته می‌شود */
 const LK_SNAP={c:JSON.parse(JSON.stringify(CHATS)),p:JSON.parse(JSON.stringify(PEOPLE))};
 const LK_CK=["sent","cleared","media","sched","blocked","hid","saved","dlp","hidden","pins","dl","cperm","cadm","gperm","gone","order","cedit","folders"];
@@ -1812,7 +1816,7 @@ function lkBootOff(){const b=$("#lkBoot");if(!b||b.dataset.off)return;b.dataset.
 {const b=$("#lkBoot"),lg=document.querySelector("#login .lgo");if(b&&lg)b.querySelector("img").src=lg.src}
 /* اگر سرور دیر جواب داد | Boot Timeout: بعد از ۸ ثانیه لودینگ برداشته می‌شود تا برنامه گیر نکند (never stuck on loading) */
 setTimeout(lkBootOff,8000);
-LKA.restore().then(u=>{if(u&&!S.user){S.user={email:u.email,name:u.name,id:u.id,username:u.username};lkEnter()}}).catch(()=>{}).finally(lkBootOff);
+LKA.restore().then(u=>{if(u&&!S.user){S.user={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||""};lkApplyMe(u);lkEnter()}}).catch(()=>{}).finally(lkBootOff);
 /* ورود نمایشی موقت | Temporary Demo Entry: فقط با این دکمه بدون فیلد و اینترنت وارد می‌شود؛ ثبت‌نام/ورود عادی فقط آنلاین و با فیلدهای معتبر */
 $("#lgdemo").onclick=()=>{DEMO=true;try{$("#lbtn").onclick()}finally{DEMO=false}};
 
@@ -2235,7 +2239,7 @@ $("#edX").onclick=closeSub;$$("[data-back]").forEach(e=>e.onclick=closeSub);
 $("#edOk").onclick=()=>{const u=S.user,nm=$("#ed_first").value.trim(),un=$("#ed_user").value.trim().replace(/^@/,"");
  if(!nm){toast(tr("Name can't be empty"));return}
  if(un&&un!==u.username&&!/^[A-Za-z0-9_]{5,}$/.test(un)){toast(tr("Username: at least 5 characters, only a-z, 0-9 and _"));return}
- Object.assign(u,{name:nm,last:$("#ed_last").value.trim(),bio:$("#ed_bio").value.trim(),bday:$("#ed_bday").value,username:un,photo:ED.photo||""});fillMe();closeSub()};
+ Object.assign(u,{name:nm,last:$("#ed_last").value.trim(),bio:$("#ed_bio").value.trim(),bday:$("#ed_bday").value,username:un,photo:ED.photo||""});fillMe();closeSub();lkSaveMe(u)};
 $("#edLogout").onclick=()=>$("#logout").click();
 /* ردیف‌های منو | Menu Rows: هر ردیف صفحه خودش را باز می‌کند (each row opens its page) */
 $$("[data-go]").forEach(e=>e.onclick=()=>{const g=e.dataset.go;if(g==="saved"){S.fromSet=true;openChat(2);return}if(g==="pfile"){openEdit();return}if(g==="cpass")["#cp_old","#cp_new","#cp_rep"].forEach(q=>$(q).value="");renderVals();openSub(g)});
@@ -3278,7 +3282,7 @@ function pick(title,cur,cb){const el=$("#pick");el.innerHTML=`<div class="phd">$
  $$("#pick .opt").forEach(o=>o.onclick=()=>{closePick();cb(o.dataset.v)})}
 function closePick(){$("#pick").classList.remove("on");$("#pshade").style.display="none";setTimeout(()=>{if(!$("#pick").classList.contains("on"))$("#pick").classList.remove("dlg")},260)}
 $("#pshade").onclick=closePick;
-$$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals()})});
+$$("[data-pk]").forEach(e=>e.onclick=()=>{const k=e.dataset.pk;pick(e.querySelector("[data-t]").dataset.t,CFG.priv[k],v=>{CFG.priv[k]=v;saveCfg();renderVals();lkSavePriv(k,v)})});
 $$("[data-sw]").forEach(e=>e.onclick=()=>{const k=e.dataset.sw;CFG.data[k]=!CFG.data[k];saveCfg();renderVals()});
 $("#nightRow").onclick=()=>{CFG.night=!CFG.night;thAcc();saveCfg();applyTheme();renderVals()};
 /* لوگوی تم لینک | Link Theme Logo: لوگوی کنار تم لینک همان لوگوی صفحه‌ی ورود است (کپی منبع، نه تکرار داده) */
@@ -3364,10 +3368,27 @@ const DM={files:[["Lesson-plan.pdf","2.4 MB","Oct 28","r"],["Report-card.xlsx","
  saved:[["Remember to bring the books","Oct 29"],["Meeting at 5","Oct 22"]]};
 const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Music"],["voice","Voice"],["links","Links"]];
 /* باز کردن پروفایل | Open Profile: با لمس کپسول بالای گفتگو (tap on the chat header capsule) */
+/* هماهنگی پروفایل با سرور | Profile Server Sync: چهار تابع پایین پروفایل من و پروفایل مخاطب را با سرور هماهنگ می‌کنند (four helpers that sync my profile and the contact profile with the server) */
+/* اعمال پروفایل سرور | Apply Server Profile: تنظیم حریم خصوصی ذخیره‌شده روی سرور را بعد از ورود در برنامه می‌گذارد (puts the saved privacy choices in place after login) */
+function lkApplyMe(u){if(!u)return;if(u.privEmail)CFG.priv.email=u.privEmail;if(u.privBio)CFG.priv.bio=u.privBio;saveCfg()}
+/* ذخیره پروفایل من روی سرور | Save My Profile To Server: نام، نام‌کاربری، بیو و تولد را روی سرور می‌نویسد؛ اگر ستون بیو یا تولد در سرور نبود، فقط نام و نام‌کاربری ذخیره می‌شود و پیام می‌آید (writes name, username, bio, birthday; falls back to name+username if columns are missing) */
+function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
+ LKA.saveMe(u.id,Object.assign({},core,{bio:String(u.bio||"").slice(0,70),bday:String(u.bday||"")})).then(ok=>{if(ok)return;return LKA.saveMe(u.id,core).then(ok2=>toast(ok2?"بیو و تولد در سرور ذخیره نشد؛ ستون bio و bday باید به جدول users اضافه شود":"ذخیره در سرور انجام نشد"))}).catch(()=>{})}
+/* ذخیره حریم خصوصی روی سرور | Save Privacy To Server: انتخاب کاربر برای نمایش ایمیل و بیو به دیگران روی سرور ذخیره می‌شود (saves who may see my email and bio) */
+function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const d={};if(k==="email")d.privEmail=v;else if(k==="bio")d.privBio=v;else return;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون privEmail و privBio باید به جدول users اضافه شود")}).catch(()=>{})}
+/* پروفایل واقعی مخاطب | Real Contact Profile: در حالت سرور فقط اطلاعات واقعی (نام‌کاربری، ایمیل و بیو با اجازه صاحبش) نشان داده می‌شود و هر چیز خالی پنهان می‌ماند؛ در حالت نمایشی همان نمونه‌ها (online shows only real data allowed by the owner; empty rows stay hidden; demo keeps samples) */
+function lkCpReal(c,real){const ph=$("#cp_ph"),rp=ph.closest(".cpr"),ru=$("#cp_un").closest(".cpr"),rb=$("#cp_bir"),rd=$("#cp_bdr"),cd=rp.closest(".card");
+ if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";return}
+ $("#cp_phl").textContent=tr("Email");ph.textContent="";ph.setAttribute("dir","ltr");$("#cp_biv").textContent="";[rp,ru,rb,rd].forEach(r=>r.style.display="none");cd.style.display="none";
+ if(c.uid)LKA.user(c.uid).then(u=>{if(S.openId!==c.id)return;const un=u.username||c.uname||"";let n=0;
+  if(un){$("#cp_un").textContent="@"+un;ru.style.display="";n++}
+  if(u.email){ph.textContent=u.email;rp.style.display="";n++}
+  if(u.bio){$("#cp_biv").textContent=u.bio;rb.style.display="";n++}
+  cd.style.display=n?"":"none"}).catch(()=>{})}
 function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.n;
  $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_n").insertAdjacentHTML("beforeend",vb(c,22));$("#cp_mn").insertAdjacentHTML("beforeend",vb(c,14));$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;/* قلاب میوت | Mute Hook */lkMuteIcons();
  /* بدون شماره و نام کاربری ساختگی | No Fake Contact Info: در چت واقعی شمارهٔ نمایشی پنهان و نام کاربری واقعی نشان داده می‌شود (real chat hides the demo phone and shows the real username) */const _real=LK_MODE==="real";$("#cp_ph").textContent=_real?"":"+98 901 720 6536";{const r=$("#cp_ph").closest(".cpr");if(r)r.style.display=_real?"none":""}["#cp_bdr","#cp_bir"].forEach(q=>{const e=$(q);if(e)e.style.display=_real?"none":""});$("#cp_un").textContent=_real?(c.uname?"@"+c.uname:""):"@"+(c.n.replace(/[^A-Za-z]/g,"").toLowerCase()||"user");/* بدون مشخصات نمایشی | No Demo Details Online: در حالت آنلاین همهٔ چت‌ها (نه فقط کاربران سرور) شماره، تولد و بیو نمایشی ندارند؛ نام کاربری هم اگر واقعی نباشد مخفی می‌شود و کارت خالی نمایش داده نمی‌شود (online: no demo phone, birthday or bio for any chat; username hidden unless real; an empty card is not shown) */{const r=$("#cp_un").closest(".cpr");if(r)r.style.display=_real&&!c.uname?"none":"";const cd=$("#cp_ph").closest(".card");if(cd)cd.style.display=_real&&!c.uname?"none":""}
- paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();cpMuteSync();$("#cp").classList.add("on")}
+ lkCpReal(c,_real);paintAv($("#cp_av"),{name:c.n,photo:null});cpBig(false);$("#cpScroll").scrollTop=0;CP.tab="media";cpTabs();cpBody();cpScroll();cpMuteSync();$("#cp").classList.add("on")}
 $("#chat .top .title").onclick=openCP;$("#cav").onclick=openCP;
 $("#cpBack").onclick=()=>{stopPl();$("#cp").classList.remove("on")};
 /* بستن با کشیدن به چپ | Swipe Left To Close: کشیدن انگشت به سمت چپ روی صفحه پروفایل آن را میبندد و به صفحه چت برمیگرداند؛ فقط وقتی حرکت بیشتر افقی باشد و بیشتر از ۷۰ پیکسل (swipe left on the profile closes it and returns to the chat; only if mostly horizontal and over 70px) */
