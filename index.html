@@ -579,7 +579,12 @@ html.light #shov .shcap{background:rgba(235,235,240,.85)}
 #mpv .mptr{position:absolute;inset:0;display:flex;gap:16px;will-change:transform}
 #mpv .mps{flex:0 0 100%;position:relative;overflow:hidden;background:#000}
 #mpv .mps img,#mpv .mps video{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
-#mpv .mps.pt img,#mpv .mps.pt video{object-fit:cover}
+#mpv .mps.pt img,#mpv .mps.pt video{object-fit:contain}
+/* دیدن تمام محتوا | Fit Whole Media: عکس و ویدیو (حتی عمودی) کامل و کوچک‌تر در فضای بین نوار بالا و کنترل‌های پایین جا می‌شوند تا هیچ بخشی زیر نوارها پنهان نشود (the whole photo or video fits above the bottom controls, nothing hidden) */
+#mpv .mps{box-sizing:border-box;padding-bottom:92px}
+#mpv.avp .mps{padding-bottom:0}
+#mpv .mpc{height:calc(100% - 92px)}
+#mpv.avp .mpc{height:100%}
 /* بوم نتیجه | Edited Canvas: وقتی عکس یا ویدیو ویرایش شده، نتیجه‌ی برش و رنگ روی این بوم نشان داده می‌شود و خود عکس یا ویدیو پنهان (ولی زنده) می‌ماند */
 #mpv .mpc{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none}
 #mpv .mps.ed .mpc{display:block}
@@ -1372,7 +1377,7 @@ const LKA=(()=>{
   async function packMe(u,p){const r=pack(u,p);try{if(p&&p.$id)r.photo=await photoOf(p)}catch(e){}return r}
  /* ثبت‌نام و ورود | Sign Up / Log In: اگر ثبت‌نام باشد اول حساب ساخته می‌شود، بعد نشست ساخته می‌شود (create account then session) */
  async function auth(signup,email,pw,fn,ln){
-  if(!ok)throw new Error("کتابخانه‌ی سرور بارگیری نشد");
+  if(!ok)throw new Error("Server library failed to load");
   if(signup)await ac.create({userId:window.Appwrite.ID.unique(),email:email,password:pw,name:uname(email)});
   try{await ac.deleteSession({sessionId:"current"})}catch(e){}
   await ac.createEmailPasswordSession({email:email,password:pw});
@@ -1383,15 +1388,15 @@ const LKA=(()=>{
  const out=()=>{const rm=()=>{try{localStorage.removeItem("cookieFallback")}catch(e){}};if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
  /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
  const msg=e=>{const c=e&&e.code,m=String((e&&e.message)||""),t=String((e&&e.type)||"");
-  if(c===409)return"این ایمیل قبلاً ثبت‌نام شده است";
-  if(c===401||t==="user_invalid_credentials")return"ایمیل یا رمز عبور اشتباه است";
-  if(c===429)return"تعداد تلاش‌ها زیاد است؛ کمی بعد دوباره امتحان کنید";
-  if(t==="user_blocked")return"این حساب مسدود شده است";
-  if(c===400&&/password/i.test(t+m))return"رمز عبور معتبر نیست؛ حداقل ۸ حرف و نه خیلی ساده";
-  if(c===400&&/email/i.test(t+m))return"ایمیل معتبر نیست";
-  if(!navigator.onLine||c===0||/fetch|network|load failed|cors/i.test(m))return"اتصال به سرور برقرار نشد؛ اینترنت را بررسی کنید";
-  if(/بارگیری/.test(m))return m;
-  return"خطایی رخ داد؛ دوباره تلاش کنید"};
+  if(c===409)return"This email is already registered";
+  if(c===401||t==="user_invalid_credentials")return"Wrong email or password";
+  if(c===429)return"Too many attempts; try again later";
+  if(t==="user_blocked")return"This account is blocked";
+  if(c===400&&/password/i.test(t+m))return"Invalid password; at least 8 characters and not too simple";
+  if(c===400&&/email/i.test(t+m))return"Invalid email";
+  if(!navigator.onLine||c===0||/fetch|network|load failed|cors/i.test(m))return"Could not connect to server; check your internet";
+  if(/library failed to load/.test(m))return m;
+  return"Something went wrong; try again"};
  /* جستجوی کاربر | User Search: با یوزرنیم یا ایمیل (جیمیل)؛ اول کسانی که اسمشان با نوشته شروع می‌شود، نزدیک‌ترین (کمترین اختلاف طول) اول، بعد کسانی که نوشته در میانه‌ی اسمشان است؛ خود کاربر نمایش داده نمی‌شود (prefix matches first, closest length first, then contains, self hidden) */
  async function search(q){q=String(q||"").trim().toLowerCase().replace(/^@/,"");if(!ok||q.length<2)return[];const Q=window.Appwrite.Query;
   let rows=[];
@@ -1412,13 +1417,13 @@ const LKA=(()=>{
   /* ساخت چت | Ensure Chat: اگر چت دو نفره نبود می‌سازد؛ سرور اجازه نمی‌دهد کاربر برای یک نفر دیگر دسترسی بنویسد (خطای ۴۰۱)، پس دسترسی برای کاربران واردشده است و برنامه فقط چت‌های خودم را نشان می‌دهد (creates the private chat if missing; Appwrite forbids granting permission to another user, so access is for logged-in users and the app filters to my chats) */
   async function chatFor(me,other){const A=window.Appwrite,id=chatIdOf(me,other);
    try{const ro=await db.getRow({databaseId:DBID,tableId:"chats",rowId:id});if(ro.type!=="pv")await db.updateRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv"}});return id}catch(e){}
-   try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e){if(e.code!==409){e.message="ساخت چت: "+e.message;throw e}}
+   try{await db.createRow({databaseId:DBID,tableId:"chats",rowId:id,data:{type:"pv",pairKey:pairKey(me,other),ownerId:me,isPublic:false,memberCount:2,lastAt:new Date().toISOString()},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.users())]})}catch(e){if(e.code!==409){e.message="Create chat: "+e.message;throw e}}
    return id}
   /* قالب پیام | Message Shape: ردیف سرور را به شکل ساده برای برنامه درمی‌آورد (row to simple object) */
   const mapMsg=r=>({id:r.$id,chatId:r.chatId,from:r.senderId,text:r.text||"",kind:r.kind||"text",at:r.$createdAt,upd:r.$updatedAt});
   /* فرستادن متن | Send Text: پیام را می‌سازد (فقط فرستنده و گیرنده می‌خوانند) و پیش‌نمایش چت را تازه می‌کند (create message, update chat preview) */
   async function send(me,other,text){const A=window.Appwrite,cid=await chatFor(me,other),t=String(text);
-   const r=await lab("ساخت پیام",db.createRow({databaseId:DBID,tableId:"messages",rowId:A.ID.unique(),data:{chatId:cid,senderId:me,kind:"text",text:t.slice(0,4096)},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.users())]}));
+   const r=await lab("Create message",db.createRow({databaseId:DBID,tableId:"messages",rowId:A.ID.unique(),data:{chatId:cid,senderId:me,kind:"text",text:t.slice(0,4096)},permissions:[A.Permission.read(A.Role.users()),A.Permission.update(A.Role.user(me)),A.Permission.delete(A.Role.users())]}));
    db.updateRow({databaseId:DBID,tableId:"chats",rowId:cid,data:{lastText:t.slice(0,200),lastSenderId:me,lastAt:r.$createdAt}}).catch(()=>{});
    return mapMsg(r)}
   /* تاریخچه | History: ۲۰۰ پیام آخر این چت از قدیم به جدید (last 200 messages, old to new) */
@@ -1496,7 +1501,7 @@ const LKA=(()=>{
  /* برچسب خطا | Error Label: اگر مرحله‌ای از ارسال خطا بدهد، اسم همان مرحله اول پیام خطا می‌آید تا علت مشخص شود (puts the failed step name in front of the error) */
  const lab=(l,pr)=>pr.catch(e=>{try{e.message=l+": "+e.message}catch(x){}throw e});
  /* بررسی سرور | Server Check: بعد از ورود، وجود جدول‌های users و chats و messages را می‌سنجد و اگر مشکلی بود نام جدول و کد خطا را برمی‌گرداند (checks the three tables exist and are readable) */
- async function check(){if(!ok)return["کتابخانه‌ی سرور بارگیری نشد"];const bad=[],Q=window.Appwrite.Query;
+ async function check(){if(!ok)return["Server library failed to load"];const bad=[],Q=window.Appwrite.Query;
   for(const t of["users","chats","messages"]){try{await db.listRows({databaseId:DBID,tableId:t,queries:[Q.limit(1)]})}catch(e){bad.push(t+" "+(e.code||"")+" "+String((e&&e.message)||"").slice(0,70))}}
   return bad}
  /* آپلود و دانلود عکس | Photo Upload And Download: عکس فشرده‌شده در باکت media انبار Appwrite ذخیره می‌شود و شناسه‌اش در پیام می‌رود تا طرف مقابل آن را بگیرد (photo goes to the media bucket, its id travels in the message) */
@@ -1821,17 +1826,17 @@ async function mediaRecord(pn,opt){
 let DEMO=false;
 /* لودینگ دکمه‌ی ورود | Login Button Loading: وقتی ورود یا ثبت‌نام زده می‌شود، نوشته‌ی دکمه محو و یک دایره‌ی چرخان جایش می‌آید تا عملیات تمام شود؛ دکمه در این مدت قفل است و اندازه‌اش عوض نمی‌شود (spinner replaces the button text until the request ends, size unchanged) */
 const lds=document.createElement("style");lds.textContent='#lbtn.ld{position:relative;color:transparent!important;pointer-events:none}#lbtn.ld::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:lkld .7s linear infinite}@keyframes lkld{to{transform:rotate(360deg)}}';document.head.appendChild(lds);
-$("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("اتصال اینترنت لازم است");return}let e=$("#em").value.trim().toLowerCase(),p=$("#pw").value;
+$("#lbtn").onclick=()=>{if(!DEMO&&!navigator.onLine){toast("Internet connection required");return}let e=$("#em").value.trim().toLowerCase(),p=$("#pw").value;
  /* ورود نمایشی | Demo Login: بدون سرور و بدون قانون‌ها (demo, no server) */
  if(DEMO){const nm=$("#nm").value.trim()||"Demo";e=e||"demo";if(!e.includes("@"))e+="@gmail.com";S.user={email:e,name:S.signup?nm:e.split("@")[0]};lkEnter();return}
  /* بررسی فرم | Form Check: ایمیل معتبر، رمز حداقل ۸ حرف و در ثبت‌نام تکرار رمز یکسان (valid email, min 8 chars, same repeat) */
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)){toast("ایمیل معتبر نیست");return}
- if(p.length<8){toast("رمز عبور باید حداقل ۸ حرف باشد");return}
- if(p.length>256){toast("رمز عبور خیلی طولانی است");return}
- if(S.signup&&p!==$("#pw2").value){toast("رمز عبور و تکرار آن یکسان نیستند");return}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)){toast("Invalid email");return}
+ if(p.length<8){toast("Password must be at least 8 characters");return}
+ if(p.length>256){toast("Password is too long");return}
+ if(S.signup&&p!==$("#pw2").value){toast("Passwords do not match");return}
  const b=$("#lbtn");if(b.dataset.busy)return;b.dataset.busy=1;b.classList.add("ld");/* نام وارد‌شده | Entered Name: اگر در ثبت‌نام اسم نوشته شده باشد همان نمایش داده می‌شود، وگرنه بخش قبل از @ ایمیل (typed first name, else email prefix) */const fn=S.signup?$("#nm").value.trim():"";
  /* فرستادن به سرور | Send To Server: ثبت‌نام یا ورود؛ بعد از موفقیت فیلدهای رمز خالی می‌شوند تا رمز جایی نماند (fields are cleared on success) */
- LKA.auth(S.signup,e,p,fn,S.signup?$("#nm2").value.trim():"").then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};lkApplyMe(u);toast(S.signup?"ثبت‌نام با موفقیت انجام شد":"خوش آمدید "+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>{delete b.dataset.busy;b.classList.remove("ld")})};
+ LKA.auth(S.signup,e,p,fn,S.signup?$("#nm2").value.trim():"").then(u=>{S.user={email:u.email,name:fn||u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};lkApplyMe(u);toast(S.signup?"Signed up successfully":"Welcome"+u.name);lkEnter();$("#pw").value="";$("#pw2").value=""}).catch(er=>toast(LKA.msg(er))).finally(()=>{delete b.dataset.busy;b.classList.remove("ld")})};
 /* جداسازی داده نمایشی | Demo Data Split: محتوای نمایشی (چت‌ها، مخاطبین و پیام‌ها) فقط با دکمه‌ی «ورود نمایشی» می‌آید؛ ورود و ثبت‌نام واقعی با لیست خالی شروع می‌شود و دادهٔ هر حالت جدا نگه‌داشته می‌شود */
 const LK_SNAP={c:JSON.parse(JSON.stringify(CHATS)),p:JSON.parse(JSON.stringify(PEOPLE))};
 const LK_CK=["sent","cleared","media","sched","blocked","hid","saved","dlp","hidden","pins","dl","cperm","cadm","gperm","gone","order","cedit","folders"];
@@ -1988,13 +1993,13 @@ function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)retu
  /* تازه‌سازی دیده‌شدن | Seen Refresh: برای چت‌هایی که آخرین پیامشان از من است و هنوز دیده نشده، وضعیت دیده‌شدن را دوباره می‌پرسد (re-asks for chats whose last message is mine and unseen) */if(full)CHATS.filter(x=>x.uid&&x.t===2&&!x.sl).slice(0,8).forEach(lkSeenPull);
  (full?LKA.chats(S.user.id):Promise.resolve([])).then(rs=>{if(!full)return;/* حذف دوطرفه در زمان اجرا | Live Gone Check: چتی که قبلاً روی سرور بوده و حالا در فهرست سرور نیست، یعنی طرف مقابل آن را حذف کرده (a chat that was on the server but is no longer listed was deleted by the other person) */if(rs.length<100)CHATS.filter(x=>x.uid&&x.inSrv&&!rs.some(r=>r.uid===x.uid)).forEach(lkGone);rs.forEach(r=>{const c0=CHATS.find(x=>x.uid===r.uid);if(c0)c0.inSrv=1});rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
 /* خودآزمایی | Self Check: بعد از ورود یک بار می‌خواند و دریافت زنده را می‌سنجد؛ اگر چیزی خراب بود با پیام فارسی و کد خطا می‌گوید کدام بخش مشکل دارد (one-time check after login, tells which part fails) */
-function lkDiag(){const me=S.user&&S.user.id;if(!me)return;const say=(t,e)=>toast("⚠ "+t+((e&&(e.code||e.message))?" ("+(e.code||"")+" "+String(e.message||"").slice(0,70)+")":""));
- LKA.recent().catch(e=>say("خواندن پیام‌ها از سرور خطا داد",e));
- LKA.chats(me).catch(e=>say("خواندن لیست چت‌ها خطا داد",e));
- setTimeout(()=>{if(S.user&&S.user.id===me&&!LKA.live())say("دریافت زنده وصل نشد؛ پیام‌ها هر ۶۰ ثانیه چک می‌شوند")},7000)}
+function lkDiag(){const me=S.user&&S.user.id;if(!me)return;const say=(t,e)=>toast("⚠ "+tr(t)+((e&&(e.code||e.message))?" ("+(e.code||"")+" "+String(e.message||"").slice(0,70)+")":""));
+ LKA.recent().catch(e=>say("Failed to read messages from server",e));
+ LKA.chats(me).catch(e=>say("Failed to read chat list",e));
+ setTimeout(()=>{if(S.user&&S.user.id===me&&!LKA.live())say("Live updates not connected; messages are checked every 60 seconds")},7000)}
 /* شروع | Start: بعد از ورود، چت‌های سرور را می‌آورد و دریافت زنده و بررسی دوره‌ای را روشن می‌کند (load chats, start live receive) */
 function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;
- /* بررسی جدول‌های سرور | Tables Check: اگر جدولی ساخته نشده یا خراب است، همان لحظه‌ی ورود با اسمش خبر می‌دهد (warns at login if a table is missing) */LKA.check().then(b=>{if(b.length){toast("⚠ سرور: "+b.join(" | "));lkLong()}}).catch(()=>{});
+ /* بررسی جدول‌های سرور | Tables Check: اگر جدولی ساخته نشده یا خراب است، همان لحظه‌ی ورود با اسمش خبر می‌دهد (warns at login if a table is missing) */LKA.check().then(b=>{if(b.length){toast("⚠ "+tr("Server:")+" "+b.join(" | "));lkLong()}}).catch(()=>{});
  LKC.un=LKA.listen(S.user.id,lkIn);
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
@@ -2248,6 +2253,8 @@ const LANGS=[["en","English"],["fa","فارسی"]],ACC=["#e11d48","#f43f5e","#2f
 const FA={"Link":"لینک","Link Dark":"لینک تیره","Edit":"ویرایش","Change Profile Photo":"تغییر عکس پروفایل","Add Account":"افزودن حساب","My Profile":"پروفایل من","Proxy":"پروکسی","Disabled":"غیرفعال","Saved Messages":"پیام‌های ذخیره‌شده","Recent Calls":"تماس‌های اخیر","Devices":"دستگاه‌ها","Chat Folders":"پوشه‌های چت","Privacy and Security":"حریم خصوصی و امنیت","Data and Storage":"داده و حافظه","Appearance":"ظاهر","Language":"زبان","Log Out":"خروج","online":"آنلاین","Email":"ایمیل","Username":"نام کاربری","Birthday":"تاریخ تولد","Bio":"بیوگرافی","First Name":"نام","Last Name":"نام خانوادگی","Change Photo":"تغییر عکس","Edit Profile":"ویرایش پروفایل","Enter your name and add an optional profile photo.":"نام خود را وارد کنید و در صورت تمایل عکس پروفایل اضافه کنید.","Only your contacts can see your bio.":"فقط مخاطبین شما بیوگرافی را می‌بینند.","Only your contacts can see your birthday.":"فقط مخاطبین شما تاریخ تولد را می‌بینند.","Your email is used to log in and can't be changed here.":"ایمیل شما برای ورود استفاده می‌شود و از اینجا قابل تغییر نیست.","You can use a-z, 0-9 and underscores. Minimum length is 5 characters.":"می‌توانید از a-z، 0-9 و زیرخط استفاده کنید. حداقل ۵ کاراکتر.","All Chats":"همه چت‌ها","Personal":"شخصی","Groups":"گروه‌ها","Channels":"کانال‌ها","Tap a folder to open it in your chat list.":"روی یک پوشه بزنید تا در لیست چت‌ها باز شود.","Privacy":"حریم خصوصی","Control who can see your information.":"مشخص کنید چه کسی اطلاعات شما را ببیند.","Last Seen & Online":"آخرین بازدید و آنلاین","Profile Photo":"عکس پروفایل","Groups & Channels":"گروه‌ها و کانال‌ها","Everybody":"همه","My Contacts":"مخاطبین من","Nobody":"هیچ‌کس","Automatic Media Download":"دانلود خودکار رسانه","Photos":"عکس‌ها","Videos":"ویدیوها","Files":"فایل‌ها","Use Less Data for Calls":"مصرف داده کمتر در تماس","Clear Cache":"پاک کردن حافظه موقت","Cache cleared":"حافظه موقت پاک شد","Theme":"تم","Dark":"تیره","Light":"روشن","Accent Color":"رنگ تأکید","Name can't be empty":"نام نمی‌تواند خالی باشد","Username: at least 5 characters, only a-z, 0-9 and _":"نام کاربری: حداقل ۵ کاراکتر و فقط a-z، 0-9 و _"};
 Object.assign(FA,{"Add to Contact":"افزودن به مخاطبین","pinned":"پیامی را پین کرد","Cancel":"لغو","No messages yet":"هنوز پیامی نیست","Cache is empty":"حافظه خالی است","Add to Folder":"افزودن به پوشه","Change Password":"تغییر رمز عبور","Security":"امنیت","Current Password":"رمز عبور فعلی","New Password":"رمز عبور جدید","Repeat New Password":"تکرار رمز عبور جدید","Save":"ذخیره","Current password is wrong":"رمز عبور فعلی اشتباه است","New password must be at least 8 characters":"رمز جدید باید حداقل ۸ کاراکتر باشد","Passwords don't match":"رمزها یکسان نیستند","Password changed":"رمز عبور تغییر کرد","Chat Background":"پس‌زمینه گفتگو","Choose from Gallery":"انتخاب از گالری","Storage Used by Chats":"حافظه‌ی استفاده‌شده توسط گفتگوها","Total":"مجموع","Tap a chat to see and delete its photos, videos, voice messages and files.":"روی یک گفتگو بزنید تا عکس‌ها، ویدیوها، پیام‌های صوتی و فایل‌هایش را ببینید و حذف کنید.","Delete Selected":"حذف انتخاب‌شده‌ها","Delete All":"حذف همه","Voice Messages":"پیام‌های صوتی","Select All":"انتخاب همه","Deselect All":"لغو انتخاب","No cached media":"رسانه‌ی کش‌شده‌ای نیست","Create New Folder":"ساخت پوشه‌ی جدید","Your Folders":"پوشه‌های شما","Recommended Folders":"پوشه‌های پیشنهادی","Add":"افزودن","New Folder":"پوشه‌ی جدید","Edit Folder":"ویرایش پوشه","Folder Name":"نام پوشه","Quick Add":"افزودن سریع","Add All Groups":"افزودن همه‌ی گروه‌ها","Add All Channels":"افزودن همه‌ی کانال‌ها","Add All Personal Chats":"افزودن همه‌ی چت‌های شخصی","Chats":"گفتگوها","Delete Folder":"حذف پوشه","Folder name can't be empty":"نام پوشه نمی‌تواند خالی باشد","Delete this folder?":"این پوشه حذف شود؟","No folders":"پوشه‌ای وجود ندارد","This folder fills automatically with its chat type.":"این پوشه به‌صورت خودکار از همان نوع گفتگو پر می‌شود.","Create folders and choose which chats go inside.":"پوشه بسازید و مشخص کنید کدام گفتگوها داخلش باشند.","Delete for me":"حذف برای من","Delete for both":"حذف برای هر دو"});
 const tr=t=>CFG.lang==="fa"&&FA[t]?FA[t]:t;
+/* ترجمه‌ی پیام‌های ثابت | Fixed Message Translations: پیام‌ها و خطاهای ثابت اکنون انگلیسی‌اند و فقط در حالت فارسی فارسی نشان داده می‌شوند (fixed messages are English keys, shown in Persian only when the language is Persian) */
+Object.assign(FA,{"Server library failed to load":"کتابخانه‌ی سرور بارگیری نشد","This email is already registered":"این ایمیل قبلاً ثبت‌نام شده است","Wrong email or password":"ایمیل یا رمز عبور اشتباه است","Too many attempts; try again later":"تعداد تلاش‌ها زیاد است؛ کمی بعد دوباره امتحان کنید","This account is blocked":"این حساب مسدود شده است","Invalid password; at least 8 characters and not too simple":"رمز عبور معتبر نیست؛ حداقل ۸ حرف و نه خیلی ساده","Invalid email":"ایمیل معتبر نیست","Could not connect to server; check your internet":"اتصال به سرور برقرار نشد؛ اینترنت را بررسی کنید","Something went wrong; try again":"خطایی رخ داد؛ دوباره تلاش کنید","Internet connection required":"اتصال اینترنت لازم است","Password must be at least 8 characters":"رمز عبور باید حداقل ۸ حرف باشد","Password is too long":"رمز عبور خیلی طولانی است","Passwords do not match":"رمز عبور و تکرار آن یکسان نیستند","Signed up successfully":"ثبت‌نام با موفقیت انجام شد","Welcome":"خوش آمدید","Failed to read messages from server":"خواندن پیام‌ها از سرور خطا داد","Failed to read chat list":"خواندن لیست چت‌ها خطا داد","Live updates not connected; messages are checked every 60 seconds":"دریافت زنده وصل نشد؛ پیام‌ها هر ۶۰ ثانیه چک می‌شوند","⚠ Server:":"⚠ سرور: ","Send scheduled":"ارسال زمان‌بندی شد","Photo not saved on server; add the photo column to the users table":"عکس در سرور ذخیره نشد؛ ستون photo باید به جدول users اضافه شود","Bio and birthday not saved on server; add bio and bday columns to the users table":"بیو و تولد در سرور ذخیره نشد؛ ستون bio و bday باید به جدول users اضافه شود","Not saved on server":"ذخیره در سرور انجام نشد","Privacy setting not saved on server; add the privEmail, privBio, privBday, privSeen, privPhoto and privGroups columns to the users table":"تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون های privEmail و privBio و privBday و privSeen و privPhoto و privGroups باید به جدول users اضافه شود","Contacts not saved on server; add the contacts column to the users table":"لیست مخاطبین در سرور ذخیره نشد؛ ستون contacts باید به جدول users اضافه شود","Sending at this quality may take longer due to compression. Continue?":"ارسال با این کیفیت ممکن است زمان‌بر باشد، به دلیل فشرده‌سازی. ادامه می‌دهید؟","Server:":"سرور:"});
 let ED={};S.subs=[];
 function toast(m){const t=$("#toast");t.textContent=tr(m);t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
 /* مسدودسازی پنجره‌های مرورگر | Native Dialog Block: هیچ پیغام تأیید، هشدار یا اعلان مرورگر باز نمی‌شود؛ alert به پیام داخلی برنامه تبدیل می‌شود (no browser popups anywhere; alert becomes the in-app toast) */
@@ -2605,6 +2612,9 @@ async function lkSave(id,name){let b=LKB[id];if(!b){try{const r=await lkGet(id);
 const lkId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 /* حلقه پیشرفت | Progress Ring: بعد از زدن ارسال روی هر عکس و ویدیو یک حلقه می آید. مرحله ۱: حلقه سبز همزمان با فشرده سازی و تغییر فرمت از ۰ تا ۱۰۰ پر می شود. مرحله ۲: دوباره از صفر با پیشرفت واقعی بارگذاری روی سرور پر می شود (after Send each photo/video gets a ring: step 1 green fills 0-100 in sync with compression and format change; step 2 restarts from 0 and follows the real upload progress to the server) */
 const lkRingH='<i class="lkrg" data-ph="c" style="--p:0"><svg viewBox="0 0 44 44"><circle class="t" cx="22" cy="22" r="19"/><circle class="f" cx="22" cy="22" r="19" pathLength="100"/></svg></i>';
+/* پر شدن نرم حلقه | Smooth Ring Fill: همه‌ی حلقه‌های دانلود و آپلود (وایس، ویدیو مسیج، فایل، عکس) به‌جای پرش، آرام و پیوسته به عدد واقعی می‌رسند و روی ۹۹٪ ناگهانی گیر نمی‌کنند (every progress ring eases toward its real value instead of jumping) */
+(function(){const act=new Set();let raf=0;function loop(){raf=0;act.forEach(el=>{if(!el.isConnected){act.delete(el);return}const t=el._t,d=el._d,g=t-d;let n=g<=0?t:Math.min(t,d+Math.max(.12,g*.035));el._d=n;if(n>=t)act.delete(el);el._o=Math.round(n*10)/10;el.style.setProperty("--p",el._o)});if(act.size)raf=requestAnimationFrame(loop)}
+new MutationObserver(ms=>{for(const m of ms){const el=m.target;if(!el.classList||!el.classList.contains("lkrg"))continue;const v=parseFloat(el.style.getPropertyValue("--p"));if(isNaN(v)||v===el._o)continue;el._t=v;if(el._d===undefined||v<el._d)el._d=v;if(el._d<v){act.add(el);if(!raf)raf=requestAnimationFrame(loop)}}}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:["style"]})})();
 function lkRing(d,id,ph,p){const pc=d.querySelector('[data-lkm="'+id+'"] .lkdu[data-pc]');if(pc)pc.textContent=Math.round(Math.max(0,Math.min(1,p))*100)+"%";const r=d.querySelector('[data-lkm="'+id+'"] .lkrg,.lkdl[data-dl="'+id+'"] .lkrg');if(!r)return;if(r.dataset.ph!==ph)r.dataset.ph=ph;r.style.setProperty("--p",Math.round(Math.max(ph==="u"?.08:0,Math.min(1,p))*100))}
 /* سرعت فرضی آپلود | Assumed Upload Speed: برای تقسیم حلقه و درصد بین فشرده‌سازی و آپلود، سرعت آپلود ۵۰۰ کیلوبایت بر ثانیه فرض می‌شود (upload speed is assumed to be 500 KB/s) */
 const LK_UPS=500*1024;
@@ -2784,7 +2794,7 @@ function mpvEl(){let o=$("#mpv");if(o)return o;o=document.createElement("div");o
 /* دکمه‌ی + افزودن بیشتر | Add More Click: گالری را باز می‌کند و فایل‌های انتخابی را به پیش‌نمایش فعلی اضافه می‌کند (opens the gallery and adds the chosen files to the open preview) */
 $("#mpAdd").onclick=()=>{const f=$("#mediaIn");f.value="";f.removeAttribute("accept");f.accept="image/*,video/*";f.multiple=true;f.onchange=()=>{const a=[...f.files].filter(x=>lkKind(x)!=="file");if(a.length)mpvAppend(a)};f.click()};
  /* ارسال از پیش‌نمایش | Send From Preview: برش‌های واقعی را روی فایل می‌گذارد، صفحه را می‌بندد، آلبوم را می‌فرستد و شرح را پیام جدا بعدش می‌فرستد */
- $("#mpSend").onclick=async()=>{const S=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!S.length)return;const L=S.filter(i=>lkKind(MPV.f[i])==="video"&&mpvQv(i)!=="Original");if(L.length&&!(await mpAsk("ارسال با این کیفیت ممکن است زمان‌بر باشد، به دلیل فشرده‌سازی. ادامه می‌دهید؟")))L.forEach(i=>MPV.rec[i].q="Original");const F=S.map(i=>MPV.f[i]),cap=$("#mpCap").value.trim();
+ $("#mpSend").onclick=async()=>{const S=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!S.length)return;const L=S.filter(i=>lkKind(MPV.f[i])==="video"&&mpvQv(i)!=="Original");if(L.length&&!(await mpAsk(tr("Sending at this quality may take longer due to compression. Continue?"))))L.forEach(i=>MPV.rec[i].q="Original");const F=S.map(i=>MPV.f[i]),cap=$("#mpCap").value.trim();
   /* دستورکار هر فایل | Per-file Recipe: برش، تنظیم رنگ، چرخش، آینه و کوتاه‌کردن هر فایل را به دستورکار سیستم رسانه تبدیل می‌کند، کیفیت را می‌گذارد و اندازه‌ی حباب را با شکل جدید هماهنگ می‌کند */
   F.forEach((f,k)=>{f.__asFile=!!MPV.rec[S[k]].asFile;f.__ttl=f.__asFile?0:(window.__mpTtl||0);const i=S[k],r=MPV.rec[i],t=r.trim,vd=lkKind(f)==="video",tr2=vd&&t&&(t.start>.05||t.end<(f.__d||0)-.05)?{start:t.start,end:t.end}:null,rec=mediaRecipe({crop:r.crop||null,adjust:r.adjust||null,rotate:r.rotate||0,flip:!!r.flip,trim:tr2});
    f.__rec=mPlain(rec)?null:rec;f.__q=mpvQv(i);
@@ -2796,7 +2806,7 @@ $("#mpAdd").onclick=()=>{const f=$("#mediaIn");f.value="";f.removeAttribute("acc
  window.lkMQ=window.lkMQ||[];
  const close=()=>{const m=document.getElementById("mpSm");if(m)m.remove()},closeD=()=>{const m=document.getElementById("mpSd");if(m)m.remove()};
  const queue=(at)=>{const sel=MPV.f.map((_,i)=>i).filter(i=>MPV.sel[i]);if(!sel.length)return;const cid=S.openId,real=lkSend;
-  window.lkSend=async(files,c)=>{window.lkSend=real;window.lkMQ.push({cid,files,cap:c,at});toast("ارسال زمان‌بندی شد")};orig.call(b)};
+  window.lkSend=async(files,c)=>{window.lkSend=real;window.lkMQ.push({cid,files,cap:c,at});toast("Send scheduled")};orig.call(b)};
  const openD=()=>{closeD();const d=new Date(Date.now()+120000),m=document.createElement("div");m.id="mpSd";m.style.cssText="position:absolute;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center";
   m.innerHTML='<div class="schc"><b>Schedule Message</b><label>Date</label><input type="date" id="mpSD"><label>Time</label><input type="time" id="mpST"><div class="schok" id="mpSOk">Schedule</div><div class="schno" id="mpSNo">Cancel</div></div>';
   o.appendChild(m);m.querySelector("#mpSD").value=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());m.querySelector("#mpST").value=p2(d.getHours())+":"+p2(d.getMinutes());
@@ -2806,7 +2816,7 @@ $("#mpAdd").onclick=()=>{const f=$("#mediaIn");f.value="";f.removeAttribute("acc
  const menu=()=>{close();const m=document.createElement("div");m.id="mpSm";m.style.cssText="position:absolute;inset:0;z-index:99998";
   const row=(k,ic0,tx)=>'<div data-m="'+k+'">'+ic(ic0,22)+'<span>'+tx+'</span></div>';
   m.innerHTML='<div class="smc" style="right:12px;top:0;max-height:calc(100% - 24px);overflow:auto">'+row("sched","cal","Schedule Message")+row("1","clock","View Once")+row("3","clock","3 Seconds")+row("5","clock","5 Seconds")+row("10","clock","10 Seconds")+row("30","clock","30 Seconds")+'</div>';
-  m.onclick=e=>{const d=e.target.closest("[data-m]");close();if(!d)return;const k=d.dataset.m;if(k==="sched")openD();else{window.__mpTtl=k==="1"?-1:+k;toast(k==="1"?"فقط یک بار دیده می‌شود":"بازدید "+k+" ثانیه‌ای");orig.call(b)}};
+  m.onclick=e=>{const d=e.target.closest("[data-m]");close();if(!d)return;const k=d.dataset.m;if(k==="sched")openD();else{window.__mpTtl=k==="1"?-1:+k;toast(CFG.lang==="fa"?(k==="1"?"فقط یک بار دیده می‌شود":"بازدید "+k+" ثانیه‌ای"):(k==="1"?"View once":"View "+k+" sec"));orig.call(b)}};
   o.appendChild(m);const c=m.firstChild,or=o.getBoundingClientRect(),br=b.getBoundingClientRect();let top=br.bottom-or.top+8;top=Math.max(12,Math.min(top,or.height-c.offsetHeight-12));c.style.top=top+"px"};
  b.addEventListener("pointerdown",()=>{lp=false;t=setTimeout(()=>{lp=true;menu()},450)});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
  b.addEventListener("click",e=>{if(lp){lp=false;e.stopImmediatePropagation();e.preventDefault()}},true);
@@ -2897,8 +2907,8 @@ Object.assign(FA,{"Night Mode":"حالت شب","Ocean":"اقیانوس","Forest"
 function mpvSrc(i){const m=$("#mpTr").children[i].querySelector("img,video"),vd=m.tagName==="VIDEO";return{m,sw:vd?m.videoWidth:m.naturalWidth,sh:vd?m.videoHeight:m.naturalHeight}}
 /* رسم نتیجه | Draw Edited Preview: نتیجه‌ی برش، چرخش، آینه و رنگ را با همان mDraw سیستم رسانه روی بوم صفحه می‌کشد تا پیش‌نمایش با فایل ارسالی یکی باشد */
 function mpvDraw(i){const sl=$("#mpTr").children[i];if(!sl)return;if(!mpvIsEd(i)){sl.classList.remove("ed");return}const r=MPV.rec[i],{m,sw,sh}=mpvSrc(i);if(!sw||!sh||(m.tagName==="VIDEO"&&m.readyState<2)){sl.classList.remove("ed");return}
- const cv=sl.querySelector(".mpc"),k=Math.min(2,devicePixelRatio||1),W=Math.round(sl.clientWidth*k),H=Math.round(sl.clientHeight*k);if(!W||!H)return;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
- const c=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2,s=(ch>cw*1.01&&!($("#mpv").classList.contains("avp")&&!$("#mpv").classList.contains("bgp")))?Math.max(W/cw,H/ch):Math.min(W/cw,H/ch),dw=Math.max(1,Math.round(cw*s)),dh=Math.max(1,Math.round(ch*s));
+ const cv=sl.querySelector(".mpc"),k=Math.min(2,devicePixelRatio||1),W=Math.round(cv.clientWidth*k),H=Math.round(cv.clientHeight*k);if(!W||!H)return;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+ const c=r.crop||{x:0,y:0,w:1,h:1},rot=((r.rotate||0)%360+360)%360,w2=rot%180?sh:sw,h2=rot%180?sw:sh,cw=c.w*w2,ch=c.h*h2,s=Math.min(W/cw,H/ch),dw=Math.max(1,Math.round(cw*s)),dh=Math.max(1,Math.round(ch*s));
  const oc=MPV.oc||(MPV.oc=document.createElement("canvas"));oc.width=dw;oc.height=dh;mDraw(oc.getContext("2d",{willReadFrequently:!MHASF}),m,sw,sh,mediaRecipe(r),c,dw,dh);
  const x=cv.getContext("2d");x.clearRect(0,0,W,H);x.drawImage(oc,(W-dw)/2,(H-dh)/2);sl.classList.add("ed")}
 /* علامت ویرایش | Mark Edited: اگر فایل برش، رنگ، چرخش یا آینه دارد بوم نتیجه را نشان می‌دهد، وگرنه خود فایل را */
@@ -3492,10 +3502,10 @@ const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Musi
 const LK_PRIV={email:"privEmail",seen:"privSeen",photo:"privPhoto",bio:"privBio",bday:"privBday",groups:"privGroups"};
 function lkApplyMe(u){if(!u)return;Object.keys(LK_PRIV).forEach(k=>{if(u[LK_PRIV[k]])CFG.priv[k]=u[LK_PRIV[k]]});saveCfg()}
 /* ذخیره پروفایل من روی سرور | Save My Profile To Server: نام، نام‌کاربری، بیو و تولد را روی سرور می‌نویسد؛ اگر ستون بیو یا تولد در سرور نبود، فقط نام و نام‌کاربری ذخیره می‌شود و پیام می‌آید (writes name, username, bio, birthday; falls back to name+username if columns are missing) */
-function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();/* عکس پروفایل | Profile Photo: عکس فقط وقتی ذخیره می‌شود که حجمش مناسب باشد (photo saved only when small enough) */if(u.photo){const im=new Image();im.onload=()=>{const s=Math.min(1,256/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);LKA.saveMe(u.id,{photo:cv.toDataURL("image/jpeg",.7)}).then(ok=>{if(!ok)toast("عکس در سرور ذخیره نشد؛ ستون photo باید به جدول users اضافه شود")}).catch(()=>{})};im.src=u.photo}if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
- LKA.saveMe(u.id,Object.assign({},core,{bio:String(u.bio||"").slice(0,70),bday:String(u.bday||"")})).then(ok=>{if(ok)return;return LKA.saveMe(u.id,core).then(ok2=>toast(ok2?"بیو و تولد در سرور ذخیره نشد؛ ستون bio و bday باید به جدول users اضافه شود":"ذخیره در سرور انجام نشد"))}).catch(()=>{})}
+function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();/* عکس پروفایل | Profile Photo: عکس فقط وقتی ذخیره می‌شود که حجمش مناسب باشد (photo saved only when small enough) */if(u.photo){const im=new Image();im.onload=()=>{const s=Math.min(1,256/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);LKA.saveMe(u.id,{photo:cv.toDataURL("image/jpeg",.7)}).then(ok=>{if(!ok)toast("Photo not saved on server; add the photo column to the users table")}).catch(()=>{})};im.src=u.photo}if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
+ LKA.saveMe(u.id,Object.assign({},core,{bio:String(u.bio||"").slice(0,70),bday:String(u.bday||"")})).then(ok=>{if(ok)return;return LKA.saveMe(u.id,core).then(ok2=>toast(ok2?"Bio and birthday not saved on server; add bio and bday columns to the users table":"Not saved on server"))}).catch(()=>{})}
 /* ذخیره حریم خصوصی روی سرور | Save Privacy To Server: انتخاب کاربر برای نمایش ایمیل و بیو به دیگران روی سرور ذخیره می‌شود (saves who may see my email and bio) */
-function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const f=LK_PRIV[k];if(!f)return;const d={};d[f]=v;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون های privEmail و privBio و privBday و privSeen و privPhoto و privGroups باید به جدول users اضافه شود")}).catch(()=>{})}
+function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const f=LK_PRIV[k];if(!f)return;const d={};d[f]=v;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("Privacy setting not saved on server; add the privEmail, privBio, privBday, privSeen, privPhoto and privGroups columns to the users table")}).catch(()=>{})}
 /* پروفایل واقعی مخاطب | Real Contact Profile: در حالت سرور فقط اطلاعات واقعی (نام‌کاربری، ایمیل و بیو با اجازه صاحبش) نشان داده می‌شود و هر چیز خالی پنهان می‌ماند؛ در حالت نمایشی همان نمونه‌ها (online shows only real data allowed by the owner; empty rows stay hidden; demo keeps samples) */
 function lkCpReal(c,real){$("#cpEd").style.display="none";const ph=$("#cp_ph"),rp=ph.closest(".cpr"),ru=$("#cp_un").closest(".cpr"),rb=$("#cp_bir"),rd=$("#cp_bdr"),cd=rp.closest(".card");
  if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";$("#cp_bdv").textContent="";rd.style.display="none";return}
@@ -3519,7 +3529,7 @@ const lkCtKey=c=>c.uid||("c"+c.id);
 function lkCtApply(){CHATS.forEach(c=>{const o=CFG.ct[lkCtKey(c)];if(!o)return;if(c.n0===undefined)c.n0=c.n;const nm=((o.f||"")+" "+(o.l||"")).trim();c.n=nm||c.n0})}
 {const _rc2=renderChats;renderChats=function(){try{lkCtApply()}catch(e){}return _rc2.apply(this,arguments)}}
 /* همگام‌سازی مخاطبین با سرور | Contacts Server Sync: کدهای رمزشده مخاطبین را در ستون contacts می‌نویسد (writes hashed contact codes to the contacts column) */
-function lkCtSync(){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const ids=Object.keys(CFG.ct).filter(k=>!/^c\d+$/.test(k));Promise.all(ids.map(k=>LKA.ctH(S.user.id,k))).then(h=>LKA.saveMe(S.user.id,{contacts:h.join(",")})).then(ok=>{if(ok===false)toast("لیست مخاطبین در سرور ذخیره نشد؛ ستون contacts باید به جدول users اضافه شود")}).catch(()=>{})}
+function lkCtSync(){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const ids=Object.keys(CFG.ct).filter(k=>!/^c\d+$/.test(k));Promise.all(ids.map(k=>LKA.ctH(S.user.id,k))).then(h=>LKA.saveMe(S.user.id,{contacts:h.join(",")})).then(ok=>{if(ok===false)toast("Contacts not saved on server; add the contacts column to the users table")}).catch(()=>{})}
 /* پنل ویرایش مخاطب | Contact Edit Panel: دکمه Edit پروفایل نام، نام خانوادگی و ذخیره به عنوان مخاطب را باز می‌کند (Edit button opens first name, last name and save contact) */
 $("#cpEdit").onclick=()=>{const c=CHATS.find(x=>x.id===S.openId);if(!c)return;const p=$("#cpEd");if(p.style.display!=="none"){p.style.display="none";return}
  const o=CFG.ct[lkCtKey(c)],nm=String(c.n0!==undefined?c.n0:c.n||""),sp=nm.split(" ");$("#cpe_f").placeholder=tr("First Name");$("#cpe_l").placeholder=tr("Last Name");$("#cpe_f").value=o?(o.f||""):(sp[0]||"");$("#cpe_l").value=o?(o.l||""):sp.slice(1).join(" ");
@@ -4950,6 +4960,17 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 .lkvm.pz .vmx{top:50%;bottom:auto;width:46px;height:46px;margin:-23px 0 0 -23px;background:rgba(0,0,0,.45)}
 .lkvm.pz .vmx svg{width:22px;height:22px}
 .lkvm.pl .vmg circle{stroke-width:2.4;opacity:1}
+/* نوار تایم‌لاین دور ویدیو مسیج | Video Message Timeline Ring: حلقه‌ی نازک با نشانگر گرد؛ با نگه‌داشتن روی حلقه ضخیم‌تر می‌شود و ویدیو با کشیدن جلو و عقب می‌رود (thin ring + knob; hold it to thicken and scrub) */
+.lkvm .vmtr,.lkvm .vmg{overflow:visible}
+.lkvm .vmtr{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none;display:none}
+.lkvm.pl .vmtr{display:block}
+.lkvm .vmtr circle{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1.4;transition:stroke-width .15s}
+.lkvm.pl .vmg circle:not(.vmk){stroke-width:1.4;transition:stroke-width .15s}
+.lkvm .vmg circle.vmk{display:none;fill:#fff;stroke:none;opacity:1;transform-origin:50px 50px;transition:r .15s;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6))}
+.lkvm.pl .vmg circle.vmk{display:block}
+.lkvm.sc .vmtr circle,.lkvm.sc.pl .vmg circle:not(.vmk){stroke-width:4.4}
+.lkvm.sc.pl .vmg circle.vmk{r:5}
+
 #vmnow{position:absolute;left:12px;right:12px;height:38px;display:none;align-items:center;gap:6px;box-sizing:border-box;padding:0 8px;background:var(--card);border-radius:19px;z-index:60;overflow:hidden;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:0;transition:opacity .25s}
 #vmnow.on{display:flex}
 #vmnow.sh{opacity:1}
@@ -5192,7 +5213,7 @@ snd.addEventListener("pointerup",vmUp);snd.addEventListener("pointercancel",vmUp
 
 /* ---- حباب و پخش | Bubble And Playback ---- */
 /* حباب گرد | Round Bubble: ویدیو مسیج داخل گفتگو یک دایره است با حلقه‌ی پیشرفت، زمان پایین و دکمه‌ی بلندگوی خاموش وسط (video message is a circle with progress ring, time pill and a muted-speaker button in the middle) */
-const _bodyVm=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="vmsg"){const x=o.it[0];return '<div class="lkvm'+(lkRm(x)?' lkgt':'')+'" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vmc">'+(x.bl&&lkRm(x)?'<img class="vmth" alt="" src="data:image/jpeg;base64,'+x.bl+'">':'')+'</div><svg class="vmg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.6" stroke-dasharray="305.4" stroke-dashoffset="305.4"/></svg><div class="vmx"><span class="vo">'+I.spk+'</span><span class="vp">'+ic("pause",22)+'</span></div><div class="vmt"><span class="vmd">'+fd(x.d)+'</span><i class="vmu"></i></div>'+lkGtH(x)+'</div>'}return _bodyVm(o)};
+const _bodyVm=lkMsgBody;lkMsgBody=function(o){if(o&&o.k==="vmsg"){const x=o.it[0];return '<div class="lkvm'+(lkRm(x)?' lkgt':'')+'" data-vid="'+x.id+'" data-d="'+x.d+'"><div class="vmc">'+(x.bl&&lkRm(x)?'<img class="vmth" alt="" src="data:image/jpeg;base64,'+x.bl+'">':'')+'</div><svg class="vmtr" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.6"/></svg><svg class="vmg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.6" stroke-dasharray="305.4" stroke-dashoffset="305.4"/><circle class="vmk" cx="50" cy="1.4" r="2.6"/></svg><div class="vmx"><span class="vo">'+I.spk+'</span><span class="vp">'+ic("pause",22)+'</span></div><div class="vmt"><span class="vmd">'+fd(x.d)+'</span><i class="vmu"></i></div>'+lkGtH(x)+'</div>'}return _bodyVm(o)};
 /* متن لیست چت | Chat List Text: پیش‌نمایش پیام در لیست چت‌ها */
 const _plainVm=lkMsgPlain;lkMsgPlain=function(t){const o=lkDec(t);if(o&&o.k==="vmsg")return "🎥 "+tr("Video message")+" "+fd(o.it[0].d);return _plainVm(t)};
 const VM={cur:null},VMU={};
@@ -5259,7 +5280,7 @@ function vmLoop(){const el=VM.cur;if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)re
  const a=VB.cur.a,v=el._v;
  if(v){if(a.paused){if(!v.paused)v.pause()}else{if(v.paused)v.play().catch(()=>{});if(v.playbackRate!==a.playbackRate)v.playbackRate=a.playbackRate;/* همگام‌سازی نرم | Soft Sync: فقط وقتی تصویر بیش از ۱ ثانیه از صدا عقب یا جلو افتاد و فایل قابل جلو/عقب بردن بود، جابه‌جا می‌شود؛ پرش‌های پیاپی باعث فریز تصویر می‌شد (jump only if the picture is over 1 s off and seekable; constant jumps froze the picture) */if(!v.seeking&&v.seekable&&v.seekable.length&&Math.abs(v.currentTime-a.currentTime)>1){try{v.currentTime=a.currentTime}catch(_){}}}vmSync(el,v)}
  el.classList.toggle("pz",a.paused);
- const d=+el.dataset.d||a.duration||1,p=Math.min(1,a.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);el.querySelector(".vmd").textContent=fc(Math.max(0,d-a.currentTime));const u=el.querySelector(".vmu");if(u&&a.currentTime>.3)u.remove();
+ const d=+el.dataset.d||a.duration||1,p=Math.min(1,a.currentTime/d);el.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-p)).toFixed(1);window.vmKnob(el,p);el.querySelector(".vmd").textContent=fc(Math.max(0,d-a.currentTime));const u=el.querySelector(".vmu");if(u&&a.currentTime>.3)u.remove();
  vmRaf=requestAnimationFrame(vmLoop)}
 /* نمایش روی حباب | Show On Bubble: دایره بزرگ می‌شود و با پلیر هماهنگ می‌شود */
 function vmVisual(el){VM.cur=el;el.classList.add("pl");el.classList.toggle("pz",!!(VB.cur&&VB.cur.a.paused));const v=el._v;if(v){const own=!!(VB.cur&&VB.cur.a===v);v.loop=false;v.muted=!own;try{if(!own)v.currentTime=VB.cur?VB.cur.a.currentTime:0}catch(_){}}cancelAnimationFrame(vmRaf);vmRaf=requestAnimationFrame(vmLoop)}
@@ -5280,6 +5301,19 @@ async function vmTap(el){const id=el.dataset.vid;/* لمس حلقه آپلود |
 /* دسترسی از بیرون | Video Message Hooks: ویس برای پخش پشت‌سرهم، ویدیو مسیج را از اینجا پخش یا متوقف می‌کند */
 window.vmPlayEl=vmTap;window.vmHalt=()=>{if(VM.cur)vmStop(VM.cur)};
 /* گوش‌دادن به لمس | Tap Listener: لمس دایره را می‌گیرد (در حالت انتخاب پیام دست نمی‌زند) */
+/* کشیدن روی حلقه | Ring Scrub: لمس لبه‌ی دایره‌ی در حال پخش، نوار را ضخیم می‌کند و کشیدن انگشت دور دایره ویدیو را جلو و عقب می‌برد (touching the edge of the playing circle scrubs the video by angle) */
+window.vmKnob=(el,p)=>{const k=el.querySelector(".vmk");if(k)k.style.transform="rotate("+(p*360).toFixed(1)+"deg)"};
+(()=>{const M=$("#msgs");let sc=null,noClick=0;const zone=(e,t)=>{const el=(t||e.target).closest&&(t||e.target).closest(".lkvm.pl");if(!el||!VB.cur||!VB.cur.vm||VB.cur.vo!==el)return null;const r=el.getBoundingClientRect(),dx=t?e.clientX-r.left-r.width/2:e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,rr=Math.hypot(dx,dy)/(r.width/2);return rr>=.8&&rr<=1.25?el:null};
+const prog=(el,e)=>{const r=el.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;let q=Math.atan2(dx,-dy)/(2*Math.PI);if(q<0)q+=1;return q};
+const apply=(e,force)=>{if(!sc)return;const a=VB.cur&&VB.cur.a;if(!a)return;const d=+sc.dataset.d||a.duration||1;let q=prog(sc,e);/* بدون پرش دور کامل | No Wrap Jump: از نزدیک ابتدا به انتها نمی‌پرد */if(sc._q!=null&&Math.abs(q-sc._q)>.6){q=sc._q>.5?1:0}sc._q=q;sc.querySelector(".vmg circle").style.strokeDashoffset=(305.4*(1-q)).toFixed(1);window.vmKnob(sc,q);sc.querySelector(".vmd").textContent=fc(Math.max(0,d-q*d));const n=Date.now();if(force||n-(sc._ts||0)>80){sc._ts=n;try{a.currentTime=Math.min(q*d,Math.max(0,d-.05))}catch(_){}}};
+const begin=e=>{const el=zone(e);if(!el)return false;sc=el;sc._q=null;el.classList.add("sc");return true};
+const end=e=>{if(!sc)return;apply(e,true);sc.classList.remove("sc");sc=null;noClick=Date.now()};
+M.addEventListener("touchstart",e=>{const t=e.touches[0];if(t&&begin(t)){e.preventDefault();e.stopPropagation();apply(t)}},{capture:true,passive:false});
+M.addEventListener("touchmove",e=>{if(!sc)return;e.preventDefault();e.stopPropagation();apply(e.touches[0])},{capture:true,passive:false});
+["touchend","touchcancel"].forEach(n=>M.addEventListener(n,e=>{if(!sc)return;e.preventDefault();e.stopPropagation();end(e.changedTouches[0])},{capture:true,passive:false}));
+M.addEventListener("mousedown",e=>{if(begin(e)){e.preventDefault();e.stopPropagation();apply(e)}},true);
+document.addEventListener("mousemove",e=>{if(sc)apply(e)});document.addEventListener("mouseup",e=>{if(sc)end(e)});
+M.addEventListener("click",e=>{if(Date.now()-noClick<400&&e.target.closest(".lkvm")){e.stopImmediatePropagation();e.preventDefault()}},true)})();
 $("#msgs").addEventListener("click",e=>{const el=e.target.closest(".lkvm");if(!el||chat.classList.contains("sel"))return;e.stopPropagation();e.preventDefault();vmTap(el)},true);
 /* پخش بی‌صدا در دید | Muted Autoplay In View: دایره‌های دیده‌شده بی‌صدا و تکراری می‌چرخند و وقتی از دید رفتند می‌ایستند (مثل تلگرام) */
 const vmIO=new IntersectionObserver(es=>es.forEach(en=>{const el=en.target;el._vis=en.isIntersecting&&en.intersectionRatio>=.5;
