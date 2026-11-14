@@ -1586,7 +1586,7 @@ const MP={
  photoFile:{kind:"image",original:true},
  videoChat:{kind:"video",heights:[240,360,480,720,1080],bitrates:{240:4e5,360:7e5,480:12e5,720:25e5,1080:5e6}},
  videoFile:{kind:"video",original:true,vbr:8e6},
- videoMsg:{kind:"video",w:384,h:384,ratio:1,maxSec:60,vbr:7e5,abr:64e3},
+ videoMsg:{kind:"video",w:480,h:480,ratio:1,maxSec:60,vbr:85e4,abr:64e3},
  voice:{kind:"audio",abr:64e3},
  audioFile:{kind:"audio",original:true,abr:64e3},
  file:{kind:"file",original:true}
@@ -4965,15 +4965,8 @@ async function vmRec(o){
  let off=false,raf=0,zm=1;
  const draw=()=>{if(off)return;const w=v.videoWidth,h=v.videoHeight;if(w&&h){const q=Math.min(w,h);x.save();/* آینه‌ی ویدیو مسیج | Mirror Video Message: دوربین جلو هنگام ضبط آینه می‌شود تا ویدیوی ارسالی و پخش آن مثل پیش‌نمایش باشد (front camera is mirrored in the recording so the sent video and its playback look like the preview) */if((o.facing||"user")==="user"){x.translate(P.w,0);x.scale(-1,1)}/* زوم ضبط | Record Zoom: با زوم، بخش کوچک‌تری از وسط تصویر برش می‌خورد (zm=۱ یعنی بدون زوم) */const qz=q/zm;x.drawImage(v,(w-qz)/2,(h-qz)/2,qz,qz,0,0,P.w,P.h);x.restore()}raf=requestAnimationFrame(draw)};draw();
  const out=cv.captureStream(30);
- /* تقویت ملایم صدا | Gentle Voice Boost: صدای ویدیو مسیج کمی بلندتر می‌شود (حدود ۱٫۸ برابر) و یک محدودکننده‌ی نرم جلوی ترکیدن صدا را می‌گیرد؛ اگر مرورگر اجازه ندهد، صدای خام بدون تغییر ضبط می‌شود (voice gets a small gain, about 1.8x, with a soft limiter against clipping; if the browser refuses, the raw voice is recorded) */
- let ac=null;
- try{const at=st.getAudioTracks();if(at.length){ac=new(window.AudioContext||window.webkitAudioContext)({sampleRate:48000});
-  const sr=ac.createMediaStreamSource(new MediaStream([at[0]])),g=ac.createGain(),cp=ac.createDynamicsCompressor(),ds=ac.createMediaStreamDestination();
-  g.gain.value=1.8;cp.threshold.value=-12;cp.knee.value=20;cp.ratio.value=3;cp.attack.value=.005;cp.release.value=.2;
-  sr.connect(g);g.connect(cp);cp.connect(ds);
-  await Promise.race([ac.resume(),new Promise(ok=>setTimeout(ok,400))]);if(ac.state!=="running")throw 0;
-  ds.stream.getAudioTracks().forEach(t=>out.addTrack(t))}}
- catch(e){try{ac&&ac.close()}catch(_){}ac=null;st.getAudioTracks().forEach(t=>out.addTrack(t))}
+ /* صدای خام مثل ویس | Raw Voice Like Voice Message: صدای ویدیو مسیج دقیقاً مثل ویس ضبط می‌شود: ۴۸ کیلوهرتز، مونو، بدون حذف نویز و اکو‌گیری و تقویت خودکار، بدون هیچ تقویت یا محدودکننده‌ی اضافه، و با همان ۶۴ کیلوبیت بر ثانیه (audio is recorded exactly like a voice message: 48 kHz mono, no noise suppression, echo cancel, auto gain, no extra gain or limiter, same 64 kbps) */
+ let ac=null;st.getAudioTracks().forEach(t=>out.addTrack(t));
  const mime=mPick(MIME_V),rc=new MediaRecorder(out,{mimeType:mime||undefined,videoBitsPerSecond:P.vbr,audioBitsPerSecond:P.abr});
  const parts=[],t0=Date.now();let acc=0,seg=Date.now(),cancelled=false,torch=false;
  rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
