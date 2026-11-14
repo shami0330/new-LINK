@@ -4938,6 +4938,12 @@ const I={flip:SV('<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9.5 13.2a2.7 
 #mmenu .bb .lkvm,.pbub .lkvm{width:min(62vw,240px);aspect-ratio:1;border-radius:50%}
 .b.mm:has(.lkvm) small{position:absolute;right:10px;bottom:8px;z-index:6;padding:1px 8px;background:rgba(0,0,0,.45);color:#fff!important;border-radius:10px;margin:0;display:flex;align-items:center;gap:3px}
 .b.mm:has(.lkvm) small .tick{color:#fff!important}
+/* سربرگ فوروارد ویدیو مسیج مثل تلگرام | Forwarded Video Message Like Telegram: وقتی ویدیو مسیج فوروارد باشد حباب با رنگ خودش دور «Forwarded from» و دایره برمی‌گردد و ساعت روی دایره می‌ماند (bubble returns around header + circle, time stays on the circle) */
+.b.mm:has(.lkvm):has(.fwh){padding:6px!important;border-radius:18px!important;max-width:none;width:fit-content}
+.b.me.mm:has(.lkvm):has(.fwh){background:var(--bubOut)!important;border-bottom-right-radius:5px!important}
+.b.ot.mm:has(.lkvm):has(.fwh){background:var(--bubIn)!important;border-bottom-left-radius:5px!important}
+.b.mm:has(.lkvm) .fwh{margin:0;padding:2px 6px 6px;background:none;border-radius:0}
+.b.mm:has(.lkvm):has(.fwh) small{right:16px;bottom:14px}
 /* ظاهر دایره، نوار پخش و دایره‌ی شناور | Video Message Look, Player Bar And Floating Circle: دایره هنگام پخش داخل خود گفتگو بزرگ می‌شود (نه روی پیام‌ها)؛ نوار پخش بالای گفتگو؛ دایره‌ی کوچک شناور وقتی پیام از دید می‌رود */
 .lkvm .vmx{top:auto;bottom:12px;width:24px;height:24px;margin:0 0 0 -12px;background:rgba(0,0,0,.35)}
 .lkvm .vmx svg{width:13px;height:13px}
@@ -5266,7 +5272,7 @@ async function vmTap(el){const id=el.dataset.vid;/* لمس حلقه آپلود |
  try{window.vStopVoice&&window.vStopVoice()}catch(_){}VB.stopCur();document.querySelectorAll("audio").forEach(a=>{try{a.pause()}catch(_){}});
  let b=LKB[id];if(!b){try{const r=await lkGet(id);b=r&&r.blob}catch(e){}}
  if(!b){toast("Video removed from cache");VB.vKeep=0;VB.vNowSync();return}
- /* یک پخش‌کننده برای تصویر و صدا | One Player For Picture And Sound: به‌جای صدای جدا و تصویر بی‌صدا، خود عنصر ویدیو با صدا پخش می‌شود؛ پس تصویر و صدا هیچ‌وقت از هم جدا نمی‌شوند و فریز نمی‌کنند (the video element itself plays with sound, so picture and sound never drift or freeze) */const a=el._v;a._vm=1;a.muted=false;a.loop=false;try{a.currentTime=0}catch(_){}const D=+el.dataset.d;a.playbackRate=VB.vSpd;
+ /* یک پخش‌کننده برای تصویر و صدا | One Player For Picture And Sound: به‌جای صدای جدا و تصویر بی‌صدا، خود عنصر ویدیو با صدا پخش می‌شود؛ پس تصویر و صدا هیچ‌وقت از هم جدا نمی‌شوند و فریز نمی‌کنند (the video element itself plays with sound, so picture and sound never drift or freeze) */const a=el._v;a._vm=1;a.muted=false;a.loop=false;/* صدای ۱.۵ برابر | Video Message Gain 1.5x: فقط یک گین ساده روی صدای ویدیو مسیج، بدون فشرده‌ساز و بدون پردازش اضافه (a single light gain node, once per video) */try{vFxInit();if(vFxC){if(vFxC.state!=="running")await Promise.race([vFxC.resume(),new Promise(r=>setTimeout(r,200))]);if(a._g)a._g.gain.value=1.5;else if(vFxC.state==="running"){const sc=vFxC.createMediaElementSource(a),gn=vFxC.createGain();gn.gain.value=1.5;sc.connect(gn);gn.connect(vFxC.destination);a._g=gn}}}catch(_){}try{a.currentTime=0}catch(_){}const D=+el.dataset.d;a.playbackRate=VB.vSpd;
  VB.cur={a,vo:el,id,D,vm:true,cid:S.openId,name:VB.vNowName(el)};VB.vKeep=0;
  a.ontimeupdate=VB.vNowTick;a.onplay=a.onpause=VB.vNowSync;a.onended=VB.vEnded;
  vmVisual(el);
