@@ -1218,7 +1218,7 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 <!-- حریم خصوصی و امنیت | Privacy and Security -->
 <div class="screen sub" id="privacy"><div class="top"><div class="pill" data-back><i data-ic="back" data-s="22"></i></div><div class="title" data-t="Privacy and Security">Privacy and Security</div><div style="width:38px"></div></div>
   <div class="body"><div class="hd" data-t="Privacy">Privacy</div><div class="card">
-    <div class="item" data-pk="email"><span data-t="Email">Email</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="seen"><span data-t="Last Seen & Online">Last Seen & Online</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="photo"><span data-t="Profile Photo">Profile Photo</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="bio"><span data-t="Bio">Bio</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="groups"><span data-t="Groups & Channels">Groups & Channels</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
+    <div class="item" data-pk="email"><span data-t="Email">Email</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="seen"><span data-t="Last Seen & Online">Last Seen & Online</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="photo"><span data-t="Profile Photo">Profile Photo</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="bio"><span data-t="Bio">Bio</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="bday"><span data-t="Birthday">Birthday</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div><div class="item" data-pk="groups"><span data-t="Groups & Channels">Groups & Channels</span><span class="rr"><span class="v"></span><i class="chev"></i></span></div>
   </div><div class="cap" data-t="Control who can see your information.">Control who can see your information.</div><div class="hd" data-t="Security">Security</div><div class="card"><div class="item" data-go="cpass"><div class="ic" style="background:#8e8e93"><i data-ic="lock" data-s="18"></i></div><span data-t="Change Password">Change Password</span><span class="rr"><i class="chev"></i></span></div></div></div>
 </div>
 
@@ -1297,8 +1297,8 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
     <div class="card">
       <div class="cpr"><div><small id="cp_phl">mobile</small><div class="bl" id="cp_ph"></div></div></div>
       <div class="cpr"><div><small>username</small><div class="bl" id="cp_un"></div></div><i data-ic="grid" data-s="20" style="color:var(--blue)"></i></div>
-      <div class="cpr" id="cp_bdr"><div><small>birthday</small><div>4 Aug</div></div></div>
-      <div class="cpr" id="cp_bir"><div><small>bio</small><div id="cp_biv" dir="auto">39</div></div></div>
+      <div class="cpr" id="cp_bdr"><div><small id="cp_bdl">birthday</small><div id="cp_bdv"></div></div></div>
+      <div class="cpr" id="cp_bir"><div><small id="cp_bil">bio</small><div id="cp_biv" dir="auto">39</div></div></div>
     </div>
     <div class="cptw"><div id="cptabs"></div></div>
     <div id="cpbody"></div>
@@ -1332,7 +1332,7 @@ const LKA=(()=>{
  try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);db=new A.TablesDB(cl);ok=true}catch(e){}
  /* نام نمایشی | Display Name: بخش قبل از @ ایمیل؛ مثل ali123@gmail.com ← ali123 (the part before @) */
  const uname=e=>String(e||"").split("@")[0];
- const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:(p&&p.firstName)||n,last:(p&&p.lastName)||"",bio:(p&&p.bio)||"",bday:(p&&p.bday)||"",privEmail:p&&p.privEmail,privBio:p&&p.privBio,username:(p&&p.username)||n.toLowerCase()}};
+ const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:(p&&p.firstName)||n,last:(p&&p.lastName)||"",bio:(p&&p.bio)||"",bday:(p&&p.bday)||"",privEmail:p&&p.privEmail,privBio:p&&p.privBio,privBday:p&&p.privBday,privSeen:p&&p.privSeen,privPhoto:p&&p.privPhoto,privGroups:p&&p.privGroups,username:(p&&p.username)||n.toLowerCase()}};
  /* پروفایل کاربر | User Profile Row: برای هر کاربر یک ردیف در جدول users ساخته می‌شود (یوزرنیم = بخش قبل از @؛ اگر تکراری بود چند رقم اضافه می‌شود) تا دیگران بتوانند او را جستجو کنند؛ اگر جدول هنوز ساخته نشده باشد ورود را خراب نمی‌کند (creates the searchable users row; never blocks login) */
  async function prof(u,fn,ln){
   try{return await db.getRow({databaseId:DBID,tableId:"users",rowId:u.$id})}catch(e){}
@@ -1437,7 +1437,9 @@ const LKA=(()=>{
   /* پروفایل کاربر | User Profile: نام و یوزرنیم یک کاربر با آی‌دی (name and username by id) */
   async function user(uid){const p=await db.getRow({databaseId:DBID,tableId:"users",rowId:uid});return{id:p.$id,username:p.username,name:((p.firstName||"")+" "+(p.lastName||"")).trim()||p.username,
    /* ایمیل و بیو با اجازه صاحبشان | Email And Bio By Permission: ایمیل فقط وقتی برمی‌گردد که صاحب حساب در بخش امنیت «همه» یا «مخاطبین من» گذاشته باشد؛ بیو مگر اینکه «هیچ‌کس» باشد (email only if the owner allows it; bio unless Nobody) */
-   email:(p.privEmail==="Everybody"||p.privEmail==="My Contacts")?String(p.email||""):"",bio:p.privBio==="Nobody"?"":String(p.bio||"")}}
+   email:(p.privEmail==="Everybody"||p.privEmail==="My Contacts")?String(p.email||""):"",bio:p.privBio==="Nobody"?"":String(p.bio||""),
+   /* تاریخ تولد واقعی | Real Birthday: فقط اگر به شکل سال-ماه-روز در سرور ثبت شده باشد برمی‌گردد؛ خالی یعنی ثبت نشده (only a saved YYYY-MM-DD value is returned; empty means not set) */
+   bday:/^\d{4}-\d{2}-\d{2}$/.test(String(p.bday||""))&&p.privBday!=="Nobody"?String(p.bday):""}}
   /* ذخیره پروفایل من | Save My Profile: ردیف خودم در جدول users روی سرور به‌روز می‌شود؛ اگر نشد false برمی‌گرداند (updates my own users row; returns false on failure) */
   async function saveMe(id,d){if(!ok||!id)return false;try{await db.updateRow({databaseId:DBID,tableId:"users",rowId:id,data:d});return true}catch(e){return false}}
   /* دریافت زنده | Live Receive: هر پیام تازه‌ای که برای من ساخته شود همان لحظه می‌رسد (new messages arrive instantly) */
@@ -1448,13 +1450,15 @@ const LKA=(()=>{
    return(r.rows||[]).map(mapMsg).filter(m=>m.kind==="text").reverse()}
   /* وضعیت اتصال زنده | Live Status: آیا سوکت دریافت زنده الان باز است؟ (is the live socket open right now) */
   const live=()=>{try{const s=cl&&cl.realtime&&cl.realtime.socket;return!!s&&s.readyState===1}catch(e){return false}};
+  /* بررسی سبک تازه‌ترین ردیف | Light Newest-Row Check: فقط زمان ساخت تازه‌ترین ردیف یک گفتگو را می‌گیرد (فقط ۱ ردیف) تا بدون دانلود ۲۰۰ پیام بفهمیم چیزی عوض شده یا نه؛ اگر خطا بود null برمی‌گرداند (fetches only the newest row of a chat, 1 row, to see if anything changed without downloading 200 messages) */
+  async function newest(me,other){if(!ok)return null;const Q=window.Appwrite.Query;try{const r=await db.listRows({databaseId:DBID,tableId:"messages",queries:[Q.equal("chatId",chatIdOf(me,other)),Q.orderDesc("$createdAt"),Q.limit(1)]});const x=(r.rows||[])[0];return x?String(x.$createdAt):""}catch(e){return null}}
  /* برچسب خطا | Error Label: اگر مرحله‌ای از ارسال خطا بدهد، اسم همان مرحله اول پیام خطا می‌آید تا علت مشخص شود (puts the failed step name in front of the error) */
  const lab=(l,pr)=>pr.catch(e=>{try{e.message=l+": "+e.message}catch(x){}throw e});
  /* بررسی سرور | Server Check: بعد از ورود، وجود جدول‌های users و chats و messages را می‌سنجد و اگر مشکلی بود نام جدول و کد خطا را برمی‌گرداند (checks the three tables exist and are readable) */
  async function check(){if(!ok)return["کتابخانه‌ی سرور بارگیری نشد"];const bad=[],Q=window.Appwrite.Query;
   for(const t of["users","chats","messages"]){try{await db.listRows({databaseId:DBID,tableId:t,queries:[Q.limit(1)]})}catch(e){bad.push(t+" "+(e.code||"")+" "+String((e&&e.message)||"").slice(0,70))}}
   return bad}
- return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,saveMe,listen,recent,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
+ return{auth,restore,out,search,msg,send,history,editRow,delRow,tomb,setPins,getPins,clearBoth,markSeen,peerSeen,chats,user,saveMe,listen,recent,newest,live,check,db:()=>db,account:()=>ac,client:()=>cl,get ok(){return ok}}})();
 </script>
 <script>
 /* ===== بخش ۳ | SECTION 3: جاوااسکریپت | JavaScript ===== */
@@ -1858,7 +1862,9 @@ const lkRec=(m,c)=>{const d=lkRpDec(m.text,m.from,c);return[m.from===S.user.id?"
 /* چت محلی | Local Chat: چت کاربر مقابل را در لیست پیدا می‌کند و اگر نبود می‌سازد (find or create the chat row in the list) */
 function lkChatOf(uid,name,un){let c=CHATS.find(x=>x.uid===uid);if(!c){c={id:lkCid(uid),n:name||un||"User",m:"",tm:"",ty:"pv",pin:0,t:0,un:0,mute:0,on:0,col:colOf(un||name||uid),uid:uid,uname:un};CHATS.push(c)}return c}
 /* بارگیری گفتگو | Load Chat: پیام‌های سرور این گفتگو را می‌گیرد و اگر چیزی عوض شده بود صفحه را تازه می‌کند (fetch server messages, redraw if changed) */
-function lkChatLoad(id){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;c.lkb=1;
+function lkChatLoad(id,chk){const c=CHATS.find(x=>x.id===id);if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||c.lkb)return;
+ /* بررسی سبک قبل از دانلود | Light Check Before Download: اگر chk روشن باشد اول فقط تازه‌ترین ردیف گفتگو پرسیده می‌شود و فقط اگر چیزی تازه بود ۲۰۰ پیام دوباره گرفته می‌شود (with chk, ask for just the newest row first and reload the 200 messages only if something is new) */if(chk){if(c.lkc)return;c.lkc=1;LKA.newest(S.user.id,c.uid).then(t=>{c.lkc=0;if(t===null)return;const o=c.lkNew;c.lkNew=t;if(o!==undefined&&t!==o)lkChatLoad(id)}).catch(()=>{c.lkc=0});return}
+ c.lkb=1;
  LKA.history(S.user.id,c.uid).then(L=>{c.lkb=0;if(!L||c.lks)return;L=L.filter(m=>!LKC.del[m.id]);const sg=a=>JSON.stringify((a||[]).map(r=>r[1]+"|"+r[4])),old=sg(CFG.sent[c.id]),ot0=(CFG.sent[c.id]||[]).filter(r=>r[0]==="ot").length;/* نگه‌داشتن نرسیده‌ها | Keep Unsent: بازخوانی از سرور پیام‌های نرسیده را پاک نمی‌کند و آخر لیست نگه می‌دارد (server reload keeps unsent messages at the end) */{const un=(CFG.sent[c.id]||[]).filter(r=>r[0]==="me"&&r[9]&&!r[7]);CFG.sent[c.id]=L.map(m=>lkRec(m,c)).concat(un)}saveCfg();lkSyncPreview(c);
   if(S.openId===c.id&&$("#chat").classList.contains("on")&&sg(CFG.sent[c.id])!==old){lkKeepAway(()=>{/* افزودن بدون بازسازی | Append Without Rebuild: اگر پیام‌های قبلیِ روی صفحه همان‌ها هستند فقط پیام‌های تازه به آخر اضافه می‌شوند و لیست از اول ساخته نمی‌شود؛ فقط اگر چیزی ویرایش یا حذف شده باشد لیست دوباره ساخته می‌شود (append only new messages; rebuild only if something was edited or deleted) */const ms=$("#msgs"),bs=[...ms.querySelectorAll(":scope > .b")],L=chatMsgs(c);if(bs.length&&L.length>=bs.length&&bs.every((b,i)=>b.dataset.w===L[i][0]&&b.dataset.t===L[i][1]&&!!b.querySelector(".edl")===!!L[i][4])){L.slice(bs.length).forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]))}else{S.lastD=null;ms.innerHTML="";L.forEach(s=>addMsg(s[0],s[1],s[2],s[3],s[5]||null,s[4]))}lkLastUp()},Math.max(0,(CFG.sent[c.id]||[]).filter(r=>r[0]==="ot").length-ot0))}
   lkTicks(c);lkMarkSeen(c);lkPinPull(c);renderChats()}).catch(er=>{c.lkb=0;lkErr(er)})}
@@ -1919,15 +1925,16 @@ function lkPoll(){if(document.hidden||LK_MODE!=="real"||!S.user||!S.user.id)retu
  /* دریافت مستقیم | Direct Fetch: هر بار پیام‌های تازه را مستقیم از جدول پیام‌ها می‌گیرد و مثل دریافت زنده نشان می‌دهد؛ به ایندکس و به‌روزرسانی چت وابسته نیست (new messages fetched straight from the table) */
  /* نگهبان اتصال زنده | Live Watchdog: اگر سوکت دریافت زنده بسته بود، بعد از ۲ بررسی دوباره وصلش می‌کند؛ اگر وصل نشد یک بار خبر می‌دهد (reconnects the live socket, warns once) */
  if(LKA.live())LKC.dead=0;else{LKC.dead=(LKC.dead||0)+1;if(LKC.dead===2)lkRevive();if(LKC.dead===6)lkErr({message:"Live connection is offline"})}
- LKA.recent().then(a=>{LKC.srv=1;lkConnUpdate();a.forEach(lkIn)}).catch(lkErr);
- /* تازه‌سازی گفتگوی باز | Open Chat Refresh: پیام‌های حذف‌شده یا پاک‌شده توسط طرف مقابل هم از گفتگوی باز می‌رود (picks up deletes and clears by the other person) */{const oc=CHATS.find(x=>x.id===S.openId);if(oc&&oc.uid&&$("#chat").classList.contains("on"))lkChatLoad(oc.id)}
- /* تازه‌سازی دیده‌شدن | Seen Refresh: برای چت‌هایی که آخرین پیامشان از من است و هنوز دیده نشده، وضعیت دیده‌شدن را دوباره می‌پرسد (re-asks for chats whose last message is mine and unseen) */CHATS.filter(x=>x.uid&&x.t===2&&!x.sl).slice(0,8).forEach(lkSeenPull);
- LKA.chats(S.user.id).then(rs=>{/* حذف دوطرفه در زمان اجرا | Live Gone Check: چتی که قبلاً روی سرور بوده و حالا در فهرست سرور نیست، یعنی طرف مقابل آن را حذف کرده (a chat that was on the server but is no longer listed was deleted by the other person) */if(rs.length<100)CHATS.filter(x=>x.uid&&x.inSrv&&!rs.some(r=>r.uid===x.uid)).forEach(lkGone);rs.forEach(r=>{const c0=CHATS.find(x=>x.uid===r.uid);if(c0)c0.inSrv=1});rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
+ /* دور کامل یا سبک | Full Or Light Round: تایمر هر ۶۰ ثانیه یک‌بار می‌زند. وقتی دریافت زنده وصل است (که خودش پیام جدید، ویرایش، حذف و دیده‌شدن را می‌رساند) فقط هر ۵ دور یک بار بررسی کامل انجام می‌شود؛ وقتی قطع است هر دور کامل است (timer ticks every 60s; with live receive connected only every 5th tick does the full check, otherwise every tick does) */const lv=LKA.live();LKC.pn=(LKC.pn||0)+1;const full=!lv||LKC.pn%5===0;
+ if(full)LKA.recent().then(a=>{LKC.srv=1;lkConnUpdate();a.forEach(lkIn)}).catch(lkErr);
+ /* تازه‌سازی گفتگوی باز | Open Chat Refresh: پیام‌های حذف‌شده یا پاک‌شده توسط طرف مقابل هم از گفتگوی باز می‌رود (picks up deletes and clears by the other person) */{const oc=CHATS.find(x=>x.id===S.openId);if(full&&oc&&oc.uid&&$("#chat").classList.contains("on"))lkChatLoad(oc.id,lv)}
+ /* تازه‌سازی دیده‌شدن | Seen Refresh: برای چت‌هایی که آخرین پیامشان از من است و هنوز دیده نشده، وضعیت دیده‌شدن را دوباره می‌پرسد (re-asks for chats whose last message is mine and unseen) */if(full)CHATS.filter(x=>x.uid&&x.t===2&&!x.sl).slice(0,8).forEach(lkSeenPull);
+ (full?LKA.chats(S.user.id):Promise.resolve([])).then(rs=>{if(!full)return;/* حذف دوطرفه در زمان اجرا | Live Gone Check: چتی که قبلاً روی سرور بوده و حالا در فهرست سرور نیست، یعنی طرف مقابل آن را حذف کرده (a chat that was on the server but is no longer listed was deleted by the other person) */if(rs.length<100)CHATS.filter(x=>x.uid&&x.inSrv&&!rs.some(r=>r.uid===x.uid)).forEach(lkGone);rs.forEach(r=>{const c0=CHATS.find(x=>x.uid===r.uid);if(c0)c0.inSrv=1});rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username),t=Date.parse(r.at)||0;if(t>(c.lat||0)){c.lat=t;if(r.lastSender!==S.user.id){if(!(S.openId===c.id&&$("#chat").classList.contains("on")))c.un=(c.un||0)+1;bumpChat(c);lkChatLoad(c.id)}}});renderChats()}).catch(lkErr)}
 /* خودآزمایی | Self Check: بعد از ورود یک بار می‌خواند و دریافت زنده را می‌سنجد؛ اگر چیزی خراب بود با پیام فارسی و کد خطا می‌گوید کدام بخش مشکل دارد (one-time check after login, tells which part fails) */
 function lkDiag(){const me=S.user&&S.user.id;if(!me)return;const say=(t,e)=>toast("⚠ "+t+((e&&(e.code||e.message))?" ("+(e.code||"")+" "+String(e.message||"").slice(0,70)+")":""));
  LKA.recent().catch(e=>say("خواندن پیام‌ها از سرور خطا داد",e));
  LKA.chats(me).catch(e=>say("خواندن لیست چت‌ها خطا داد",e));
- setTimeout(()=>{if(S.user&&S.user.id===me&&!LKA.live())say("دریافت زنده وصل نشد؛ پیام‌ها هر ۵ ثانیه چک می‌شوند")},7000)}
+ setTimeout(()=>{if(S.user&&S.user.id===me&&!LKA.live())say("دریافت زنده وصل نشد؛ پیام‌ها هر ۶۰ ثانیه چک می‌شوند")},7000)}
 /* شروع | Start: بعد از ورود، چت‌های سرور را می‌آورد و دریافت زنده و بررسی دوره‌ای را روشن می‌کند (load chats, start live receive) */
 function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)return;
  /* بررسی جدول‌های سرور | Tables Check: اگر جدولی ساخته نشده یا خراب است، همان لحظه‌ی ورود با اسمش خبر می‌دهد (warns at login if a table is missing) */LKA.check().then(b=>{if(b.length){toast("⚠ سرور: "+b.join(" | "));lkLong()}}).catch(()=>{});
@@ -1935,11 +1942,11 @@ function lkStart(){lkStop();if(LK_MODE!=="real"||!S.user||!S.user.id||!LKA.ok)re
   /* پیام‌های قدیمی | Old Messages Baseline: پیام‌هایی که قبل از ورود بوده‌اند «دیده‌شده» حساب می‌شوند تا دوباره نمایش داده نشوند (already-existing messages are marked seen) */
   LKA.recent().then(a=>a.forEach(m=>{LKC.seen[m.id]=1})).catch(lkErr);
  LKA.chats(S.user.id).then(rs=>{rs.forEach(r=>{const c=lkChatOf(r.uid,r.name,r.username);c.lat=Date.parse(r.at)||0;c.m=(x=>lkSvIs(x)?lkSvPlain(x):FWR.test(x)?"\u21aa "+fwBody(x):x)(lkRpDec(r.last,r.lastSender,c).t);/* پیش‌نمایش فوروارد | Forward Preview: در لیست چت‌ها پیام فوروارد با «↪» و متن پیام نشان داده می‌شود نه چسبیده به نام (forwarded text shows as ↪ plus the body in the chat list) */c.tm=r.at?lkHM(r.at):"";c.t=r.lastSender===S.user.id?2:0});/* چت‌های حذف‌شده | Gone Chats: چت‌هایی که طرف مقابل برای هر دو حذف کرده از فهرست می‌روند (chats deleted for both by the other person leave the list) */if(rs.length<100)CHATS.filter(x=>x.uid&&!rs.some(r=>r.uid===x.uid)&&(CFG.sent[x.id]||[]).length&&!(CFG.sent[x.id]||[]).some(r=>r[9]&&!r[7])).forEach(lkGone);rs.forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c)c.inSrv=1});renderChats();rs.slice(0,10).forEach(r=>{const c=CHATS.find(x=>x.uid===r.uid);if(c&&c.t===2){lkChatLoad(c.id);lkSeenPull(c)}})}).catch(lkErr);
- LKC.tm=setInterval(lkPoll,5000);lkDiag();/* فرستادن بعد از باز شدن برنامه | Flush On Open: پیام‌های مانده از دفعهٔ قبل بعد از آماده شدن چت‌ها فرستاده می‌شوند (leftover messages are sent once chats are ready) */setTimeout(lkFlush,1500);setTimeout(lkFlush,6000);
+ /* تایمر آرام | Slow Timer: بررسی دوره‌ای از ۵ ثانیه به ۶۰ ثانیه رفت تا پهنای باند سرور کم مصرف شود؛ ارسال دوباره پیام‌های نرسیده جدا و هر ۵ ثانیه می‌ماند چون هیچ درخواستی نمی‌فرستد مگر پیام نرسیده‌ای باشد؛ با برگشتن به برنامه یک دور کامل فوری انجام می‌شود (poll every 60s to save bandwidth; unsent-message retry stays at 5s; a full round runs at once when the app is shown again) */LKC.tm=setInterval(lkPoll,60000);clearInterval(LKC.tf);LKC.tf=setInterval(lkFlush,5000);if(!LKC.vl){LKC.vl=1;document.addEventListener("visibilitychange",()=>{if(!document.hidden){LKC.pn=4;lkPoll()}})}lkDiag();/* فرستادن بعد از باز شدن برنامه | Flush On Open: پیام‌های مانده از دفعهٔ قبل بعد از آماده شدن چت‌ها فرستاده می‌شوند (leftover messages are sent once chats are ready) */setTimeout(lkFlush,1500);setTimeout(lkFlush,6000);
   /* نشانگر اتصال | Connection Indicator Timer: هر ۲ ثانیه وضعیت اتصال را می‌سنجد و زنجیر بالای صفحه را جدا یا وصل می‌کند (checks every 2s and splits or joins the chain) */
   LKC.srv=1;clearInterval(LKC.cn);LKC.cn=setInterval(lkConnUpdate,2000)}
 /* توقف | Stop: دریافت زنده و زمان‌سنج را خاموش می‌کند؛ با خروج (w) چت‌ها و پیام‌های ذخیره‌شده‌ی سرور هم از گوشی پاک می‌شود (stop; on logout also wipe cached server chats) */
-function lkStop(w){clearInterval(LKC.tm);clearInterval(LKC.cn);try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=null;if(w&&LK_MODE==="real"){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}}
+function lkStop(w){clearInterval(LKC.tm);clearInterval(LKC.tf);clearInterval(LKC.cn);try{if(typeof LKC.un==="function")LKC.un()}catch(e){}LKC.un=null;if(w&&LK_MODE==="real"){CHATS=CHATS.filter(x=>!x.uid);CFG.sent={};saveCfg()}}
 
 /* ---- ۳.۵ لیست چت‌ها | 3.5 Chat List ---- */
 /* تب‌ها | Render Tabs: همه/PV/Gap/Channel با شمارنده (folders with unread counters) */
@@ -3370,20 +3377,24 @@ const TABS=[["media","Media"],["saved","Saved"],["files","Files"],["music","Musi
 /* باز کردن پروفایل | Open Profile: با لمس کپسول بالای گفتگو (tap on the chat header capsule) */
 /* هماهنگی پروفایل با سرور | Profile Server Sync: چهار تابع پایین پروفایل من و پروفایل مخاطب را با سرور هماهنگ می‌کنند (four helpers that sync my profile and the contact profile with the server) */
 /* اعمال پروفایل سرور | Apply Server Profile: تنظیم حریم خصوصی ذخیره‌شده روی سرور را بعد از ورود در برنامه می‌گذارد (puts the saved privacy choices in place after login) */
-function lkApplyMe(u){if(!u)return;if(u.privEmail)CFG.priv.email=u.privEmail;if(u.privBio)CFG.priv.bio=u.privBio;saveCfg()}
+/* نقشه حریم خصوصی | Privacy Key Map: هر گزینه در بخش امنیت با یک ستون در جدول users روی سرور ذخیره می‌شود: ایمیل، آخرین بازدید، عکس، بیو، تولد، گروه و کانال (each privacy choice is saved in one column of the users table) */
+const LK_PRIV={email:"privEmail",seen:"privSeen",photo:"privPhoto",bio:"privBio",bday:"privBday",groups:"privGroups"};
+function lkApplyMe(u){if(!u)return;Object.keys(LK_PRIV).forEach(k=>{if(u[LK_PRIV[k]])CFG.priv[k]=u[LK_PRIV[k]]});saveCfg()}
 /* ذخیره پروفایل من روی سرور | Save My Profile To Server: نام، نام‌کاربری، بیو و تولد را روی سرور می‌نویسد؛ اگر ستون بیو یا تولد در سرور نبود، فقط نام و نام‌کاربری ذخیره می‌شود و پیام می‌آید (writes name, username, bio, birthday; falls back to name+username if columns are missing) */
 function lkSaveMe(u){if(LK_MODE!=="real"||!u||!u.id)return;const core={firstName:String(u.name||"").slice(0,64),lastName:String(u.last||"").slice(0,64)},un=String(u.username||"").trim();if(/^[A-Za-z0-9_]{5,}$/.test(un)){core.username=un;core.usernameLower=un.toLowerCase()}
  LKA.saveMe(u.id,Object.assign({},core,{bio:String(u.bio||"").slice(0,70),bday:String(u.bday||"")})).then(ok=>{if(ok)return;return LKA.saveMe(u.id,core).then(ok2=>toast(ok2?"بیو و تولد در سرور ذخیره نشد؛ ستون bio و bday باید به جدول users اضافه شود":"ذخیره در سرور انجام نشد"))}).catch(()=>{})}
 /* ذخیره حریم خصوصی روی سرور | Save Privacy To Server: انتخاب کاربر برای نمایش ایمیل و بیو به دیگران روی سرور ذخیره می‌شود (saves who may see my email and bio) */
-function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const d={};if(k==="email")d.privEmail=v;else if(k==="bio")d.privBio=v;else return;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون privEmail و privBio باید به جدول users اضافه شود")}).catch(()=>{})}
+function lkSavePriv(k,v){if(LK_MODE!=="real"||!S.user||!S.user.id)return;const f=LK_PRIV[k];if(!f)return;const d={};d[f]=v;LKA.saveMe(S.user.id,d).then(ok=>{if(!ok)toast("تنظیم حریم خصوصی در سرور ذخیره نشد؛ ستون های privEmail و privBio و privBday و privSeen و privPhoto و privGroups باید به جدول users اضافه شود")}).catch(()=>{})}
 /* پروفایل واقعی مخاطب | Real Contact Profile: در حالت سرور فقط اطلاعات واقعی (نام‌کاربری، ایمیل و بیو با اجازه صاحبش) نشان داده می‌شود و هر چیز خالی پنهان می‌ماند؛ در حالت نمایشی همان نمونه‌ها (online shows only real data allowed by the owner; empty rows stay hidden; demo keeps samples) */
 function lkCpReal(c,real){const ph=$("#cp_ph"),rp=ph.closest(".cpr"),ru=$("#cp_un").closest(".cpr"),rb=$("#cp_bir"),rd=$("#cp_bdr"),cd=rp.closest(".card");
- if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";return}
- $("#cp_phl").textContent=tr("Email");ph.textContent="";ph.setAttribute("dir","ltr");$("#cp_biv").textContent="";[rp,ru,rb,rd].forEach(r=>r.style.display="none");cd.style.display="none";
+ if(!real){$("#cp_phl").textContent="mobile";$("#cp_biv").textContent="39";$("#cp_bdv").textContent="";rd.style.display="none";return}
+ $("#cp_phl").textContent=tr("Email");$("#cp_bdl").textContent=tr("Birthday");$("#cp_bil").textContent=tr("Bio");$("#cp_bdv").textContent="";ph.textContent="";ph.setAttribute("dir","ltr");$("#cp_biv").textContent="";[rp,ru,rb,rd].forEach(r=>r.style.display="none");cd.style.display="none";
  if(c.uid)LKA.user(c.uid).then(u=>{if(S.openId!==c.id)return;const un=u.username||c.uname||"";let n=0;
   if(un){$("#cp_un").textContent="@"+un;ru.style.display="";n++}
   if(u.email){ph.textContent=u.email;rp.style.display="";n++}
   if(u.bio){$("#cp_biv").textContent=u.bio;rb.style.display="";n++}
+  /* تولد شمسی | Jalali Birthday: اگر ثبت شده باشد به شمسی نشان داده می‌شود؛ وگرنه ردیف پنهان می‌ماند (shown in Jalali if set, hidden otherwise) */
+  if(u.bday){$("#cp_bdv").textContent=fmtDate(u.bday);rd.style.display="";n++}
   cd.style.display=n?"":"none"}).catch(()=>{})}
 function openCP(){const c=CHATS.find(x=>x.id===S.openId);if(!c)return;CP.name=c.n;
  $("#cp_n").textContent=$("#cp_mn").textContent=c.n;$("#cp_n").insertAdjacentHTML("beforeend",vb(c,22));$("#cp_mn").insertAdjacentHTML("beforeend",vb(c,14));$("#cp_s").textContent=$("#cp_ms").textContent=$("#cstat").textContent;/* قلاب میوت | Mute Hook */lkMuteIcons();
