@@ -1993,12 +1993,14 @@ function lkSyncPreview(c){if(typeof c==="number")c=CHATS.find(x=>x.id===c);if(!c
 function lkCanSend(c){if(!c)return false;if(c.ty==="ch")return Array.isArray(c.members);if(c.ty==="gp"){const p=(CFG.gperm||{})[c.id];return Array.isArray(c.members)||!p||(p.msg!==0&&p.msg!==false)}return !(CFG.blocked&&CFG.blocked[c.id])}
 /* آیکن پیش‌نمایش | Preview Icons: ایموجی ابتدای پیش‌نمایش (گیره، دوربین، فیلم، میکروفن، فوروارد) را با آیکن خطی خود برنامه عوض می‌کند */
 function lkPrevIc(t){return String(t==null?"":t).replace(/^(📎|🖼|🎬|🎤|↪)\s?/u,(m,e)=>'<span style="display:inline-block;vertical-align:-3px;margin-right:3px">'+ic({"📎":"attach","🖼":"camera","🎬":"video","🎤":"mic","↪":"share"}[e],15)+'</span>').replace(/^😊\s/u,"")}
+/* تامبنیل در لیست چت | Chat List Thumbnail: اگر آخرین پیام عکس است، به‌جای آیکن دوربین تامبنیل ریز همان عکس نشان داده می‌شود */
+function lkPrevTh(c,h){if(!h||!/^\u{1F5BC}/u.test(String(c.m||"")))return h;try{const L=chatMsgs(c),l=L[L.length-1],o=l&&lkDec(l[1]),a=o&&o.it&&o.it[0];if(a&&a.t==="photo"&&a.bl)return h.replace(/^<span[^>]*>[\s\S]*?<\/span>/,'<img alt="" src="data:image/jpeg;base64,'+a.bl+'" style="width:18px;height:18px;object-fit:cover;border-radius:4px;vertical-align:-4px;margin-right:4px">')}catch(e){}return h}
 function renderChats(){renderTabs();/* قلاب میوت | Mute Hook: بعد از هر تغییر، آیکن میوت کنار نام تازه می‌شود */lkMuteIcons();const q=$("#q").value.toLowerCase();
  const L=CHATS.filter(c=>inFolder(c,S.folder)&&c.n.toLowerCase().includes(q)).sort((a,b)=>b.pin-a.pin);
  $("#clist").className="list"+(S.edit?" editing":"");
  $("#clist").innerHTML=L.map(c=>`<div class="row ${c.pin?"pin":""}" data-id="${c.id}">
   <div class="chk ${S.sel.has(c.id)?"on":""}">${S.sel.has(c.id)?ic("check",14):""}</div>${av(c.n,c.col,c.on,"",c.photo)}
-  <div class="mid"><div class="n">${c.n}${vb(c,15)}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${lkPrevIc(c.ty==="gp"?c.s:c.m)}</div><div class="m">${lkPrevIc(c.ty==="gp"?c.m:"")}</div></div>
+  <div class="mid"><div class="n">${c.n}${vb(c,15)}${c.mute?ic("mute",14):""}</div><div class="m ${c.ty==="gp"?"snd":""}">${c.ty==="gp"?lkPrevIc(c.s):lkPrevTh(c,lkPrevIc(c.m))}</div><div class="m">${c.ty==="gp"?lkPrevTh(c,lkPrevIc(c.m)):""}</div></div>
   <div class="meta"><div class="ml">${c.t?`<span class="tick">${ic(c.t===2&&!(c.uid&&LK_MODE==="real"&&!c.sl)?"t2":"t1",16)}</span>`:""}${c.tm}</div>
   <div class="ml">${c.un?`<span class="badge ${c.mute?"":"bl"} ${String(c.un).length>1?"w":""}">${c.un}</span>`:c.pin?ic("pin",15):""}</div><div class="ml"></div></div></div>`).join("");
  $$("#clist .row").forEach(bindRow);padLists()}
