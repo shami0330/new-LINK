@@ -1363,7 +1363,9 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 const LKA=(()=>{
  const EP="https://fra.cloud.appwrite.io/v1",PJ="6aecbdce0036439c36ca",DBID="link";
  let ok=false,cl,ac,db;
- try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);db=new A.TablesDB(cl);ok=true}catch(e){}
+ /* راه‌اندازی اتصال | Server Client Init: اتصال به سرور ساخته می‌شود؛ اگر کتابخانه دیر لود شد بعداً دوباره امتحان می‌شود (builds the server client; can be tried again if the library loaded late) */
+ function lkInit(){if(ok)return;try{const A=window.Appwrite;cl=new A.Client().setEndpoint(EP).setProject(PJ);ac=new A.Account(cl);db=new A.TablesDB(cl);ok=true}catch(e){}}
+ lkInit();
  /* نام نمایشی | Display Name: بخش قبل از @ ایمیل؛ مثل ali123@gmail.com ← ali123 (the part before @) */
  const uname=e=>String(e||"").split("@")[0];
  const pack=(u,p)=>{const n=uname(u.email);return{id:u.$id,email:u.email,name:(p&&p.firstName)||n,last:(p&&p.lastName)||"",bio:(p&&p.bio)||"",bday:(p&&p.bday)||"",privEmail:p&&p.privEmail,privBio:p&&p.privBio,privBday:p&&p.privBday,privSeen:p&&p.privSeen,privPhoto:p&&p.privPhoto,photo:(p&&p.photo)||"",privGroups:p&&p.privGroups,username:(p&&p.username)||n.toLowerCase()}};
@@ -1411,7 +1413,7 @@ addEventListener("pagehide",sessSave);document.addEventListener("visibilitychang
 /* برگرداندن نشست هنگام برگشت | Session Heal On Return: وقتی دوباره وارد برنامه می‌شوی، اگر نشست اصلی خراب شده بود از نسخه‌ی سالم برش می‌گرداند (puts the good login back when the app comes back to the screen) */
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)sessPrime()});
 /* بازیابی نشست | Session Check: اگر سرور نشست را رد کرد، یک بار با نسخه‌ی ذخیره‌شده دوباره امتحان می‌کند؛ فقط بعد از آن خارج می‌شود؛ خطای شبکه یعنی نشست سالم است (on 401 retries once with the saved copy before logging out; a network error keeps the session) */
-async function restore(){if(!ok)return null;await sessPrime();let u,tried=0;for(;;){try{u=await ac.get();break}catch(e){const c=e&&e.code;if(c===401||c===403){const cp=tried?"":await sessLoad();tried=1;try{if(cp&&cp!==localStorage.getItem("cookieFallback")){localStorage.setItem("cookieFallback",cp);continue}}catch(_){}try{window.LK_DBG={cf:!!localStorage.getItem("cookieFallback"),code:c}}catch(_){}return null}return{offline:1}}}sessSave();return packMe(u,await safeProf(u))}
+async function restore(){lkInit();if(!ok)return{offline:1};await sessPrime();let u,tried=0;for(;;){try{u=await ac.get();break}catch(e){const c=e&&e.code;if(c===401||c===403){const cp=tried?"":await sessLoad();tried=1;try{if(cp&&cp!==localStorage.getItem("cookieFallback")){localStorage.setItem("cookieFallback",cp);continue}}catch(_){}try{window.LK_DBG={cf:!!localStorage.getItem("cookieFallback"),code:c}}catch(_){}return null}return{offline:1}}}sessSave();return packMe(u,await safeProf(u))}
 
  /* خروج | Sign Out: نشست فعلی را در سرور می‌بندد و ردپای نشست را از حافظه پاک می‌کند (closes the session) */
  const out=()=>{const rm=sessWipe;if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
@@ -1935,7 +1937,7 @@ function lkRestoreView(){const v=LKV0;LKV0=null;lkVBoot=0;try{if(!v||LK_MODE!=="
 function lkCacheStart(){if(S.user||localStorage.getItem("lk_mode")!=="real")return;try{const sn=JSON.parse(localStorage.getItem(LK_SN)||"null");if(!sn||!sn.u||!sn.u.id||!Array.isArray(sn.c)||!sn.c.length)return;LK_MODE="real";CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.sched=CFG.sched||[];CHATS=sn.c;PEOPLE=[];S.user=sn.u;CFG.adInit=CFG.adInit||{};CFG.adInit[sn.u.id]=1;S.openId=null;LK_FROM_CACHE=1;lkNameUi();initUser();renderChats();renderContacts();show("chats");lkRestoreView();lkBootOff()}catch(e){if(!LK_FROM_CACHE){S.user=null;LK_MODE="demo"}}}
 /* بعد از سرور | After Server Check: وقتی جواب سرور رسید، اگر نشست درست بود همگام‌سازی شروع می‌شود؛ اگر نشست تمام شده بود به صفحه‌ی ورود می‌رود؛ اگر اینترنت نبود چت‌های کش می‌مانند و دوباره تلاش می‌شود */
 function lkAfterRestore(u){clearTimeout(lkRetT);
- if(u&&u.offline){if(LK_FROM_CACHE)lkRetT=setTimeout(()=>{LKA.restore().then(lkAfterRestore).catch(()=>{})},15000);return}
+ if(u&&u.offline){if(LK_FROM_CACHE||!S.user)lkRetT=setTimeout(()=>{LKA.restore().then(lkAfterRestore).catch(()=>{})},15000);return}
  if(!u||!u.id){/* پیام دلیل | Reason Toast: نشان می‌دهد چرا دوباره ورود لازم شد (shows why login is needed again) */try{const d=window.LK_DBG;if(d)toast(d.cf?"Session rejected by server ("+d.code+")":"No saved session on this device")}catch(_){}if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}return}
  const me={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};
  if(LK_FROM_CACHE&&S.user&&S.user.id===u.id){LK_FROM_CACHE=0;Object.assign(S.user,me);lkApplyMe(u);lkNameUi();try{fillMe()}catch(e){}renderChats();lkStart();return}
