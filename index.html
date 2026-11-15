@@ -2174,7 +2174,7 @@ function lkSeenPull(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id)retu
 function lkMarkSeen(c){if(LK_MODE!=="real"||!c||!c.uid||!S.user||!S.user.id||document.hidden||S.openId!==c.id||!$("#chat").classList.contains("on"))return;let at=0;chatMsgs(c).forEach(r=>{if(r[0]==="ot"&&r[6]>at)at=r[6]});if(!at||at<=(c.mk||0))return;c.mk=at;LKA.markSeen(S.user.id,c.uid).catch(()=>{c.mk=0})}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){const c=CHATS.find(x=>x.id===S.openId);if(c)lkMarkSeen(c)}});
 /* قلاب باز شدن گفتگو | Open Hook: بعد از باز شدن هر گفتگوی واقعی پیام‌های سرور هم گرفته می‌شود (after opening a real chat, load its server messages) */
-{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{lkChatLoad(id);LKGRP.load(CHATS.find(x=>x.id===id));const c=CHATS.find(x=>x.id===id);lkSeenPull(c);setTimeout(()=>{lkTicks(c);lkMarkSeen(c)},300)}catch(e){}return r}}
+{const _oc=openChat;openChat=function(id){const r=_oc.apply(this,arguments);try{/* کش گوشی هنگام ورود | Open From Phone Cache: اگر پیام‌های این گفتگو روی گوشی ذخیره است، فقط آخرین ردیف از سرور پرسیده می‌شود و فقط وقتی چیزی عوض شده بود پیام‌ها دوباره گرفته می‌شوند؛ اگر چیزی ذخیره نبود (اولین بار) کامل گرفته می‌شود (if messages are cached, only the newest row is checked and a reload happens only on change; first time loads fully) */lkChatLoad(id,((CFG.sent[id]||[]).length?1:0));LKGRP.load(CHATS.find(x=>x.id===id),((CFG.sent[id]||[]).length?1:0));const c=CHATS.find(x=>x.id===id);lkSeenPull(c);setTimeout(()=>{lkTicks(c);lkMarkSeen(c)},300)}catch(e){}return r}}
 /* ارسال واقعی | Real Send: پیام متنی را به سرور می‌فرستد و پاسخ نمایشی ساختگی را کنار می‌گذارد؛ اگر چت واقعی نباشد false برمی‌گرداند (send to server instead of the fake reply) */
 function lkReal(c,v,rp){/* گروه آنلاین | Online Group: پیام گروه به جدول پیام‌ها با chatId گروه می‌رود (group messages go to the group chatId) */if(c&&c.gid&&LK_MODE==="real"&&S.user&&S.user.id)return LKGRP.real(c,v,rp);if(LK_MODE!=="real"||!c.uid||!S.user||!S.user.id)return false;
  /* رکورد همین پیام | This Message Record: پیش از رفتن به سرور نگه داشته می‌شود تا ویرایش یا حذفِ قبل از رسیدن پاسخ سرور هم بعداً اعمال شود (kept so an edit or delete made before the server answers is applied right after) */const rec0=[...(CFG.sent[c.id]||[])].reverse().find(r=>r[0]==="me");
@@ -4421,7 +4421,10 @@ const LKGRP=(()=>{
  /* پیش‌نمایش لیست | List Preview: نام آخرین فرستنده‌ی غیر من برای خط پیش‌نمایش گروه (name of the last sender who is not me) */
  function prev(c){lkSyncPreview(c);const L=CFG.sent[c.id]||[],l=L[L.length-1];if(l&&l[0]==="ot"){const sn=window.DSN&&window.DSN[l[1]+"|"+l[2]];if(sn)c.s=sn}}
  /* بارگیری پیام‌ها | Load Messages: ۲۰۰ پیام آخر گروه از سرور؛ پیام‌های هنوز نرسیده‌ی خودم می‌مانند (last 200 messages, my unsent ones stay) */
- async function load(c){if(!c||!c.gid||c.glb||!ok())return;c.glb=1;
+ async function load(c,chk){if(!c||!c.gid||c.glb||!ok())return;
+  /* بررسی سبک گروه | Group Light Check: با chk فقط تازه‌ترین پیام گروه یا کانال از سرور پرسیده می‌شود و اگر نسبت به دفعه‌ی قبل (که روی گوشی مانده) عوض نشده بود، پیام‌های ذخیره‌شده می‌مانند و ۲۰۰ پیام دوباره گرفته نمی‌شود؛ اگر پرس‌وجو خطا داد مثل قبل کامل گرفته می‌شود (with chk only the newest row is asked; unchanged means the phone's cache stays, an error falls back to the full load) */
+  if(chk){c.glb=1;let t=null;try{const r=(await db().listRows({databaseId:DB,tableId:"messages",queries:[Q().equal("chatId",c.gid),Q().orderDesc("$updatedAt"),Q().limit(1)]})).rows||[];t=r[0]?r[0].$id+"|"+r[0].$updatedAt:"-"}catch(e){}c.glb=0;if(t!==null){const o=(CFG.glNw||{})[c.id];if(o===t)return;(CFG.glNw=CFG.glNw||{})[c.id]=t}}
+  c.glb=1;
   try{let rows;try{rows=(await db().listRows({databaseId:DB,tableId:"messages",queries:[Q().equal("chatId",c.gid),Q().orderDesc("$createdAt"),Q().limit(200)]})).rows||[]}
    catch(e){const a=await db().listRows({databaseId:DB,tableId:"messages",queries:[Q().orderDesc("$createdAt"),Q().limit(500)]});rows=(a.rows||[]).filter(x=>x.chatId===c.gid).slice(0,200)}
    rows=rows.filter(x=>x.kind==="text").reverse();
@@ -4911,7 +4914,9 @@ const css=document.createElement("style");css.textContent=`
 #vlock.on{display:flex}
 #vlock.st{height:40px;border-radius:50%;padding:0;justify-content:center}
 /* پنهان شدن کادر پیام هنگام ضبط | Hide Message Box While Recording: تا وقتی نوار ضبط ویس باز است، کادر نوشتن و دکمه‌ی گیره پنهان می‌مانند (در گفتگوی شخصی، گروه و کانال یکسان) تا فقط نوار ضبط دیده شود (while the record bar is open the text box and attach button stay hidden in chats, groups and channels alike) */
-#chat.vrecing .inbar #mi,#chat.vrecing .inbar #attachBtn,#chat.vrecing .inbar #schBtn{visibility:hidden}
+#chat.vrecing .inbar #attachBtn,#chat.vrecing .inbar #schBtn{visibility:hidden}
+/* کادر پیام هنگام ضبط | Message Box While Recording: کادر فقط نامرئی می‌شود (نه پنهان)، تا فوکوسش نرود و کیبورد باز یا بسته همان‌طور که بود بماند (the box only turns transparent, not hidden, so it keeps focus and the keyboard stays as it was) */
+#chat.vrecing .inbar #mi{opacity:0}
 #chat.vrecing .inbar{z-index:auto}
 .lkvo{display:flex;align-items:center;gap:10px;min-width:200px;padding:2px 0}
 .lkvo .vpb{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--bubOut);display:flex;align-items:center;justify-content:center;flex:none}
