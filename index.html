@@ -1480,13 +1480,13 @@ const LKA=(()=>{
   /* مهلت و تلاش دوباره | Timeout And Retry: اگر سرور ۱۲ ثانیه ساکت باشد آفلاین حساب می‌شود تا تلاش دوباره کار کند؛ رد شدن ۴۰۱ یک بار دوباره امتحان می‌شود تا یک خطای لحظه‌ای نشست ذخیره‌شده را پاک نکند (a silent server counts as offline after 12 s so the retry works; a 401 is tried once more before the saved login is dropped) */
   const gt=()=>Promise.race([ac.get(),new Promise((_,r)=>setTimeout(()=>r({code:0,message:"timeout"}),12000))]);
   try{try{u=await gt()}catch(e0){if(e0&&(e0.code===401||e0.code===403)){await new Promise(r=>setTimeout(r,1500));u=await gt()}else throw e0}}catch(e){const c=e&&e.code;
-   if(c===401||c===403){try{window.LK_DBG={cf:true,code:c}}catch(_){}
+   if(c===401||c===403){try{window.LK_DBG={cf:true,code:c,type:String((e&&e.type)||"").slice(0,40)}}catch(_){}/* شمارش رد شدن | Reject Counter: اولین و دومین خطای ۴۰۱ نشست ذخیره‌شده را پاک نمی‌کند (قبلاً هر خطای لحظه‌ای نشست را برای همیشه می‌سوخت)؛ فقط بعد از ۳ بار رد شدن پشت‌سرهم پاک می‌شود (the saved login is no longer wiped on the first 401; only after 3 rejections in a row) */try{if(x&&typeof x==="object"&&!leg){x.rej=(x.rej||0)+1;if(x.rej<3){acStore();try{localStorage.removeItem("cookieFallback")}catch(_){}return null}}}catch(_){}
     if(!AC)AC={last:"",a:[]};if(!leg)x.cf="";AC.last="";acStore();try{localStorage.removeItem("cookieFallback")}catch(_){}
     return null}
    try{window.LK_DBG={net:1,code:c||"",msg:String((e&&e.message)||e).slice(0,50)}}catch(_){}return{offline:1}}
   /* حساب اشتباه | Wrong Account Guard: اگر سرور کاربری غیر از حساب انتخاب‌شده برگرداند، وارد آن نمی‌شویم و نشست هیچ حسابی را خراب نمی‌کنیم (if the server answers with another user, we do not enter and do not overwrite any saved session) */
   if(!leg&&x&&x.id&&u.$id!==x.id){try{x.cf="";AC.last="";acStore();localStorage.removeItem("cookieFallback")}catch(_){}try{window.LK_DBG={cf:true,code:"mismatch"}}catch(_){}return null}
-  const r=await packMe(u,await safeProf(u));acRemember(r);return r}
+  const r=await packMe(u,await safeProf(u));acRemember(r);/* تمدید نشست | Extend Session: بعد از هر بازیابی موفق، طول نشست روی سرور تمدید می‌شود تا منقضی نشود؛ خطای آن نادیده گرفته می‌شود (after a good restore the server session is extended; errors ignored) */try{ac.updateSession({sessionId:"current"}).then(()=>{try{acRefresh()}catch(_){}}).catch(()=>{})}catch(_){}return r}
  /* خروج | Sign Out: فقط از حساب فعلی بیرون می‌آید؛ حساب در لیست می‌ماند و نشستش روی سرور بسته نمی‌شود تا با یک لمس برگردی؛ حذف کامل از لیست با × است (the account stays in the list; remove it with the x) */
  const out=()=>{try{if(!AC)AC={last:"",a:[]};AC.last="";acStore();localStorage.removeItem("cookieFallback")}catch(e){}};
  /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
@@ -2052,7 +2052,7 @@ function lkCacheStart(){if(S.user||localStorage.getItem("lk_mode")!=="real")retu
 /* بعد از سرور | After Server Check: وقتی جواب سرور رسید، اگر نشست درست بود همگام‌سازی شروع می‌شود؛ اگر نشست تمام شده بود به صفحه‌ی ورود می‌رود؛ اگر اینترنت نبود چت‌های کش می‌مانند و دوباره تلاش می‌شود */
 function lkAfterRestore(u){clearTimeout(lkRetT);
  if(u&&u.offline){/* دلیل ورود نشدن | Auto Enter Reason: اگر آخرین حساب باید خودکار باز می‌شد ولی سرور جواب نداد، دلیل نشان داده می‌شود (shows why the last account did not open) */if(!S.user&&LKA.acLast()){try{const d=window.LK_DBG||{};toast(tr("Could not connect to the server")+(d.code||d.msg?" ("+(d.code||d.msg)+")":""))}catch(e){}}if(LK_FROM_CACHE||!S.user)lkRetT=setTimeout(()=>{LKA.restore().then(lkAfterRestore).catch(()=>{})},15000);return}
- if(!u||!u.id){/* پیام دلیل | Reason Toast: نشان می‌دهد چرا دوباره ورود لازم شد (shows why login is needed again) */try{const d=window.LK_DBG;if(d)toast(d.cf?"Session rejected by server ("+d.code+")":"No saved session on this device")}catch(_){}if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}/* لیست دوباره | Accounts Redraw: بعد از رد شدن نشست، لیست حساب‌ها تازه می‌شود */try{lkAccForm=0;lkAccRender()}catch(e){}return}
+ if(!u||!u.id){/* پیام دلیل | Reason Toast: نشان می‌دهد چرا دوباره ورود لازم شد (shows why login is needed again) */try{const d=window.LK_DBG;if(d)toast(d.cf?"Session rejected by server ("+d.code+(d.type?" "+d.type:"")+")":"No saved session on this device")}catch(_){}if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}/* لیست دوباره | Accounts Redraw: بعد از رد شدن نشست، لیست حساب‌ها تازه می‌شود */try{lkAccForm=0;lkAccRender()}catch(e){}return}
  const me={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};
  if(LK_FROM_CACHE&&S.user&&S.user.id===u.id){LK_FROM_CACHE=0;Object.assign(S.user,me);lkApplyMe(u);lkNameUi();try{fillMe()}catch(e){}renderChats();lkStart();return}
  if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;LK_MODE="demo"}
@@ -2067,7 +2067,7 @@ setTimeout(lkBootOff,8000);
 /* نگهبان جای حافظه | Storage Guard: اگر حافظه‌ی برنامه تقریباً پر باشد، کش‌هایی که دوباره ساخته می‌شوند (عکس لحظه‌ای چت‌ها و کش عکس‌ها) پاک می‌شوند تا برای نگه داشتن ورود (نشست) جا بماند؛ چت‌ها و پیام‌ها دست نمی‌خورند (when storage is nearly full, rebuildable caches are cleared so the login keeps room; chats and messages are untouched) */
 function lkStoreGuard(){try{let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||"").length}if(n>3.8e6){localStorage.removeItem("lk_pc");if(n>4.4e6)localStorage.removeItem(LK_SN)}}catch(e){}}
 lkStoreGuard();
-Promise.resolve().then(()=>LKA.acReady()).then(lkCacheStart).then(()=>LKA.restore()).then(lkAfterRestore).catch(()=>{}).finally(lkBootOff);
+Promise.resolve().then(()=>LKA.acReady()).then(lkCacheStart).then(()=>LKA.restore()).then(lkAfterRestore)/* خطای بوت با پیام | Boot Error Toast: اگر بازیابی نشست هنگام شروع خطا بدهد، دیگر بی‌صدا بلعیده نمی‌شود و دلیل نشان داده می‌شود (a start-up restore error is shown instead of swallowed) */.catch(e=>{try{toast("Login restore failed: "+String((e&&e.message)||e).slice(0,60))}catch(_){}}).finally(lkBootOff);
 /* ورود نمایشی موقت | Temporary Demo Entry: فقط با این دکمه بدون فیلد و اینترنت وارد می‌شود؛ ثبت‌نام/ورود عادی فقط آنلاین و با فیلدهای معتبر */
 $("#lgdemo").onclick=()=>{DEMO=true;try{$("#lbtn").onclick()}finally{DEMO=false}};
 
