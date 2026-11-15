@@ -2087,7 +2087,7 @@ function renderTabs(){const T=allTabs();if(!T.some(x=>x[0]===S.folder))S.folder=
  $("#tabs").innerHTML=T.map(([k,l,i])=>{const c=CHATS.filter(x=>inFolder(x,k)&&x.un).length;
   return `<div class="tab ${S.folder===k?"on":""}${S.mv===k?" mvk":""}" data-k="${k}">${esc(l)}${i?" "+ic(i,13):""}${c&&k!=="all"?`<b>${c}</b>`:""}${S.edit&&k!=="all"?" "+ic("close",12):""}</div>`}).join("");
  /* قلاب نشانگر | Indicator Hook: بعد از ساختن تب‌ها، نشانگر لغزنده را می‌گذارد */lkTabInd();
- $$(".tab").forEach(t=>t.onclick=()=>{/* نگهبان کلیک | Click Guard: بعد از نگه‌داشتن یا در حالت جابجایی پوشه عوض نمی‌شود */if(lkFolderGuard())return;const l=$("#clist"),y=l.scrollTop,T0=allTabs().map(x=>x[0]),d=T0.indexOf(t.dataset.k)-T0.indexOf(S.folder);S.folder=t.dataset.k;renderChats();/* قلاب لغزش | Slide Hook: با زدن روی تب هم لیست می‌لغزد */if(d)lkSlide(d>0?1:-1);if(y>0){const sp=document.createElement("div");l.append(sp);sp.style.height=Math.max(0,y-(l.scrollHeight-l.clientHeight))+"px";l.scrollTop=y}})}
+ $$(".tab").forEach(t=>t.onclick=()=>{/* نگهبان کلیک | Click Guard: بعد از نگه‌داشتن یا در حالت جابجایی پوشه عوض نمی‌شود */if(lkFolderGuard())return;const l=$("#clist"),y=l.scrollTop,T0=allTabs().map(x=>x[0]),d=T0.indexOf(t.dataset.k)-T0.indexOf(S.folder);if(LK_PGB)return;/* قلاب لغزش | Slide Hook: با زدن روی تب هم لیست‌ها پیوسته می‌لغزند */if(d){lkPgTab(T0.indexOf(S.folder),T0.indexOf(t.dataset.k));return}S.folder=t.dataset.k;renderChats();if(y>0){const sp=document.createElement("div");l.append(sp);sp.style.height=Math.max(0,y-(l.scrollHeight-l.clientHeight))+"px";l.scrollTop=y}})}
 /* رندر چت‌ها | Render Chats: سنجاق‌شده‌ها بالا، بقیه به ترتیب (pinned first, then order) */
 /* تیک آبی تأیید | Verified Badge: آیکن SVG تیک آبی (بدون پس‌زمینه) برای گفتگوهای تأییدشده توسط مدیر سرور (فیلد v:1)؛ کنار نام در لیست، هدر گفتگو و پروفایل نشان داده می‌شود */
 const VB="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNTJiNmZmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMWE3M2U4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHBvbHlnb24gcG9pbnRzPSIxMi4wMCwxLjYwIDE0LjIzLDMuNjkgMTcuMjAsMi45OSAxOC4wOCw1LjkyIDIxLjAxLDYuODAgMjAuMzEsOS43NyAyMi40MCwxMi4wMCAyMC4zMSwxNC4yMyAyMS4wMSwxNy4yMCAxOC4wOCwxOC4wOCAxNy4yMCwyMS4wMSAxNC4yMywyMC4zMSAxMi4wMCwyMi40MCA5Ljc3LDIwLjMxIDYuODAsMjEuMDEgNS45MiwxOC4wOCAyLjk5LDE3LjIwIDMuNjksMTQuMjMgMS42MCwxMi4wMCAzLjY5LDkuNzcgMi45OSw2LjgwIDUuOTIsNS45MiA2LjgwLDIuOTkgOS43NywzLjY5IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTcuNyAxMi41bDMgMyA1LjctNi4zIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=";
@@ -5115,7 +5115,11 @@ function vtrimInit(o){const w=ov.querySelector(".vtw");if(!w)return;const L=w.qu
  const Q=w.querySelector(".vsel"),draw=()=>{const t=o.trm;Q.style.left=t.s*100+"%";Q.style.width=(t.e-t.s)*100+"%";L.style.left=t.s*100+"%";Rh.style.left=t.e*100+"%";bs.forEach((x,i)=>x.classList.toggle("vout",(i+.5)/bs.length<t.s||(i+.5)/bs.length>t.e));const d=ov.querySelector(".vd");if(d)d.textContent=fd((t.e-t.s)*o.res.duration)};draw();
  [[L,"s"],[Rh,"e"]].forEach(([h,k])=>{h.addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();h.setPointerCapture(e.pointerId);h._d=1});
   h.addEventListener("pointermove",e=>{if(!h._d)return;const r=w.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),g=Math.min(.5,.6/Math.max(1,o.res.duration));if(k==="s")o.trm.s=Math.min(f,o.trm.e-g);else o.trm.e=Math.max(f,o.trm.s+g);if(o.pa){try{o.pa.pause()}catch(_){}}draw()});
-  const up2=()=>{h._d=0};h.addEventListener("pointerup",up2);h.addEventListener("pointercancel",up2)})}
+  const up2=()=>{h._d=0};h.addEventListener("pointerup",up2);h.addEventListener("pointercancel",up2)});
+ /* جابه‌جایی بازه ویس | Voice Move Selection: وقتی بازه کوچک‌تر از کل ویس است، کشیدن داخل آن کل بازه را به چپ و راست می‌برد؛ دستگیره‌ها مثل قبل کار می‌کنند (dragging inside a shrunk range moves the whole range; handles work as before) */
+ {let m=null;w.addEventListener("pointerdown",e=>{if(e.target.classList.contains("vth"))return;const t=o.trm,r=w.getBoundingClientRect(),f=(e.clientX-r.left)/r.width;if(t.e-t.s>=.995||f<t.s||f>t.e)return;e.preventDefault();e.stopPropagation();try{w.setPointerCapture(e.pointerId)}catch(_){}m={x:e.clientX,s:t.s,l:t.e-t.s};if(o.pa){try{o.pa.pause()}catch(_){}}});
+  w.addEventListener("pointermove",e=>{if(!m)return;const r=w.getBoundingClientRect(),ns=Math.min(1-m.l,Math.max(0,m.s+(e.clientX-m.x)/r.width));o.trm.s=ns;o.trm.e=ns+m.l;draw()});
+  const up3=()=>{m=null};w.addEventListener("pointerup",up3);w.addEventListener("pointercancel",up3)}}
 /* از سر گیری ضبط | Resume Recording: ضبط بخش جدید و چسباندن به انتهای ویس قبلی */
 async function vMerge(a,b){const oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,48000);const da=await oc.decodeAudioData(await a.file.arrayBuffer()),db=await oc.decodeAudioData(await b.file.arrayBuffer());
  const x=da.getChannelData(0),y=db.getChannelData(0),n=x.length+y.length,buf=new ArrayBuffer(44+n*2),v=new DataView(buf);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
@@ -5424,11 +5428,12 @@ function recPreview(o){const u=UI,res=o.pvRes,d=res.duration;u.d.classList.add("
  u.bar.innerHTML='<i class="vmtr">'+ic("trash",20)+'</i><div class="vmtw"><div class="vmts">'+'<i></i>'.repeat(8)+'</div><b class="vmdm l"></b><b class="vmdm r"></b><b class="vmsel"></b><b class="vmph"></b><b class="vmth l"></b><b class="vmth r"></b></div><span class="vmt">'+fT(d)+'</span>';
  recTrim(o);
  const ph=u.bar.querySelector(".vmph");/* لوپ تضمینی | Safe Loop: وقتی ویدیو تمام شد همان لحظه به ابتدای بخش انتخاب‌شده برمی‌گردد و دوباره پخش می‌شود (when the video ends it jumps back to the selection start and plays again) */v.addEventListener("ended",()=>{if(o.pvVid!==v||o.drag)return;try{v.currentTime=o.trm.s*d}catch(_){}v.play().catch(()=>{})});
- vmFix(v).then(()=>{if(o.pvVid!==v)return;v.play().catch(()=>{});
+ /* پخش فوری | Instant Play: پخش و لوپ منتظر آماده شدن ویدیو نمی‌ماند؛ بلافاصله شروع می‌شود و هر وقت ویدیو آماده شد اگر ایستاده بود دوباره پخش می‌شود (play and loop start at once, not after the video is fixed; resumes whenever the video becomes ready) */["loadeddata","canplay"].forEach(ev=>v.addEventListener(ev,()=>{if(o.pvVid===v&&!o.drag&&v.paused)v.play().catch(()=>{})}));v.play().catch(()=>{});vmFix(v).then(()=>{if(o.pvVid===v&&!o.drag&&v.paused)v.play().catch(()=>{})});
+ {const strip=[...u.bar.querySelectorAll(".vmts i")],cv2=document.createElement("canvas");cv2.width=cv2.height=64;const x2=cv2.getContext("2d");
   const tick=()=>{if(o.pvVid!==v)return;const t=o.trm,s=t.s*d,e=t.e*d,ct=v.currentTime;/* خط پخش | Playhead: خط سفید روی نوار نشان می‌دهد ویدیو الان کجاست (the white line shows where the video is now) */if(ph)ph.style.left=Math.min(100,Math.max(0,ct/d*100))+"%";
    if(!o.drag&&(v.ended||ct>=e-.03||ct<s-.2)){try{v.currentTime=s}catch(_){}v.play().catch(()=>{})}else if(!o.drag&&v.paused)v.play().catch(()=>{});
-   u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,Math.max(0,(ct-s)/Math.max(.1,e-s))))).toFixed(1);o.pvRaf=requestAnimationFrame(tick)};
-  tick()});
+   u.pg.style.strokeDashoffset=(307.9*(1-Math.min(1,Math.max(0,(ct-s)/Math.max(.1,e-s))))).toFixed(1);/* عکس نوار از پخش | Strip From Playback: اگر عکس ریز نوار هنوز ساخته نشده باشد (ویدیوی بلند)، از خود ویدیوی در حال پخش گرفته می‌شود (fills an empty strip picture from the playing video) */try{if(!o.drag&&v.readyState>=2&&v.videoWidth&&Date.now()-(o.tf||0)>150){const k=Math.min(strip.length-1,Math.floor(ct/d*strip.length)),el=strip[k];if(el&&!el.style.backgroundImage){o.tf=Date.now();const w=v.videoWidth,h=v.videoHeight,q=Math.min(w,h);x2.drawImage(v,(w-q)/2,(h-q)/2,q,q,0,0,64,64);el.style.backgroundImage="url("+cv2.toDataURL("image/jpeg",.6)+")"}}}catch(_){}o.pvRaf=requestAnimationFrame(tick)};
+  tick()}
  recThumbs(o,u.bar.querySelector(".vmts"))}
 /* عکس‌های نوار | Strip Thumbnails: از چند نقطه‌ی ویدیو عکس می‌گیرد و پشت نوار تریم می‌گذارد */
 async function recThumbs(o,strip){const d=o.pvRes.duration,v=document.createElement("video");v.muted=true;v.preload="auto";v.playsInline=true;v.src=o.pvU;await vmFix(v);
@@ -5447,9 +5452,10 @@ function recTrim(o){const w=UI.bar.querySelector(".vmtw"),Q=w.querySelector(".vm
   h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up)});
  /* تایم‌لاین قابل کشیدن | Draggable Timeline: لمس یا کشیدن انگشت روی نوار، ویدیو را به همان جا می‌برد (عقب و جلو)؛ با رها کردن از همان‌جا دوباره پخش می‌شود و فقط داخل بخش انتخاب‌شده می‌رود (touch or drag on the strip seeks the video; it plays on from there, inside the selection only) */
  const sk=e=>{const r=w.getBoundingClientRect(),f=Math.min(o.trm.e,Math.max(o.trm.s,(e.clientX-r.left)/r.width));try{o.pvVid.currentTime=f*d}catch(_){}};
- w.addEventListener("pointerdown",e=>{if(e.target.classList.contains("vmth"))return;e.preventDefault();w.setPointerCapture(e.pointerId);w._sd=1;o.drag=1;try{o.pvVid.pause()}catch(_){}sk(e)});
- w.addEventListener("pointermove",e=>{if(w._sd)sk(e)});
- const su=()=>{if(!w._sd)return;w._sd=0;o.drag=0;try{o.pvVid.play().catch(()=>{})}catch(_){}};
+ /* جابه‌جایی بازه | Move Selection: وقتی بازه کوچک‌تر از کل ویدیو است، کشیدن داخل آن کل بازه را جابه‌جا می‌کند (مثل تلگرام)؛ فقط لمس کوتاه داخل آن ویدیو را به همان‌جا می‌برد؛ بیرون از بازه یا وقتی بازه کامل است همان کشیدن خط زمان قبلی کار می‌کند (dragging inside a shrunk range moves the whole range; a short tap inside seeks; outside or when full, timeline scrub works as before) */
+ w.addEventListener("pointerdown",e=>{if(e.target.classList.contains("vmth"))return;e.preventDefault();w.setPointerCapture(e.pointerId);w._sd=1;o.drag=1;try{o.pvVid.pause()}catch(_){}const r0=w.getBoundingClientRect(),f0=(e.clientX-r0.left)/r0.width,t0=o.trm;w._mv=(t0.e-t0.s<.995&&f0>=t0.s&&f0<=t0.e)?{x:e.clientX,s:t0.s,l:t0.e-t0.s,m:0}:null;if(!w._mv)sk(e)});
+ w.addEventListener("pointermove",e=>{if(!w._sd)return;const m=w._mv;if(!m){sk(e);return}const dx=e.clientX-m.x;if(!m.m&&Math.abs(dx)<5)return;m.m=1;const r=w.getBoundingClientRect(),ns=Math.min(1-m.l,Math.max(0,m.s+dx/r.width));o.trm.s=ns;o.trm.e=ns+m.l;try{o.pvVid.currentTime=ns*d}catch(_){}draw()});
+ const su=e=>{if(!w._sd)return;w._sd=0;o.drag=0;const m=w._mv;w._mv=null;if(m&&!m.m&&e&&e.clientX!=null)sk(e);try{o.pvVid.play().catch(()=>{})}catch(_){}};
  w.addEventListener("pointerup",su);w.addEventListener("pointercancel",su)}
 /* پاک‌کردن پیش‌نمایش | Preview Cleanup: پخش را قطع می‌کند و آدرس موقت ویدیو را آزاد می‌کند */
 function recPvClean(o){if(!o)return;cancelAnimationFrame(o.pvRaf);o.pvRaf=0;if(o.pvVid){try{o.pvVid.pause()}catch(_){}o.pvVid=null}if(o.pvU){try{URL.revokeObjectURL(o.pvU)}catch(_){}o.pvU=null}}
@@ -5761,21 +5767,39 @@ if(window.ResizeObserver)new ResizeObserver(()=>{const B=$("#tabs");if(!B)return
  const i=$("#tabInd"),o=$("#tabs .tab.on");if(i&&o&&o.offsetWidth){i.style.transition="none";lkIndSet(i,o);i.getBoundingClientRect();i.style.transition=""}}).observe($("#tabs"));
 /* قفل قاب برنامه | App Frame Lock: قاب برنامه هیچ‌وقت به کنار نمی‌لغزد تا صفحه‌ی بیرون از دید (پروفایل مخاطب) دیده نشود (app frame never scrolls sideways, so the off-screen contact page never shows) */
 (function(){const A=$("#app");A.addEventListener("scroll",()=>{if(A.scrollLeft||A.scrollTop){A.scrollLeft=0;A.scrollTop=0}},{passive:true});A.scrollLeft=0})();
-/* لغزش لیست | List Slide: بعد از عوض شدن پوشه، لیست جدید از سمت پوشه‌ی بعدی (dir=1 از راست، dir=-1 از چپ) با یک لغزش خیلی کوتاه و محو شدن نرم می‌آید */
-function lkSlide(dir){const L=$("#clist");if(!L||!L.animate||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
- L.animate([{transform:"translateX("+dir*28+"px)",opacity:.25},{transform:"translateX(0)",opacity:1}],{duration:240,easing:"cubic-bezier(.2,.8,.2,1)"})}
+/* لغزش پیوسته‌ی صفحه‌ها | Continuous Page Slide (مثل تلگرام like Telegram): لیست پوشه‌ی کناری از قبل ساخته و کنار لیست فعلی گذاشته می‌شود؛ هنگام کشیدن انگشت یا زدن روی پوشه، هر دو لیست پشت‌سرهم و پیوسته می‌لغزند و چیزی یکدفعه ظاهر نمی‌شود (the neighbor folder list sits beside the current one and both slide together; nothing pops in) */
+var LK_PGB=0;
+/* ساخت صفحه‌ی همسایه | Neighbor Page Maker: لیست پوشه‌ی k را می‌سازد و درست کنار لیست فعلی می‌گذارد (sd=1 راست، sd=-1 چپ) (builds the list of folder k beside the current list) */
+function lkPgMake(k,sd){const L=$("#clist"),W=L.parentNode,f0=S.folder,y=L.scrollTop;S.folder=k;let h="";try{renderChats();h=L.innerHTML}catch(e){}S.folder=f0;renderChats();L.scrollTop=y;
+ const G=document.createElement("div");G.className="list";G.id="clistG";G.innerHTML=h;G.style.cssText="background:var(--bg);pointer-events:none;overflow:hidden;z-index:1;will-change:transform";G.setAttribute("aria-hidden","true");G.sd=sd;W.append(G);G.scrollTop=y;return G}
+/* نشانگر همراه انگشت | Indicator Follows Finger: هایلایت پوشه همزمان با کشیدن بین پوشه‌ی فعلی (i) و پوشه‌ی بعدی (n) حرکت می‌کند؛ p از ۰ تا ۱ (the folder highlight moves between two tabs while dragging) */
+function lkIndMix(i,n,p){const E=$$("#tabs .tab"),a=E[i],b=E[n],I=$("#tabInd");if(!a||!b||!I)return;const x=a.offsetLeft+(b.offsetLeft-a.offsetLeft)*p,w=a.offsetWidth+(b.offsetWidth-a.offsetWidth)*p;I.style.transition="none";I.style.width=w+"px";I.style.transform="translateX("+x+"px)";LKI={x:x,w:w}}
+/* پایان لغزش | Slide Finish: بعد از رها کردن یا زدن روی پوشه، هر دو لیست و نشانگر نرم تا جای نهایی می‌روند؛ در آخر پوشه‌ی جدید واقعاً ساخته می‌شود (go=false یعنی برگشت به پوشه‌ی اول؛ i شماره‌ی پوشه‌ی فعلی و n شماره‌ی مقصد) */
+function lkPgFinish(G,i,n,go){const L=$("#clist"),Wd=L.offsetWidth||360,sd=G.sd,T=allTabs().map(x=>x[0]),dur=matchMedia("(prefers-reduced-motion:reduce)").matches?0:260;
+ LK_PGB=1;L.style.transition=G.style.transition="transform "+dur+"ms cubic-bezier(.2,.8,.2,1)";
+ L.style.transform=go?"translateX("+(-sd*Wd)+"px)":"";G.style.transform=go?"translateX(0)":"translateX("+(sd*Wd)+"px)";
+ const E=[...$$("#tabs .tab")],I=$("#tabInd"),to=E[go?n:i];E.forEach((e,j)=>e.classList.toggle("on",j===(go?n:i)));if(I&&to){I.style.transition="";lkIndSet(I,to)}
+ setTimeout(()=>{G.remove();L.style.transition="none";L.style.transform="";
+  if(go){/* حفظ وضعیت نوار جستجو | Keep Search State: میزان اسکرول لیست قبل و بعد از عوض شدن پوشه یکی است تا نوار جستجو نپرد (list scroll position is kept so the search bar does not jump) */const y0s=L.scrollTop;S.folder=T[n];renderChats();if(y0s>0){const sp=document.createElement("div");L.append(sp);sp.style.height=Math.max(0,y0s-(L.scrollHeight-L.clientHeight))+"px";L.scrollTop=y0s}
+   /* وسط‌چین کردن پوشه | Center Folder: فقط خود نوار پوشه‌ها می‌لغزد، نه کل برنامه (only the folder bar scrolls) */const o=$("#tabs .tab.on"),B=$("#tabs");if(o&&B)B.scrollTo({left:o.offsetLeft-(B.clientWidth-o.offsetWidth)/2,behavior:"smooth"})}
+  requestAnimationFrame(()=>{L.style.transition="";LK_PGB=0})},dur+20)}
+/* لغزش با زدن پوشه | Tab Tap Slide: زدن روی پوشه‌ی دیگر؛ لیست مقصد از کنار می‌آید و لیست فعلی به سمت مخالف می‌رود (tapping a folder slides the lists) */
+function lkPgTab(i,n){const L=$("#clist"),T=allTabs().map(x=>x[0]),sd=n>i?1:-1,G=lkPgMake(T[n],sd);G.style.transition="none";G.style.transform="translateX("+(sd*(L.offsetWidth||360))+"px)";G.getBoundingClientRect();lkPgFinish(G,i,n,true)}
 /* اسلاید بین پوشه‌ها | Folder Swipe: کشیدن افقی روی لیست گفتگوها فقط بین پوشه‌ها (All، P V ...) جابه‌جا می‌شود؛ چپ = پوشه‌ی بعدی، راست = قبلی. لیست کمی همراه انگشت می‌رود، در اولین و آخرین پوشه فقط کمی کش می‌آید و برمی‌گردد و هیچ‌وقت به مخاطبین یا تنظیمات نمی‌رود */
-(function(){const L=$("#clist");let x0=0,y0=0,pid=null,drag=0,mx=0,moved=0;const TH=56,tabs=()=>allTabs().map(x=>x[0]);
- L.addEventListener("pointerdown",e=>{if(S.edit||(e.pointerType==="mouse"&&e.button!==0))return;pid=e.pointerId;x0=e.clientX;y0=e.clientY;drag=0;mx=0});
+(function(){const L=$("#clist");let x0=0,y0=0,pid=null,drag=0,mx=0,moved=0,G=null;const TH=56,tabs=()=>allTabs().map(x=>x[0]);
+ L.addEventListener("pointerdown",e=>{if(LK_PGB||S.edit||(e.pointerType==="mouse"&&e.button!==0))return;if(G){G.remove();G=null}pid=e.pointerId;x0=e.clientX;y0=e.clientY;drag=0;mx=0});
  L.addEventListener("pointermove",e=>{if(e.pointerId!==pid)return;const dx=e.clientX-x0,dy=e.clientY-y0;
   if(!drag){if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.5){drag=1;try{L.setPointerCapture(pid)}catch(_){}const r=e.target.closest&&e.target.closest(".row");if(r)r.dispatchEvent(new Event("mouseleave"))}else return}
-  mx=dx;const t=tabs(),i=t.indexOf(S.folder),edge=(dx<0&&i>=t.length-1)||(dx>0&&i<=0);
-  L.style.transition="none";L.style.transform="translateX("+Math.max(-70,Math.min(70,dx*(edge?.12:.3)))+"px)"});
+  mx=dx;const t=tabs(),i=t.indexOf(S.folder),edge=(dx<0&&i>=t.length-1)||(dx>0&&i<=0),Wd=L.offsetWidth||360;
+  /* اول و آخر | Edges: در اولین و آخرین پوشه فقط کمی کش می‌آید (at the first/last folder it only stretches a little) */if(edge){if(G){G.remove();G=null;lkIndMix(i,i,0)}L.style.transition="none";L.style.transform="translateX("+Math.max(-70,Math.min(70,dx*.12))+"px)";return}
+  /* لغزش همراه انگشت | Follow Finger: لیست فعلی و لیست پوشه‌ی کناری هر دو دقیقاً با انگشت می‌روند (both lists follow the finger 1:1) */const sd=dx<0?1:-1;if(!G||G.sd!==sd){if(G)G.remove();G=lkPgMake(t[i+sd],sd)}
+  const c=Math.max(-Wd,Math.min(Wd,dx));L.style.transition="none";L.style.transform="translateX("+c+"px)";G.style.transition="none";G.style.transform="translateX("+(c+sd*Wd)+"px)";lkIndMix(i,i+sd,Math.abs(c)/Wd)});
  const end=e=>{if(e.pointerId!==pid)return;pid=null;if(!drag)return;drag=0;moved=1;setTimeout(()=>moved=0,80);
   const t=tabs(),i=t.indexOf(S.folder),n=i+(mx<0?1:-1),go=e.type==="pointerup"&&Math.abs(mx)>=TH&&i>=0&&n>=0&&n<t.length;
-  if(go){L.style.transition="";L.style.transform="";/* حفظ وضعیت نوار جستجو | Keep Search State: با اسلاید بین پوشه‌ها نوار جستجوی بسته باز نمی‌شود و باز هم بسته نمی‌شود؛ میزان اسکرول لیست قبل و بعد از عوض شدن پوشه یکی است (swiping between folders keeps the search bar as it was: closed stays closed, open stays open, by keeping the list scroll position) */const y0s=L.scrollTop;S.folder=t[n];renderChats();lkSlide(mx<0?1:-1);if(y0s>0){const sp=document.createElement("div");L.append(sp);sp.style.height=Math.max(0,y0s-(L.scrollHeight-L.clientHeight))+"px";L.scrollTop=y0s}const o=$("#tabs .tab.on"),B=$("#tabs");/* وسط‌چین کردن پوشه | Center Folder: فقط خود نوار پوشه‌ها می‌لغزد، نه کل برنامه (only the folder bar scrolls, never the whole app) */if(o&&B)B.scrollTo({left:o.offsetLeft-(B.clientWidth-o.offsetWidth)/2,behavior:"smooth"})}
+  if(go&&!G){const sd=mx<0?1:-1,Wd=L.offsetWidth||360,c=Math.max(-Wd,Math.min(Wd,mx));G=lkPgMake(t[n],sd);G.style.transition="none";G.style.transform="translateX("+(c+sd*Wd)+"px)"}
+  if(G){const g=G;G=null;lkPgFinish(g,i,go?n:i,go)}
   else{L.style.transition="transform .2s cubic-bezier(.2,.8,.2,1)";L.style.transform="";setTimeout(()=>{L.style.transition=""},220)}};
- L.addEventListener("pointerup",end);L.addEventListener("pointercancel",end);
+  L.addEventListener("pointerup",end);L.addEventListener("pointercancel",end);
  L.addEventListener("click",e=>{if(moved){e.stopPropagation();e.preventDefault()}},true)})();
 /* برگشت با کشیدن از لبه | Edge Swipe Back: کشیدن از لبه‌ی چپ صفحه‌ی گفتگو به راست، به صفحه‌ی قبل برمی‌گردد (فقط از لبه تا با اسلاید پاسخ پیام‌ها قاطی نشود) */
 (function(){const C=$("#chat");let x0=0,y0=0,ok=0;
