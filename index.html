@@ -1147,6 +1147,17 @@ html.light .b.hl{box-shadow:inset 0 0 0 999px rgba(0,0,0,.07),0 .5px .5px .5px v
 .pmr .pb div{flex:1;text-align:center;padding:8px 4px;border-radius:10px;background:var(--card2);color:var(--blue);font-size:14px;cursor:pointer}
 .pmr .pb div.rd{color:var(--red)}
 .vlr input[type=range]{width:100%;margin:10px 0 2px;accent-color:var(--blue)}
+/* اسلایدر سطح صدا | Sound Level Slider CSS: به‌جای نوار پیش‌فرض مرورگر (که در سافاری آیفون و برنامه‌ی PWA کار نمی‌کرد) یک نوار خودساخته با لمس مستقیم؛ touch-action:none یعنی مرورگر لمس را برای اسکرول برنمی‌دارد و کشیدن انگشت فقط نوار را حرکت می‌دهد (a self-made bar instead of the browser's default one, which did not work in iPhone Safari and the PWA; touch-action none means the browser does not steal the touch for scrolling, so dragging only moves the bar) */
+.vls{position:relative;height:40px;margin:2px 0 0;touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;outline:0}
+.vls .vlt,.vls .vlf{position:absolute;left:0;top:50%;height:6px;margin-top:-3px;border-radius:3px;display:block}
+/* مسیر و بخش پر | Track And Fill: مسیر خاکستری کامل، بخش پر آبی تا زیر دکمه (grey full track, blue fill up to the knob) */
+.vls .vlt{right:0;background:var(--line)}
+.vls .vlf{width:calc(12px + (100% - 24px)*var(--f,0));background:var(--blue)}
+/* نشان صد درصد | 100 Percent Mark: خط کوچک روی جای صدای عادی (۱۰۰٪ از ۵۰۰) (a small tick at the normal sound level, 100 of 500) */
+.vls .vl1{position:absolute;top:50%;left:calc(12px + (100% - 24px)*.2);width:2px;height:12px;margin:-6px 0 0 -1px;border-radius:1px;background:var(--sub);opacity:.7;display:block}
+/* دکمه‌ی کشیدنی | Knob: دایره‌ی ۲۴ پیکسلی که زیر انگشت می‌ماند (24px round knob that stays under the finger) */
+.vls .vlk{position:absolute;top:50%;left:calc((100% - 24px)*var(--f,0));width:24px;height:24px;margin-top:-12px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:block;transition:transform .12s}
+.vls.on .vlk{transform:scale(1.15)}
 /* بدون دکمه‌ی دانلود در منو | No Download Button In Menu: دکمه‌ی دانلود کنار فایل فقط در کپی پیام داخل منوی نگه‌داشتن پنهان می‌شود؛ داخل گفتگو و گزینه‌ی Download منو سر جایشان می‌مانند */
 #mmenu .bb .lkdl{display:none}
 </style>
@@ -5996,7 +6007,26 @@ async function pmRender(){const box=$("#pmList");if(!box)return;const lab={grant
 /* کار دکمه‌ها | Permission Action: فعال یعنی یک‌بار از سیستم می‌پرسد، غیرفعال یعنی برنامه استفاده نمی‌کند، ریست یعنی هرچه برنامه یادش بود پاک می‌شود */
 async function pmAct(k,a){const o=CFG.permOff=CFG.permOff||{};try{if(a==="on"){delete o[k];saveCfg();const ok=await mediaAsk(k);if(k!=="storage")mediaRelease(k);toast(ok?"Access enabled":"Access was refused by the system")}else if(a==="off"){o[k]=1;saveCfg();mediaRelease(k);toast("Disabled in the app")}else{delete o[k];saveCfg();mediaRelease(k);mPermSet(k,false);toast("Reset done. To clear the system permission, use the phone Settings")}}catch(e){}pmRender()}
 /* ساخت نوارهای صدا | Render Sound Levels: برای هر پخش‌کننده یک لغزنده از ۰ تا ۵۰۰ درصد می‌کشد */
-function vlRender(){const box=$("#vlList");if(!box)return;box.innerHTML=LKVOLS.map(([c,n])=>{const p=Math.round(lkVol(c)*100);return`<div class="pmr vlr" data-vc="${c}"><div class="pt"><span>${tr(n)}</span><span class="ps" data-vp>${p}%</span></div><input type="range" min="0" max="500" step="5" value="${p}"></div>`}).join("");box.querySelectorAll("input").forEach(r=>{const w=r.closest(".vlr"),c=w.dataset.vc,lb=w.querySelector("[data-vp]");r.oninput=()=>{CFG.vol[c]=+r.value;lb.textContent=r.value+"%";lkVolApply()};r.onchange=()=>saveCfg()})}
+function vlRender(){const box=$("#vlList");if(!box)return;box.innerHTML=LKVOLS.map(([c,n])=>{const p=Math.round(lkVol(c)*100);return`<div class="pmr vlr" data-vc="${c}"><div class="pt"><span>${tr(n)}</span><span class="ps" data-vp>${p}%</span></div><div class="vls" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="500" aria-valuenow="${p}" style="--f:${p/500}"><i class="vlt"></i><i class="vlf"></i><i class="vl1"></i><i class="vlk"></i></div></div>`}).join("");box.querySelectorAll(".vls").forEach(vlBind)}
+/* اتصال اسلایدر صدا | Sound Slider Wiring: لمس یا کشیدن روی نوار، عدد را از ۰ تا ۵۰۰ (گام ۵) می‌سازد؛ با Pointer Events و setPointerCapture که در آیفون کار می‌کنند، و اگر مرورگر Pointer Events نداشت با لمس و ماوس؛ بعد از رها کردن ذخیره می‌شود؛ کلیدهای جهت‌دار هم کار می‌کنند (touch or drag sets 0 to 500 in steps of 5; uses Pointer Events with capture, falls back to touch and mouse; saved on release; arrow keys work too) */
+function vlBind(sl){const w=sl.closest(".vlr"),c=w.dataset.vc,lb=w.querySelector("[data-vp]");let on=0,pid=null,dirty=0;
+ /* گذاشتن عدد | Set Value: عدد جدید را روی نوار، نوشته، تنظیمات و حجم صدا می‌گذارد (puts the new value on the bar, label, settings and the real volume) */
+ const put=v=>{v=Math.max(0,Math.min(500,Math.round(v/5)*5));CFG.vol=CFG.vol||{};CFG.vol[c]=v;sl.style.setProperty("--f",v/500);sl.setAttribute("aria-valuenow",v);lb.textContent=v+"%";dirty=1;try{lkVolApply()}catch(e){}};
+ /* عدد از جای انگشت | Value From Finger: جای انگشت را (بین مرکز دو سر دکمه) به عدد ۰ تا ۵۰۰ تبدیل می‌کند (turns the finger position into 0 to 500) */
+ const fromX=x=>{const r=sl.getBoundingClientRect(),W=r.width-24;if(W<=0)return;put(Math.max(0,Math.min(1,(x-r.left-12)/W))*500)};
+ const start=()=>{on=1;sl.classList.add("on")};
+ const end=()=>{if(!on)return;on=0;sl.classList.remove("on");if(pid!==null){try{sl.releasePointerCapture(pid)}catch(e){}pid=null}if(dirty){dirty=0;saveCfg()}};
+ if(window.PointerEvent){
+  sl.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;start();pid=e.pointerId;try{sl.setPointerCapture(e.pointerId)}catch(_){}fromX(e.clientX);e.preventDefault()});
+  sl.addEventListener("pointermove",e=>{if(on&&e.pointerId===pid){fromX(e.clientX);e.preventDefault()}});
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>sl.addEventListener(ev,end))
+ }else{
+  sl.addEventListener("touchstart",e=>{start();fromX(e.touches[0].clientX);e.preventDefault()},{passive:false});
+  sl.addEventListener("touchmove",e=>{if(on){fromX(e.touches[0].clientX);e.preventDefault()}},{passive:false});
+  ["touchend","touchcancel"].forEach(ev=>sl.addEventListener(ev,end));
+  sl.addEventListener("mousedown",e=>{start();fromX(e.clientX);const mv=q=>fromX(q.clientX),up=()=>{document.removeEventListener("mousemove",mv);document.removeEventListener("mouseup",up);end()};document.addEventListener("mousemove",mv);document.addEventListener("mouseup",up);e.preventDefault()})
+ }
+ sl.addEventListener("keydown",e=>{const k=e.key,v=+sl.getAttribute("aria-valuenow")||0;let n=null;if(k==="ArrowRight"||k==="ArrowUp")n=v+5;else if(k==="ArrowLeft"||k==="ArrowDown")n=v-5;else if(k==="Home")n=0;else if(k==="End")n=500;if(n===null)return;e.preventDefault();put(n);dirty=0;saveCfg()})}
 /* رویدادهای صفحه | Screen Events: باز شدن صفحه، ریست همه‌ی سطح‌ها و تازه شدن وضعیت بعد از برگشتن به برنامه */
 $$('[data-go="perms"]').forEach(e=>e.addEventListener("click",()=>{pmRender();vlRender()}));
 $("#vlReset").onclick=()=>{CFG.vol={};saveCfg();lkVolApply();vlRender();toast("Sound levels reset")};
