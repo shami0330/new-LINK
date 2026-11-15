@@ -1776,16 +1776,16 @@ async function mediaStream(kind){
  if(kind!=="both")return MPERM.live[kind];
  return new MediaStream([...MPERM.live.mic.getTracks(),...MPERM.live.camera.getTracks()])}
 /* خاموش کردن جریان | Idle Stream: بعد از پایان ضبط جریان باز می‌ماند ولی خاموش می‌شود؛ هیچ‌وقت بسته نمی‌شود (after recording the stream stays open but switched off; it is never closed) */
-function mediaIdle(k){if(MPERM.busy[k]>0)return;(k==="both"?["mic","camera"]:[k]).forEach(x=>{/* دوربین بسته می‌شود | Camera Closes: چراغ دوربین فقط هنگام ضبط روشن است، پس بعد از ضبط جریان دوربین کاملاً بسته می‌شود (اجازه‌اش می‌ماند و دفعه‌ی بعد دوباره نمی‌پرسد) (camera light is on only while recording, so the camera stream is really closed after use; the permission stays) */if(x==="camera"||x==="mic"){mediaRelease(x);return}const s=MPERM.live[x];if(s)s.getTracks().forEach(t=>{t.enabled=false});if(MPERM.on[x]){MPERM.on[x]=0;if(x==="mic")mSess(0)}if(x==="mic"){try{MPERM.ctx&&MPERM.ctx.state==="running"&&MPERM.ctx.suspend()}catch(e){}}})}
+function mediaIdle(k){if(MPERM.busy[k]>0)return;(k==="both"?["mic","camera"]:[k]).forEach(x=>{/* خاموش ماندن | Stay Off: دوربین و میکروفن هر دو بعد از ضبط فقط خاموش می‌شوند (چراغ خاموش) ولی جریان تا بستن برنامه می‌ماند تا دوباره اجازه نخواهد (both are only switched off after recording, the stream stays until the app closes, so no new permission prompt) */const s=MPERM.live[x];if(s)s.getTracks().forEach(t=>{t.enabled=false});if(MPERM.on[x]){MPERM.on[x]=0;if(x==="mic")mSess(0)}if(x==="mic"){try{MPERM.ctx&&MPERM.ctx.state==="running"&&MPERM.ctx.suspend()}catch(e){}}})}
 /* بستن کامل | Release Stream: فقط وقتی کاربر دسترسی را در تنظیمات برنامه خاموش یا بازنشانی کند، جریان واقعاً بسته می‌شود (the stream is really closed only when the user turns the access off or resets it in the app settings) */
 function mediaRelease(k){(k==="both"?["mic","camera"]:[k]).forEach(x=>{const s=MPERM.live[x];if(s)s.getTracks().forEach(t=>t.stop());delete MPERM.live[x];if(MPERM.on[x]&&x==="mic")mSess(0);MPERM.on[x]=0;if(x==="mic"){MPERM.src=null;MPERM.srcStream=null;try{MPERM.ctx&&MPERM.ctx.state==="running"&&MPERM.ctx.suspend()}catch(e){}}})}
 /* پرسیدن یک‌بار | Ask Once: برای mic/camera/both/storage اجازه می‌گیرد و درست یا نادرست برمی‌گرداند؛ اگر قبلاً داده شده باشد چیزی نمی‌پرسد (asks once, returns true or false, never asks again if already granted) */
 async function mediaAsk(kind){if(kind==="storage")return(await mediaPerm(kind))==="granted";try{return await mOpen(kind)}catch(e){return false}}
 /* بررسی اولیه‌ی مجوز | Startup Permission Check: بعد از ورود به برنامه، وضعیت میکروفون و دوربین بررسی می‌شود. اگر از قبل مجاز باشند بی‌صدا باز و برای همیشه نگه داشته می‌شوند؛ اگر هنوز پرسیده نشده باشد یک‌بار (برای هر دو با یک پرسش) از کاربر اجازه می‌خواهد؛ اگر کاربر رد کرده باشد یا در تنظیمات برنامه خاموش باشد کاری نمی‌کند (checks mic and camera after login; allowed ones are opened silently and kept forever; if not asked yet it asks once, both together; refused or switched off ones are skipped) */
 let lkPermDone=0;
-async function lkPermCheck(){if(lkPermDone)return;lkPermDone=1;try{const off=CFG.permOff||{},ks=["mic","camera"].filter(k=>!off[k]),st=await Promise.all(ks.map(k=>mediaPerm(k).catch(()=>"prompt"))),go=ks.filter((k,i)=>st[i]!=="denied");if(go.length){await mOpen(go.length>1?"both":go[0]);/* بستن دوربین | Close Camera: بعد از گرفتن اجازه چراغ دوربین نباید روشن بماند (the camera must not stay on after the check) */mediaRelease("both")}}catch(e){}}
+async function lkPermCheck(){if(lkPermDone)return;lkPermDone=1;try{const off=CFG.permOff||{},ks=["mic","camera"].filter(k=>!off[k]),st=await Promise.all(ks.map(k=>mediaPerm(k).catch(()=>"prompt"))),go=ks.filter((k,i)=>st[i]!=="denied");if(go.length){await mOpen(go.length>1?"both":go[0]);}}catch(e){}}
 /* برگرداندن جریان | Restore Stream: وقتی برنامه از پس‌زمینه برمی‌گردد و سیستم جریان را بسته بود، اگر دسترسی هنوز مجاز است بی‌صدا دوباره باز می‌شود (when the app comes back and the system closed the stream, it is reopened silently if still allowed) */
-document.addEventListener("visibilitychange",()=>{if(document.hidden||!lkPermDone)return;try{const off=CFG.permOff||{};void off}catch(e){}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden||!lkPermDone)return;try{const off=CFG.permOff||{};["mic","camera"].forEach(k=>{if(off[k]||mLive(k))return;mediaPerm(k).then(s=>{if(s==="granted")mOpen(k)}).catch(()=>{})})}catch(e){}});
 
 /* ---- سیستم برش و تنظیم | Crop & Adjust System ---- */
 /* ناحیه‌ی برش | Crop Area: ناحیه‌ی برش نهایی را برمی‌گرداند؛ اگر نسبت ثابت لازم باشد (مثلاً ۱:۱) ناحیه را از وسط همان نسبت می‌کند. بدون برش یعنی کل تصویر */
@@ -5632,7 +5632,8 @@ async function vmCamGet(f,vc){const base=vc(f);try{const l=(await navigator.medi
 /* موتور ضبط | Video Recorder Engine: دوربین و میکروفن را باز می‌کند؛ تصویر را مربع و با اندازه‌ی MP.videoMsg روی بوم می‌کشد و همراه صدای خام (بدون حذف نویز، بدون اکو‌گیری، بدون تقویت خودکار) ضبط می‌کند. مکث، ادامه، تعویض دوربین و فلش را هم دارد. برمی‌گرداند {v,stop,cancel,pause,resume,flip,torch,seconds} (opens camera and mic, draws a square frame at the MP.videoMsg size and records it with raw audio (no noise suppression, echo cancel or auto gain); supports pause, resume, camera switch and flash) */
 async function vmRec(o){
  const P=MP.videoMsg,vc=f=>({width:{ideal:640},height:{ideal:640},facingMode:{ideal:f}});
- const st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,sampleRate:48000,echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:vc(o.facing)});
+ let st=null,kept=null;if((o.facing||"user")==="user"){try{st=await mediaStream("both");kept=st.getTracks()}catch(e){st=null;kept=null}}
+  if(!st)st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,sampleRate:48000,echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:vc(o.facing)});
  let vtr=st.getVideoTracks()[0];
  const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}
  const cv=document.createElement("canvas"),x=cv.getContext("2d");cv.width=P.w;cv.height=P.h;x.imageSmoothingQuality="high";
@@ -5646,7 +5647,7 @@ async function vmRec(o){
  rc.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
  const done=new Promise(ok=>{rc.onstop=ok}),end=()=>{if(rc.state!=="inactive"){if(seg){acc+=Date.now()-seg;seg=0}rc.stop()}};
  rc.start(250);
- const result=done.then(async()=>{off=true;cancelAnimationFrame(raf);cancelAnimationFrame(zt);try{ac&&ac.close()}catch(_){}v.srcObject=null;st.getTracks().forEach(t=>t.stop());try{vtr.stop()}catch(e){}if(cancelled)return null;const th=await new Promise(ok=>{try{cv.toBlob(ok,"image/jpeg",.75)}catch(e){ok(null)}});const m=rc.mimeType||mime,r=mResult(new Blob(parts,{type:m}),"video-message-"+t0,m,P.w,P.h,acc/1000);r.thumb=th;return r});
+ const result=done.then(async()=>{off=true;cancelAnimationFrame(raf);cancelAnimationFrame(zt);try{ac&&ac.close()}catch(_){}v.srcObject=null;if(kept){mediaIdle("both");st.getTracks().forEach(t=>{if(!kept.includes(t))t.stop()})}else st.getTracks().forEach(t=>t.stop());try{if(!(kept&&kept.includes(vtr)))vtr.stop()}catch(e){}if(cancelled)return null;const th=await new Promise(ok=>{try{cv.toBlob(ok,"image/jpeg",.75)}catch(e){ok(null)}});const m=rc.mimeType||mime,r=mResult(new Blob(parts,{type:m}),"video-message-"+t0,m,P.w,P.h,acc/1000);r.thumb=th;return r});
  /* کنترل زوم | Zoom Control: setZoom(عدد از ۱ تا ۴، مدت نرم شدن به میلی‌ثانیه)؛ تصویر پیش‌نمایش و تصویر ضبط‌شده هر دو با هم زوم می‌شوند (sets zoom 1 to 4, optional smooth time in ms; preview and recording zoom together) */
  let zt=0;const setZ=(z,ms)=>{cancelAnimationFrame(zt);z=Math.min(4,Math.max(1,z||1));if(!ms){zm=z;v.style.scale=zm;return}const z0=zm,t1=performance.now(),st2=n=>{const p=Math.min(1,(n-t1)/ms),e=1-Math.pow(1-p,3);zm=z0+(z-z0)*e;v.style.scale=zm;if(p<1)zt=requestAnimationFrame(st2)};zt=requestAnimationFrame(st2)};
  return{v,setZoom:setZ,get zoom(){return zm},
@@ -5658,7 +5659,7 @@ async function vmRec(o){
   get canTorch(){try{return!!(vtr.getCapabilities&&vtr.getCapabilities().torch)}catch(e){return false}},
   get torch(){return torch},
   setTorch:async on=>{await vtr.applyConstraints({advanced:[{torch:!!on}]});torch=!!on},
-  flip:async()=>{const nf=o.facing==="user"?"environment":"user",ns=await vmCamGet(nf,vc),old=vtr;vtr=ns.getVideoTracks()[0];torch=false;v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}try{old.stop()}catch(e){}o.facing=nf;return nf}}}
+  flip:async()=>{const nf=o.facing==="user"?"environment":"user",ns=await vmCamGet(nf,vc),old=vtr;vtr=ns.getVideoTracks()[0];torch=false;v.srcObject=new MediaStream([vtr]);try{await v.play()}catch(e){}try{if(kept&&kept.includes(old))old.enabled=false;else old.stop()}catch(e){}o.facing=nf;return nf}}}
 
 /* ---- صفحه‌ی ضبط | Record Screen ---- */
 let V=null,UI=null;
