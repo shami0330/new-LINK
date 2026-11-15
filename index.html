@@ -194,6 +194,8 @@ i[data-ic]{display:inline-flex;font-style:normal}
 /* نوار پیام شفاف | Transparent Message Bar: نوار پایین شفاف روی پس‌زمینه‌ی گفتگو شناور است و پیام‌ها پشتش ادامه دارند (bar floats transparent over the chat background, messages continue behind it) */
 /* نوار نوشتن بالای ویدیو | Input Bar Above Video: نوار نوشتن و کیبورد همیشه جلوی دایره‌ی ویدیو می‌مانند و دایره روی آن‌ها نمی‌افتد */
 #chat .inbar{position:absolute;left:0;right:0;bottom:0;background:none;z-index:30}
+/* نوار ضبط بالای نوار نوشتن | Record Strip Above Input: موقع ضبط ویس یا ویدیو مسج نوار نوشتن از جلوی نوار ضبط کنار می‌رود تا ضبط در پیوی، گروه و کانال یکسان باشد (while recording the input bar steps behind the record strip, same in PV, groups and channels) */
+#chat:has(#vrec.on) .inbar,#chat:has(#vlock.on) .inbar{z-index:auto}
 #chat .msgs{overflow-x:hidden;padding-bottom:10px}
 /* فاصله‌ی زیر پیام آخر | Bottom Spacer: به جای padding-bottom (که در بعضی مرورگرها در انتهای اسکرول حساب نمی‌شود) یک عنصر واقعی به اندازه‌ی نوار پایین ته لیست می‌نشیند تا آخرین پیام همیشه بالای نوار بماند */
 #chat .msgs::after{content:"";flex:0 0 var(--ibh,calc(var(--ext) + 53px + env(safe-area-inset-bottom)));min-height:0}
@@ -1381,13 +1383,34 @@ const LKA=(()=>{
   if(!ok)throw new Error("Server library failed to load");
   if(signup)await ac.create({userId:window.Appwrite.ID.unique(),email:email,password:pw,name:uname(email)});
   try{await ac.deleteSession({sessionId:"current"})}catch(e){}
-  await ac.createEmailPasswordSession({email:email,password:pw});
+  await ac.createEmailPasswordSession({email:email,password:pw});sessSave();
   const u=await ac.get();return packMe(u,await safeProf(u,fn,ln))}
  /* بازیابی نشست | Session Check: هنگام شروع، اگر نشست فعال بود کاربر را برمی‌گرداند وگرنه null (returns the user if a session is active) */
- /* پشتیبان نشست | Session Backup: نشست ورود یک نسخه‌ی دوم هم دارد و اگر نسخه‌ی اصلی پاک شده باشد از آن بازیابی می‌شود؛ ذخیره‌سازی دائمی هم درخواست می‌شود (a second copy of the login is kept and restored if the main one is wiped; persistent storage is requested) */try{if(!localStorage.getItem("cookieFallback")){const bk=localStorage.getItem("lk_cf_bak");if(bk)localStorage.setItem("cookieFallback",bk)}if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
-async function restore(){if(!ok)return null;let u;try{u=await ac.get()}catch(e){const c=e&&e.code;return(c===401||c===403)?null:{offline:1}}/* آفلاین | Offline: خطای شبکه یعنی نشست خراب نیست؛ کش می‌ماند */try{const cf=localStorage.getItem("cookieFallback");if(cf)localStorage.setItem("lk_cf_bak",cf)}catch(e){}return packMe(u,await safeProf(u))}
+ /* نشست ماندگار | Persistent Session: نشست ورود تا وقتی خودت خروج نزنی می‌ماند؛ یک نسخه در localStorage و یک نسخه در IndexedDB نگه داشته می‌شود و فقط با خروج پاک می‌شود (the login stays until you press Logout; two copies, wiped only on logout) */
+const SESK="lk_sess2";
+/* حافظه‌ی دائمی | Persistent Storage Ask: از مرورگر می‌خواهد اطلاعات برنامه را پاک نکند (asks the browser not to clear the app data) */
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
+/* باز کردن پایگاه نشست | Open Session DB: پایگاه کوچک IndexedDB برای نسخه‌ی دوم نشست (small IndexedDB store for the second copy) */
+const sessDb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open("lk_sess",1);r.onupgradeneeded=()=>r.result.createObjectStore("k");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+/* نوشتن نسخه‌ی IndexedDB | Write IDB Copy: مقدار خالی یعنی پاک کردن (empty value means cleared) */
+function sessIdbPut(v){sessDb().then(d=>{const t=d.transaction("k","readwrite");t.objectStore("k").put(v,"cf");t.oncomplete=()=>d.close()}).catch(()=>{})}
+/* خواندن نسخه‌ی IndexedDB | Read IDB Copy: اگر چیزی نبود رشته‌ی خالی برمی‌گرداند (returns empty text when nothing is there) */
+const sessIdbGet=()=>sessDb().then(d=>new Promise(r=>{const q=d.transaction("k").objectStore("k").get("cf");q.onsuccess=()=>{d.close();r(q.result||"")};q.onerror=()=>{d.close();r("")}})).catch(()=>"");
+/* ذخیره‌ی نشست | Save Session: نشست فعلی را در هر دو جا می‌نویسد (writes the current login to both places) */
+function sessSave(){try{const cf=localStorage.getItem("cookieFallback");if(cf){localStorage.setItem(SESK,cf);sessIdbPut(cf)}}catch(e){}}
+/* خواندن نشست | Load Session: اول localStorage، بعد نسخه‌ی قدیمی، بعد IndexedDB (localStorage first, then the old copy, then IndexedDB) */
+async function sessLoad(){let v="";try{v=localStorage.getItem(SESK)||localStorage.getItem("lk_cf_bak")||""}catch(e){}return v||await sessIdbGet()}
+/* آماده‌سازی نشست | Prime Session: اگر نشست اصلی پاک شده بود از نسخه‌ها برش می‌گرداند (puts the login back from a copy if the main one is gone) */
+async function sessPrime(){try{if(localStorage.getItem("cookieFallback"))return;const v=await sessLoad();if(v)localStorage.setItem("cookieFallback",v)}catch(e){}}
+/* پاک کردن نشست | Wipe Session: فقط موقع خروج صدا زده می‌شود و همه‌ی نسخه‌ها را پاک می‌کند (called only on logout; clears every copy) */
+function sessWipe(){try{localStorage.removeItem("cookieFallback");localStorage.removeItem(SESK);localStorage.removeItem("lk_cf_bak")}catch(e){}sessIdbPut("")}
+/* ذخیره هنگام بستن | Save On Close: هر بار برنامه بسته یا پنهان شود نشست دوباره ذخیره می‌شود (the login is saved again whenever the app is closed or hidden) */
+addEventListener("pagehide",sessSave);document.addEventListener("visibilitychange",()=>{if(document.hidden)sessSave()});
+/* بازیابی نشست | Session Check: اگر سرور نشست را رد کرد، یک بار با نسخه‌ی ذخیره‌شده دوباره امتحان می‌کند؛ فقط بعد از آن خارج می‌شود؛ خطای شبکه یعنی نشست سالم است (on 401 retries once with the saved copy before logging out; a network error keeps the session) */
+async function restore(){if(!ok)return null;await sessPrime();let u,tried=0;for(;;){try{u=await ac.get();break}catch(e){const c=e&&e.code;if(c===401||c===403){const cp=tried?"":await sessLoad();tried=1;try{if(cp&&cp!==localStorage.getItem("cookieFallback")){localStorage.setItem("cookieFallback",cp);continue}}catch(_){}try{window.LK_DBG={cf:!!localStorage.getItem("cookieFallback"),code:c}}catch(_){}return null}return{offline:1}}}sessSave();return packMe(u,await safeProf(u))}
+
  /* خروج | Sign Out: نشست فعلی را در سرور می‌بندد و ردپای نشست را از حافظه پاک می‌کند (closes the session) */
- const out=()=>{const rm=()=>{try{localStorage.removeItem("cookieFallback");localStorage.removeItem("lk_cf_bak")}catch(e){}};if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
+ const out=()=>{const rm=sessWipe;if(ok)ac.deleteSession({sessionId:"current"}).catch(()=>{}).finally(rm);else rm()};
  /* پیام‌های فارسی خطا | Persian Errors: خطای سرور را به جمله‌ی فارسی ساده تبدیل می‌کند (server error to Persian text) */
  const msg=e=>{const c=e&&e.code,m=String((e&&e.message)||""),t=String((e&&e.type)||"");
   if(c===409)return"This email is already registered";
@@ -1880,7 +1903,7 @@ function lkGOpen(u){if(!u)return;let c=CHATS.find(x=>x.uid===u.id);if(!c){c={id:
 function lkEnter(){lkMode(DEMO?"demo":"real");const e=S.user.email;try{lkAdFirst(S.user.id)}catch(x){}/* ورود اول | First Login: دانلودهای خودکار برای حساب تازه خاموش می‌شود *//* نگه‌داشتن کش | Keep Cache: با خروج چیزی پاک نمی‌شود؛ فقط اگر حساب دیگری وارد شود، داده‌ی حساب قبلی پاک می‌شود (nothing is wiped on logout; only a different account clears the old one) */try{const lu=localStorage.getItem("lk_uid");if(LK_MODE==="real"&&S.user.id){if(lu&&lu!==S.user.id){CHATS=CHATS.filter(x=>!x.uid&&!x.gid);CFG.sent={};saveCfg()}localStorage.setItem("lk_uid",S.user.id)}}catch(x){}
  $("#myname,#myname2").textContent=S.user.name;$("#myname2").textContent=S.user.name;$("#myname").textContent=S.user.name;
  $("#myinfo").textContent=e;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=S.user.name[0].toUpperCase();a.style.background=colOf(S.user.name)});
- initUser();renderChats();renderContacts();show("chats");lkStart()};
+ initUser();renderChats();renderContacts();show("chats");lkStart();lkRestoreView()};
 /* تعویض ورود/ثبت‌نام | Switch Mode: تغییر متن دکمه (toggle labels) */
 $("#lsw").onclick=()=>{S.signup=!S.signup;/* نمایش تکرار رمز | Confirm Field Toggle: فقط در ثبت‌نام */$("#pw2").style.display=S.signup?"":"none";$("#pw2").value="";$("#nm").style.visibility=$("#nm2").style.visibility=S.signup?"visible":"hidden";$("#lbtn").textContent=S.signup?"Sign Up":"Log In";$("#lsw").textContent=S.signup?"Already have an account? Log in":"New here? Sign up"};
 /* خروج | Logout: برگشت به صفحه ورود (back to login) */
@@ -1893,12 +1916,23 @@ function lkSnapSave(){clearTimeout(lkSnT);lkSnT=setTimeout(()=>{try{if(LK_MODE!=
 {const _rcSn=renderChats;renderChats=function(){const r=_rcSn.apply(this,arguments);lkSnapSave();return r}}
 /* نام و عکس بالا | Header Names: اسم و ایمیل و حرف اول در صفحه‌ی چت‌ها را پر می‌کند */
 function lkNameUi(){const u=S.user;$("#myname").textContent=u.name;$("#myname2").textContent=u.name;$("#myinfo").textContent=u.email;[$("#myav"),$("#myav2")].forEach(a=>{a.textContent=(u.name||"?")[0].toUpperCase();a.style.background=colOf(u.name)})}
+/* ---- ۳.۴d یادآوری صفحه | 3.4d Remember View ---- */
+/* وضعیت صفحه | View State: صفحه‌ی آخرِ ذخیره‌شده فقط یک بار موقع باز شدن برنامه خوانده می‌شود؛ lkVBoot=1 یعنی بازیابی هنوز انجام نشده و ذخیره‌ی تازه فعلاً بسته است (reads the saved view once at load; lkVBoot=1 means restore is pending) */
+let LKV0=(()=>{try{return JSON.parse(localStorage.getItem("lk_view")||"null")}catch(e){return null}})();let lkVBoot=1;setTimeout(()=>{lkVBoot=0},20000);
+/* ذخیره‌ی صفحه | Save View: تب یا گفتگوی باز را همراه شناسه‌ی کاربر در حافظه‌ی گوشی می‌نویسد؛ فقط در حالت واقعی و بعد از بازیابی (saves open tab or chat with the user id; real mode only) */
+function lkViewSave(s,o){if(lkVBoot||LK_MODE!=="real"||!S.user||!S.user.id)return;try{localStorage.setItem("lk_view",JSON.stringify({u:S.user.id,s:s,o:o||null}))}catch(e){}}
+/* قلاب تب‌ها | Tab Hook: هر بار یکی از سه تب اصلی (گفتگوها، مخاطبین، تنظیمات) باز شد ذخیره می‌شود (every main tab switch is saved) */
+{const _shV=show;show=function(id){const r=_shV.apply(this,arguments);if(id==="chats"||id==="contacts"||id==="settings")lkViewSave(id,null);return r}}
+/* قلاب گفتگو | Chat Hook: هر بار گفتگویی باز شد شناسه‌اش ذخیره می‌شود (the opened chat id is saved) */
+{const _ocV=openChat;openChat=function(id){const r=_ocV.apply(this,arguments);lkViewSave("chats",id);return r}}
+/* بازیابی صفحه | Restore View: اگر کاربر همان است، گفتگو یا تب آخر را باز می‌کند؛ اگر گفتگو پیدا نشد فقط تب را باز می‌کند؛ فقط یک بار اجرا می‌شود (reopens last chat or tab once for the same user) */
+function lkRestoreView(){const v=LKV0;LKV0=null;lkVBoot=0;try{if(!v||LK_MODE!=="real"||!S.user||!S.user.id||v.u!==S.user.id)return;if(v.o&&CHATS.some(x=>x.id===v.o)){openChat(v.o);return}if(v.s==="contacts"||v.s==="settings")show(v.s)}catch(e){}}
 /* شروع از کش | Start From Cache: اگر دفعه‌ی قبل وارد شده بودی، همان لحظه چت‌ها و پیام‌های ذخیره‌شده نشان داده می‌شود و سرور بعداً در پس‌زمینه به‌روز می‌کند */
-function lkCacheStart(){if(S.user||localStorage.getItem("lk_mode")!=="real")return;try{const sn=JSON.parse(localStorage.getItem(LK_SN)||"null");if(!sn||!sn.u||!sn.u.id||!Array.isArray(sn.c)||!sn.c.length)return;LK_MODE="real";CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.sched=CFG.sched||[];CHATS=sn.c;PEOPLE=[];S.user=sn.u;CFG.adInit=CFG.adInit||{};CFG.adInit[sn.u.id]=1;S.openId=null;LK_FROM_CACHE=1;lkNameUi();initUser();renderChats();renderContacts();show("chats");lkBootOff()}catch(e){if(!LK_FROM_CACHE){S.user=null;LK_MODE="demo"}}}
+function lkCacheStart(){if(S.user||localStorage.getItem("lk_mode")!=="real")return;try{const sn=JSON.parse(localStorage.getItem(LK_SN)||"null");if(!sn||!sn.u||!sn.u.id||!Array.isArray(sn.c)||!sn.c.length)return;LK_MODE="real";CFG.saved=CFG.saved||[];CFG.media=CFG.media||{};CFG.sent=CFG.sent||{};CFG.folders=CFG.folders||[];CFG.hidden=CFG.hidden||[];CFG.sched=CFG.sched||[];CHATS=sn.c;PEOPLE=[];S.user=sn.u;CFG.adInit=CFG.adInit||{};CFG.adInit[sn.u.id]=1;S.openId=null;LK_FROM_CACHE=1;lkNameUi();initUser();renderChats();renderContacts();show("chats");lkRestoreView();lkBootOff()}catch(e){if(!LK_FROM_CACHE){S.user=null;LK_MODE="demo"}}}
 /* بعد از سرور | After Server Check: وقتی جواب سرور رسید، اگر نشست درست بود همگام‌سازی شروع می‌شود؛ اگر نشست تمام شده بود به صفحه‌ی ورود می‌رود؛ اگر اینترنت نبود چت‌های کش می‌مانند و دوباره تلاش می‌شود */
 function lkAfterRestore(u){clearTimeout(lkRetT);
  if(u&&u.offline){if(LK_FROM_CACHE)lkRetT=setTimeout(()=>{LKA.restore().then(lkAfterRestore).catch(()=>{})},15000);return}
- if(!u||!u.id){if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}return}
+ if(!u||!u.id){/* پیام دلیل | Reason Toast: نشان می‌دهد چرا دوباره ورود لازم شد (shows why login is needed again) */try{const d=window.LK_DBG;if(d)toast(d.cf?"Session rejected by server ("+d.code+")":"No saved session on this device")}catch(_){}if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;show("login")}return}
  const me={email:u.email,name:u.name,id:u.id,username:u.username,last:u.last||"",bio:u.bio||"",bday:u.bday||"",photo:u.photo||""};
  if(LK_FROM_CACHE&&S.user&&S.user.id===u.id){LK_FROM_CACHE=0;Object.assign(S.user,me);lkApplyMe(u);lkNameUi();try{fillMe()}catch(e){}renderChats();lkStart();return}
  if(LK_FROM_CACHE){LK_FROM_CACHE=0;S.user=null;LK_MODE="demo"}
