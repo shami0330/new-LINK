@@ -3568,7 +3568,26 @@ function lkOpen(t,i,b){const o=lkDec(t);if(!o||o.k!=="album")return;const v=lkVE
 /* لمس در گفتگو | Chat Taps: لمس دکمه‌ی دانلود فایل را ذخیره می‌کند؛ لمس عکس یا ویدیو نمایشگر را باز می‌کند (حباب‌های در حال ارسال نه) */
 $("#msgs").addEventListener("click",e=>{const dl=e.target.closest(".lkdl");if(dl){if(!dl.closest(".pend"))lkFileDl(dl);return}const c=e.target.closest(".lkc");if(c){const b=c.closest(".b");if(b&&!b.classList.contains("pend"))lkOpen(b.dataset.t,+c.dataset.i,b)}});
 /* لیست کش | Cache List: فقط گفتگوهایی که رسانه‌ی کش‌شده دارند */
-function renderCache(){const L=CHATS.filter(c=>chatBytes(c)>0),tot=L.reduce((a,c)=>a+chatBytes(c),0);
+Object.assign(FA,{"Other Files":"سایر فایل‌ها"});
+/* همگام‌سازی کش | Cache Sync: همه‌ی رسانه‌های ذخیره‌شده در مرورگر (پایگاه lk_media) را می‌خواند و آن‌هایی را که هنوز در فهرست چت‌ها ثبت نشده‌اند به چت صاحبشان اضافه می‌کند؛ اگر صاحبی پیدا نشد به «سایر فایل‌ها» می‌رود؛ فایل‌هایی که کاربر قبلاً حذف کرده ولی از مرورگر پاک نشده بودند هم پاک می‌شوند (reads every media record in the browser store, registers the ones not yet listed under their chat or under Other Files, and drops records the user already deleted) */
+let LKCS=null;
+function lkCacheSync(){return LKCS||(LKCS=(async()=>{let n=0;try{
+ const db=await lkDB(),keys=await new Promise((ok,no)=>{const q=db.transaction("b","readonly").objectStore("b").getAllKeys();q.onsuccess=()=>ok(q.result||[]);q.onerror=()=>no(q.error)});
+ const known=new Set(),gone=CFG.gone||{};Object.values(CFG.media||{}).forEach(a=>(a||[]).forEach(x=>known.add(String(x.id))));
+ const dead=keys.filter(k=>gone[k]),fresh=keys.filter(k=>!gone[k]&&!known.has(String(k)));
+ if(dead.length)await lkDrop(dead);
+ if(!fresh.length)return 0;
+ const own={};CHATS.forEach(c=>{((c.id===2?CFG.saved:CFG.sent[c.id])||[]).forEach(m=>{const o=lkDec(m&&m[1]);if(o&&o.it)o.it.forEach(x=>{if(x&&x.id!=null&&!own[x.id])own[x.id]={c:c.id,x:x}})})});
+ CFG.media=CFG.media||{};
+ for(const k of fresh){let v=null;try{v=await lkTx("readonly",s=>s.get(k))}catch(e){}
+  let sz=0,ty="";if(v&&typeof v==="object")for(const f of Object.keys(v)){const y=v[f];if(y&&y.__ab)sz+=y.__ab.byteLength;else if(typeof Blob!=="undefined"&&y instanceof Blob)sz+=y.size;if(f==="blob"&&y)ty=y.type||""}
+  const o=own[k],cid=o?o.c:-1,x=o?o.x:{};
+  const t=ty?mediaType({type:ty}):(x.t==="photo"||x.t==="video"||x.t==="voice"?x.t:x.t==="vmsg"?"video":"file");
+  (CFG.media[cid]=CFG.media[cid]||[]).push({id:String(k),type:t,name:x.n||String(k),size:sz});n++}
+ if(n)saveCfg()}catch(e){}
+ return n})().finally(()=>{LKCS=null}))}
+function renderCache(){renderCacheNow();lkCacheSync().then(n=>{if(n)renderCacheNow()}).catch(()=>{})}
+function renderCacheNow(){const L=CHATS.concat([{id:-1,n:tr("Other Files"),col:"#8e8e93"}]).filter(c=>chatBytes(c)>0),tot=L.reduce((a,c)=>a+chatBytes(c),0);
  $("#cacheList").innerHTML=L.map(c=>`<div class="item" data-cc="${c.id}">${av(c.n,c.col,0,"s")}<span>${esc(c.n)}</span><span class="rr"><span class="v">${fmtSize(chatBytes(c))}</span><i class="chev"></i></span></div>`).join("")+(L.length?`<div class="item"><span>${tr("Total")}</span><span class="rr"><span class="v">${fmtSize(tot)}</span></span></div>`:`<div class="item" style="color:var(--sub);justify-content:center">${tr("No cached media")}</div>`);
  $$("[data-cc]").forEach(e=>e.onclick=()=>openCache(+e.dataset.cc))}
 /* صفحه‌ی کش گفتگو | Chat Cache Page: رسانه‌ها به تفکیک عکس/ویدیو/صوت/فایل؛ انتخاب و حذف تکی، دسته‌ای یا همه */
@@ -3579,7 +3598,7 @@ const ccStop=()=>{if(CCA){try{CCA.a.pause();URL.revokeObjectURL(CCA.u)}catch(e){
 {const st=document.createElement("style");st.textContent="#ccItems .mgrid{border-radius:12px;overflow:hidden}#ccItems .mt .mck{display:none}#ccItems.sel .mt .mck{display:flex}#ccItems .cck{display:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--sub);box-sizing:border-box;flex:none;align-items:center;justify-content:center;color:#fff;font-size:13px}#ccItems.sel .cck{display:flex}#ccItems .lrow.on .cck{background:var(--blue);border-color:var(--blue)}#ccItems .lrow.on .cck::after{content:'\\2713'}#ccItems .lrow{background:var(--card)}";document.head.appendChild(st)}
 /* شمارنده و دکمه‌ها | Counter And Buttons: تعداد انتخاب‌شده روی «Delete Selected» (selected count on the delete button) */
 function ccBtns(){const it=mediaOf(CC),n=it.filter(x=>CSEL.has(x.id)).length,d=$("#ccDelSel");d.style.display=n?"":"none";d.textContent=tr("Delete Selected")+" ("+n+")";$("#ccClear").style.display=it.length?"":"none";$("#ccSel").style.display=it.length?"":"none";$("#ccSel").textContent=tr(CCM?"Cancel":"Select")}
-function renderCC(){const c=CHATS.find(x=>x.id===CC),it=mediaOf(CC),root=$("#ccItems");$("#cc_title").textContent=c.n;root.classList.toggle("sel",!!CCM);
+function renderCC(){const c=CHATS.find(x=>x.id===CC)||{n:tr("Other Files")},it=mediaOf(CC),root=$("#ccItems");$("#cc_title").textContent=c.n;root.classList.toggle("sel",!!CCM);
  const hs=x=>{let h=0;for(const ch of String(x))h=(h*31+ch.charCodeAt(0))>>>0;return h};
  root.innerHTML=MEDIA_TYPES.map(([k,l])=>{const L=it.filter(x=>x.type===k);if(!L.length)return"";const all=L.every(x=>CSEL.has(x.id));
   const hd=`<div class="hd" style="display:flex;justify-content:space-between"><span>${tr(l)} · ${L.length} · ${fmtSize(L.reduce((a,x)=>a+x.size,0))}</span><span data-sa="${k}" style="color:var(--blue);text-transform:none">${tr(all?"Deselect All":"Select All")}</span></div>`;
