@@ -1754,7 +1754,7 @@ function mediaWarm(k){try{if(k==="voice")mLib("recorder");else mMB().catch(()=>{
 
 /* ---- سیستم مجوزها | Permissions System ---- */
 /* حافظه‌ی مجوز | Permission Memory: جریان زنده‌ی میکروفن/دوربین، زمان‌سنج‌ها، شمارنده‌ی کارهای در حال انجام و ذخیره‌ی «اجازه داده شد» در مرورگر */
-const MPERM={ls:"lk_media_perm",live:{},t:{},busy:{},ctx:null,src:null,srcStream:null};
+const MPERM={ls:"lk_media_perm",live:{},on:{},busy:{},q:null,ctx:null,src:null,srcStream:null};
 function mPermGet(){try{return JSON.parse(localStorage.getItem(MPERM.ls)||"{}")}catch(e){return{}}}
 function mPermSet(k,v){try{const o=mPermGet();o[k]=v;localStorage.setItem(MPERM.ls,JSON.stringify(o))}catch(e){}}
 /* وضعیت مجوز | Permission State: برای mic و camera و both و storage برمی‌گرداند granted یا denied یا prompt (برای میکروفن/دوربین فقط بررسی می‌کند و چیزی نمی‌پرسد) */
@@ -1762,25 +1762,45 @@ async function mediaPerm(kind){
  if(kind==="both"){const a=await mediaPerm("mic"),b=await mediaPerm("camera");return a==="denied"||b==="denied"?"denied":a==="granted"&&b==="granted"?"granted":"prompt"}
  if(kind==="storage"){try{if(navigator.storage&&navigator.storage.persisted&&await navigator.storage.persisted())return"granted";if(navigator.storage&&navigator.storage.persist&&await navigator.storage.persist()){mPermSet(kind,true);return"granted"}}catch(e){}return"prompt"}
  try{const s=await navigator.permissions.query({name:kind==="mic"?"microphone":"camera"});if(s.state==="granted")mPermSet(kind,true);return s.state}catch(e){return mPermGet()[kind]?"granted":"prompt"}}
-/* نگه‌داشتن جریان | Keep Stream Alive: بعد از هر استفاده تایمر دوباره شروع می‌شود؛ اگر ضبطی در جریان باشد جریان بسته نمی‌شود */
-function mKeep(k){clearTimeout(MPERM.t[k]);MPERM.t[k]=setTimeout(()=>{if(MPERM.busy[k]>0)mKeep(k);else mediaRelease(k)},MEDIA.keepMs)}
-/* گرفتن جریان | Get Stream: kind می‌تواند mic یا camera یا both باشد. فقط بار اول از مرورگر اجازه می‌خواهد؛ بعد همان جریان زنده را تا MEDIA.keepMs دوباره استفاده می‌کند و اجازه نمی‌خواهد */
-async function mediaStream(kind,constraints){
- let s=MPERM.live[kind];
- if(!(s&&s.getTracks().length&&s.getTracks().every(t=>t.readyState==="live"))){
-  const base={audio:kind!=="camera",video:kind!=="mic"};
-  s=await navigator.mediaDevices.getUserMedia(Object.assign(base,constraints||{}));
-  MPERM.live[kind]=s;mPermSet(kind,true)}
- s.getTracks().forEach(t=>{t.enabled=true});mKeep(kind);return s}
-/* بیکار کردن جریان | Idle Stream: بعد از پایان کار، جریان باز می‌ماند ولی خاموش می‌شود */
-function mediaIdle(k){const s=MPERM.live[k];if(s)s.getTracks().forEach(t=>{t.enabled=false});if(k==="mic"&&!(MPERM.busy.mic>0)){mediaRelease("mic");try{MPERM.ctx&&MPERM.ctx.state==="running"&&MPERM.ctx.suspend()}catch(e){}}}
-/* بستن جریان | Release Stream: جریان را کاملاً می‌بندد (بعد از آن دفعه‌ی بعد دوباره از مرورگر می‌پرسد) */
-function mediaRelease(k){const s=MPERM.live[k];if(s)s.getTracks().forEach(t=>t.stop());delete MPERM.live[k];clearTimeout(MPERM.t[k]);if(k==="mic"){MPERM.src=null;MPERM.srcStream=null}}
-/* پرسیدن یک‌بار | Ask Once: برای mic/camera/both/storage یک‌بار اجازه می‌گیرد و درست یا نادرست برمی‌گرداند؛ دفعه‌های بعد بدون پرسیدن درست برمی‌گرداند */
-async function mediaAsk(kind){if(kind==="storage")return(await mediaPerm(kind))==="granted";try{await mediaStream(kind);mediaIdle(kind);return true}catch(e){return false}}
-/* بررسی اولیه‌ی مجوز | Startup Permission Check: بعد از ورود به برنامه، بی‌صدا بررسی می‌شود که میکروفن و دوربین مجاز هستند یا نه. اگر هر دو از قبل مجاز بودند یا کاربر قبلاً رد کرده بود، کاری نمی‌کند؛ در غیر این صورت یک‌بار از مرورگر اجازه می‌خواهد و بلافاصله دوربین و میکروفن را دوباره می‌بندد تا چراغ آن‌ها روشن نماند (silently checks mic and camera after the app opens; does nothing if both are already allowed or were refused; otherwise asks once and closes them at once so their lights do not stay on) */
+/* تنظیم جریان‌ها | Stream Settings: میکروفون همیشه با صدای خام (بدون حذف نویز و اکو) و دوربین با دوربین جلو باز می‌شود؛ جریان نگه‌داشته‌شده همیشه با همین تنظیم‌هاست (mic always opens raw, camera opens on the front; the kept streams always use these) */
+const MAUD={channelCount:1,sampleRate:48000,echoCancellation:false,noiseSuppression:false,autoGainControl:false},MVID={width:{ideal:640},height:{ideal:640},facingMode:"user"};
+/* جلسه‌ی صدا | Audio Session: وقتی میکروفون روشن می‌شود آیفون روی «پخش و ضبط» می‌رود و وقتی خاموش شد به «پخش» برمی‌گردد (iPhone switches to play-and-record while the mic is on and back to playback after) */
+function mSess(on){window.LKMIC=Math.max(0,(window.LKMIC||0)+(on?1:-1));try{if(navigator.audioSession)navigator.audioSession.type=window.LKMIC?"play-and-record":"playback"}catch(e){}}
+/* زنده است؟ | Is Stream Live: آیا جریان نگه‌داشته‌شده‌ی این نوع هنوز باز و سالم است (is the kept stream still open and healthy) */
+function mLive(k){const s=MPERM.live[k];return!!(s&&s.getTracks().length&&s.getTracks().every(t=>t.readyState==="live"))}
+/* باز کردن و نگه‌داشتن | Open And Keep: میکروفون و دوربین را یک‌بار باز می‌کند (اگر هر دو لازم باشند با یک پرسش) و جریان را برای همیشه نگه می‌دارد؛ فقط خاموش (disabled) می‌ماند تا چراغ‌ها روشن نباشند. چند درخواست هم‌زمان پشت‌سر‌هم انجام می‌شوند تا دو بار نپرسد (opens mic/camera once, one question if both are needed, keeps the stream forever but switched off; parallel calls are queued so it never asks twice) */
+function mOpen(kind){MPERM.q=(MPERM.q||Promise.resolve()).catch(()=>{}).then(()=>mOpenRun(kind));return MPERM.q}
+async function mOpenRun(kind){
+ const ks=kind==="both"?["mic","camera"]:[kind],need=ks.filter(k=>!mLive(k));
+ const grab=async a=>{const c={};if(a.includes("mic"))c.audio=MAUD;if(a.includes("camera"))c.video=MVID;let s=null;
+  /* قلاب جلسه | Session Hook: LKNOCNT یعنی شمارش جلسه‌ی صدا را خودمان انجام می‌دهیم نه قلاب getUserMedia (LKNOCNT means we count the audio session ourselves) */window.LKNOCNT=1;if(c.audio)mSess(1);
+  try{s=await navigator.mediaDevices.getUserMedia(c)}catch(e){}
+  window.LKNOCNT=0;if(c.audio)mSess(0);
+  if(!s)return false;
+  if(a.includes("mic")){MPERM.live.mic=new MediaStream(s.getAudioTracks());MPERM.on.mic=0;MPERM.src=null;MPERM.srcStream=null}
+  if(a.includes("camera")){MPERM.live.camera=new MediaStream(s.getVideoTracks());MPERM.on.camera=0}
+  a.forEach(k=>{MPERM.live[k].getTracks().forEach(t=>{t.enabled=false});mPermSet(k,true)});return true};
+ if(need.length>1&&await grab(need))return true;
+ for(const k of need)if(!mLive(k))await grab([k]);
+ return ks.every(mLive)}
+/* گرفتن جریان | Get Stream: kind می‌تواند mic یا camera یا both باشد. جریان نگه‌داشته‌شده را روشن می‌کند و برمی‌گرداند؛ اگر هنوز باز نبود (یا سیستم آن را بسته بود) یک‌بار باز می‌کند و فقط همان‌جا ممکن است بپرسد؛ اگر اجازه نبود خطا می‌دهد (turns the kept stream on and returns it; opens it first if needed; throws if refused) */
+async function mediaStream(kind){
+ if(!(await mOpen(kind)))throw new DOMException("Permission denied","NotAllowedError");
+ const ks=kind==="both"?["mic","camera"]:[kind];
+ ks.forEach(k=>{MPERM.live[k].getTracks().forEach(t=>{t.enabled=true});if(!MPERM.on[k]){MPERM.on[k]=1;if(k==="mic")mSess(1)}});
+ if(kind!=="both")return MPERM.live[kind];
+ return new MediaStream([...MPERM.live.mic.getTracks(),...MPERM.live.camera.getTracks()])}
+/* خاموش کردن جریان | Idle Stream: بعد از پایان ضبط جریان باز می‌ماند ولی خاموش می‌شود؛ هیچ‌وقت بسته نمی‌شود (after recording the stream stays open but switched off; it is never closed) */
+function mediaIdle(k){if(MPERM.busy[k]>0)return;(k==="both"?["mic","camera"]:[k]).forEach(x=>{const s=MPERM.live[x];if(s)s.getTracks().forEach(t=>{t.enabled=false});if(MPERM.on[x]){MPERM.on[x]=0;if(x==="mic")mSess(0)}if(x==="mic"){try{MPERM.ctx&&MPERM.ctx.state==="running"&&MPERM.ctx.suspend()}catch(e){}}})}
+/* بستن کامل | Release Stream: فقط وقتی کاربر دسترسی را در تنظیمات برنامه خاموش یا بازنشانی کند، جریان واقعاً بسته می‌شود (the stream is really closed only when the user turns the access off or resets it in the app settings) */
+function mediaRelease(k){(k==="both"?["mic","camera"]:[k]).forEach(x=>{const s=MPERM.live[x];if(s)s.getTracks().forEach(t=>t.stop());delete MPERM.live[x];if(MPERM.on[x]&&x==="mic")mSess(0);MPERM.on[x]=0;if(x==="mic"){MPERM.src=null;MPERM.srcStream=null}})}
+/* پرسیدن یک‌بار | Ask Once: برای mic/camera/both/storage اجازه می‌گیرد و درست یا نادرست برمی‌گرداند؛ اگر قبلاً داده شده باشد چیزی نمی‌پرسد (asks once, returns true or false, never asks again if already granted) */
+async function mediaAsk(kind){if(kind==="storage")return(await mediaPerm(kind))==="granted";try{return await mOpen(kind)}catch(e){return false}}
+/* بررسی اولیه‌ی مجوز | Startup Permission Check: بعد از ورود به برنامه، وضعیت میکروفون و دوربین بررسی می‌شود. اگر از قبل مجاز باشند بی‌صدا باز و برای همیشه نگه داشته می‌شوند؛ اگر هنوز پرسیده نشده باشد یک‌بار (برای هر دو با یک پرسش) از کاربر اجازه می‌خواهد؛ اگر کاربر رد کرده باشد یا در تنظیمات برنامه خاموش باشد کاری نمی‌کند (checks mic and camera after login; allowed ones are opened silently and kept forever; if not asked yet it asks once, both together; refused or switched off ones are skipped) */
 let lkPermDone=0;
-async function lkPermCheck(){if(lkPermDone)return;lkPermDone=1;try{const m=await mediaPerm("both");if(m!=="prompt")return;await mediaAsk("both");mediaRelease("both")}catch(e){}}
+async function lkPermCheck(){if(lkPermDone)return;lkPermDone=1;try{const off=CFG.permOff||{},ks=["mic","camera"].filter(k=>!off[k]),st=await Promise.all(ks.map(k=>mediaPerm(k).catch(()=>"prompt"))),go=ks.filter((k,i)=>st[i]!=="denied");if(go.length)await mOpen(go.length>1?"both":go[0])}catch(e){}}
+/* برگرداندن جریان | Restore Stream: وقتی برنامه از پس‌زمینه برمی‌گردد و سیستم جریان را بسته بود، اگر دسترسی هنوز مجاز است بی‌صدا دوباره باز می‌شود (when the app comes back and the system closed the stream, it is reopened silently if still allowed) */
+document.addEventListener("visibilitychange",()=>{if(document.hidden||!lkPermDone)return;try{const off=CFG.permOff||{};["mic","camera"].forEach(k=>{if(off[k]||mLive(k))return;mediaPerm(k).then(s=>{if(s==="granted")mOpen(k)}).catch(()=>{})})}catch(e){}});
 
 /* ---- سیستم برش و تنظیم | Crop & Adjust System ---- */
 /* ناحیه‌ی برش | Crop Area: ناحیه‌ی برش نهایی را برمی‌گرداند؛ اگر نسبت ثابت لازم باشد (مثلاً ۱:۱) ناحیه را از وسط همان نسبت می‌کند. بدون برش یعنی کل تصویر */
@@ -1928,7 +1948,7 @@ async function mRecVoice(P){
  MPERM.busy.mic=(MPERM.busy.mic||0)+1;
  if(!MPERM.ctx||MPERM.ctx.state==="closed")MPERM.ctx=mAC(48000);
  await MPERM.ctx.resume().catch(()=>{});
- if(!MPERM.src||MPERM.srcStream!==st){MPERM.src=MPERM.ctx.createMediaStreamSource(st);MPERM.srcStream=st}
+ if(!MPERM.src||MPERM.srcStream!==st||MPERM.src.context!==MPERM.ctx){MPERM.src=MPERM.ctx.createMediaStreamSource(st);MPERM.srcStream=st}
  const rc=new Recorder({encoderPath:mLibBlob("encoder"),encoderSampleRate:48000,numberOfChannels:1,encoderApplication:2049,encoderBitRate:P.abr||32e3,streamPages:false,sourceNode:MPERM.src});
  let data=null,cancelled=false;const t0=Date.now();
  rc.ondataavailable=u=>{data=u};
@@ -6009,13 +6029,13 @@ function lkVolApply(){/* بیدار کردن موتورها با لمس لغزن
 ["touchstart","pointerdown","click","keydown"].forEach(ev=>document.addEventListener(ev,wake,{passive:true,capture:true}));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake()});window.addEventListener("pageshow",wake);window.addEventListener("focus",wake)})();
 /* قفل دسترسی در برنامه | In-App Permission Lock: اگر کاربر میکروفن یا دوربین را در برنامه خاموش کرده باشد، هر درخواست ضبط رد می‌شود (همه‌ی بخش‌ها از همین یک در رد می‌شوند) */
-(function(){try{const md=navigator.mediaDevices;if(!md||!md.getUserMedia||md.__lkw)return;const og=md.getUserMedia.bind(md);md.getUserMedia=function(c){const o=CFG.permOff||{};if(c&&((c.audio&&o.mic)||(c.video&&o.camera)))return Promise.reject(new DOMException("Permission disabled in the app","NotAllowedError"));/* نوع جلسه‌ی صدا هنگام ضبط | Audio Session While Recording: آیفون وقتی نوع جلسه‌ی صدا «فقط پخش» باشد میکروفون را می‌بندد و می‌گوید دسترسی ندارید؛ پس هنگام درخواست میکروفون نوع به «پخش و ضبط» می‌رود و فقط وقتی همه‌ی ضبط‌ها تمام شد به «پخش» برمی‌گردد (iPhone blocks the microphone while the audio session is playback only, so it switches to play-and-record while the mic is in use and goes back to playback when all recordings are done) */if(c&&c.audio){window.LKMIC=(window.LKMIC||0)+1;try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}let n=0;const rel=()=>{if(n++)return;window.LKMIC=Math.max(0,(window.LKMIC||1)-1);if(!window.LKMIC){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}}};return og(c).then(st=>{try{st.getAudioTracks().forEach(t=>{const sp=t.stop.bind(t);t.stop=()=>{sp();rel()};t.addEventListener("ended",rel)})}catch(e){}return st},er=>{rel();throw er})}return og(c)};md.__lkw=1}catch(e){}})();
+(function(){try{const md=navigator.mediaDevices;if(!md||!md.getUserMedia||md.__lkw)return;const og=md.getUserMedia.bind(md);md.getUserMedia=function(c){const o=CFG.permOff||{};if(c&&((c.audio&&o.mic)||(c.video&&o.camera)))return Promise.reject(new DOMException("Permission disabled in the app","NotAllowedError"));/* نوع جلسه‌ی صدا هنگام ضبط | Audio Session While Recording: آیفون وقتی نوع جلسه‌ی صدا «فقط پخش» باشد میکروفون را می‌بندد و می‌گوید دسترسی ندارید؛ پس هنگام درخواست میکروفون نوع به «پخش و ضبط» می‌رود و فقط وقتی همه‌ی ضبط‌ها تمام شد به «پخش» برمی‌گردد (iPhone blocks the microphone while the audio session is playback only, so it switches to play-and-record while the mic is in use and goes back to playback when all recordings are done) */if(c&&c.audio&&!window.LKNOCNT){window.LKMIC=(window.LKMIC||0)+1;try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}let n=0;const rel=()=>{if(n++)return;window.LKMIC=Math.max(0,(window.LKMIC||1)-1);if(!window.LKMIC){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}}};return og(c).then(st=>{try{st.getAudioTracks().forEach(t=>{const sp=t.stop.bind(t);t.stop=()=>{sp();rel()};t.addEventListener("ended",rel)})}catch(e){}return st},er=>{rel();throw er})}return og(c)};md.__lkw=1}catch(e){}})();
 /* وضعیت دسترسی | Permission Status: granted یا denied یا prompt یا off (خاموش در برنامه) */
 async function pmStatus(k){if(CFG.permOff&&CFG.permOff[k])return"off";try{return await mediaPerm(k)}catch(e){return"prompt"}}
 /* ساخت فهرست دسترسی‌ها | Render Permissions: برای هر دسترسی وضعیت و سه دکمه‌ی فعال، غیرفعال و ریست می‌کشد */
 async function pmRender(){const box=$("#pmList");if(!box)return;const lab={granted:"Allowed",denied:"Blocked",prompt:"Not Asked",off:"Disabled in App"},rows=[];for(const[k,n,i,col]of LKPERMS){const s=await pmStatus(k),cl=s==="granted"?"ok":(s==="denied"||s==="off")?"no":"";rows.push(`<div class="pmr" data-pk2="${k}"><div class="pt"><div class="ic" style="background:${col}">${ic(i,18)}</div><span>${tr(n)}</span><span class="ps ${cl}">${tr(lab[s]||"Not Asked")}</span></div><div class="pb"><div data-pa="on">${tr("Enable")}</div>${k==="storage"?"":`<div data-pa="off">${tr("Disable")}</div>`}<div class="rd" data-pa="rs">${tr("Reset")}</div></div></div>`)}box.innerHTML=rows.join("");box.querySelectorAll("[data-pa]").forEach(b=>b.onclick=()=>pmAct(b.closest(".pmr").dataset.pk2,b.dataset.pa))}
 /* کار دکمه‌ها | Permission Action: فعال یعنی یک‌بار از سیستم می‌پرسد، غیرفعال یعنی برنامه استفاده نمی‌کند، ریست یعنی هرچه برنامه یادش بود پاک می‌شود */
-async function pmAct(k,a){const o=CFG.permOff=CFG.permOff||{};try{if(a==="on"){delete o[k];saveCfg();const ok=await mediaAsk(k);if(k!=="storage")mediaRelease(k);toast(ok?"Access enabled":"Access was refused by the system")}else if(a==="off"){o[k]=1;saveCfg();mediaRelease(k);toast("Disabled in the app")}else{delete o[k];saveCfg();mediaRelease(k);mPermSet(k,false);toast("Reset done. To clear the system permission, use the phone Settings")}}catch(e){}pmRender()}
+async function pmAct(k,a){const o=CFG.permOff=CFG.permOff||{};try{if(a==="on"){delete o[k];saveCfg();const ok=await mediaAsk(k);toast(ok?"Access enabled":"Access was refused by the system")}else if(a==="off"){o[k]=1;saveCfg();mediaRelease(k);toast("Disabled in the app")}else{delete o[k];saveCfg();mediaRelease(k);mPermSet(k,false);toast("Reset done. To clear the system permission, use the phone Settings")}}catch(e){}pmRender()}
 /* ساخت نوارهای صدا | Render Sound Levels: برای هر پخش‌کننده یک لغزنده از ۰ تا ۵۰۰ درصد می‌کشد */
 function vlRender(){const box=$("#vlList");if(!box)return;box.innerHTML=LKVOLS.map(([c,n])=>{const p=Math.round(lkVol(c)*100);return`<div class="pmr vlr" data-vc="${c}"><div class="pt"><span>${tr(n)}</span><span class="ps" data-vp>${p}%</span></div><div class="vls" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="500" aria-valuenow="${p}" style="--f:${p/500}"><i class="vlt"></i><i class="vlf"></i><i class="vl1"></i><i class="vlk"></i></div></div>`}).join("");box.querySelectorAll(".vls").forEach(vlBind)}
 /* اتصال اسلایدر صدا | Sound Slider Wiring: لمس یا کشیدن روی نوار، عدد را از ۰ تا ۵۰۰ (گام ۵) می‌سازد؛ با Pointer Events و setPointerCapture که در آیفون کار می‌کنند، و اگر مرورگر Pointer Events نداشت با لمس و ماوس؛ بعد از رها کردن ذخیره می‌شود؛ کلیدهای جهت‌دار هم کار می‌کنند (touch or drag sets 0 to 500 in steps of 5; uses Pointer Events with capture, falls back to touch and mouse; saved on release; arrow keys work too) */
