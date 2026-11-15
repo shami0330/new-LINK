@@ -1396,16 +1396,20 @@ const sessDb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open("lk_sess",1)
 function sessIdbPut(v){sessDb().then(d=>{const t=d.transaction("k","readwrite");t.objectStore("k").put(v,"cf");t.oncomplete=()=>d.close()}).catch(()=>{})}
 /* خواندن نسخه‌ی IndexedDB | Read IDB Copy: اگر چیزی نبود رشته‌ی خالی برمی‌گرداند (returns empty text when nothing is there) */
 const sessIdbGet=()=>sessDb().then(d=>new Promise(r=>{const q=d.transaction("k").objectStore("k").get("cf");q.onsuccess=()=>{d.close();r(q.result||"")};q.onerror=()=>{d.close();r("")}})).catch(()=>"");
-/* ذخیره‌ی نشست | Save Session: نشست فعلی را در هر دو جا می‌نویسد (writes the current login to both places) */
-function sessSave(){try{const cf=localStorage.getItem("cookieFallback");if(cf){localStorage.setItem(SESK,cf);sessIdbPut(cf)}}catch(e){}}
+/* بررسی سالم بودن نشست | Session Valid Check: می‌فهمد متن نشست واقعاً یک ورود سالم دارد یا خالی و خراب است؛ تا نسخه‌ی خراب جای نسخه‌ی سالم ذخیره نشود (checks the saved login really holds a session, not an empty/broken value) */
+function sessOk(v){if(!v||typeof v!=="string")return false;try{const o=JSON.parse(v);return !!o&&typeof o==="object"&&Object.values(o).some(x=>!!x)}catch(e){return v.length>20}}
+/* ذخیره‌ی نشست | Save Session: نشست فعلی را فقط اگر سالم باشد در هر دو جا می‌نویسد (writes the current login to both places, only if it is valid) */
+function sessSave(){try{const cf=localStorage.getItem("cookieFallback");if(sessOk(cf)){localStorage.setItem(SESK,cf);sessIdbPut(cf)}}catch(e){}}
 /* خواندن نشست | Load Session: اول localStorage، بعد نسخه‌ی قدیمی، بعد IndexedDB (localStorage first, then the old copy, then IndexedDB) */
-async function sessLoad(){let v="";try{v=localStorage.getItem(SESK)||localStorage.getItem("lk_cf_bak")||""}catch(e){}return v||await sessIdbGet()}
+async function sessLoad(){try{for(const k of [SESK,"lk_cf_bak"]){const v=localStorage.getItem(k);if(sessOk(v))return v}}catch(e){}const d=await sessIdbGet();return sessOk(d)?d:""}
 /* آماده‌سازی نشست | Prime Session: اگر نشست اصلی پاک شده بود از نسخه‌ها برش می‌گرداند (puts the login back from a copy if the main one is gone) */
-async function sessPrime(){try{if(localStorage.getItem("cookieFallback"))return;const v=await sessLoad();if(v)localStorage.setItem("cookieFallback",v)}catch(e){}}
+async function sessPrime(){try{if(sessOk(localStorage.getItem("cookieFallback")))return;const v=await sessLoad();if(v)localStorage.setItem("cookieFallback",v)}catch(e){}}
 /* پاک کردن نشست | Wipe Session: فقط موقع خروج صدا زده می‌شود و همه‌ی نسخه‌ها را پاک می‌کند (called only on logout; clears every copy) */
 function sessWipe(){try{localStorage.removeItem("cookieFallback");localStorage.removeItem(SESK);localStorage.removeItem("lk_cf_bak")}catch(e){}sessIdbPut("")}
 /* ذخیره هنگام بستن | Save On Close: هر بار برنامه بسته یا پنهان شود نشست دوباره ذخیره می‌شود (the login is saved again whenever the app is closed or hidden) */
 addEventListener("pagehide",sessSave);document.addEventListener("visibilitychange",()=>{if(document.hidden)sessSave()});
+/* برگرداندن نشست هنگام برگشت | Session Heal On Return: وقتی دوباره وارد برنامه می‌شوی، اگر نشست اصلی خراب شده بود از نسخه‌ی سالم برش می‌گرداند (puts the good login back when the app comes back to the screen) */
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)sessPrime()});
 /* بازیابی نشست | Session Check: اگر سرور نشست را رد کرد، یک بار با نسخه‌ی ذخیره‌شده دوباره امتحان می‌کند؛ فقط بعد از آن خارج می‌شود؛ خطای شبکه یعنی نشست سالم است (on 401 retries once with the saved copy before logging out; a network error keeps the session) */
 async function restore(){if(!ok)return null;await sessPrime();let u,tried=0;for(;;){try{u=await ac.get();break}catch(e){const c=e&&e.code;if(c===401||c===403){const cp=tried?"":await sessLoad();tried=1;try{if(cp&&cp!==localStorage.getItem("cookieFallback")){localStorage.setItem("cookieFallback",cp);continue}}catch(_){}try{window.LK_DBG={cf:!!localStorage.getItem("cookieFallback"),code:c}}catch(_){}return null}return{offline:1}}}sessSave();return packMe(u,await safeProf(u))}
 
