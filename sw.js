@@ -8,7 +8,7 @@ const PRE = ["index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/
 /* پیش‌کش کتابخانه | Library Precache: Appwrite محلی هنگام نصب کش می‌شود تا آفلاین هم برنامه بالا بیاید؛ با حالت عادی گرفته می‌شود تا اگر صفحه همین الان آن را گرفته دوباره دانلود نشود (the local Appwrite is cached at install so the app also starts offline; fetched in normal cache mode so it is not downloaded twice) */
 const PRE_LIB = ["libs/appwrite.js"].map(p => new URL(p, SCOPE).href);
 /* پیش‌کش بیکاری | Idle Precache: فایل‌های جداشده‌ی کوچک؛ فقط وقتی صفحه در زمان بیکاری پیام بدهد گرفته می‌شوند تا با اولین نمایش رقابت نکنند (small split files; fetched only when the page sends an idle message so they never compete with the first display). The names carry a content hash: when a file changes, its name and the reference in index.html change too. */
-const EXTRA = ["libs/lkpat-light.99531827.svg", "libs/lkpat-dark.77055983.svg", "libs/lkcall.9213de2e.js"].map(p => new URL(p, SCOPE).href);
+const EXTRA = ["libs/lkpat-light.99531827.svg", "libs/lkpat-dark.77055983.svg", "libs/lkcall.abfa975d.js"].map(p => new URL(p, SCOPE).href);
 
 self.addEventListener("install", e => {
   e.waitUntil(
