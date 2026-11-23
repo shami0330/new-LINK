@@ -5,6 +5,8 @@ const L=(en,fa)=>CFG.lang==="fa"?fa:en;
 /* ===== TURN شخصی (Metered) | Own TURN: نام برنامه و کلید را اینجا بگذارید | put app name and API key here ===== */
 const TURN_APP="shami",TURN_KEY="ab84456313ca7f2813e5f88c417923283cbf";
 let DYN=[];
+const DB={st:"-",gs:"-",l:{host:0,srflx:0,relay:0},r:0,tx:0,rx:0,er:"",ce:"",turn:0};
+let DBE=null;const dbg=()=>{try{if(!DBE){DBE=document.createElement("div");DBE.style.cssText="position:fixed;left:0;right:0;top:0;z-index:99999;background:rgba(0,0,0,.8);color:#0f0;font:11px/1.3 monospace;padding:3px 6px;pointer-events:none;direction:ltr;white-space:pre-wrap";document.body.appendChild(DBE)}DBE.textContent="ICE:"+DB.st+" gather:"+DB.gs+" turn:"+(DYN.length?"mine":"old")+"\nlocal h/s/r: "+DB.l.host+"/"+DB.l.srflx+"/"+DB.l.relay+" remote:"+DB.r+" tx:"+DB.tx+" rx:"+DB.rx+(DB.er?"\nSENDERR:"+DB.er:"")+(DB.ce?"\nICEERR:"+DB.ce:"")}catch(e){}};
 const loadTurn=()=>{if(!TURN_APP||!TURN_KEY)return;fetch("https://"+TURN_APP+".metered.live/api/v1/turn/credentials?apiKey="+TURN_KEY).then(r=>r.json()).then(j=>{if(Array.isArray(j)&&j.length)DYN=j.filter(x=>x&&x.urls)}).catch(()=>{})};
 loadTurn();setInterval(loadTurn,18e5);
 
@@ -20,7 +22,7 @@ async function warm(){if(!navigator.onLine||document.hidden||CALL||!window.RTCPe
 const tmo=(f,ms)=>setTimeout(()=>{try{f()}catch(e){}},ms);
 tmo(warm,4e3);setInterval(()=>tmo(warm,0),6e5);addEventListener("online",()=>{RT=0;tmo(warm,1500)});try{navigator.connection&&navigator.connection.addEventListener("change",()=>{RT=0;tmo(warm,2500)})}catch(e){}
 const turnList=l=>{const m=BYK["turn:metered"],t=l.filter(e=>e.cr&&e!==m).slice(0,2);return[m].concat(t.length?t:POOL.filter(e=>e.cr&&e!==m).slice(0,2))};
-const cfg=l=>{const s=l.filter(e=>!e.cr).slice(0,4);if(!s.length)s.push(...POOL.filter(e=>!e.cr).slice(0,4));return DYN.concat(s.map(e=>({urls:e.u})),DYN.length?[]:turnList(l).map(x=>({urls:x.u,username:x.un,credential:x.cr})))};
+const cfg=l=>{const s=l.filter(e=>!e.cr).slice(0,4);if(!s.length)s.push(...POOL.filter(e=>!e.cr).slice(0,4));if(DYN.length)return DYN;return s.map(e=>({urls:e.u})).concat(turnList(l).map(x=>({urls:x.u,username:x.un,credential:x.cr})))};
 const order=extra=>{const a=(RANK||[]).slice(),ex=(extra||[]).map(z=>BYK[z]).filter(Boolean);ex.forEach(e=>{if(!a.includes(e))a.push(e)});return a.length?a:POOL};
 /* ===== حالت و ابزار | State and helpers ===== */
 let CALL=null,TMR=0,RNG=0,HID=0,AX=null,NT=null,WL=null,SEEN={},LAST={},DONE={};
@@ -100,17 +102,17 @@ const unlock=()=>{try{AX=AX||new(window.AudioContext||window.webkitAudioContext)
 function tone(fr,dur,vol,am,d){if(!AX)return;const t=AX.currentTime+(d||0),m=AX.createGain(),a=AX.createGain();m.gain.setValueAtTime(0,t);m.gain.linearRampToValueAtTime(vol,t+.02);m.gain.setValueAtTime(vol,t+dur-.03);m.gain.linearRampToValueAtTime(0,t+dur);a.gain.value=am?.55:1;if(am){const l=AX.createOscillator(),g=AX.createGain();l.frequency.value=25;g.gain.value=.45;l.connect(g);g.connect(a.gain);l.start(t);l.stop(t+dur)}fr.forEach(f=>{const o=AX.createOscillator();o.frequency.value=f;o.connect(a);o.start(t);o.stop(t+dur)});a.connect(m);m.connect(AX.destination)}
 const ring=(on,out)=>{clearInterval(RNG);RNG=0;ov.classList.toggle("rg",!!on&&!out);if(!on)return;const b=()=>{try{unlock();if(out)tone([425],1,.07,0,0);else{tone([440,480],.4,.22,1,0);tone([440,480],.4,.22,1,.6)}}catch(e){}if(!out)try{navigator.vibrate&&navigator.vibrate([400,200,400])}catch(e){}};b();RNG=setInterval(b,out?4e3:3e3)};
 /* ===== سیگنال | Signaling ===== */
-const send2=(peer,o)=>LKA.typPut(S.user.id,peer,1,"C"+JSON.stringify(o)).catch(()=>{}),myN=()=>String(S.user&&S.user.name||"").slice(0,60);
+const send2=(peer,o)=>{DB.tx++;dbg();return LKA.typPut(S.user.id,peer,1,"C"+JSON.stringify(o)).catch(e=>{DB.er=o.t+":"+String(e&&(e.message||e.code)).slice(0,90);dbg()})},myN=()=>String(S.user&&S.user.name||"").slice(0,60);
 function val(o){if(!o||typeof o!=="object"||!TY.test(String(o.t))||!ID.test(String(o.id)))return null;const r={t:o.t,id:o.id,n:String(o.n||"").slice(0,60),q:Number.isInteger(o.q)&&o.q>=0&&o.q<60?o.q:0};if(o.t==="ic"){if(!Array.isArray(o.c))return null;r.c=o.c.slice(0,40).filter(x=>x&&typeof x.c==="string"&&x.c.length<400&&x.c.indexOf("candidate:")===0&&(x.m==null||typeof x.m==="string"&&x.m.length<24)&&Number.isInteger(x.i)).map(x=>({c:x.c,m:x.m==null?null:x.m,i:x.i}));return r}if(o.t==="of"||o.t==="an"){const x=o.t==="of"?o.o:o.a;if(typeof x!=="string"||x.length>16e3||x.indexOf("v=0")!==0)return null;r[o.t==="of"?"o":"a"]=x;r.s=Array.isArray(o.s)?o.s.filter(z=>typeof z==="string"&&BYK[z]).slice(0,20):[]}return r}
 const icm=k=>({t:"ic",id:k.id,q:k.seq,c:k.lc.slice(0,40)}),flush=(k,now)=>{clearTimeout(k.ft);k.ft=setTimeout(()=>{if(CALL===k&&k.lc.length)send2(k.peer,icm(k))},now?0:220)};
-function addIce(k,l){for(const x of l){if(k.rs2[x.c])continue;k.rs2[x.c]=1;if(k.pc&&k.pc.remoteDescription)k.pc.addIceCandidate({candidate:x.c,sdpMid:x.m,sdpMLineIndex:x.i}).catch(()=>{});else k.rq.push(x)}}
+function addIce(k,l){DB.r+=l.length;dbg();for(const x of l){if(k.rs2[x.c])continue;k.rs2[x.c]=1;if(k.pc&&k.pc.remoteDescription)k.pc.addIceCandidate({candidate:x.c,sdpMid:x.m,sdpMLineIndex:x.i}).catch(()=>{});else k.rq.push(x)}}
 function rflush(k){const l=k.rq;k.rq=[];l.forEach(x=>k.pc.addIceCandidate({candidate:x.c,sdpMid:x.m,sdpMLineIndex:x.i}).catch(()=>{}))}
 /* ===== اتصال | Peer connection ===== */
-function mk(k,l){const pc=new RTCPeerConnection({iceServers:cfg(l),bundlePolicy:"max-bundle",iceCandidatePoolSize:2});k.pc=pc;pc.onicecandidate=e=>{if(e.candidate){k.lc.push({c:e.candidate.candidate,m:e.candidate.sdpMid,i:e.candidate.sdpMLineIndex});flush(k,k.lc.length===1)}else flush(k,1)};
+function mk(k,l){const pc=new RTCPeerConnection({iceServers:cfg(l),bundlePolicy:"max-bundle",iceCandidatePoolSize:2});k.pc=pc;pc.onicecandidate=e=>{if(e.candidate){{const m=/ typ (host|srflx|relay)/.exec(e.candidate.candidate);if(m)DB.l[m[1]]++;dbg()}k.lc.push({c:e.candidate.candidate,m:e.candidate.sdpMid,i:e.candidate.sdpMLineIndex});flush(k,k.lc.length===1)}else flush(k,1)};
 if(k.st==="out"){k.as=pc.addTransceiver("audio",{direction:"sendrecv"}).sender;const tv=pc.addTransceiver("video",{direction:"sendrecv"});k.vs=tv.sender;try{const c=RTCRtpReceiver.getCapabilities("video").codecs.filter(x=>/^video\/(VP8|H264)$/i.test(x.mimeType));if(c.length&&tv.setCodecPreferences)tv.setCodecPreferences(c)}catch(e){}}
 k.dc=pc.createDataChannel("lk",{negotiated:true,id:1});k.dc.onopen=()=>{(k.dq||[]).forEach(m=>{try{k.dc.send(m)}catch(e){}});k.dq=[];if(k.cam)vState(k)};k.dc.onmessage=e=>{try{onDc(k,JSON.parse(e.data))}catch(_){}};
 pc.ontrack=e=>{const t=e.track;if(t.kind==="audio"){k.rsa=new MediaStream([t]);if(k.acc||k.st==="out"&&k.ack)play(k)}else{k.rsv=new MediaStream([t]);rv.srcObject=k.rsv;fv.srcObject=k.rsv;rv.play().catch(()=>{});fv.play().catch(()=>{});t.onunmute=lay}};
-pc.oniceconnectionstatechange=pc.onconnectionstatechange=()=>chk(k);return pc}
+pc.onicecandidateerror=e=>{DB.ce=(e.errorCode||"")+" "+String(e.errorText||"").slice(0,50)+" "+String(e.url||"").slice(0,40);dbg()};pc.onicegatheringstatechange=()=>{DB.gs=pc.iceGatheringState;dbg()};pc.oniceconnectionstatechange=pc.onconnectionstatechange=()=>{DB.st=pc.iceConnectionState+"/"+pc.connectionState;dbg();chk(k)};return pc}
 function setTr(k){/* اتصال فرستنده‌ها پس از دریافت پیشنهاد | map senders after the offer */k.pc.getTransceivers().forEach(t=>{const kd=t.receiver.track.kind;try{t.direction="sendrecv"}catch(e){}if(kd==="audio"&&!k.as)k.as=t.sender;if(kd==="video"&&!k.vs){k.vs=t.sender;try{const c=RTCRtpReceiver.getCapabilities("video").codecs.filter(x=>/^video\/(VP8|H264)$/i.test(x.mimeType));if(c.length&&t.setCodecPreferences)t.setCodecPreferences(c)}catch(e){}}})}
 function play(k){if(!k.rsa||k.pl2)return;k.pl2=1;aud.srcObject=k.rsa;aud.play().catch(()=>{});outApply(k)}
 function chk(k){if(CALL!==k||!k.pc)return;const a=k.pc.iceConnectionState,b=k.pc.connectionState,ok=a==="connected"||a==="completed"||b==="connected";if(ok){k.ok=1;clearTimeout(k.dt);k.dt=0;if(k.rec){k.rec=0;k.rsn=0;SS(k.t0?"":"Connecting...");tick()}if(!k.t0&&(k.st==="in"?k.acc:k.ack))go(k)}
@@ -204,7 +206,7 @@ async function accept(){const k=CALL;if(!k||k.st!=="in"||k.acc)return;k.acc=1;ri
 try{const ms=await um();if(CALL!==k){ms.getTracks().forEach(t=>t.stop());return}if(k.as)micAttach(k,ms);else k.ms=ms}catch(e){toast(tr("Microphone access denied"));fin(0,1,"");return}
 play(k);if(k.ok)go(k);else if(bad(k))restart(k);k.to=setTimeout(()=>{if(CALL===k&&!k.t0)fin("Connection lost",1,"")},3e4);
 for(let i=0;i<100&&!k.o&&CALL===k;i++)await sleep(100);if(CALL===k&&!k.o)fin("Connection lost",1,"")}
-function sig(from,o){o=val(o);if(!o)return;if(o.t!=="ic"&&o.t!=="rs"){const k0=from+o.t+o.id+o.q;if(SEEN[k0])return;SEEN[k0]=1;const ks=Object.keys(SEEN);if(ks.length>300)delete SEEN[ks[0]]}
+function sig(from,o){const _t=o&&o.t,_l=JSON.stringify(o||"").length;o=val(o);DB.rx++;if(!o){DB.er="BADSIG "+_t+" len"+_l;dbg();return}dbg();if(o.t!=="ic"&&o.t!=="rs"){const k0=from+o.t+o.id+o.q;if(SEEN[k0])return;SEEN[k0]=1;const ks=Object.keys(SEEN);if(ks.length>300)delete SEEN[ks[0]]}
 if(o.t==="ri"||o.t==="of"){if(CALL&&CALL.id===o.id&&CALL.peer===from){if(o.t==="of"&&CALL.st==="in")onOffer(CALL,o);return}return inv(from,o)}
 const k=CALL;if(!k||k.id!==o.id||k.peer!==from)return;
 if(o.t==="ic"){if(o.q===k.seq)addIce(k,o.c);return}
